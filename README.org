@@ -15,6 +15,10 @@ The initial goal for this "fork" be replacing Python with Rust, the first iterat
 - *Workflow automation*: Browser plugin, VM orchestration, Web Service, etc.
 - *Optimization opportunities*: Reduced container image size with very low computer resources requirements.
 
+* What does it look like?
+
+[[./screenshots/image.png]]
+
 * Envisioned Roadmap
 
 - [ ] Replicate CLI functions of the original tool, not necessarily the exact behavior

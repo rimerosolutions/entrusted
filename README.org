@@ -1,0 +1,42 @@
+#+TITLE: README
+
+* What is this?
+
+This repository will *possibly* explore other approaches for [[https://dangerzone.rocks/][Dangerzone]], a tool built by [[https://github.com/micahflee][Michah Lee]] (https://mastodon.social/@micahflee, https://twitter.com/micahflee).
+
+Dangerzone allows converting suspiciuous documents (images, office, pdfs) into safe and trusted PDFs, without worrying too much about viruses or evil macros.
+
+The initial goal for this "fork" be replacing Python with Rust, the first iteration will only provide a command line interface (CLI).
+
+* Why this?
+
+- *Personal learning*: [[˜https://www.rust-lang.org/][Rust]] is reasonably high-level and is not garbage collected.
+- *Self-Contained tooling with no scripting*: As much as possible there should be no scripting, including running external programs (except for the frontend).
+- *Workflow automation*: Browser plugin, VM orchestration, Web Service, etc.
+- *Optimization opportunities*: Reduced container image size with very low computer resources requirements.
+
+* Envisioned Roadmap
+
+- [ ] Replicate CLI functions of the original tool, not necessarily the exact behavior
+- [ ] Eliminate CLI calls inside the container, most of the job can likely be done with libraries
+  - [ ] It's possible to simplify significantly the original intent because with have direct access to APIs
+    - [ ] Simplified processing: In some cases multiple steps can be done in a single pass, because we have /full control/ over APIs and libraries.
+    - [ ] More efficiency: There's no additional overhead of =shell'ing= constantly, as long as we don't accumulate too much data in memory (direct code or leveraged libraries).
+  - [ ] It may not be possible to easily convert MS Office & [[https://en.wikipedia.org/wiki/OpenDocument][Open Document]] formats
+    - [ ] Possibly this can be done in Java with [[https://poi.apache.org/][Apache POI]].
+    - [ ] Possibly with [[https://www.graalvm.org/reference-manual/llvm/Compiling/][GraalVM]], a native library can be generated and leveraged in Rust
+- [ ] Add a Web Service (REST, RPC, etc.)
+  - [ ] Interface for uploading and converting files: SPA application?
+  - [ ] Support for processing notifications (success, failure): Websocket like?
+- [ ] Add a graphical user interface in addition to the CLI
+  - [ ] Maybe a Java Swing application compiled to native code?
+  - [ ] Maybe [[https://github.com/imgui-rs/imgui-rs][imgui]] with Rust? A different programming language for the GUI?
+- [ ] Look at automation scenarios:
+  - [ ] Concept similar to [[https://www.qubes-os.org/][Qubes OS disposable VMs]]:
+    - [ ] The container solution might be running inside a VM that is started on demand.
+    - [ ] Need to look back at [[https://en.wikipedia.org/wiki/FreeBSD_jail][FreeBSD jails]] and similar equivalent alternatives
+- [ ] Etc.
+  
+    
+
+  

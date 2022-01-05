@@ -2,9 +2,7 @@
 
 * What is this?
 
-This repository will explore (*possibly*) other approaches for [[https://dangerzone.rocks/][Dangerzone]], a tool built by [[https://github.com/micahflee][Michah Lee]].
-
-Dangerzone allows converting suspiciuous documents (images, office, pdfs) into safe and trusted PDFs, without worrying too much about viruses or evil macros.
+This repository will explore (*possibly*) other approaches for [[https://dangerzone.rocks/][Dangerzone]], a tool built by [[https://github.com/micahflee][Michah Lee]]. Dangerzone allows converting suspiciuous documents (images, office, pdfs) into safe and trusted PDFs, without worrying too much about viruses or evil macros.
 
 [[./screenshots/image.png]]
 

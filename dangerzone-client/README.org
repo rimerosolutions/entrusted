@@ -35,5 +35,5 @@ In the example below, a suspicious PDF file is converted to a searchable PDF ([[
 
 #+begin_src sh
    cp ../dangerzone-testdata/gnus-logo.pdf suspicious_file.pdf
-  ./target/debug/dangerzone-cli --filename suspicious_file.pdf --ocr-lang eng
+  ./target/debug/dangerzone-cli --input-filename suspicious_file.pdf --ocr-lang eng
 #+end_src

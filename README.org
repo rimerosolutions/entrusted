@@ -3,7 +3,7 @@
 * What is this?
 
 This repository will explore (*possibly*) other approaches for [[https://dangerzone.rocks/][Dangerzone]], a tool built by [[https://github.com/micahflee][Michah Lee]].
-- The code will be maintained more or less like a *lightweight course*, with different independent branches for major features that will be built /more or less/ iteratively.
+- The code will be maintained more or less like a *lightweight course*, via different Git branches (See /Envisioned Roadmap/ section).
 - I intend to deploy the code as a service on my home network at some point in time (old laptop or a [[https://en.wikipedia.org/wiki/Raspberry_Pi][Raspberry Pi]] maybe)
 
 Dangerzone allows converting suspiciuous documents (images, office, pdfs) into safe and trusted PDFs, without worrying too much about viruses or evil macros.
@@ -12,7 +12,7 @@ Dangerzone allows converting suspiciuous documents (images, office, pdfs) into s
 
 * Why this?
 
-- *Personal learning*: [[˜https://www.rust-lang.org/][Rust]] is reasonably high-level and is not garbage collected.
+- *Personal learning*: [[https://www.rust-lang.org/][Rust]] is reasonably high-level and is not garbage collected.
 - *Self-Contained tooling with no scripting*: As much as possible there should be no scripting, including running external programs (except for the frontend).
 - *Workflow automation exploration*: Browser plugin, VM orchestration, Web Service, etc.
 - *Optimization opportunities*: Reduced container image size with very low computer resources requirements.
@@ -22,7 +22,7 @@ Dangerzone allows converting suspiciuous documents (images, office, pdfs) into s
 
 This will be developed with an incremental spiral approach (different git branches):
 
-- [ ] Replicate CLI functions of the original tool, not necessarily the exact behavior
+- [X] Replicate CLI functions of the original tool, not necessarily the exact behavior ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral01][spiral01 branch]])
 - [ ] Eliminate CLI calls inside the container, most of the job can likely be done with libraries
 - [ ] Add additional interfaces (Desktop, Web)
 - [ ] Look at automation scenarios

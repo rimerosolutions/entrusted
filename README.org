@@ -22,7 +22,7 @@ Dangerzone allows converting suspiciuous documents (images, office, pdfs) into s
 
 This will be developed with an incremental spiral approach (different git branches):
 
-- [ ] Replicate CLI functions of the original tool, not necessarily the exact behavior
+- [ ] Replicate CLI functions of the original tool, not necessarily the exact behavior ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral01][spiral01 branch]])
 - [ ] Eliminate CLI calls inside the container, most of the job can likely be done with libraries
 - [ ] Add additional interfaces (Desktop, Web)
 - [ ] Look at automation scenarios

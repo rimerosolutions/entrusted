@@ -1,0 +1,25 @@
+#+TITLE: dangerzone-container README
+
+* What is this?
+
+This is the =backend/server= part of the solution running inside a container engine ([[https://www.docker.com/][Docker]] or [[https://podman.io/][Podman]]).
+
+
+* What is required?
+
+You only need a container engine such as Docker or Podman. Please note that this has only been tested under Linux ([[https://voidlinux.org/][Void Linux]]) with Podman so far.
+
+
+* How to build this?
+
+At the root of this project, please invoke the command below.
+
+#+begin_src sh
+  podman build -t localhost/dangerzone-converter .
+#+end_src
+
+If you use Docker just replace =podman= with =docker= in the above-mentioned command.
+
+* How to run this?
+
+This application is leveraged by the =dangerzone-cli= client (shell commands to =podman= or =docker=) , it's not really meant to be used "directly" except for dev/testing purposes.

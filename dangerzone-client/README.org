@@ -1,0 +1,39 @@
+#+TITLE: dangerzone-client README
+
+* What is this?
+
+This is an application (command-line only /for now/), that converts suspicious documents to safe trusted PDF documents.
+
+* What is required?
+
+This application relies on common Rust tooling and a container engine solution:
+- For compilation, you need a recent version of the Rust toolchain ([[https://www.rust-lang.org/tools/install][rustc]] compiler and [[https://doc.rust-lang.org/cargo/][cargo]]).
+- For execution, it is assumed that the =dangerzone-container= application is deployed under [[https://www.docker.com/][Docker]] or [[https://podman.io/][Podman]].
+
+Please note that this has *only been tested under Linux* so far ([[https://voidlinux.org/][Void Linux]] more specifically).
+- There's work needed in order to find executable locations reliably across platforms.
+- A fallback mechanism is probably needed so that the user can specifiy manually where docker or podman is installed, if the application cannot find it automatically
+
+* How to build this?
+
+At the root of this project, open a command prompt and type =cargo build=.
+
+* How to run this?
+
+For now, there's only a command-line application. In a command prompt, type the following at the root of this project.
+
+** Help information
+
+#+begin_src sh
+  ./target/debug/dangerzone-cli -h
+#+end_src
+
+** Sample general usage
+
+In the example below, a suspicious PDF file is converted to a searchable PDF ([[https://en.wikipedia.org/wiki/Optical_character_recognition][OCR]]).
+/OCR/ is a time consuming task in comparison to just generating PDF images for pages of the original input (text recognition and additional processing steps).
+
+#+begin_src sh
+   cp ../dangerzone-testdata/gnus-logo.pdf suspicious_file.pdf
+  ./target/debug/dangerzone-cli --filename suspicious_file.pdf --ocr-lang eng
+#+end_src

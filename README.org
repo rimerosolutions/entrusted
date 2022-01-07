@@ -3,7 +3,7 @@
 * What is this?
 
 This repository will explore (*possibly*) other approaches for [[https://dangerzone.rocks/][Dangerzone]], a tool built by [[https://github.com/micahflee][Michah Lee]].
-- The code will be maintained more or less like a *lightweight course*, with different [[* Envisioned Roadmap][independent branches]] for major features that will be built /more or less/ iteratively.
+- The code will be maintained more or less like a *lightweight course*, via different Git branches (See /Envisioned Roadmap/ section).
 - I intend to deploy the code as a service on my home network at some point in time (old laptop or a [[https://en.wikipedia.org/wiki/Raspberry_Pi][Raspberry Pi]] maybe)
 
 Dangerzone allows converting suspiciuous documents (images, office, pdfs) into safe and trusted PDFs, without worrying too much about viruses or evil macros.

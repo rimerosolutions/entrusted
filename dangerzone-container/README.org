@@ -22,4 +22,4 @@ If you use Docker just replace =podman= with =docker= in the above-mentioned com
 
 * How to run this?
 
-This application is leveraged by the =dangerzone-cli= client (shell commands to =podman= or =docker=) , it's not really meant to be used "directly" except for dev/testing purposes.
+This application is leveraged by the =dangerzone-client= CLI program (shell commands to =podman= or =docker=) , it's not really meant to be used "directly" except for dev/testing purposes.

@@ -17,6 +17,12 @@ Dangerzone allows converting suspiciuous documents (images, office, pdfs) into s
 - *Workflow automation exploration*: Browser plugin, VM orchestration, Web Service, etc.
 - *Optimization opportunities*: Reduced container image size with very low computer resources requirements.
 
+* Screenshot
+
+There's only a command-line client, a desktop graphical user interface is planned for future iterations.
+
+[[./screenshots/cli-screenshot.png]]
+
 
 * Envisioned Roadmap
 

@@ -3,12 +3,17 @@
 * What is this?
 
 This repository will explore (*possibly*) other approaches for [[https://dangerzone.rocks/][Dangerzone]], a tool built by [[https://github.com/micahflee][Michah Lee]].
-- The code will be maintained more or less like a *lightweight course*, via different Git branches (See /Envisioned Roadmap/ section).
+- The code will be maintained more or less like a *lightweight course*(??), via different Git branches (See /Envisioned Roadmap/ section).
 - I intend to deploy the code as a service on my home network at some point in time (old laptop or a [[https://en.wikipedia.org/wiki/Raspberry_Pi][Raspberry Pi]] maybe)
 
 Dangerzone allows converting suspiciuous documents (images, office, pdfs) into safe and trusted PDFs, without worrying too much about viruses or evil macros.
 
 [[./screenshots/image.png]]
+
+* What is required?
+
+- *Operating System*: Linux or MacOS. Windows and BSD support will be tested soon enough.
+- *Container Runtime*: [[https://podman.io/][Podman]], [[https://www.docker.com/][Docker]] or [[https://github.com/lima-vm/lima][Lima]]. For MacOS, please use either Docker or Lima, as Podman on MacOS has [[https://github.com/containers/podman/issues/8016][limitations/annoyances]] around volumes.
 
 * Why this?
 
@@ -17,21 +22,33 @@ Dangerzone allows converting suspiciuous documents (images, office, pdfs) into s
 - *Workflow automation exploration*: Browser plugin, VM orchestration, Web Service, etc.
 - *Optimization opportunities*: Reduced container image size with very low computer resources requirements.
 
-* Screenshot
+* What does it look like?
 
-There's only a command-line client, a desktop graphical user interface is planned for future iterations.
+** Desktop User Interface
+
+The initial desktop user interface running on MacOS Big Sur.
+
+[[./screenshots/gui-screenshot.png]]
+
+** Command-Line User Interface
+
+˜The command-line interface running on Void Linux.
 
 [[./screenshots/cli-screenshot.png]]
 
 
-* Envisioned Roadmap
-
-This will be developed with an incremental spiral approach (different git branches):
+* What is planned?
 
 - [X] Replicate CLI functions of the original tool, not necessarily the exact behavior ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral01][spiral01 branch]])
-- [ ] Eliminate CLI calls inside the container, most of the job can likely be done with libraries
-- [ ] Add additional interfaces (Desktop, Web)
-- [ ] Look at automation scenarios
+- [X] "Misc." bulk fixes & changes ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral02][spiral02 branch]])
+  - [X] Eliminate CLI calls inside the container, most of the job can likely be done with libraries
+  - [X] Minimal Desktop user interface via the [[https://github.com/fltk-rs/fltk-rs][FLTK]] lightweight toolkit
+  - [X] Temporarily drop support for Office documents (OpenDocument, MS Office), more research for [[https://github.com/rimerosolutions/rust-calls-java][Java native libraries integration]] (few runtime errors with [[https://www.oracle.com/java/graalvm/][GraalVM]])
+- [ ] UI and other improvements, including tech debt and other issues
+- [ ] Investigate problems with creating Rust binaries with 100% static linking
+- [ ] Improved MacOS support ([[https://github.com/lima-vm/lima][Lima]], additional notes for [[https://github.com/containers/podman][Podman]] current volume limitations, etc.)
+- [ ] Microsoft Windows and BSD testing, maybe all the 3 main BSDs (OpenBSD, FreeBSD & NetBSD) ?
+- [ ] Look at automation scenarios and use-cases (Browser plugin, Http Proxy, etc.)
 - [ ] Etc.
   
     

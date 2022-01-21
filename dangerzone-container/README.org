@@ -2,24 +2,36 @@
 
 * What is this?
 
-This is the =backend/server= part of the solution running inside a container engine ([[https://www.docker.com/][Docker]] or [[https://podman.io/][Podman]]).
+This is the =backend/server= part of the solution running inside a container engine ([[https://www.docker.com/][Docker]] or [[https://podman.io/][Podman]] or [[https://github.com/lima-vm/lima][Lima]]).
 
 
 * What is required?
 
-You only need a container engine such as Docker or Podman. Please note that this has only been tested under Linux ([[https://voidlinux.org/][Void Linux]]) with Podman so far.
+You only need a container engine such as Docker or Podman or Lima. Please note that this has only been tested under Linux ([[https://voidlinux.org/][Void Linux]]) with Podman so far.
 
 
 * How to build this?
 
 At the root of this project, please invoke the command below.
 
+** Podman
+
 #+begin_src sh
   podman build -t localhost/dangerzone-converter .
 #+end_src
 
-If you use Docker just replace =podman= with =docker= in the above-mentioned command.
+** Docker
+
+#+begin_src sh
+  docker build -t localhost/dangerzone-converter .
+#+end_src
+
+** Lima
+
+#+begin_src sh
+  lima nerdctl build -t localhost/dangerzone-converter .
+#+end_src
 
 * How to run this?
 
-This application is leveraged by the =dangerzone-client= CLI program (shell commands to =podman= or =docker=) , it's not really meant to be used "directly" except for dev/testing purposes.
+This application is leveraged by the =dangerzone-client= CLI program (shell commands to =podman= or =docker= or =lima=) , it's not really meant to be used "directly" except for dev/testing purposes.

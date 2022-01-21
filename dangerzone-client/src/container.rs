@@ -66,6 +66,10 @@ fn exec_container(container_program: common::ContainerProgram, args: Vec<&str>, 
 pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String>, ocr_lang: Option<String>, tx: Sender<String>) -> Result<bool, Box<dyn Error>> {
     tx.send(format!("Converting {}.", input_path.display()))?;
 
+    if !input_path.exists() {
+        return Err(format!("The selected file {} does not exits!", input_path.display()).into());
+    }
+
     let mut success = false;
 
     let ocr = if ocr_lang.is_some() {

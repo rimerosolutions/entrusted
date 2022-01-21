@@ -206,7 +206,7 @@ pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
     let container_program_stubs = [
         ContainerProgramStub::Docker("docker", vec![], None),
         ContainerProgramStub::Podman("podman", vec![], None),
-        ContainerProgramStub::Lima("limactl", vec!["shell", "default", "nerdctl"], Some("/tmp/lima")),
+        ContainerProgramStub::Lima("lima", vec!["nerdctl"], Some("/tmp/lima")),
     ];
 
     for i in 0..container_program_stubs.len() {

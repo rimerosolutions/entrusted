@@ -1,17 +1,16 @@
 use std::error::Error;
-use std::io::Read;
 use std::fs;
 use filetime::FileTime;
 use std::path::PathBuf;
 use std::env;
 use std::process::{Command, Stdio};
-use std::io::{BufReader, BufRead};
+use std::io::{BufReader, BufRead, Read};
 use std::thread::JoinHandle;
 use std::sync::mpsc::Sender;
 use std::thread;
 use crate::common;
 
-fn read_output<R>(thread_name: &str, stream: R, tx: Sender<String>) -> JoinHandle<()>
+fn read_output<R>(thread_name: &str, stream: R, tx: Sender<String>) -> Result<JoinHandle<Result<(), Box<dyn Error + Send + Sync>>>, std::io::Error>
 where
     R: Read + Send + 'static {
     thread::Builder::new()
@@ -19,12 +18,13 @@ where
         .spawn(move || {
             let reader = BufReader::new(stream);
             reader.lines()
-                .for_each(|line| {
-                    if let Ok(line_data) = line {
-                        tx.send(line_data).unwrap();
+                .try_for_each(|line| {
+                    match tx.send(line?) {
+                        Ok(_) => Ok(()),
+                        Err(ex) => Err(ex.into())
                     }
                 })
-        }).expect(format!("Unable to capture output in the background for thread {}!", thread_name).as_str())
+        })
 }
 
 fn exec_container(container_program: common::ContainerProgram, args: Vec<&str>, tx: Sender<String>) -> Result<(), Box<dyn Error>> {
@@ -50,8 +50,8 @@ fn exec_container(container_program: common::ContainerProgram, args: Vec<&str>, 
     ];
 
     for stdout_handle in stdout_handles {
-        if let Err(_) = stdout_handle.join() {
-            return Err("Failed to capture output!".into());
+        if let Err(ex) = stdout_handle?.join() {
+            return Err(format!("Failed to capture command output! {:?}", ex).into());
         }
     }
 

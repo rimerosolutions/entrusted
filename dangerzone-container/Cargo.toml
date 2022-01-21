@@ -1,13 +1,21 @@
 [package]
-name = "dangerzone-container"
+name = "playground"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+image = "0.23.14"
+poppler-rs = "0.18.0"
+poppler-sys-rs = "0.18.0"
+cairo-sys-rs = "0.14.9"
+cairo-rs = { version = "0.14.9", features = ["png", "pdf"] }
+tesseract-plumbing = "0.6.1"
+lopdf = "0.27.0"
 infer = "0.5.0"
 
 [[bin]]
 name = "dangerzone-container"
 path = "src/main.rs"
+

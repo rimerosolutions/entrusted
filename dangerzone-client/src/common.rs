@@ -1,7 +1,7 @@
 use std::collections::HashMap;
-use std::env;
-use env::consts;
-use std::path::{Path, PathBuf};
+use std::error::Error;
+use std::path::PathBuf;
+use which;
 
 pub const CONTAINER_IMAGE_NAME: &str = "localhost/dangerzone-converter";
 pub const CONTAINER_IMAGE_EXE: &str = "/usr/local/bin/dangerzone-container";
@@ -171,35 +171,71 @@ pub fn ocr_lang_key_by_name() -> HashMap<&'static str, &'static str> {
     ].map( |(k, v)| (v, k)).iter().cloned().collect()
 }
 
-// TODO use the 'pathsearch' crate
-fn executable_find<P>(exe_name: P) -> Option<PathBuf>
-where P: AsRef<Path> {
-    env::var_os("PATH").and_then(|paths| {
-        env::split_paths(&paths).find_map(|dir| {
-            let full_path = dir.join(&exe_name);
-            if full_path.is_file() {
-                Some(full_path)
-            } else {
-                None
-            }
-        })
-    })
-}
-
-pub fn container_runtime_path() -> Option<PathBuf> {
-    match consts::OS {
-        "linux" => executable_find("podman"),
-        _ => executable_find("docker")
+fn executable_find(exe_name: &str) -> Option<PathBuf> {
+    match which::which(exe_name) {
+        Err(_) => None,
+        Ok(path_location) => Some(path_location)
     }
 }
 
-pub enum ContainerRt {
-    DOCKER, PODMAN
+pub struct ContainerProgram<'a>{
+    pub exec_path: PathBuf,
+    pub sub_commands: Vec<&'a str>,
+    pub suggested_tmp_dir: Option<PathBuf>,
 }
 
-pub fn container_runtime_tech() -> ContainerRt {
-    match consts::OS {
-        "linux" => ContainerRt::PODMAN,
-        _ => ContainerRt::DOCKER
+impl<'a> ContainerProgram<'a> {
+    pub fn new(exec_path: PathBuf, sub_commands: Vec<&'a str>, suggested_tmp_dir: Option<PathBuf>) -> Self {
+        Self {
+            exec_path,    
+            sub_commands,
+            suggested_tmp_dir
+        }
+    }
+}
+
+enum ContainerProgramStub<'a> {
+    Docker(&'a str, Vec<&'a str>, Option<&'a str>),
+    Podman(&'a str, Vec<&'a str>, Option<&'a str>),
+    Lima(&'a str, Vec<&'a str>, Option<&'a str>)
+}
+
+// TODO this is not good enough, ideally subcommands should be captured at a higher level
+// Especially for Lima and similar tooling, to avoid further downstream conditional blocks
+pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
+    let container_program_stubs = [
+        ContainerProgramStub::Docker("docker", vec![], None),
+        ContainerProgramStub::Podman("podman", vec![], None),
+        ContainerProgramStub::Lima("limactl", vec!["shell", "default", "nerdctl"], Some("/tmp/lima")),
+    ];
+
+    for i in 0..container_program_stubs.len() {
+        match &container_program_stubs[i] {
+            ContainerProgramStub::Docker(cmd, cmd_args, tmp_dir_opt) |
+            ContainerProgramStub::Podman(cmd, cmd_args, tmp_dir_opt) |
+            ContainerProgramStub::Lima(cmd, cmd_args, tmp_dir_opt) => {
+                if let Some(path_container_exe) = executable_find(cmd) {
+                    let suggested_tmp_dir = match tmp_dir_opt {
+                        None => None,
+                        Some(tmp_dir) => Some(PathBuf::from(tmp_dir))
+                    };
+                    return Some(ContainerProgram::new(path_container_exe, cmd_args.clone(), suggested_tmp_dir));
+                }
+            }
+        }
+    }
+
+    None
+}
+
+pub fn default_output_path(input: PathBuf) -> Result<PathBuf, Box<dyn Error>> {
+    let input_name_opt = input.file_stem().map(|i| i.to_str()).and_then(|v| v);
+    let output_filename_opt = input.parent().map(|i| i.to_path_buf());
+
+    if let (Some(input_name), Some(mut output_filename)) = (input_name_opt, output_filename_opt) {
+        output_filename.push(input_name.to_owned() + "-safe.pdf");
+        Ok(output_filename)
+    } else {
+        Err("Cannot determine resulting PDF output path based on selected input document location!".into())
     }
 }

@@ -7,7 +7,26 @@ edition = "2021"
 
 [dependencies]
 clap = "2.33.3"
+which = "4.2.2"
+filetime = "0.2"
+fltk = { version = "1.2.26", features = ["fltk-bundled"] }
+
+
+[target.'cfg(target_os = "linux")'.dependencies]
+freedesktop_entry_parser = "1.2.0"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+core-services = "0.2.0"
+core-foundation = "0.9.1"
+percent-encoding = "2.1.0"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+winreg = "0.9.0"
 
 [[bin]]
 name = "dangerzone-cli"
-path = "src/main.rs"
+path = "src/main_cli.rs"
+
+[[bin]]
+name = "dangerzone-gui"
+path = "src/main_gui.rs"

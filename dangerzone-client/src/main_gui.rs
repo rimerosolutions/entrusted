@@ -507,37 +507,39 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
     use winreg::enums::*;
     use winreg::RegKey;
 
-    let hklm = RegKey::predef(HKEY_CURRENT_USER);
     let hkcr = RegKey::pref(HKEY_CLASSES_ROOT);
-    let open_with_list = hklm.open_subkey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.pdf\\OpenWithProgIds");
-    let app_name_candidates = HashSet::new();
+    let open_with_list_hkcr = hkcr.open_subkey(".pdf\\OpenWithProgids");
+    let mut candidates = HashSet::new();
 
-    if let Ok(open_with_list_result) = open_with_list {
-        let mru_list_name = "MRUList".to_string();
-
-        for (name, value) in open_with_list_result.enum_values().map(|x| x.unwrap()) {
-            if value.vtype == RegType::REG_SZ && name != mru_list_name {
-                app_name_candidates.insert(name);
-            }
-        }
-    }
-
-    if let Ok(root_pdf_app_list) = hkcr.open_subkey(".pdf\\OpenWithProgids") {
-        for (name, _) in root_pdf_app_list.enum_values().map(|x| x.unwrap()) {
-            app_name_candidates.insert(name);
+    for (name, _) in open_with_list_hkcr.enum_values().map(|x| x.unwrap()) {
+        if !name.is_empty() {
+            candidates.insert(name);
         }
     }
 
     let mut ret = HashMap::with_capacity(app_name_candidates.len());
 
-    for name in app_name_candidates {
-        let app_id = format!("{}\\Application", name);
+    for name in app_name_candidates.iter() {
+        let app_id = format!("{}\\shell\\Open\\command", name);
 
         if let Ok(app_application_regkey) = hkcr.open_subkey(app_id) {
-            if let (Ok(app_name), Ok(app_exe)) = (app_application_regkey.get_value::<String, String>("ApplicationName".to_string()),
-                                                  app_application_regkey.get_value::<String, String>("ApplicationIcon".to_string())) {
-                if !app_exe.starts_with("@") {
-                    ret.insert(app_name, app_exe);
+            for (_, value) in app_application_regkey.enum_values().map(|x| x.unwrap()) {
+                let human_value = format!("{}", value);
+                let human_val: Vec<&str> = human_value.split("\"").collect();
+
+                // "C:\ Program Files\ Adobe\Acrobat DC\Acrobat|Acrobat.exe" "%1"
+                if human_val.len() > 3 {
+                    let human_app_path_with_trailing_backlash = human_val[2];
+
+                    if human_app_path_with_trailing_backlash.ends_with("\\") {
+                        let path_len = human_app_path_with_trailing_backlash.len() - 1;
+                        let updated_path = human_app_path_with_trailing_backlash[..path_len].to_string();
+
+                        if PathBuf::from(&updated_path).exists() {
+                            ret.insert(name, updated_path);
+                        }
+                    }
+
                 }
             }
         }

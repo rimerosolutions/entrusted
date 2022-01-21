@@ -1,7 +1,5 @@
 FROM docker.io/alpine:latest as builder
 
-#FROM docker.io/rust:alpine3.14
-# Install dependencies
 RUN apk -U upgrade && \
     apk add \
     binutils \
@@ -19,24 +17,12 @@ RUN apk -U upgrade && \
     musl-dev \
     curl
 
-
-# gcc make clang-static musl-dev
-#RUN ln -sf /usr/bin/clang /usr/bin/cc
 WORKDIR /home/rust/dangerzone-container
-#ADD --chown=rust:rust . .
 COPY . .
-#RUN sudo chown -R rust:rust /home/rust/dangerzone-container
-#RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
-#RUN /root/.cargo/bin/rustup target add x86_64-unknown-linux-musl
-#RUN cargo build
-#RUN ls /home/rust/dangerzone-container/target/*/*
-#ENV RUSTFLAGS='-C target-feature=+crt-static'  CC=/usr/bin/clang CXX=/usr/bin/clang++ 
 RUN cargo install --path .
-#    --target=x86_64-unknown-linux-musl --path .
 
 FROM docker.io/alpine:latest
-#FROM docker.io/rust:alpine3.14
-# Install dependencies
+
 RUN apk -U upgrade && \
     apk add \
     leptonica-dev \
@@ -109,7 +95,7 @@ RUN apk -U upgrade && \
     tesseract-ocr-data-tur \
     tesseract-ocr-data-ukr \
     tesseract-ocr-data-vie \
-    llvm-static llvm-dev \
+    #llvm-static llvm-dev \
     tiff-dev \
     jpeg-dev \
     giflib-dev \
@@ -118,12 +104,10 @@ RUN apk -U upgrade && \
     musl-dev
 
 COPY --from=builder /root/.cargo/bin/dangerzone-container /usr/local/bin/
-RUN true
 
 # Add the unprivileged user
-#RUN adduser -h /home/user -s /bin/sh -D user
-
-#USER user
+RUN adduser -h /home/user -s /bin/sh -D user
+USER user
 
 # /tmp/input_file is where the first convert expects the input file to be, and
 # /tmp where it will write the pixel files

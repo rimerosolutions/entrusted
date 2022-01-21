@@ -369,7 +369,8 @@ fn pdf_combine_pdfs(page_count: usize, input_dir_path: PathBuf, output_path: Pat
 
     // Define a starting max_id (will be used as start index for object_ids)
     let mut max_id = 1;
-˜    let mut pagenum = 1;
+    let mut pagenum = 1;
+
     // Collect all Documents Objects grouped by a map
     let mut documents_pages = BTreeMap::new();
     let mut documents_objects = BTreeMap::new();

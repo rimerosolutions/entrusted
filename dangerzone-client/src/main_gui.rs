@@ -44,6 +44,7 @@ fn do_show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: Co
     pack.set_spacing(20);
     let mut textdisplay_cmdlog = text::TextDisplay::default_fill().with_label("Conversion output").with_size(340, 320);
     let text_buffer = text::TextBuffer::default();
+    let mut text_buffer_copy = text_buffer.clone();
     textdisplay_cmdlog.set_buffer(text_buffer);
     textdisplay_cmdlog.deactivate();
     let mut textdisplay_cmdlog_copy = textdisplay_cmdlog.clone();
@@ -87,9 +88,9 @@ fn do_show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: Co
         if !button_ok_copy.active() {
             if let Ok(raw_msg) = rx.recv() {
                 let msg = format!("{}\n", raw_msg);
-                textdisplay_cmdlog_copy.insert(msg.as_str());
-                textdisplay_cmdlog_copy.scroll(textdisplay_cmdlog_copy.insert_position(), 0);
-                app::awake();
+                    text_buffer_copy.append(msg.as_str());
+                    textdisplay_cmdlog_copy.scroll(text_buffer_copy.count_lines(0, text_buffer_copy.length()), 0);
+                    app::awake();
             } else {
                 let mut cmdlog_label_color = enums::Color::DarkGreen;
                 let mut cmdlog_label_text = "Close window";
@@ -116,8 +117,8 @@ fn do_show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: Co
 
                 button_ok_copy.set_label(cmdlog_label_text);
                 button_ok_copy.activate();
-                textdisplay_cmdlog_copy.set_label_color(cmdlog_label_color);
                 textdisplay_cmdlog_copy.activate();
+                textdisplay_cmdlog_copy.set_label_color(cmdlog_label_color);
                 app::awake();
             }
         }
@@ -243,9 +244,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         pdf_viewer_list.borrow_mut().set_value_index(0);
     }
 
+    pdf_viewer_list.borrow_mut().deactivate();
+    
     checkbutton_openwith.set_callback({
-        move |_| {
-            let will_be_read_only = !pdf_viewer_list.borrow_mut().input().readonly();
+        move |b| {
+            let will_be_read_only = !b.is_checked();
             pdf_viewer_list.borrow_mut().input().set_readonly(will_be_read_only);
 
             if will_be_read_only {

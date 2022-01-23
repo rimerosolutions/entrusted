@@ -1,6 +1,7 @@
 use std::thread;
 use std::error::Error;
-use std::sync::{mpsc, Arc};
+use std::sync::mpsc;
+use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -22,39 +23,40 @@ pub struct ConversionParams {
     pub ocr_lang: Option<String>,
 }
 
-pub fn show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: ConversionParams) -> bool {
+pub fn show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: ConversionParams, open_pdf_after_conversion: bool) -> bool {
     let dw = 400;
-    let dh = 300;
-    let dx =  cmp::max(0, (x + w / 2) - (dw / 2));
-    let dy =  cmp::max(0, (y + h / 2) - (dh / 2));
+    let dh = 400;
+    let dx = cmp::max(0, (x + w / 2) - (dw / 2));
+    let dy = cmp::max(0, (y + h / 2) - (dh / 2));
 
-    do_show_progress_dialog(dx, dy, dw, dh, conversion_params)
+    do_show_progress_dialog(dx, dy, dw, dh, conversion_params, open_pdf_after_conversion)
 }
 
-fn do_show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: ConversionParams) -> bool {
+fn do_show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: ConversionParams, open_pdf_after_conversion: bool) -> bool {
     let mut win = window::Window::new(x, y, w, h, "Progress dialog");
     win.set_color(enums::Color::from_rgb(240, 240, 240));
     win.make_resizable(true);
 
     let mut pack = group::Pack::default()
-        .with_size(380, 180)
+        .with_size(380, 360)
         .center_of_parent()
         .with_type(group::PackType::Vertical);
     pack.set_spacing(20);
-    let mut inp = text::TextDisplay::default_fill().with_label("Conversion output").with_size(280, 100);
+    let mut textdisplay_cmdlog = text::TextDisplay::default_fill().with_label("Conversion output").with_size(340, 320);
     let text_buffer = text::TextBuffer::default();
-    inp.set_buffer(text_buffer);
-    inp.deactivate();
-    pack.resizable(&inp);
+    let mut text_buffer_copy = text_buffer.clone();
+    textdisplay_cmdlog.set_buffer(text_buffer);
+    textdisplay_cmdlog.deactivate();
+    let mut textdisplay_cmdlog_copy = textdisplay_cmdlog.clone();
 
-    let mut ok = button::Button::default().with_size(80, 20).with_label("Converting...");
-    let mut ok_clone = ok.clone();
+    let mut button_ok = button::Button::default().with_size(80, 20).with_label("Converting...");
+    let mut button_ok_copy = button_ok.clone();
     pack.end();
     win.end();
     win.make_modal(true);
     win.show();
-    ok.deactivate();
-    ok.set_callback({
+    button_ok.deactivate();
+    button_ok.set_callback({
         let mut win = win.clone();
         move |_| {
             win.hide();
@@ -63,7 +65,7 @@ fn do_show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: Co
 
     win.set_callback({
         move |win_instance| {
-            if ok.active() {
+            if button_ok.active() {
                 win_instance.hide();
             }
         }
@@ -78,40 +80,46 @@ fn do_show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: Co
         }
     }));
 
-    let mut inp_copy = inp.clone();
     let result = Arc::new(AtomicBool::new(false));
 
     while win.shown() {
         app::wait();
 
-        if !ok_clone.active() {
+        if !button_ok_copy.active() {
             if let Ok(raw_msg) = rx.recv() {
                 let msg = format!("{}\n", raw_msg);
-                inp_copy.insert(msg.as_str());
-                inp_copy.scroll(inp_copy.insert_position(), 0);
+                    text_buffer_copy.append(msg.as_str());
+                    textdisplay_cmdlog_copy.scroll(text_buffer_copy.count_lines(0, text_buffer_copy.length()), 0);
+                    app::awake();
             } else {
-                if !ok_clone.active() {
-                    ok_clone.set_label("Close window");
-                    ok_clone.activate();
-                    inp_copy.activate();
+                let mut cmdlog_label_color = enums::Color::DarkGreen;
+                let mut cmdlog_label_text = "Close window";
 
-                    match exec_handle.take().map(thread::JoinHandle::join) {
-                        Some(xxx) => {
-                            match xxx {
-                                Ok(None) => {
-                                    inp_copy.set_label_color(enums::Color::DarkGreen);
-                                    result.swap(true, Ordering::Relaxed);
-                                },
-                                _ => {
-                                    inp_copy.set_label_color(enums::Color::Red);
+                match exec_handle.take().map(thread::JoinHandle::join) {
+                    Some(exec_handle_result) => {
+                        match exec_handle_result {
+                            Ok(None) => {
+                                result.swap(true, Ordering::Relaxed);
+
+                                if open_pdf_after_conversion {
+                                    cmdlog_label_text = "Open safe PDF";
                                 }
+                            },
+                            _ => {
+                                cmdlog_label_color = enums::Color::Red;
                             }
-                        },
-                        None => {
-                            inp_copy.set_label_color(enums::Color::Red);
                         }
+                    },
+                    None => {
+                        cmdlog_label_color = enums::Color::Red;
                     }
                 }
+
+                button_ok_copy.set_label(cmdlog_label_text);
+                button_ok_copy.activate();
+                textdisplay_cmdlog_copy.activate();
+                textdisplay_cmdlog_copy.set_label_color(cmdlog_label_color);
+                app::awake();
             }
         }
     }
@@ -234,12 +242,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     if pdf_apps_by_name.len() != 0 {
         pdf_viewer_list.borrow_mut().set_value_index(0);
-        checkbutton_openwith.set_checked(true);
     }
 
+    pdf_viewer_list.borrow_mut().deactivate();
+    
     checkbutton_openwith.set_callback({
-        move |_| {
-            let will_be_read_only = !pdf_viewer_list.borrow_mut().input().readonly();
+        move |b| {
+            let will_be_read_only = !b.is_checked();
             pdf_viewer_list.borrow_mut().input().set_readonly(will_be_read_only);
 
             if will_be_read_only {
@@ -305,7 +314,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             if !str_inputloc.is_empty() {
                 let mut bb = b.clone();
 
-                // TODO the list of detected viewer apps, could be empty
+                // TODO the list of detected PDF viewers could be empty, does it matter here??
                 let viewer_app_name = cc_pdf_viewer_list.borrow_mut().input().value();
                 let viewer_app_exec = if checkbutton_openwith.is_checked() {
                     if let Some(viewer_app_path) = pdf_apps_by_name.get(&viewer_app_name) {
@@ -319,7 +328,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 let path_in = PathBuf::from(str_inputloc);
 
-                if path_in.exists() {
+                if path_in.exists() && path_in.is_file() {
                     let mut err_msg = "".to_string();
 
                     let path_out = if str_outputloc.is_empty() {
@@ -351,7 +360,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                     if err_msg.is_empty() {
                         b.deactivate();
-                        if show_progress_dialog(wind_clone.x(), wind_clone.y(), wind_clone.width(), wind_clone.height(), conversion_params) {
+                        if show_progress_dialog(wind_clone.x(), wind_clone.y(), wind_clone.width(), wind_clone.height(), conversion_params, viewer_app_exec.is_some()) {
                             if let Some(viewer_app_executable) = viewer_app_exec {
                                 if let Ok(_) = pdf_open_with(viewer_app_executable, path_out_clone) {
                                 } else {
@@ -363,7 +372,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                     } else {
                         dialog::alert(wind_clone.x(), wind_clone.y() + wind_clone.height() / 2, err_msg.as_str());
                     }
+                } else {
+                    dialog::alert(wind_clone.x(), wind_clone.y() + wind_clone.height() / 2, "The selected document apparently doesn't exists!");
                 }
+            } else {
+                dialog::alert(wind_clone.x(), wind_clone.y() + wind_clone.height() / 2, "Please select a document to convert!");
             }
         }
     });

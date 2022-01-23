@@ -324,7 +324,7 @@ fn split_pdf_pages_into_images(src_path: PathBuf, dest_folder: PathBuf) -> Resul
     font_options.set_hint_metrics(cairo::HintMetrics::Default);
     font_options.set_hint_style(cairo::HintStyle::Slight);
 
-    let image_dpi: f64 = 150.0;
+    let image_dpi: f64  = 150.0;
     let target_dpi: f64 = 72.0;
     let zoom_ratio = image_dpi / target_dpi;
 

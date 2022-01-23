@@ -8,6 +8,7 @@ use std::io::{BufReader, BufRead, Read};
 use std::thread::JoinHandle;
 use std::sync::mpsc::Sender;
 use std::thread;
+
 use crate::common;
 
 fn read_output<R>(thread_name: &str, stream: R, tx: Sender<String>) -> Result<JoinHandle<Result<(), Box<dyn Error + Send + Sync>>>, std::io::Error>
@@ -46,7 +47,7 @@ fn exec_container(container_program: common::ContainerProgram, args: Vec<&str>, 
 
     let stdout_handles = vec![
         read_output("dangerzone.stdout",  child.stdout.take().expect("!stdout"), tx.clone()),
-        read_output("dangerzone.stderr" , child.stderr.take().expect("!stderr"), tx),
+        read_output("dangerzone.stderr" , child.stderr.take().expect("!stderr"), tx.clone()),
     ];
 
     for stdout_handle in stdout_handles {
@@ -64,11 +65,11 @@ fn exec_container(container_program: common::ContainerProgram, args: Vec<&str>, 
 }
 
 pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String>, ocr_lang: Option<String>, tx: Sender<String>) -> Result<bool, Box<dyn Error>> {
-    tx.send(format!("Converting {}.", input_path.display()))?;
-
     if !input_path.exists() {
         return Err(format!("The selected file {} does not exits!", input_path.display()).into());
     }
+
+    tx.send(format!("Converting {}.", input_path.display()))?;
 
     let mut success = false;
 
@@ -94,8 +95,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
 
             match dir_created {
                 Err(ex) => {
-                    let msg = format!("Cannot create directory: {:?}! Error: {}", p, ex.to_string());
-                    Err(msg.into())
+                    Err(format!("Cannot create directory: {:?}! Error: {}", p, ex.to_string()).into())
                 },
                 _ => Ok(())
             }

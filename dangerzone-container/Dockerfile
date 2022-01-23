@@ -29,7 +29,6 @@ RUN apk -U upgrade && \
     tesseract-ocr-dev \
     poppler-dev \
     cairo-dev \
-    clang-dev \
     tesseract-ocr \
     tesseract-ocr-data-afr \
     tesseract-ocr-data-ara \
@@ -94,14 +93,7 @@ RUN apk -U upgrade && \
     tesseract-ocr-data-tha \
     tesseract-ocr-data-tur \
     tesseract-ocr-data-ukr \
-    tesseract-ocr-data-vie \
-    #llvm-static llvm-dev \
-    tiff-dev \
-    jpeg-dev \
-    giflib-dev \
-    libwebp-dev \
-    openjpeg-dev \
-    musl-dev
+    tesseract-ocr-data-vie 
 
 COPY --from=builder /root/.cargo/bin/dangerzone-container /usr/local/bin/
 

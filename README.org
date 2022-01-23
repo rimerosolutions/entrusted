@@ -44,12 +44,13 @@ The initial desktop user interface running on MacOS Big Sur.
   - [X] Eliminate CLI calls inside the container, most of the job can likely be done with libraries
   - [X] Minimal Desktop user interface via the [[https://github.com/fltk-rs/fltk-rs][FLTK]] lightweight toolkit
   - [X] Temporarily drop support for Office documents (OpenDocument, MS Office), more research for [[https://github.com/rimerosolutions/rust-calls-java][Java native libraries integration]] (few runtime errors with [[https://www.oracle.com/java/graalvm/][GraalVM]])
-- [ ] UI and other improvements, including tech debt and other issues
-- [ ] Investigate problems with creating Rust binaries with 100% static linking
-- [ ] Improved MacOS support ([[https://github.com/lima-vm/lima][Lima]], additional notes for [[https://github.com/containers/podman][Podman]] current volume limitations, etc.)
-- [ ] Microsoft Windows and BSD testing, maybe all the 3 main BSDs (OpenBSD, FreeBSD & NetBSD) ?
-- [ ] Look at automation scenarios and use-cases (Browser plugin, Http Proxy, etc.)
-- [ ] Etc.
+- [X] UI and other improvements, including tech debt and other issues ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral03][spiral03 branch]])
+- [ ] Improved MacOS support (revisit current [[https://github.com/lima-vm/lima][Lima]] integration, read about mounts/volumes with [[https://github.com/canonical/multipass][Multipass]] and [[https://github.com/containers/podman][Podman]])
+- [ ] Investigate problems with creating Rust binaries with 100% static linking? Is this even possible?
+- [ ] Look at automation scenarios and use-cases (Browser plugin, HTTP Proxy, etc.)
+- [ ] Look at packaging for Linux, MacOS and Windows
+- [ ] Investigate support for BSD (OpenBSD, FreeBSD & NetBSD): jails and similar other options with TCP communications??
+- [ ] TODO
   
     
 

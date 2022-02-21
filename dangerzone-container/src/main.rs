@@ -9,6 +9,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
 use std::ffi::CString;
 use std::fs;
+use cfb; 
 use std::io::{BufReader, Cursor};
 use std::io::prelude::*;
 use std::path::PathBuf;
@@ -16,9 +17,7 @@ use std::time::Instant;
 use zip;
 
 
-const SIG_PPT: [u8; 8] = [ 208, 207, 17, 224, 161, 177, 26, 225 ];
-const SIG_XLS: [u8; 8] = [ 208, 207, 17, 224, 161, 177, 26, 225 ];
-const SIG_DOC: [u8; 8] = [ 208, 207, 17, 224, 161, 177, 26, 225 ];
+const SIG_LEGACY_OFFICE: [u8; 8] = [ 208, 207, 17, 224, 161, 177, 26, 225 ];
 
 
 #[derive(Clone, Debug)]
@@ -211,7 +210,7 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
                         probe_count_odt += 1;
                     } else if of_interest_openxml(zipfile_name) {
                         if zipfile_name == "_rels/.rels" {
-                            let mut zip_reader = BufReader::new(zipfile);                            
+                            let mut zip_reader = BufReader::new(zipfile);
                             let mut tmp_buf = String::new();
                             zip_reader.read_to_string(&mut tmp_buf)?;
 
@@ -227,7 +226,7 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
                         probe_count_ooxml += 1;
                     }
 
-                    
+
                 }
 
                 if probe_count_odt == 2 {
@@ -240,16 +239,20 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
 
         Ok("application/zip")
     }
-    
+
 
     fn probe_mimetype_ole <'a>(buffer: &Vec<u8>) -> &'a str {
-        // TODO @incorrect @incomplete
-        if bytecomp(buffer.to_vec(), SIG_PPT.iter().collect()) {
-            return "application/vnd.ms-powerpoint";
-        } else if bytecomp(buffer.to_vec(), SIG_DOC.iter().collect()) {
-            return "application/msword";
-        } else if bytecomp(buffer.to_vec(), SIG_XLS.iter().collect()) {
-            return "application/vnd.ms-excel";
+        if bytecomp(buffer.to_vec(), SIG_LEGACY_OFFICE.iter().collect()) {
+            if let Ok(file) = cfb::CompoundFile::open(Cursor::new(buffer)) {
+                return match file.root_entry().clsid().to_string().as_str() {
+                    "00020810-0000-0000-c000-000000000046" | "00020820-0000-0000-c000-000000000046" => {
+                        "application/vnd.ms-excel"
+                    },
+                    "00020906-0000-0000-c000-000000000046" => "application/msword",
+                    "64818d10-4f9b-11cf-86ea-00aa00b929e8" => "application/vnd.ms-powerpoint",
+                    _ => "application/x-ole-storage",
+                };
+            }
         }
 
         "application/x-ole-storage"

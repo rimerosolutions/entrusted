@@ -9,7 +9,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
 use std::ffi::CString;
 use std::fs;
-use cfb; 
+use cfb;
 use std::io::{BufReader, Cursor};
 use std::io::prelude::*;
 use std::path::PathBuf;
@@ -225,8 +225,6 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
 
                         probe_count_ooxml += 1;
                     }
-
-
                 }
 
                 if probe_count_odt == 2 {
@@ -279,17 +277,20 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
         mime_type = kind.mime_type();
 
         if mime_type == "application/zip" || mime_type == "application/x-ole-storage" {
-            let f = std::fs::File::open(raw_input_path.clone()).expect("File not found");
-            let mut reader = std::io::BufReader::new(f);
-            let mut buffer: Vec<u8> = vec![];
-            reader.read_to_end(&mut buffer)?;
+            if let Ok(f) = std::fs::File::open(raw_input_path.clone()) {
+                let mut reader = std::io::BufReader::new(f);
+                let mut buffer: Vec<u8> = vec![];
+                reader.read_to_end(&mut buffer)?;
 
-            if mime_type == "application/zip" {
-                if let Ok(new_mime_type) = probe_mimetype_zip(&mut reader) {
-                    mime_type = new_mime_type;
+                if mime_type == "application/zip" {
+                    if let Ok(new_mime_type) = probe_mimetype_zip(&mut reader) {
+                        mime_type = new_mime_type;
+                    }
+                } else if mime_type == "application/x-ole-storage" {
+                    mime_type = probe_mimetype_ole(&buffer);
                 }
-            } else if mime_type == "application/x-ole-storage" {
-                mime_type = probe_mimetype_ole(&buffer);
+            } else {
+                return Err("Cannot find input file at '{}'.", raw_input_path.clone().display());
             }
         }
     } else {

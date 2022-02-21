@@ -12,13 +12,9 @@ You only need a container engine such as Docker or Podman or Lima. Please note t
 
 * How to build this?
 
-At the root of this project, please invoke the command below.
+The package names vary, but the following dependencies are required under =Void Linux=: =leptonica-devel=, =libclang=, =clang=, =tesseract-ocr-devel=, =poppler-glib-devel=.
 
-Libs
-#+begin_src text
-  leptonica-devel libclang clang tesseract-ocr-devel
-                poppler-glib-devel
-#+end_src
+At the root of this project, please invoke the command below.
 
 ** Podman
 

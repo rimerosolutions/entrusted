@@ -243,6 +243,7 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
     
 
     fn probe_mimetype_ole <'a>(buffer: &Vec<u8>) -> &'a str {
+        // TODO @incorrect @incomplete
         if bytecomp(buffer.to_vec(), SIG_PPT.iter().collect()) {
             return "application/vnd.ms-powerpoint";
         } else if bytecomp(buffer.to_vec(), SIG_DOC.iter().collect()) {
@@ -336,7 +337,6 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
                     fs::copy(&raw_input_path, &new_input_path)?;
                     let output_dir_libreoffice = "/tmp/libreoffice";
                     mkdirp(PathBuf::from(output_dir_libreoffice))?;
-                    println!("Input file: {}", raw_input_path.exists());
 
                     if let Some(raw_input_path_dir) = raw_input_path.parent() {
                         let exec_status = Command::new("libreoffice")
@@ -350,8 +350,6 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
                             .stdout(Stdio::inherit())
                             .stderr(Stdio::inherit())
                             .status()?;
-
-                        println!("status is : {:?}", exec_status);
 
                         if !exec_status.success() {
                             return Err("Failed to execute 'libreoffice' process!".into());

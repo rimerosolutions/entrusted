@@ -45,13 +45,13 @@ The initial desktop user interface running on MacOS Big Sur.
   - [X] Minimal Desktop user interface via the [[https://github.com/fltk-rs/fltk-rs][FLTK]] lightweight toolkit
   - [X] Temporarily drop support for Office documents (OpenDocument, MS Office), more research for [[https://github.com/rimerosolutions/rust-calls-java][Java native libraries integration]] (few runtime errors with [[https://www.oracle.com/java/graalvm/][GraalVM]])
 - [X] UI and other improvements, including tech debt and other issues ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral03][spiral03 branch]])
-- [ ] Bring back Office document support via LibreOffice ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral04][spiral04 branch]])
-  - [ ] Add workarounds for mime-type detection library (OpenDocument, OOXML, Legacy office format)
-  - [ ] Update processing logic to use libreoffice for initial PDF conversion, prior further processing
-- [ ] Improved MacOS support (revisit current [[https://github.com/lima-vm/lima][Lima]] integration, read about mounts/volumes with [[https://github.com/canonical/multipass][Multipass]] and [[https://github.com/containers/podman][Podman]])
-- [ ] Investigate if it's possible to build the user interface on BSD systems
+- [X] Bring back Office document support via LibreOffice ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral04][spiral04 branch]])
+  - [X] Add workarounds for mime-type detection library (OpenDocument, OOXML, Legacy office format)
+  - [X] Update processing logic to use libreoffice for initial PDF conversion, prior further processing
+- [ ] Improve MacOS support (revisit current [[https://github.com/lima-vm/lima][Lima]] integration, read about mounts/volumes with [[https://github.com/canonical/multipass][Multipass]] and [[https://github.com/containers/podman][Podman]])
+- [ ] Investigate if it's possible to build the user interface on BSD systems with FTLK
+- [ ] Look at releases for Linux, MacOS and Windows; CLI-only client for BSD systems?
 - [ ] Look at automation scenarios and use-cases (Browser plugin, HTTP Proxy, etc.)
-- [ ] Look at packaging for Linux, MacOS and Windows
 - [ ] Investigate container runtime support for BSD (OpenBSD, FreeBSD & NetBSD): jails and similar options?
 - [ ] TBD
   

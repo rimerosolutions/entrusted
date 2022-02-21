@@ -26,9 +26,11 @@ FROM docker.io/alpine:latest
 RUN apk -U upgrade && \
     apk add \
     leptonica-dev \
+    libreoffice \
     tesseract-ocr-dev \
     poppler-dev \
     cairo-dev \
+    terminus-font ttf-inconsolata ttf-dejavu \
     tesseract-ocr \
     tesseract-ocr-data-afr \
     tesseract-ocr-data-ara \

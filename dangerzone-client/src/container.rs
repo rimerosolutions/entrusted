@@ -21,7 +21,7 @@ where
             reader.lines()
                 .try_for_each(|line| {
                     match tx.send(line?) {
-                        Ok(_) => Ok(()),
+                        Ok(_)   => Ok(()),
                         Err(ex) => Err(ex.into())
                     }
                 })
@@ -192,7 +192,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
             }
             success = true;
         } else {
-            err_msg = "Conversion failed".to_string();
+            err_msg = "Conversion failed!".to_string();
         }
     } else {
         err_msg = "Cannot find container runtime executable!".to_string();

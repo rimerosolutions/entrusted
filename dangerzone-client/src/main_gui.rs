@@ -88,25 +88,36 @@ fn do_show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: Co
         if !button_ok_copy.active() {
             if let Ok(raw_msg) = rx.recv() {
                 let msg = format!("{}\n", raw_msg);
-                    text_buffer_copy.append(msg.as_str());
-                    textdisplay_cmdlog_copy.scroll(text_buffer_copy.count_lines(0, text_buffer_copy.length()), 0);
-                    app::awake();
+                text_buffer_copy.append(msg.as_str());
+                textdisplay_cmdlog_copy.scroll(text_buffer_copy.count_lines(0, text_buffer_copy.length()), 0);
+                app::awake();
             } else {
-                let mut cmdlog_label_color = enums::Color::DarkGreen;
-                let mut cmdlog_label_text = "Close window";
+                let mut cmdlog_label_color = enums::Color::Red;
+                let mut cmdlog_label_text = "Conversion output (Failure)";
+                let mut button_ok_label_text = "Close window";
 
                 match exec_handle.take().map(thread::JoinHandle::join) {
                     Some(exec_handle_result) => {
                         match exec_handle_result {
                             Ok(None) => {
                                 result.swap(true, Ordering::Relaxed);
+                                cmdlog_label_color = enums::Color::DarkGreen;
+                                cmdlog_label_text = "Conversion output (Success)";
 
                                 if open_pdf_after_conversion {
-                                    cmdlog_label_text = "Open safe PDF";
+                                    button_ok_label_text = "Open safe PDF";
                                 }
                             },
-                            _ => {
-                                cmdlog_label_color = enums::Color::Red;
+                            Ok(err_string_opt) => {
+                                if let Some(err_text) = err_string_opt {
+                                    text_buffer_copy.append(err_text.as_str());
+                                    textdisplay_cmdlog_copy.scroll(text_buffer_copy.count_lines(0, text_buffer_copy.length()), 0);
+                                }
+                            },
+                            Err(ex) => {
+                                let err_message = format!("{:?}", ex);
+                                text_buffer_copy.append(err_message.as_str());
+                                textdisplay_cmdlog_copy.scroll(text_buffer_copy.count_lines(0, text_buffer_copy.length()), 0);
                             }
                         }
                     },
@@ -115,7 +126,8 @@ fn do_show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: Co
                     }
                 }
 
-                button_ok_copy.set_label(cmdlog_label_text);
+                button_ok_copy.set_label(button_ok_label_text);
+                textdisplay_cmdlog_copy.set_label(cmdlog_label_text);
                 button_ok_copy.activate();
                 textdisplay_cmdlog_copy.activate();
                 textdisplay_cmdlog_copy.set_label_color(cmdlog_label_color);
@@ -138,10 +150,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let wind_clone = wind.clone();
     wind.make_resizable(true);
 
+    let size_pack_spacing = 10;
+
     let mut input_row = group::Pack::default().with_pos(20, 30)
         .with_size(570, 30)
         .with_type(group::PackType::Horizontal);
-    input_row.set_spacing(10);
+    input_row.set_spacing(size_pack_spacing);
     let input_inputfile = Rc::new(RefCell::new(input::Input::default().with_size(400, 20)));
     input_inputfile.borrow_mut().set_tooltip("Path to document to convert");
     let c_input_inputfile = input_inputfile.clone();
@@ -166,9 +180,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut row_inputloc = group::Pack::default()
         .with_size(570, 40)
-        .below_of(&input_row, 10)
+        .below_of(&input_row, size_pack_spacing)
         .with_type(group::PackType::Horizontal);
-    row_inputloc.set_spacing(10);
+    row_inputloc.set_spacing(size_pack_spacing);
     let mut checkbutton_custom_output = button::CheckButton::default().with_size(160, 20).with_label("Custom output name");
     checkbutton_custom_output.set_tooltip("The safe PDF will be named <input>-safe.pdf by default.");
     checkbutton_custom_output.set_checked(false);
@@ -218,9 +232,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     row_inputloc.end();
 
-    let mut row_openwith = group::Pack::default().with_size(570, 40).below_of(&row_inputloc, 10);
+    let mut row_openwith = group::Pack::default().with_size(570, 40).below_of(&row_inputloc, size_pack_spacing);
     row_openwith.set_type(group::PackType::Horizontal);
-    row_openwith.set_spacing(10);
+    row_openwith.set_spacing(size_pack_spacing);
     let mut checkbutton_openwith = button::CheckButton::default().with_size(340, 20).with_label("Open safe document after converting, using");
 
     let pdf_apps_by_name = list_apps_for_pdfs();
@@ -245,7 +259,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     pdf_viewer_list.borrow_mut().deactivate();
-    
+
     checkbutton_openwith.set_callback({
         move |b| {
             let will_be_read_only = !b.is_checked();
@@ -261,9 +275,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     row_openwith.end();
 
-    let mut row_ocr_language = group::Pack::default().with_size(570, 60).below_of(&row_openwith, 10);
+    let mut row_ocr_language = group::Pack::default().with_size(570, 60).below_of(&row_openwith, size_pack_spacing);
     row_ocr_language.set_type(group::PackType::Horizontal);
-    row_ocr_language.set_spacing(10);
+    row_ocr_language.set_spacing(size_pack_spacing);
     let mut checkbutton_ocr_lang = button::CheckButton::default().with_size(300, 20).with_label("OCR document, language");
     checkbutton_ocr_lang.set_tooltip("Make the PDF searchable, with a given language for OCR (Optical character recognition).");
     checkbutton_ocr_lang.set_checked(true);
@@ -300,9 +314,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
     row_ocr_language.end();
 
-    let mut row_convert_button = group::Pack::default().with_size(500, 40).below_of(&row_ocr_language, 10);
+    let mut row_convert_button = group::Pack::default().with_size(500, 40).below_of(&row_ocr_language, size_pack_spacing);
     row_convert_button.set_type(group::PackType::Horizontal);
-    row_convert_button.set_spacing(10);
+    row_convert_button.set_spacing(size_pack_spacing);
     let mut button_convert = button::Button::default().with_size(200, 20).with_label("Convert to Safe Document");
 
     button_convert.set_callback({
@@ -433,7 +447,7 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
 pub fn list_apps_for_pdfs() -> HashMap<String, String> {
     use freedesktop_entry_parser::parse_entry;
     use std::env;
-
+    
     // See https://wiki.archlinux.org/title/XDG_MIME_Applications for the logic
 
     // TODO is TryExec the best way to get a program name vs 'Exec' and stripping arguments???
@@ -481,7 +495,6 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
                 }
             }
         }
-
     }
 
     let mut additional_xdg_files = vec![
@@ -540,7 +553,7 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
                 let human_value = format!("{}", value);
                 let human_val: Vec<&str> = human_value.split("\"").collect();
 
-                // "C:\ Program Files\ Adobe\Acrobat DC\Acrobat|Acrobat.exe" "%1"
+                // "C:\ Program Files\ Adobe\Acrobat DC\Acrobat\Acrobat.exe" "%1"
                 if human_val.len() > 3 {
                     let human_app_path_with_trailing_backlash = human_val[2];
 

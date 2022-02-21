@@ -14,6 +14,12 @@ You only need a container engine such as Docker or Podman or Lima. Please note t
 
 At the root of this project, please invoke the command below.
 
+Libs
+#+begin_src text
+  leptonica-devel libclang clang tesseract-ocr-devel
+                poppler-glib-devel
+#+end_src
+
 ** Podman
 
 #+begin_src sh

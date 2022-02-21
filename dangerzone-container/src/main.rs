@@ -3,19 +3,28 @@ use std::env;
 use image;
 use infer;
 use lopdf;
+use std::process::{Command, Stdio};
 use poppler::Document;
 use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
 use std::ffi::CString;
 use std::fs;
 use std::io::{BufReader, Cursor};
+use std::io::prelude::*;
 use std::path::PathBuf;
 use std::time::Instant;
+use zip;
+
+
+const SIG_PPT: [u8; 8] = [ 208, 207, 17, 224, 161, 177, 26, 225 ];
+const SIG_XLS: [u8; 8] = [ 208, 207, 17, 224, 161, 177, 26, 225 ];
+const SIG_DOC: [u8; 8] = [ 208, 207, 17, 224, 161, 177, 26, 225 ];
+
 
 #[derive(Clone, Debug)]
 enum ConversionType {
     None,
-    LibreOffice(String),
+    LibreOffice(String, String), // libreoffice_filter, file_extension
     Convert,
 }
 
@@ -36,6 +45,21 @@ macro_rules! timed {
 }
 
 const TESS_DATA_DIR: &str = "/usr/share/tessdata";
+
+fn mkdirp(p: PathBuf) -> Result<(), Box<dyn Error>> {
+    if !p.exists() {
+        let dir_created = fs::create_dir(p.clone());
+
+        match dir_created {
+            Err(ex) => {
+                Err(format!("Cannot create directory: {:?}! {}", p, ex.to_string()).into())
+            },
+            _ => Ok(())
+        }
+    } else {
+        Ok(())
+    }
+}
 
 fn main() -> Result<(), Box<dyn Error>> {
     timed!(|| {
@@ -60,7 +84,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         if skip_ocr {
             imgs_to_pdf(page_count, output_dir_path.clone(), output_dir_path.clone())?;
         } else {
-            let ocr_lang = env::var("OCR_LANGUAGE")?;            
+            let ocr_lang = env::var("OCR_LANGUAGE")?;
             let tess_settings = TessSettings {
                 lang: ocr_lang.as_str(),
                 data_dir: TESS_DATA_DIR,
@@ -88,50 +112,50 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
         ("application/pdf", ConversionType::None),
         (
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            ConversionType::LibreOffice("writer_pdf_Export".to_string()),
+            ConversionType::LibreOffice("writer_pdf_Export".to_string(), "docx".to_string()),
         ),
         (
             "application/vnd.ms-word.document.macroEnabled.12",
-            ConversionType::LibreOffice("writer_pdf_Export".to_string()),
+            ConversionType::LibreOffice("writer_pdf_Export".to_string(), "docm".to_string()),
         ),
         (
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            ConversionType::LibreOffice("calc_pdf_Export".to_string()),
+            ConversionType::LibreOffice("calc_pdf_Export".to_string(),"xlsx".to_string()),
         ),
         (
             "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            ConversionType::LibreOffice("impress_pdf_Export".to_string()),
+            ConversionType::LibreOffice("impress_pdf_Export".to_string(), "pptx".to_string()),
         ),
-        ("application/msword", ConversionType::LibreOffice("writer_pdf_Export".to_string())),
+        ("application/msword", ConversionType::LibreOffice("writer_pdf_Export".to_string(), "doc".to_string())),
         (
             "application/vnd.ms-excel",
-            ConversionType::LibreOffice("calc_pdf_Export".to_string()),
+            ConversionType::LibreOffice("calc_pdf_Export".to_string(), "xls".to_string()),
         ),
         (
             "application/vnd.ms-powerpoint",
-            ConversionType::LibreOffice("impress_pdf_Export".to_string()),
+            ConversionType::LibreOffice("impress_pdf_Export".to_string(), "ppt".to_string()),
         ),
         (
             "application/vnd.oasis.opendocument.text",
-            ConversionType::LibreOffice("writer_pdf_Export".to_string()),
+            ConversionType::LibreOffice("writer_pdf_Export".to_string(), "odt".to_string()),
         ),
         (
             "application/vnd.oasis.opendocument.graphics",
-            ConversionType::LibreOffice("impress_pdf_Export".to_string()),
+            ConversionType::LibreOffice("impress_pdf_Export".to_string(), "odg".to_string()),
         ),
 
         (
             "application/vnd.oasis.opendocument.presentation",
-            ConversionType::LibreOffice("impress_pdf_Export".to_string()),
+            ConversionType::LibreOffice("impress_pdf_Export".to_string(), "odp".to_string()),
         ),
         (
             "application/vnd.oasis.opendocument.spreadsheet",
-            ConversionType::LibreOffice("calc_pdf_Export".to_string()),
+            ConversionType::LibreOffice("calc_pdf_Export".to_string(), "ods".to_string()),
         ),
-        ("image/jpeg", ConversionType::Convert),
-        ("image/gif", ConversionType::Convert),
-        ("image/png", ConversionType::Convert),
-        ("image/tiff", ConversionType::Convert),
+        ("image/jpeg",   ConversionType::Convert),
+        ("image/gif",    ConversionType::Convert),
+        ("image/png",    ConversionType::Convert),
+        ("image/tiff",   ConversionType::Convert),
         ("image/x-tiff", ConversionType::Convert),
     ]
         .iter()
@@ -143,10 +167,127 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
     }
 
     let kind = infer::get_from_path(&raw_input_path)?;
-    let mime_type: &str;
+    let mut mime_type: &str;
+
+    fn of_interest_openxml(name: &str) -> bool {
+        name == "_rels/.rels" || name == "[Content_Types].xml"
+    }
+
+    fn of_interest_opendocument(name: &str) -> bool {
+        name == "mimetype" || name == "content.xml"
+    }
+
+    fn office_file_of_interest(name: &str) -> bool {
+        of_interest_opendocument(name) || of_interest_openxml(name)
+    }
+
+    fn probe_mimetype_zip <'a>(reader: &mut BufReader<std::fs::File>) -> Result<&'a str, Box<dyn Error>> {
+        let mut zip = zip::ZipArchive::new(reader)?;
+        let mut probe_count_odt = 0;
+        let mut probe_count_ooxml = 0;
+        let mut ret_odt  = "";
+        let mut ret_ooxml  = "";
+
+        for i in 0..zip.len() {
+            if let Ok(zipfile) = zip.by_index(i) {
+                let zipfile_name: &str = zipfile.name();
+
+                if office_file_of_interest(zipfile_name) {
+                    if of_interest_opendocument(zipfile_name) {
+                        if zipfile.name() == "mimetype" {
+                            let mut zip_reader = BufReader::new(zipfile);
+                            let mut tmp_buf = String::new();
+                            zip_reader.read_to_string(&mut tmp_buf)?;
+
+                            if tmp_buf.find("application/vnd.oasis.opendocument.text").is_some() {
+                                ret_odt = "application/vnd.oasis.opendocument.text";
+                            } else if tmp_buf.find("application/vnd.oasis.opendocument.spreadsheet").is_some() {
+                                ret_odt = "application/vnd.oasis.opendocument.spreadsheet";
+                            } else if tmp_buf.find("application/vnd.oasis.opendocument.presentation").is_some() {
+                                ret_odt = "application/vnd.oasis.opendocument.presentation";
+                            }
+                        }
+
+                        probe_count_odt += 1;
+                    } else if of_interest_openxml(zipfile_name) {
+                        if zipfile_name == "_rels/.rels" {
+                            let mut zip_reader = BufReader::new(zipfile);                            
+                            let mut tmp_buf = String::new();
+                            zip_reader.read_to_string(&mut tmp_buf)?;
+
+                            if tmp_buf.find("ppt/presentation.xml").is_some() {
+                                ret_ooxml = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+                            } else if tmp_buf.find("word/document.xml").is_some() {
+                                ret_ooxml = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+                            } else if tmp_buf.find("xl/workbook.xml").is_some() {
+                                ret_ooxml = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                            }
+                        }
+
+                        probe_count_ooxml += 1;
+                    }
+
+                    
+                }
+
+                if probe_count_odt == 2 {
+                    return Ok(ret_odt);
+                } else if probe_count_ooxml == 2 {
+                    return Ok(ret_ooxml);
+                }
+            }
+        }
+
+        Ok("application/zip")
+    }
+    
+
+    fn probe_mimetype_ole <'a>(buffer: &Vec<u8>) -> &'a str {
+        if bytecomp(buffer.to_vec(), SIG_PPT.iter().collect()) {
+            return "application/vnd.ms-powerpoint";
+        } else if bytecomp(buffer.to_vec(), SIG_DOC.iter().collect()) {
+            return "application/msword";
+        } else if bytecomp(buffer.to_vec(), SIG_XLS.iter().collect()) {
+            return "application/vnd.ms-excel";
+        }
+
+        "application/x-ole-storage"
+    }
+
+    fn bytecomp(input: Vec<u8>, sig: Vec<&u8>) -> bool {
+        let input_len = input.len();
+
+        for i in 0..sig.len() {
+            if i > input_len {
+                return false;
+            }
+
+            if input[i] != *sig[i] {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 
     if let Some(kind) = kind {
         mime_type = kind.mime_type();
+
+        if mime_type == "application/zip" || mime_type == "application/x-ole-storage" {
+            let f = std::fs::File::open(raw_input_path.clone()).expect("File not found");
+            let mut reader = std::io::BufReader::new(f);
+            let mut buffer: Vec<u8> = vec![];
+            reader.read_to_end(&mut buffer)?;
+
+            if mime_type == "application/zip" {
+                if let Ok(new_mime_type) = probe_mimetype_zip(&mut reader) {
+                    mime_type = new_mime_type;
+                }
+            } else if mime_type == "application/x-ole-storage" {
+                mime_type = probe_mimetype_ole(&buffer);
+            }
+        }
     } else {
         return Err("Cannot determine input mime-type! Does the input have a known file extension?".into());
     }
@@ -173,10 +314,12 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
             match conversion_type {
                 ConversionType::None => {
                     println!("+ Copying PDF input to {}.", filename_pdf);
+
                     fs::copy(raw_input_path, PathBuf::from(filename_pdf.clone()))?;
                 }
                 ConversionType::Convert => {
                     println!("+ Converting input image to PDF");
+
                     let img_format = match mime_type {
                         "image/png"    => Ok(image::ImageFormat::Png),
                         "image/jpeg"   => Ok(image::ImageFormat::Jpeg),
@@ -187,8 +330,50 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
                     }?;
                     img_to_pdf(img_format, raw_input_path, PathBuf::from(filename_pdf.clone()))?;
                 }
-                ConversionType::LibreOffice(_) => {
-                    return Err("+ Converting to PDF using LibreOffice is not supported yet!".into());
+                ConversionType::LibreOffice(output_filter, fileext) => {
+                    println!("Converting to PDF using LibreOffice with filter: {}", output_filter);
+                    let new_input_path = PathBuf::from(format!("/tmp/input.{}", fileext));
+                    fs::copy(&raw_input_path, &new_input_path)?;
+                    let output_dir_libreoffice = "/tmp/libreoffice";
+                    mkdirp(PathBuf::from(output_dir_libreoffice))?;
+                    println!("Input file: {}", raw_input_path.exists());
+
+                    if let Some(raw_input_path_dir) = raw_input_path.parent() {
+                        let exec_status = Command::new("libreoffice")
+                            .current_dir(raw_input_path_dir)
+                            .arg("--headless")
+                            .arg("--convert-to")
+                            .arg(format!("pdf:{}", output_filter))
+                            .arg("--outdir")
+                            .arg(output_dir_libreoffice)
+                            .arg(new_input_path)
+                            .stdout(Stdio::inherit())
+                            .stderr(Stdio::inherit())
+                            .status()?;
+
+                        println!("status is : {:?}", exec_status);
+
+                        if !exec_status.success() {
+                            return Err("Failed to execute 'libreoffice' process!".into());
+                        }
+
+                    }
+
+                    let mut pdf_file_moved = false;
+
+                    for f in fs::read_dir(output_dir_libreoffice)? {
+                        let f_path = f?.path();
+                        let f_path_name = format!("{}", f_path.display());
+
+                        if f_path_name.ends_with(".pdf") {
+                            move_file_to_dir(f_path, PathBuf::from(filename_pdf.clone()))?;
+                            pdf_file_moved = true;
+                        }
+                    }
+
+                    if !pdf_file_moved {
+                        return Err("Could not find office document PDF result!".into());
+                    }
                 }
             }
         } else {
@@ -324,8 +509,8 @@ fn split_pdf_pages_into_images(src_path: PathBuf, dest_folder: PathBuf) -> Resul
     font_options.set_hint_metrics(cairo::HintMetrics::Default);
     font_options.set_hint_style(cairo::HintStyle::Slight);
 
-    let image_dpi: f64  = 150.0;
-    let target_dpi: f64 = 72.0;
+    let image_dpi  : f64 = 150.0;
+    let target_dpi : f64 = 72.0;
     let zoom_ratio = image_dpi / target_dpi;
 
     for i in 0..page_num {

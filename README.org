@@ -52,6 +52,7 @@ The initial desktop user interface running on MacOS Big Sur.
 - [X] Bring back Office document support via LibreOffice ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral04][spiral04 branch]])
   - [X] Add workarounds for mime-type detection library (OpenDocument, OOXML, Legacy office format)
   - [X] Update processing logic to use libreoffice for initial PDF conversion, prior further processing
+- [X] Documentation updates and compilation error fix ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral05][spiral05 branch]]) 
 - [ ] Improve MacOS support (revisit current [[https://github.com/lima-vm/lima][Lima]] integration, read about mounts/volumes with [[https://github.com/canonical/multipass][Multipass]] and [[https://github.com/containers/podman][Podman]])
 - [ ] Investigate if it's possible to build the graphical user interface on BSD systems with FTLK
 - [ ] Look at releases for Linux, MacOS and Windows; CLI-only client for BSD systems?

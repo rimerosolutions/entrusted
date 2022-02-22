@@ -11,7 +11,7 @@ use std::cmp;
 use std::process::Command;
 use which;
 use fltk::{
-    app, button, prelude::*, group, window, dialog, input, misc, enums, text, browser
+    app, button, prelude::*, group, window, dialog, input, misc, enums, text, browser, frame
 };
 
 mod common;
@@ -21,6 +21,7 @@ pub struct ConversionParams {
     pub path_in: PathBuf,
     pub path_out: PathBuf,
     pub ocr_lang: Option<String>,
+    pub oci_image: String,
 }
 
 pub fn show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: ConversionParams, open_pdf_after_conversion: bool) -> bool {
@@ -74,7 +75,7 @@ fn do_show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: Co
     let (tx, rx) = mpsc::channel();
 
     let mut exec_handle = Some(thread::spawn(move || {
-        match container::convert(conversion_params.path_in, conversion_params.path_out, None, conversion_params.ocr_lang, tx) {
+        match container::convert(conversion_params.path_in, conversion_params.path_out, Some(conversion_params.oci_image), conversion_params.ocr_lang, tx) {
             Ok(_) => None,
             Err(ex) => Some(format!("{}", ex))
         }
@@ -144,7 +145,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let app = app::App::default().with_scheme(app::Scheme::Gleam);
 
     let mut wind = window::Window::default()
-        .with_size(600, 300)
+        .with_size(600, 360)
         .center_screen()
         .with_label("Dangerzone");
     let wind_clone = wind.clone();
@@ -314,7 +315,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
     row_ocr_language.end();
 
-    let mut row_convert_button = group::Pack::default().with_size(500, 40).below_of(&row_ocr_language, size_pack_spacing);
+    let mut row_oci_image = group::Pack::default().with_size(550, 40).below_of(&row_ocr_language, size_pack_spacing);
+    row_oci_image.set_type(group::PackType::Horizontal);
+    row_oci_image.set_spacing(size_pack_spacing);
+    let mut output_oci_image = frame::Frame::default().with_size(100, 20).with_pos(0, 0);
+    output_oci_image.set_label("OCI Image");
+    let mut input_oci_image = input::Input::default().with_size(440, 20);
+    input_oci_image.set_value(common::CONTAINER_IMAGE_NAME);
+    row_oci_image.end();
+    
+    let mut row_convert_button = group::Pack::default().with_size(500, 40).below_of(&row_oci_image, size_pack_spacing);
     row_convert_button.set_type(group::PackType::Horizontal);
     row_convert_button.set_spacing(size_pack_spacing);
     let mut button_convert = button::Button::default().with_size(200, 20).with_label("Convert to Safe Document");
@@ -368,8 +378,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                         None
                     };
 
+                    let oci_image = input_oci_image.value();
                     let conversion_params = ConversionParams {
-                        path_in, path_out, ocr_lang,
+                        path_in, path_out, ocr_lang, oci_image
                     };
 
                     if err_msg.is_empty() {

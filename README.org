@@ -2,18 +2,22 @@
 
 * What is this?
 
-This repository will explore (*possibly*) other approaches for [[https://dangerzone.rocks/][Dangerzone]], a tool built by [[https://github.com/micahflee][Michah Lee]].
-- The code will be maintained more or less like a *lightweight course*(??), via different Git branches (See /Envisioned Roadmap/ section).
-- I intend to deploy the code as a service on my home network at some point in time (old laptop or a [[https://en.wikipedia.org/wiki/Raspberry_Pi][Raspberry Pi]] maybe)
+Dangerzone allows converting suspiciuous documents into safe and trusted PDFs, without worrying too much about viruses or evil macros.
+- This repository is a Rust port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation/learning purposes
+- Similarly to the original Dangerzone tool, documents or images are converted inside a "sandbox"
 
-Dangerzone allows converting suspiciuous documents (images, office, pdfs) into safe and trusted PDFs, without worrying too much about viruses or evil macros.
+Below is a high-level architecture overview.
 
 [[./screenshots/image.png]]
 
 * What is required?
 
-- *Operating System*: Linux or MacOS. Windows and BSD support will be tested soon enough.
-- *Container Runtime*: [[https://podman.io/][Podman]], [[https://www.docker.com/][Docker]] or [[https://github.com/lima-vm/lima][Lima]]. For MacOS, please use either Docker or Lima, as Podman on MacOS has [[https://github.com/containers/podman/issues/8016][limitations/annoyances]] around volumes.
+- *Operating System*: Linux and MacOS haven been tested.
+  - Windows and BSD support will be tested soon enough.
+  - Under BSD, the UI is likely not available due to technical challenges around code compilation (FTLK UI toolkit).
+- *Container Runtime*: [[https://podman.io/][Podman]], [[https://www.docker.com/][Docker]] or [[https://github.com/lima-vm/lima][Lima]].
+  - For MacOS, please use either Docker or Lima, as Podman on MacOS has [[https://github.com/containers/podman/issues/8016][limitations/annoyances]] around volumes.
+  - Multipass might be another option in the future. On BSD
 
 * Why this?
 
@@ -48,8 +52,9 @@ The initial desktop user interface running on MacOS Big Sur.
 - [X] Bring back Office document support via LibreOffice ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral04][spiral04 branch]])
   - [X] Add workarounds for mime-type detection library (OpenDocument, OOXML, Legacy office format)
   - [X] Update processing logic to use libreoffice for initial PDF conversion, prior further processing
+- [X] Documentation updates and compilation error fix ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral05][spiral05 branch]]) 
 - [ ] Improve MacOS support (revisit current [[https://github.com/lima-vm/lima][Lima]] integration, read about mounts/volumes with [[https://github.com/canonical/multipass][Multipass]] and [[https://github.com/containers/podman][Podman]])
-- [ ] Investigate if it's possible to build the user interface on BSD systems with FTLK
+- [ ] Investigate if it's possible to build the graphical user interface on BSD systems with FTLK
 - [ ] Look at releases for Linux, MacOS and Windows; CLI-only client for BSD systems?
 - [ ] Look at automation scenarios and use-cases (Browser plugin, HTTP Proxy, etc.)
 - [ ] Investigate container runtime support for BSD (OpenBSD, FreeBSD & NetBSD): jails and similar options?

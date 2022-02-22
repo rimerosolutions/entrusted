@@ -7,8 +7,7 @@ RUN apk -U upgrade && \
     tesseract-ocr-dev \
     poppler-dev \
     cairo-dev \
-    clang gcc \
-    clang-dev gcc cargo rust \
+    clang gcc clang-dev gcc cargo rust \
     tiff-dev \
     jpeg-dev \
     giflib-dev \

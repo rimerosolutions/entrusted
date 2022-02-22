@@ -16,9 +16,7 @@ use std::path::PathBuf;
 use std::time::Instant;
 use zip;
 
-
 const SIG_LEGACY_OFFICE: [u8; 8] = [ 208, 207, 17, 224, 161, 177, 26, 225 ];
-
 
 #[derive(Clone, Debug)]
 enum ConversionType {
@@ -180,7 +178,7 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
         of_interest_opendocument(name) || of_interest_openxml(name)
     }
 
-    fn probe_mimetype_zip <'a>(reader: &mut BufReader<std::fs::File>) -> Result<&'a str, Box<dyn Error>> {
+    fn probe_mimetype_zip <'a>(reader: &mut BufReader<fs::File>) -> Result<&'a str, Box<dyn Error>> {
         let mut zip = zip::ZipArchive::new(reader)?;
         let mut probe_count_odt = 0;
         let mut probe_count_ooxml = 0;
@@ -238,7 +236,6 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
         Ok("application/zip")
     }
 
-
     fn probe_mimetype_ole <'a>(buffer: &Vec<u8>) -> &'a str {
         if bytecomp(buffer.to_vec(), SIG_LEGACY_OFFICE.iter().collect()) {
             if let Ok(file) = cfb::CompoundFile::open(Cursor::new(buffer)) {
@@ -260,24 +257,19 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
         let input_len = input.len();
 
         for i in 0..sig.len() {
-            if i > input_len {
-                return false;
-            }
-
-            if input[i] != *sig[i] {
+            if i > input_len || input[i] != *sig[i] {
                 return false;
             }
         }
 
-        return true;
+        true
     }
-
 
     if let Some(kind) = kind {
         mime_type = kind.mime_type();
 
         if mime_type == "application/zip" || mime_type == "application/x-ole-storage" {
-            if let Ok(f) = std::fs::File::open(raw_input_path.clone()) {
+            if let Ok(f) = fs::File::open(raw_input_path.clone()) {
                 let mut reader = std::io::BufReader::new(f);
                 let mut buffer: Vec<u8> = vec![];
                 reader.read_to_end(&mut buffer)?;
@@ -290,7 +282,7 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
                     mime_type = probe_mimetype_ole(&buffer);
                 }
             } else {
-                return Err("Cannot find input file at '{}'.", raw_input_path.clone().display());
+                return Err(format!("Cannot find input file at '{}'.", raw_input_path.clone().display()).into());
             }
         }
     } else {
@@ -358,7 +350,6 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
                         if !exec_status.success() {
                             return Err("Failed to execute 'libreoffice' process!".into());
                         }
-
                     }
 
                     let mut pdf_file_moved = false;

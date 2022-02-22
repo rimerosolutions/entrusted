@@ -30,7 +30,7 @@ Below is a high-level architecture overview.
 
 ** Desktop User Interface
 
-The initial desktop user interface running on MacOS Big Sur.
+The initial desktop user interface running on MacOS Monterey.
 
 [[./screenshots/gui-screenshot.png]]
 

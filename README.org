@@ -3,7 +3,7 @@
 * What is this?
 
 Dangerzone allows converting suspiciuous documents into safe and trusted PDFs, without worrying too much about viruses or evil macros.
-- This repository is a Rust port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation/learning purposes
+- This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation purposes
 - Similarly to the original Dangerzone tool, documents or images are converted inside a "sandbox"
 
 Below is a high-level architecture overview.
@@ -12,19 +12,19 @@ Below is a high-level architecture overview.
 
 * What is required?
 
-- *Operating System*: Linux and MacOS haven been tested.
-  - Windows and BSD support will be tested soon enough.
-  - Under BSD, the UI is likely not available due to technical challenges around code compilation (FTLK UI toolkit).
-- *Container Runtime*: [[https://podman.io/][Podman]], [[https://www.docker.com/][Docker]] or [[https://github.com/lima-vm/lima][Lima]].
-  - For MacOS, please use either Docker or Lima, as Podman on MacOS has [[https://github.com/containers/podman/issues/8016][limitations/annoyances]] around volumes.
-  - Multipass might be another option in the future. On BSD
+- *Operating System*: Linux and MacOS haven been tested
+  - Windows and BSD support will be tested soon enough
+  - Under BSD, the UI is likely not available due to technical challenges (FTLK UI compilation)
+- *Container Runtime*: [[https://podman.io/][Podman]], [[https://www.docker.com/][Docker]] or [[https://github.com/lima-vm/lima][Lima]]
+  - For MacOS, /please/ use either Docker or Lima, as Podman on MacOS has [[https://github.com/containers/podman/issues/8016][annoyances]] for volumes
+  - The program doesn't auto-configure remote mounts (i.e. [[https://docs.podman.io/en/latest/markdown/podman-machine.1.html][Podman machine]] or [[https://multipass.run/docs][Multipass]])
 
 * Why this?
 
-- *Personal learning*: [[https://www.rust-lang.org/][Rust]] is reasonably high-level and is not garbage collected.
-- *Self-Contained tooling with no scripting*: As much as possible there should be no scripting, including running external programs (except for the frontend).
+- *Personal learning*: [[https://www.rust-lang.org/][Rust]] is reasonably high-level and is not garbage collected
+- *Self-Contained tooling with no scripting*
 - *Workflow automation exploration*: Browser plugin, VM orchestration, Web Service, etc.
-- *Optimization opportunities*: Reduced container image size with very low computer resources requirements.
+- *Optimization opportunities*: Reduced container image size with very low computer resources requirements
 
 * What does it look like?
 
@@ -52,9 +52,10 @@ The initial desktop user interface running on MacOS Monterey.
 - [X] Bring back Office document support via LibreOffice ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral04][spiral04 branch]])
   - [X] Add workarounds for mime-type detection library (OpenDocument, OOXML, Legacy office format)
   - [X] Update processing logic to use libreoffice for initial PDF conversion, prior further processing
-- [X] Documentation updates and compilation error fix ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral05][spiral05 branch]]) 
-- [ ] Improve MacOS support (revisit current [[https://github.com/lima-vm/lima][Lima]] integration, read about mounts/volumes with [[https://github.com/canonical/multipass][Multipass]] and [[https://github.com/containers/podman][Podman]])
-- [ ] Investigate if it's possible to build the graphical user interface on BSD systems with FTLK
+- [X] Documentation updates and compilation error fix ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral05][spiral05 branch]])
+- [ ] Revisit replacement of LibreOffice command-line invocation with Java native code  
+- [ ] Revisit remote mounts options for [[https://github.com/canonical/multipass][Multipass]] and [[https://github.com/containers/podman][Podman]]
+- [ ] Investigate if it's possible to build the GUI under BSD systems
 - [ ] Look at releases for Linux, MacOS and Windows; CLI-only client for BSD systems?
 - [ ] Look at automation scenarios and use-cases (Browser plugin, HTTP Proxy, etc.)
 - [ ] Investigate container runtime support for BSD (OpenBSD, FreeBSD & NetBSD): jails and similar options?

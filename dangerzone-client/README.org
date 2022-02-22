@@ -24,8 +24,6 @@ Please refer to the top level folder for desktop or command-line screenshots.
 
 The user interface is built with the [[https://www.fltk.org/][FLTK]] toolkit because it's lightweight and /relatively/ easy to use.
 
-The user interface doesn't have all the command-line application features (=OCI image= location, etc.).
-
 #+begin_src sh
 ./target/debug/dangerzone-gui
 #+end_src

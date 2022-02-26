@@ -28,7 +28,7 @@ where
         })
 }
 
-fn exec_container(container_program: common::ContainerProgram, args: Vec<&str>, tx: Sender<String>) -> Result<(), Box<dyn Error>> {
+fn exec_crt_command(container_program: common::ContainerProgram, args: Vec<&str>, tx: Sender<String>, capture_output: bool) -> Result<(), Box<dyn Error>> {
     let rt_path = container_program.exec_path;
     let sub_commands = container_program.sub_commands;
     let rt_executable: &str = &format!("{}", rt_path.display());
@@ -45,14 +45,16 @@ fn exec_container(container_program: common::ContainerProgram, args: Vec<&str>, 
         .stderr(Stdio::piped())
         .spawn()?;
 
-    let stdout_handles = vec![
-        read_output("dangerzone.stdout",  child.stdout.take().expect("!stdout"), tx.clone()),
-        read_output("dangerzone.stderr" , child.stderr.take().expect("!stderr"), tx.clone()),
-    ];
+    if capture_output {
+        let stdout_handles = vec![
+            read_output("dangerzone.stdout",  child.stdout.take().expect("!stdout"), tx.clone()),
+            read_output("dangerzone.stderr" , child.stderr.take().expect("!stderr"), tx.clone()),
+        ];
 
-    for stdout_handle in stdout_handles {
-        if let Err(ex) = stdout_handle?.join() {
-            return Err(format!("Failed to capture command output! {:?}", ex).into());
+        for stdout_handle in stdout_handles {
+            if let Err(ex) = stdout_handle?.join() {
+                return Err(format!("Failed to capture command output! {:?}", ex).into());
+            }
         }
     }
 
@@ -137,6 +139,17 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
 
     // TODO for Lima we assume the default VM instance, that might not be true all the time...
     if let Some(container_rt) = common::container_runtime_path() {
+        let mut ensure_image_args = vec!["inspect", container_image_name.as_str()];
+        tx.send("Checking if dangerzone container image exists".to_string())?;
+
+        if let Err(ex) = exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone(), false) {
+            tx.send(format!("Cannot find dangerzone container image! {}", ex.to_string()))?;
+            ensure_image_args = vec!["pull", container_image_name.as_str()];
+            tx.send("Please wait, pulling downloading image......".to_string())?;
+            exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone(), false)?;
+            tx.send("Download completed......".to_string())?;
+        }
+
         let mut pixels_to_pdf_args = vec![];
         pixels_to_pdf_args.append(&mut run_args.clone());
 
@@ -175,7 +188,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
             common::CONTAINER_IMAGE_EXE
         ]);
 
-        if let Ok(_) = exec_container(container_rt, pixels_to_pdf_args, tx) {
+        if let Ok(_) = exec_crt_command(container_rt, pixels_to_pdf_args, tx, true) {
             if output_path.exists() {
                 fs::remove_file(output_path.clone())?;
             }
@@ -199,7 +212,15 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
             err_msg = "Conversion failed!".to_string();
         }
     } else {
-        err_msg = "Cannot find container runtime executable!".to_string();
+        err_msg.push_str("Cannot find any container runtime executable! ");
+
+        if cfg!(any(target_os="windows")) {
+            err_msg.push_str("Please install Docker.");
+        } else if cfg!(any(target_os="macos")) {
+            err_msg.push_str("Please install Docker or Lima.");
+        } else {
+            err_msg.push_str("Please install Podman.");
+        }
     }
 
     match success {

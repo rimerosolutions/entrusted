@@ -9,7 +9,6 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use std::cmp;
 use std::process::Command;
-use which;
 use fltk::{
     app, button, prelude::*, group, window, dialog, input, misc, enums, text, browser, frame
 };
@@ -236,10 +235,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut row_openwith = group::Pack::default().with_size(570, 40).below_of(&row_inputloc, size_pack_spacing);
     row_openwith.set_type(group::PackType::Horizontal);
     row_openwith.set_spacing(size_pack_spacing);
-    let mut checkbutton_openwith = button::CheckButton::default().with_size(340, 20).with_label("Open safe document after converting, using");
+    let mut checkbutton_openwith = button::CheckButton::default().with_size(295, 20).with_label("Open safe document after converting, using");
 
     let pdf_apps_by_name = list_apps_for_pdfs();
     let pdf_viewer_list = Rc::new(RefCell::new(misc::InputChoice::default().with_size(200, 20)));
+    let pdf_viewer_list_copy = pdf_viewer_list.clone();
     let cc_pdf_viewer_list = pdf_viewer_list.clone();
     let mut pdf_viewer_app_names = Vec::with_capacity(pdf_apps_by_name.len());
 
@@ -261,6 +261,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     pdf_viewer_list.borrow_mut().deactivate();
 
+    let button_browse_for_pdf_app = Rc::new(RefCell::new(button::Button::default().with_size(35, 20).with_label("..")));
+    let button_browse_for_pdf_app_copy = button_browse_for_pdf_app.clone();
+    button_browse_for_pdf_app.borrow_mut().set_tooltip("Browse for PDF viewer program");
+    button_browse_for_pdf_app.borrow_mut().deactivate();
+    
     checkbutton_openwith.set_callback({
         move |b| {
             let will_be_read_only = !b.is_checked();
@@ -268,12 +273,31 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             if will_be_read_only {
                 pdf_viewer_list.borrow_mut().deactivate();
+                button_browse_for_pdf_app_copy.borrow_mut().deactivate();
             } else {
                 pdf_viewer_list.borrow_mut().activate();
+                button_browse_for_pdf_app_copy.borrow_mut().activate();
             };
         }
     });
+    
+    button_browse_for_pdf_app.borrow_mut().set_callback({
+        move |_| {
+            let mut dlg = dialog::FileDialog::new(dialog::FileDialogType::BrowseFile);
+            dlg.set_title("Select PDF viewer program");
+            dlg.show();
 
+            let selected_filename = dlg.filename();
+
+            if !selected_filename.as_os_str().is_empty() {
+                let path_name = format!("{}", dlg.filename().display());
+                let path_str = path_name.as_str();
+                pdf_viewer_list_copy.borrow_mut().set_value(path_str);
+            }
+        }
+    });
+    
+    
     row_openwith.end();
 
     let mut row_ocr_language = group::Pack::default().with_size(570, 60).below_of(&row_openwith, size_pack_spacing);
@@ -323,7 +347,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut input_oci_image = input::Input::default().with_size(440, 20);
     input_oci_image.set_value(common::CONTAINER_IMAGE_NAME);
     row_oci_image.end();
-    
+
     let mut row_convert_button = group::Pack::default().with_size(500, 40).below_of(&row_oci_image, size_pack_spacing);
     row_convert_button.set_type(group::PackType::Horizontal);
     row_convert_button.set_spacing(size_pack_spacing);
@@ -458,7 +482,7 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
 pub fn list_apps_for_pdfs() -> HashMap<String, String> {
     use freedesktop_entry_parser::parse_entry;
     use std::env;
-    
+
     // See https://wiki.archlinux.org/title/XDG_MIME_Applications for the logic
 
     // TODO is TryExec the best way to get a program name vs 'Exec' and stripping arguments???
@@ -538,45 +562,58 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
     ret
 }
 
-// TODO windows support hasn't really been tested at all for this part and more generally speaking...
+// TODO windows support hasn't been tested that much...
 #[cfg(target_os="windows")]
 pub fn list_apps_for_pdfs() -> HashMap<String, String> {
-    use winreg::enums::*;
-    use winreg::RegKey;
+    let mut ret = HashMap::new();
+    let hkcr = RegKey::predef(HKEY_CLASSES_ROOT);
+    let open_with_list_hkcr_res = hkcr.open_subkey(".pdf\\OpenWithProgids");
 
-    let hkcr = RegKey::pref(HKEY_CLASSES_ROOT);
-    let open_with_list_hkcr = hkcr.open_subkey(".pdf\\OpenWithProgids");
-    let mut candidates = HashSet::new();
+    fn friendly_app_name(regkey: &RegKey, name: String) -> String {
+        let app_id= format!("{}\\Application", name);
 
-    for (name, _) in open_with_list_hkcr.enum_values().map(|x| x.unwrap()) {
-        if !name.is_empty() {
-            candidates.insert(name);
+        if let Ok(app_application_regkey) = regkey.open_subkey(app_id) {
+            let app_result: std::io::Result<String> = app_application_regkey.get_value("ApplicationName");
+            if let Ok(ret) =  app_result {
+                return ret;
+            }
         }
+
+        name
     }
 
-    let mut ret = HashMap::with_capacity(app_name_candidates.len());
+    if let Ok(open_with_list_hkcr) = open_with_list_hkcr_res {
+        let mut candidates = HashSet::new();
 
-    for name in app_name_candidates.iter() {
-        let app_id = format!("{}\\shell\\Open\\command", name);
+        for (name, v) in open_with_list_hkcr.enum_values().map(|x| x.unwrap()) {
+            if !name.is_empty() && v.vtype != RegType::REG_NONE {
+                candidates.insert(name);
+            }
+        }
 
-        if let Ok(app_application_regkey) = hkcr.open_subkey(app_id) {
-            for (_, value) in app_application_regkey.enum_values().map(|x| x.unwrap()) {
-                let human_value = format!("{}", value);
-                let human_val: Vec<&str> = human_value.split("\"").collect();
+        for name in candidates.iter() {
+            let app_id = format!("{}\\shell\\Open\\command", name);
+            let new_name = friendly_app_name(&hkcr, name.clone());
 
-                // "C:\ Program Files\ Adobe\Acrobat DC\Acrobat\Acrobat.exe" "%1"
-                if human_val.len() > 3 {
-                    let human_app_path_with_trailing_backlash = human_val[2];
+            if let Ok(app_application_regkey) = hkcr.open_subkey(app_id) {
+                for (_, value) in app_application_regkey.enum_values().map(|x| x.unwrap()) {
+                    let human_value = format!("{}", value);
+                    let human_val: Vec<&str> = human_value.split("\"").collect();
 
-                    if human_app_path_with_trailing_backlash.ends_with("\\") {
-                        let path_len = human_app_path_with_trailing_backlash.len() - 1;
-                        let updated_path = human_app_path_with_trailing_backlash[..path_len].to_string();
+                    // "C:\ Program Files\ Adobe\Acrobat DC\Acrobat\Acrobat.exe" "%1"
+                    if human_val.len() > 3 {
+                        let human_app_path_with_trailing_backlash = human_val[2];
 
-                        if PathBuf::from(&updated_path).exists() {
-                            ret.insert(name, updated_path);
+                        if human_app_path_with_trailing_backlash.ends_with("\\") {
+                            let path_len = human_app_path_with_trailing_backlash.len() - 1;
+                            let updated_path = human_app_path_with_trailing_backlash[..path_len].to_string();
+
+                            if PathBuf::from(&updated_path).exists() {
+                                ret.insert(new_name.clone(), updated_path);
+                            }
                         }
-                    }
 
+                    }
                 }
             }
         }

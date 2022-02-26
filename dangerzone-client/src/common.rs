@@ -3,7 +3,7 @@ use std::error::Error;
 use std::path::PathBuf;
 use which;
 
-pub const CONTAINER_IMAGE_NAME: &str = "localhost/dangerzone-converter";
+pub const CONTAINER_IMAGE_NAME: &str = "docker.io/uycyjnzgntrn/dangerzone-converter";
 pub const CONTAINER_IMAGE_EXE: &str = "/usr/local/bin/dangerzone-container";
 
 pub fn ocr_lang_key_by_name() -> HashMap<&'static str, &'static str> {
@@ -178,6 +178,7 @@ fn executable_find(exe_name: &str) -> Option<PathBuf> {
     }
 }
 
+#[derive(Clone)]
 pub struct ContainerProgram<'a>{
     pub exec_path: PathBuf,
     pub sub_commands: Vec<&'a str>,

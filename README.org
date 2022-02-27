@@ -53,12 +53,11 @@ The initial desktop user interface running on MacOS Monterey.
   - [X] Add workarounds for mime-type detection library (OpenDocument, OOXML, Legacy office format)
   - [X] Update processing logic to use libreoffice for initial PDF conversion, prior further processing
 - [X] Documentation updates and compilation error fix ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral05][spiral05 branch]])
-- [X] Documentation updates and compilation error fix ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral06][spiral06 branch]])
-- [ ] Revisit remote mounts options for [[https://github.com/canonical/multipass][Multipass]] and [[https://github.com/containers/podman][Podman]]
-- [ ] Investigate if it's possible to build the GUI under BSD systems
+- [X] Usability improvements and slightly better MS Windows support ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral06][spiral06 branch]])
 - [ ] Look at releases for Linux, MacOS and Windows; CLI-only client for BSD systems?
-- [ ] Look at automation scenarios and use-cases (Browser plugin, HTTP Proxy, etc.)
 - [ ] Investigate container runtime support for BSD (OpenBSD, FreeBSD & NetBSD): jails and similar options?
+- [ ] Revisit remote mounts options for [[https://github.com/canonical/multipass][Multipass]] and [[https://github.com/containers/podman][Podman]]
+- [ ] Look at automation scenarios and use-cases (Browser plugin, HTTP Proxy, etc.)
 - [ ] TBD
   
     

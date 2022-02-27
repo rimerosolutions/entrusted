@@ -145,7 +145,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
         if let Err(ex) = exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone(), false) {
             tx.send(format!("Cannot find dangerzone container image! {}", ex.to_string()))?;
             ensure_image_args = vec!["pull", container_image_name.as_str()];
-            tx.send("Please wait, pulling downloading image......".to_string())?;
+            tx.send("Please wait, downloading image...".to_string())?;
             exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone(), false)?;
             tx.send("Download completed......".to_string())?;
         }

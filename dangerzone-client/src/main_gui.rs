@@ -139,14 +139,15 @@ fn do_show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: Co
     result.load(Ordering::Relaxed)
 }
 
-
 fn main() -> Result<(), Box<dyn Error>> {
     let app = app::App::default().with_scheme(app::Scheme::Gleam);
-
+    let app_version = common::APP_VERSION.unwrap_or("unknown");
+    let wind_label_string = format!("Dangerzone {}", app_version);
+    let wind_label = wind_label_string.as_str();
     let mut wind = window::Window::default()
         .with_size(600, 360)
         .center_screen()
-        .with_label("Dangerzone");
+        .with_label(wind_label);
     let wind_clone = wind.clone();
     wind.make_resizable(true);
 
@@ -265,7 +266,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let button_browse_for_pdf_app_copy = button_browse_for_pdf_app.clone();
     button_browse_for_pdf_app.borrow_mut().set_tooltip("Browse for PDF viewer program");
     button_browse_for_pdf_app.borrow_mut().deactivate();
-    
+
     checkbutton_openwith.set_callback({
         move |b| {
             let will_be_read_only = !b.is_checked();
@@ -280,7 +281,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             };
         }
     });
-    
+
     button_browse_for_pdf_app.borrow_mut().set_callback({
         move |_| {
             let mut dlg = dialog::FileDialog::new(dialog::FileDialogType::BrowseFile);
@@ -296,8 +297,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
     });
-    
-    
+
+
     row_openwith.end();
 
     let mut row_ocr_language = group::Pack::default().with_size(570, 60).below_of(&row_openwith, size_pack_spacing);
@@ -503,9 +504,11 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
             if desktop_entry_path.exists() {
                 if let Ok(desktop_entry_data) = parse_entry(desktop_entry_path) {
                     let desktop_entry_section = desktop_entry_data.section("Desktop Entry");
-
-                    if let (Some(app_name), Some(cmd_name)) = (&desktop_entry_section.attr("Name"), &desktop_entry_section.attr("TryExec")) {
-                        result.insert(app_name.to_string(), cmd_name.to_string());
+                    
+                    if let (Some(app_name), Some(cmd_name)) = (&desktop_entry_section.attr("Name"),
+                                                               &desktop_entry_section.attr("TryExec").or_else(&desktop_entry_section.attr("Exec"))) {
+                        let cmd_name_sanitized = cmd_name.to_string().replace("%u", "").replace("%U", "").replace("%f", "").replace("%F", "");
+                        result.insert(app_name.to_string(), cmd_name_sanitized);
                     }
                 }
 
@@ -574,6 +577,7 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
 
         if let Ok(app_application_regkey) = regkey.open_subkey(app_id) {
             let app_result: std::io::Result<String> = app_application_regkey.get_value("ApplicationName");
+
             if let Ok(ret) =  app_result {
                 return ret;
             }
@@ -600,7 +604,7 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
                     let human_value = format!("{}", value);
                     let human_val: Vec<&str> = human_value.split("\"").collect();
 
-                    // "C:\ Program Files\ Adobe\Acrobat DC\Acrobat\Acrobat.exe" "%1"
+                    // "C:\ Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe" "%1"
                     if human_val.len() > 3 {
                         let human_app_path_with_trailing_backlash = human_val[2];
 

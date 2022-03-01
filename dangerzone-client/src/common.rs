@@ -3,6 +3,7 @@ use std::error::Error;
 use std::path::PathBuf;
 use which;
 
+pub const APP_VERSION: Option<&str> = option_env!("CARGO_PKG_VERSION");
 pub const CONTAINER_IMAGE_NAME: &str = "docker.io/uycyjnzgntrn/dangerzone-converter";
 pub const CONTAINER_IMAGE_EXE: &str = "/usr/local/bin/dangerzone-container";
 

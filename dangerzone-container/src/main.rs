@@ -180,11 +180,14 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
 
     fn probe_mimetype_zip <'a>(reader: &mut BufReader<fs::File>) -> Result<&'a str, Box<dyn Error>> {
         let mut zip = zip::ZipArchive::new(reader)?;
+        let probe_count_expected = 2;
         let mut probe_count_odt = 0;
         let mut probe_count_ooxml = 0;
         let mut ret_odt  = "";
         let mut ret_ooxml  = "";
 
+        // Lots of ownership annoyances with the 'zip' crate dependency
+        // Otherwise we would look directly for specific files of interest
         for i in 0..zip.len() {
             if let Ok(zipfile) = zip.by_index(i) {
                 let zipfile_name: &str = zipfile.name();
@@ -225,9 +228,9 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
                     }
                 }
 
-                if probe_count_odt == 2 {
+                if probe_count_odt == probe_count_expected {
                     return Ok(ret_odt);
-                } else if probe_count_ooxml == 2 {
+                } else if probe_count_ooxml == probe_count_expected {
                     return Ok(ret_ooxml);
                 }
             }

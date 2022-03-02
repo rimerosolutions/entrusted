@@ -146,8 +146,13 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
             tx.send(format!("Cannot find dangerzone container image! {}", ex.to_string()))?;
             ensure_image_args = vec!["pull", container_image_name.as_str()];
             tx.send("Please wait, downloading image...".to_string())?;
-            exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone(), false)?;
-            tx.send("Download completed......".to_string())?;
+
+            if let Err(exe) = exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone(), false) {
+                tx.send("Could not download dangerzone container image!".to_string())?;
+                return Err(exe.into());
+            }
+
+            tx.send("Download completed...".to_string())?;
         }
 
         let mut pixels_to_pdf_args = vec![];
@@ -212,7 +217,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
             err_msg = "Conversion failed!".to_string();
         }
     } else {
-        err_msg.push_str("Cannot find any container runtime executable! ");
+        err_msg.push_str("Cannot find any container runtime executable!\n");
 
         if cfg!(any(target_os="windows")) {
             err_msg.push_str("Please install Docker.");

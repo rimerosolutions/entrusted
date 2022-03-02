@@ -2,17 +2,14 @@
 
 * What is this?
 
-This is the =backend/server= part of the solution running inside a container engine ([[https://www.docker.com/][Docker]] or [[https://podman.io/][Podman]] or [[https://github.com/lima-vm/lima][Lima]]).
+This is the =backend/server= part of the solution running inside a container "solution" ([[https://www.docker.com/][Docker]] or [[https://podman.io/][Podman]] or [[https://github.com/lima-vm/lima][Lima]]).
 
 
 * What is required?
 
 You only need a container engine such as Docker or Podman or Lima. Please note that this has only been tested under Linux ([[https://voidlinux.org/][Void Linux]]) with Podman so far.
 
-
 * How to build this?
-
-The package names vary, but the following dependencies are required under =Void Linux=: =leptonica-devel=, =libclang=, =clang=, =tesseract-ocr-devel=, =poppler-glib-devel=.
 
 At the root of this project, please invoke the command below.
 
@@ -33,6 +30,8 @@ At the root of this project, please invoke the command below.
 #+begin_src sh
   lima nerdctl build -t localhost/dangerzone-converter .
 #+end_src
+
+For "manual testing" purposes, the following dependencies are required under =Void Linux=: =leptonica-devel=, =libclang=, =clang=, =tesseract-ocr-devel=, =poppler-glib-devel=.
 
 * How to run this?
 

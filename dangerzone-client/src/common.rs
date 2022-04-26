@@ -183,45 +183,47 @@ fn executable_find(exe_name: &str) -> Option<PathBuf> {
 pub struct ContainerProgram<'a>{
     pub exec_path: PathBuf,
     pub sub_commands: Vec<&'a str>,
+    pub suggested_args: Vec<&'a str>,
     pub suggested_tmp_dir: Option<PathBuf>,
 }
 
 impl<'a> ContainerProgram<'a> {
-    pub fn new(exec_path: PathBuf, sub_commands: Vec<&'a str>, suggested_tmp_dir: Option<PathBuf>) -> Self {
+    pub fn new(exec_path: PathBuf, sub_commands: Vec<&'a str>, suggested_args: Vec<&'a str>, suggested_tmp_dir: Option<PathBuf>) -> Self {
         Self {
             exec_path,    
             sub_commands,
+            suggested_args,
             suggested_tmp_dir
         }
     }
 }
 
 enum ContainerProgramStub<'a> {
-    Docker(&'a str, Vec<&'a str>, Option<&'a str>),
-    Podman(&'a str, Vec<&'a str>, Option<&'a str>),
-    Lima(&'a str, Vec<&'a str>, Option<&'a str>)
+    Docker(&'a str, Vec<&'a str>, Vec<&'a str>, Option<&'a str>),
+    Podman(&'a str, Vec<&'a str>, Vec<&'a str>, Option<&'a str>),
+    Lima(&'a str, Vec<&'a str>, Vec<&'a str>, Option<&'a str>)
 }
 
 // TODO this is not good enough, ideally subcommands should be captured at a higher level
 // Especially for Lima and similar tooling, to avoid further downstream conditional blocks
 pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
     let container_program_stubs = [
-        ContainerProgramStub::Docker("docker", vec![], None),
-        ContainerProgramStub::Podman("podman", vec![], None),
-        ContainerProgramStub::Lima("lima", vec!["nerdctl"], Some("/tmp/lima")),
+        ContainerProgramStub::Docker("docker", vec![], vec![], None),
+        ContainerProgramStub::Podman("podman", vec![], vec!["--userns", "keep-id"], None),
+        ContainerProgramStub::Lima("lima", vec!["nerdctl"], vec![], Some("/tmp/lima")),
     ];
 
     for i in 0..container_program_stubs.len() {
         match &container_program_stubs[i] {
-            ContainerProgramStub::Docker(cmd, cmd_args, tmp_dir_opt) |
-            ContainerProgramStub::Podman(cmd, cmd_args, tmp_dir_opt) |
-            ContainerProgramStub::Lima(cmd, cmd_args, tmp_dir_opt) => {
+            ContainerProgramStub::Docker(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) |
+            ContainerProgramStub::Podman(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) |
+            ContainerProgramStub::Lima(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) => {
                 if let Some(path_container_exe) = executable_find(cmd) {
                     let suggested_tmp_dir = match tmp_dir_opt {
                         None => None,
                         Some(tmp_dir) => Some(PathBuf::from(tmp_dir))
                     };
-                    return Some(ContainerProgram::new(path_container_exe, cmd_args.clone(), suggested_tmp_dir));
+                    return Some(ContainerProgram::new(path_container_exe, sub_cmd_args.clone(), cmd_args.clone(), suggested_tmp_dir));
                 }
             }
         }

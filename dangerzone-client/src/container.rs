@@ -31,10 +31,12 @@ where
 fn exec_crt_command(container_program: common::ContainerProgram, args: Vec<&str>, tx: Sender<String>, capture_output: bool) -> Result<(), Box<dyn Error>> {
     let rt_path = container_program.exec_path;
     let sub_commands = container_program.sub_commands;
+    let suggested_args = container_program.suggested_args;
     let rt_executable: &str = &format!("{}", rt_path.display());
 
     let mut cmd = vec![];
     cmd.extend(sub_commands);
+    cmd.extend(suggested_args);
     cmd.extend(args.clone());
 
     tx.send(format!("\n[CMD_LOCAL]: {} {}", rt_executable, cmd.join(" ")))?;
@@ -176,7 +178,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
         dz_tmp_pixels.push("pixels");
         mkdirp(dz_tmp_pixels.clone())?;
 
-        let safedir_volume = &format!("{}:/safezone", dz_tmp_safe.display());
+        let safedir_volume = &format!("{}:/safezone:z", dz_tmp_safe.display());
         let ocr_env = &format!("OCR={}", ocr);
         let ocr_language_env = &format!("OCR_LANGUAGE={}", ocr_language);
 

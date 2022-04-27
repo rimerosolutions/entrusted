@@ -31,12 +31,10 @@ where
 fn exec_crt_command(container_program: common::ContainerProgram, args: Vec<&str>, tx: Sender<String>, capture_output: bool) -> Result<(), Box<dyn Error>> {
     let rt_path = container_program.exec_path;
     let sub_commands = container_program.sub_commands;
-    let suggested_args = container_program.suggested_args;
     let rt_executable: &str = &format!("{}", rt_path.display());
 
     let mut cmd = vec![];
     cmd.extend(sub_commands);
-    cmd.extend(suggested_args);
     cmd.extend(args.clone());
 
     tx.send(format!("\n[CMD_LOCAL]: {} {}", rt_executable, cmd.join(" ")))?;
@@ -136,6 +134,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
         "none"
     ];
 
+    
     let input_file_volume = &format!("{}:/tmp/input_file", input_path.display());
     let mut err_msg = "".to_string();
 
@@ -159,6 +158,8 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
 
         let mut pixels_to_pdf_args = vec![];
         pixels_to_pdf_args.append(&mut run_args.clone());
+        pixels_to_pdf_args.append(&mut container_rt.suggested_run_args.clone());
+
 
         // TODO potentially this needs to be configurable
         // i.e. for Lima with assume that /tmp/lima is the configured writable folder...

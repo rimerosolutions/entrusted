@@ -183,16 +183,16 @@ fn executable_find(exe_name: &str) -> Option<PathBuf> {
 pub struct ContainerProgram<'a>{
     pub exec_path: PathBuf,
     pub sub_commands: Vec<&'a str>,
-    pub suggested_args: Vec<&'a str>,
+    pub suggested_run_args: Vec<&'a str>,
     pub suggested_tmp_dir: Option<PathBuf>,
 }
 
 impl<'a> ContainerProgram<'a> {
-    pub fn new(exec_path: PathBuf, sub_commands: Vec<&'a str>, suggested_args: Vec<&'a str>, suggested_tmp_dir: Option<PathBuf>) -> Self {
+    pub fn new(exec_path: PathBuf, sub_commands: Vec<&'a str>, suggested_run_args: Vec<&'a str>, suggested_tmp_dir: Option<PathBuf>) -> Self {
         Self {
             exec_path,    
             sub_commands,
-            suggested_args,
+            suggested_run_args,
             suggested_tmp_dir
         }
     }

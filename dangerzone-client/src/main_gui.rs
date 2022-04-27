@@ -506,7 +506,7 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
                     let desktop_entry_section = desktop_entry_data.section("Desktop Entry");
                     
                     if let (Some(app_name), Some(cmd_name)) = (&desktop_entry_section.attr("Name"),
-                                                               &desktop_entry_section.attr("TryExec").or_else(&desktop_entry_section.attr("Exec"))) {
+                                                               &desktop_entry_section.attr("TryExec").or(desktop_entry_section.attr("Exec"))) {
                         let cmd_name_sanitized = cmd_name.to_string().replace("%u", "").replace("%U", "").replace("%f", "").replace("%F", "");
                         result.insert(app_name.to_string(), cmd_name_sanitized);
                     }

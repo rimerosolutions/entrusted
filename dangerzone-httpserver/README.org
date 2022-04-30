@@ -35,8 +35,8 @@ This is used for a single workstation, in a multi virtual machines scenario (sev
 ** To run
 
 For the "server" component, any OS that can run the [[https://github.com/rimerosolutions/dangerzone-rust/tree/main/dangerzone-client][dangerzone-cli]] binary:
-- It is assumed that the [[https://dangerzone.rocks/][Dangerzone]] command-line program is available
-- The Dangerzone command-line program must be directly accessible (i.e. [[https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html][in your PATH variable]])
+- It is assumed that the =dangerzone-cli= program is available
+- The =dangerzone-cli= program must also be directly accessible (i.e. [[https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html][in your PATH variable]])
 
 You can run the server as follow, once the program is built (Linux assumed here).
 
@@ -70,6 +70,7 @@ Non-Linux platforms haven't been tested yet, but it /should/ work just fine...
 
 List of envisioned efforts.
 
+- [ ] Documentation updates
 - [ ] Dedicated named temporary folder on the server for conversions  
 - [ ] Batch transformations
 - [ ] Conversion progress information

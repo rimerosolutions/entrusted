@@ -4,6 +4,9 @@
 
 This is the =backend/server= part of the solution running inside a container "solution" ([[https://www.docker.com/][Docker]] or [[https://podman.io/][Podman]] or [[https://github.com/lima-vm/lima][Lima]]).
 
+There's a small series of transformations leading to a resulting trusting PDF document (optionally a searchable PDF instead of only images, if [[https://en.wikipedia.org/wiki/Optical_character_recognition][OCR]] was requested).
+
+[[./images/architecture.png]]
 
 * What is required?
 

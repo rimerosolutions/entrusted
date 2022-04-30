@@ -6,9 +6,24 @@ Dangerzone allows converting suspiciuous documents into safe and trusted PDFs, w
 - This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation purposes
 - Similarly to the original Dangerzone tool, documents or images are converted inside a "sandbox"
 
+* What is available?
+
+** Architecture overview
+
 Below is a high-level architecture overview.
 
-[[./screenshots/image.png]]
+[[./images/image.png]]
+
+** Components description
+
+|--------------------------------------------+---------------------------------|
+| Purpose                                    | Component                       |
+|--------------------------------------------+---------------------------------|
+| Document processing                        | [[dangerzone-container][dangerzone-container]] component  |
+| Command-line and graphical user interfaces | [[./dangerzone-client][dangerzone-client]] component     |
+| Online service feature                     | [[./dangerzone-httpserver][dangerzone-httpserver]] component |
+| Command-line client for the online service | [[./dangerzone-httpclient][dangerzone-httpclient]] component |
+|--------------------------------------------+---------------------------------|  
 
 * What is required?
 
@@ -26,21 +41,6 @@ Below is a high-level architecture overview.
 - *Workflow automation exploration*: Browser plugin, VM orchestration, Web Service, etc.
 - *Optimization opportunities*: Reduced container image size with very low computer resources requirements
 
-* What does it look like?
-
-** Desktop User Interface
-
-The initial desktop user interface running on MacOS Monterey.
-
-[[./screenshots/gui-screenshot.png]]
-
-** Command-Line User Interface
-
-˜The command-line interface running on Void Linux.
-
-[[./screenshots/cli-screenshot.png]]
-
-
 * What is planned?
 
 - [X] Replicate CLI functions of the original tool, not necessarily the exact behavior ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral01][spiral01 branch]])
@@ -54,8 +54,11 @@ The initial desktop user interface running on MacOS Monterey.
   - [X] Update processing logic to use libreoffice for initial PDF conversion, prior further processing
 - [X] Documentation updates and compilation error fix ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral05][spiral05 branch]])
 - [X] Usability improvements and slightly better MS Windows support ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral06][spiral06 branch]])
+- [X] Online service with Web interface and remote CLI client ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral07][spiral07 branch]])  
 - [ ] Look at releases for Linux, MacOS and Windows; CLI-only client for BSD systems?
-- [ ] Investigate container runtime support for BSD (OpenBSD, FreeBSD & NetBSD): jails and similar options?
+- [ ] Investigate container runtime support for BSD (OpenBSD, FreeBSD & NetBSD):
+  - Jails-like option for all BSDs?
+  - Just use the online service in a VM or from a remote machine?
 - [ ] Revisit remote mounts options for [[https://github.com/canonical/multipass][Multipass]] and [[https://github.com/containers/podman][Podman]]
 - [ ] Look at automation scenarios and use-cases (Browser plugin, HTTP Proxy, etc.)
 - [ ] TBD

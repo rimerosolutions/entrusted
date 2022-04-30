@@ -12,31 +12,32 @@ This application relies on common Rust tooling for builds and a container engine
 
 Please note that this has *been mostly tested under Linux* so far ([[https://voidlinux.org/][Void Linux]] & [[https://sparkylinux.org/][SparkyLinux]] more specifically).
 
+* What does it look like?
+
+** Graphical desktop client
+
+The user interface is built with the [[https://github.com/fltk-rs/fltk-rs][FLTK]] toolkit because it's lightweight and /relatively/ easy to use.
+
+[[./images/gui-screenshot.png]]
+
+** Command-line client
+
+[[./images/cli-screenshot.png]]
+
+
 * How to build this?
 
 At the root of this project, open a command prompt and type =cargo build=.
 
 * How to run this?
 
-Please refer to the top level folder for desktop or command-line screenshots.
-
 ** Desktop usage
-
-The user interface is built with the [[https://www.fltk.org/][FLTK]] toolkit because it's lightweight and /relatively/ easy to use.
 
 #+begin_src sh
 ./target/debug/dangerzone-gui
 #+end_src
 
 ** Command line usage
-
-*** Help information
-
-#+begin_src sh
-  ./target/debug/dangerzone-cli -h
-#+end_src
-
-*** Sample general usage
 
 In the example below, a suspicious PDF file is converted to a searchable PDF ([[https://en.wikipedia.org/wiki/Optical_character_recognition][OCR]]), instead of just PDF images (=ocr-lang= parameter).
 /OCR/ is a time consuming task in comparison to just generating PDF images for pages of the original input (text recognition and additional processing steps).

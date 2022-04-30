@@ -1,0 +1,27 @@
+#+TITLE: dangerzone-httpclient README
+
+* Overview
+
+This repository provides a command-line client for the =dangerzone-httpserver= component.
+
+* How it works
+
+  [[./images/architecture.png]]
+
+
+* Screenshot
+
+For now, there's only a command-line client on top of the default server user interface.
+
+[[./images/screenshot-cli.png]]
+
+
+* Next Steps
+
+List of envisioned efforts.
+
+- [ ] Batch transformations
+- [ ] Conversion progress information
+- [ ] Improve error handling for resuming notifications
+- [ ] SSL support?
+- [ ] Configuration files support

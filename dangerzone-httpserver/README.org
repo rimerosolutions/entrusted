@@ -1,0 +1,78 @@
+#+TITLE: dangerzone-httpserver README
+
+* Overview
+
+This repository provides an online service for [[https://github.com/rimerosolutions/dangerzone-rust][suspicious documents conversion to trusted PDFs]].
+- The client sends documents to the server via HTTP (images, PDF or office documents).
+- The server sanitizes the original documents and transforms them to PDFs (=dangerzone-cli= command-line invocation).
+
+  The high-level architecture is described below.
+
+  [[./images/architecture.png]]
+
+* General considerations
+
+- Balance around minimalism and convenience, but focus on performance.
+- The server immediately deletes documents upon download (original document and its sanitized version)
+
+* Screenshot
+
+There's a basic Web interface that can be accessed from the server root URL (i.e. [[http://localhost:13000]]).
+
+[[./images/screenshot-web.png]]
+
+* Current use-case
+
+This is used for a single workstation, in a multi virtual machines scenario (several virtual machines: VMs):
+- There are several VMS for specific purposes ("dangerzone VM", "programming VM", "socials VM", etc.)
+- Inside some of the VMS, there's a need to open safely documents (ebooks, emails attachments, etc.)
+  - The "Dangerzone VM" performing document conversions has no internet connectivity.
+  - The "Dangerzone VM" only allows SSH and "document conversion requests"
+  - The "Dangerzone VM" has limited resources (1GB of RAM allocated).
+
+* Requirements
+
+** To run
+
+For the "server" component, any OS that can run the [[https://github.com/rimerosolutions/dangerzone-rust/tree/main/dangerzone-client][dangerzone-cli]] binary:
+- It is assumed that the [[https://dangerzone.rocks/][Dangerzone]] command-line program is available
+- The Dangerzone command-line program must be directly accessible (i.e. [[https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html][in your PATH variable]])
+
+You can run the server as follow, once the program is built (Linux assumed here).
+
+#+begin_src sh
+  ./target/x86_64-unknown-linux-musl/release/dangerzone-httpserver
+#+end_src
+  
+** To build
+
+You need to have the rust toolchain installed in order to compile the code.
+
+** Linux
+
+It's possible to produce standalone binaries on Linux, with no runtime dependencies (for both server and CLI client).
+- You can either build with a musl Linux distribution (Alpine, Void Linux, etc.)
+- Or you can ensure that the musl target is installed =rustup target add x86_64-unknown-linux-musl=
+
+  #+begin_src sh
+    RUSTFLAGS="-C target-feature=+crt-static" cargo build --release --target=x86_64-unknown-linux-musl
+  #+end_src
+  
+** Other platforms
+
+Non-Linux platforms haven't been tested yet, but it /should/ work just fine...
+
+#+begin_src sh
+  RUSTFLAGS="-C target-feature=+crt-static" cargo build --release
+#+end_src
+
+** Next Steps
+
+List of envisioned efforts.
+
+- [ ] Dedicated named temporary folder on the server for conversions  
+- [ ] Batch transformations
+- [ ] Conversion progress information
+- [ ] Improve error handling for resuming notifications
+- [ ] SSL support?
+- [ ] Configuration files support

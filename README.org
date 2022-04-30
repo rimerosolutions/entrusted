@@ -15,6 +15,7 @@ Dangerzone allows converting suspiciuous documents into safe and trusted PDFs, w
   - Users might not have all the administrative rights to do so
   - Users might not be technical, especially if there are Docker or Podman related issues
   - Users machines might be limited in resources (not much RAM or CPU power)
+- *Docker alternative support on MacOS*: [[https://github.com/lima-vm/lima][Lima]] instead of Docker is possible, but this hasn't been tested in a while...
   
 *** The ugly
 - *Likely easier to hack than the original dangerzone*: 1 step conversion process, instead of 2 steps

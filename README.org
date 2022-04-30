@@ -3,9 +3,28 @@
 * What is this?
 
 Dangerzone allows converting suspiciuous documents into safe and trusted PDFs, without worrying too much about viruses or evil macros.
-- This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation purposes
+- This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]] (not exact), for experimentation purposes
 - Similarly to the original Dangerzone tool, documents or images are converted inside a "sandbox"
 
+** Key differences with the original Dangerzone
+
+*** The good
+- *Likely faster processing* most of the time due to the programming language difference and the choice of a "1-step" conversion process
+- *Less likelyhood of conversion timeouts or stuck processing*: LibreOffice is the only "external program" leveraged, because there are not many both free and mature Microsoft Office libraries (except in Java): /i.e. convert from docx to PDF/
+- *Online service availability*: Not everybody can (or wants to) install a container engine on their machine
+  - Users might not have all the administrative rights to do so
+  - Users might not be technical, especially if there are Docker or Podman related issues
+  - Users machines might be limited in resources (not much RAM or CPU power)
+  
+*** The ugly
+- *Likely easier to hack than the original dangerzone*: 1 step conversion process, instead of 2 steps
+- *This is mostly an experiment* not heavily tested, even if I use =dangerzone-rust= daily
+- *Batch conversions* should have been included from day one, instead of having it scheduled for later
+- *Not the best code*:
+  - I'm mostly /learning/ Rust in my spare time and programming is not my main job anymore
+  - I'm more comfortable with Java than any other programming language (for both Desktop or other types of applications)
+- Probably several "obvious things" haven't really caught my attention yet... I mostly use the command-line client and typically under Linux only
+    
 * What is available?
 
 ** Architecture overview
@@ -19,7 +38,7 @@ Below is a high-level architecture overview.
 |--------------------------------------------+---------------------------------|
 | Purpose                                    | Component                       |
 |--------------------------------------------+---------------------------------|
-| Document processing                        | [[dangerzone-container][dangerzone-container]] component  |
+| Document processing                        | [[./dangerzone-container][dangerzone-container]] component  |
 | Command-line and graphical user interfaces | [[./dangerzone-client][dangerzone-client]] component     |
 | Online service feature                     | [[./dangerzone-httpserver][dangerzone-httpserver]] component |
 | Command-line client for the online service | [[./dangerzone-httpclient][dangerzone-httpclient]] component |

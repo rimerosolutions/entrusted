@@ -24,6 +24,7 @@ Dangerzone allows converting suspiciuous documents into safe and trusted PDFs, w
   - I'm mostly /learning/ Rust in my spare time and programming is not my main job anymore
   - I'm more comfortable with Java than any other programming language (for both Desktop or other types of applications)
 - Probably several "obvious things" haven't really caught my attention yet... I mostly use the command-line client and typically under Linux only
+- No support for translations yet: Not difficult but a bit time consuming, I have done a minimal POC for the approach
     
 * What is available?
 

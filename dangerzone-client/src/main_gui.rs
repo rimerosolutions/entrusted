@@ -574,6 +574,10 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
 // TODO windows support hasn't been tested that much...
 #[cfg(target_os="windows")]
 pub fn list_apps_for_pdfs() -> HashMap<String, String> {
+    use winreg::RegKey;
+    use winreg::enums::RegType;
+    use winreg::enums::HKEY_CLASSES_ROOT;
+    use std::collections::HashSet;
     let mut ret = HashMap::new();
     let hkcr = RegKey::predef(HKEY_CLASSES_ROOT);
     let open_with_list_hkcr_res = hkcr.open_subkey(".pdf\\OpenWithProgids");

@@ -53,11 +53,18 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name("file")
-                .long("file")
-                .help("Input file")
+             Arg::with_name("input-filename")
+                .long("input-filename")
+                .help("Input filename")
                 .required(true)
-                .takes_value(true),
+                .takes_value(true)
+        )
+        .arg(
+            Arg::with_name("output-filename")
+                .long("output-filename")
+                .help("Optional output filename defaulting to <filename>-safe.pdf.")
+                .required(false)
+                .takes_value(true)
         );
 
     let run_matches = app.to_owned().get_matches();
@@ -87,10 +94,16 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         }
     }
 
+    let output_path_opt = if let Some(proposed_output_filename) = run_matches.value_of("output-filename") {
+        Some(PathBuf::from(proposed_output_filename))
+    } else {
+        None
+    };
+
     if let (Some(host), Some(port), Some(file)) = (
         run_matches.value_of("host"),
         run_matches.value_of("port"),
-        run_matches.value_of("file"),
+        run_matches.value_of("input-filename"),
     ) {
         let p = PathBuf::from(file);
 
@@ -100,7 +113,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
 
         if let Some(output_dir) = p.parent() {
             let filename = p.file_name().unwrap().to_str().unwrap();
-            convert_file(host, port, ocr_lang_opt, output_dir.to_path_buf(), p.clone(), filename.to_string()).await
+            convert_file(host, port, ocr_lang_opt, output_dir.to_path_buf(), p.clone(), filename.to_string(), output_path_opt).await
         } else {
             Err("Could not determine input directory!".into())
         }
@@ -116,6 +129,7 @@ async fn convert_file (
     output_dir: PathBuf,
     input_path: PathBuf,
     filename: String,
+    output_path_opt: Option<PathBuf>
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     println!("Converting file file: {}", input_path.display());
 
@@ -153,15 +167,20 @@ async fn convert_file (
         .bytes()
         .await?;
 
-    let filename_noext_opt = input_path.file_stem().and_then(|i| i.to_str());
-
-    if let Some(filename_noext) = filename_noext_opt {
-        let output_path = output_dir.join([filename_noext.to_string(), "-safe.pdf".to_string()].concat());
-        let mut output_file = File::create(output_path).await?;
-        output_file.write_all(&download_data).await?;
+    let output_path = if let Some(output_path_value) = output_path_opt {
+        output_path_value
     } else {
-        return Err("Could not determine input file base name".into());
-    }
+        let filename_noext_opt = input_path.file_stem().and_then(|i| i.to_str());
+
+        if let Some(filename_noext) = filename_noext_opt {
+            output_dir.join([filename_noext.to_string(), "-safe.pdf".to_string()].concat())
+        } else {
+            return Err("Could not determine input file base name.".into());
+        }
+    };
+    
+    let mut output_file = File::create(output_path).await?;
+    output_file.write_all(&download_data).await?;
 
     Ok(())
 }

@@ -2,6 +2,13 @@
 name = "dangerzone-client"
 version = "0.0.1"
 edition = "2018"
+description = "dangerzone client" 
+keywords = ["dangerzone", "client"]
+license = "GPL"
+repository = "https://github.com/rimerosolutions/dangerzone-rust"
+authors = [
+	"Yves Zoundi <yves_zoundi@hotmail.com>"
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

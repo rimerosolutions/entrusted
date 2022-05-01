@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 use std::thread;
 use std::error::Error;
 use std::sync::mpsc;
@@ -141,13 +143,17 @@ fn do_show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: Co
 
 fn main() -> Result<(), Box<dyn Error>> {
     let app = app::App::default().with_scheme(app::Scheme::Gleam);
-    let app_version = common::APP_VERSION.unwrap_or("unknown");
-    let wind_label_string = format!("Dangerzone {}", app_version);
-    let wind_label = wind_label_string.as_str();
+
+    let wind_title = format!(
+        "{} {}",
+        option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"),
+        option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown")
+    );
+    
     let mut wind = window::Window::default()
         .with_size(600, 360)
         .center_screen()
-        .with_label(wind_label);
+        .with_label(&wind_title);
     let wind_clone = wind.clone();
     wind.make_resizable(true);
 

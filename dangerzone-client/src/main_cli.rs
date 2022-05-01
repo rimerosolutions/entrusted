@@ -9,22 +9,10 @@ mod common;
 mod container;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let app_version = common::APP_VERSION.unwrap_or("unknown");
-    
-    let copyright_info = format!("
-dangerzone-cli {}, Copyright (C) 2021-present Yves Zoundi
-This program comes with ABSOLUTELY NO WARRANTY; for details type '--help'.
-This is free software, and you are welcome to restribute it under certain conditions;
-Please visit the URL below for license details (GPL v3.0):
-https://www.gnu.org/licenses/gpl-3.0.en.html
-", app_version);
-
-    println!("{}", copyright_info);
-
-    let app = App::new("dangerzone-cli")
-        .version(app_version)
-        .author("Yves Zoundi")
-        .about("Dangerzone command-line client")
+    let app = App::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
+        .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
+        .author(option_env!("CARGO_PKG_AUTHORS").unwrap_or("Unknown"))
+        .about(option_env!("CARGO_PKG_DESCRIPTION").unwrap_or("Unknown"))
         .arg(
             Arg::with_name("output-filename")
                 .long("output-filename")

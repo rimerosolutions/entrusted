@@ -9,23 +9,21 @@ Dangerzone allows converting suspiciuous documents into safe and trusted PDFs, w
 ** Key differences with the original Dangerzone
 
 *** The good
-- *Likely faster processing* most of the time due to the programming language difference and the choice of a "1-step" conversion process
-- *Less likelyhood of conversion timeouts or stuck processing*: LibreOffice is the only "external program" leveraged, because there are not many both free and mature Microsoft Office libraries (except in Java): /i.e. convert from docx to PDF/
+- *Likely faster processing*: Programming language difference and "1-step" conversion process
+- *Less likelyhood of conversion timeouts or stuck processing*: LibreOffice is the only "external program" leveraged, because there are not many both free and mature Microsoft Office libraries (except in Java)
 - *Online service availability*: Not everybody can (or wants to) install a container engine on their machine
   - Users might not have all the administrative rights to do so
   - Users might not be technical, especially if there are Docker or Podman related issues
   - Users machines might be limited in resources (not much RAM or CPU power)
-- *Docker alternative support on MacOS*: [[https://github.com/lima-vm/lima][Lima]] instead of Docker is possible, but this hasn't been tested in a while...
+- *Docker alternative support on MacOS*: [[https://github.com/lima-vm/lima][Lima]] instead of Docker is possible but hasn't been tested in a while
   
 *** The ugly
 - *Likely easier to hack than the original dangerzone*: 1 step conversion process, instead of 2 steps
 - *This is mostly an experiment* not heavily tested, even if I use =dangerzone-rust= daily
 - *Batch conversions* should have been included from day one, instead of having it scheduled for later
-- *Not the best code*:
-  - I'm mostly /learning/ Rust in my spare time and programming is not my main job anymore
-  - I'm more comfortable with Java than any other programming language (for both Desktop or other types of applications)
-- Probably several "obvious things" haven't really caught my attention yet... I mostly use the command-line client and typically under Linux only
-- No support for translations yet: Not difficult but a bit time consuming, I have done a minimal POC for the approach
+- *Not the best code*: I barely /know/ Rust
+- Probably several "obvious things" haven't really caught my attention yet... 
+- No support for translations yet: I have done a minimal POC for the approach
     
 * What is available?
 

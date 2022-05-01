@@ -22,8 +22,8 @@ Dangerzone allows converting suspiciuous documents into safe and trusted PDFs, w
 - *This is mostly an experiment* not heavily tested, even if I use =dangerzone-rust= daily
 - *Batch conversions* should have been included from day one, instead of having it scheduled for later
 - *Not the best code*: I barely /know/ Rust
-- Probably several "obvious things" haven't really caught my attention yet... 
-- No support for translations yet: I have done a minimal POC for the approach
+- *No support for translations yet*: I have done a minimal POC for the approach
+- *Probably several "obvious things"*
     
 * What is available?
 
@@ -74,7 +74,8 @@ Below is a high-level architecture overview.
 - [X] Documentation updates and compilation error fix ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral05][spiral05 branch]])
 - [X] Usability improvements and slightly better MS Windows support ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral06][spiral06 branch]])
 - [X] Online service with Web interface and remote CLI client ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral07][spiral07 branch]])  
-- [ ] Look at releases for Linux, MacOS and Windows; CLI-only client for BSD systems?
+- [ ] Look at releases for Linux, MacOS and Windows ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral08][spiral08 branch]])
+- Support batch conversions
 - [ ] Investigate container runtime support for BSD (OpenBSD, FreeBSD & NetBSD):
   - Jails-like option for all BSDs?
   - Just use the online service in a VM or from a remote machine?

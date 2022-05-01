@@ -75,7 +75,7 @@ Below is a high-level architecture overview.
 - [X] Usability improvements and slightly better MS Windows support ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral06][spiral06 branch]])
 - [X] Online service with Web interface and remote CLI client ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral07][spiral07 branch]])  
 - [X] Look at releases for Linux, MacOS and Windows ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral08][spiral08 branch]])
-- [ ] Implement conversion progress information
+- [ ] Implement conversion progress information (completion percentage)
 - [ ] Support batch conversions
 - [ ] Support application preferences (GUI and CLI support)
 - [ ] Revisit remote mounts options for [[https://github.com/canonical/multipass][Multipass]] and [[https://github.com/containers/podman][Podman]]

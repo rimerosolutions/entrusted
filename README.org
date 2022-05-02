@@ -2,63 +2,45 @@
 
 * What is this?
 
-Dangerzone allows converting suspiciuous documents into safe and trusted PDFs, without worrying too much about viruses or evil macros.
-- This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]] (not exact), for experimentation purposes
+=dangerzone-rust= allows converting suspiciuous documents into safe and trusted PDFs, without worrying too much about viruses or evil macros.
+- This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation purposes (not an exact port)
 - Similarly to the original Dangerzone tool, documents or images are converted inside a "sandbox"
 
-** Key differences with the original Dangerzone
+* Where can I get it?
 
-*** The good
-- *Likely faster processing*: Programming language difference and "1-step" conversion process
-- *Less likelyhood of conversion timeouts or stuck processing*: LibreOffice is the only "external program" leveraged, because there are not many both free and mature Microsoft Office libraries (except in Java)
-- *Online service availability*: Not everybody can (or wants to) install a container engine on their machine
-  - Users might not have all the administrative rights to do so
-  - Users might not be technical, especially if there are Docker or Podman related issues
-  - Users machines might be limited in resources (not much RAM or CPU power)
-- *Docker alternative support on MacOS*: [[https://github.com/lima-vm/lima][Lima]] instead of Docker is possible but hasn't been tested in a while
-  
-*** The ugly
-- *Likely easier to hack than the original dangerzone*: 1 step conversion process, instead of 2 steps
-- *This is mostly an experiment* not heavily tested, even if I use =dangerzone-rust= daily
-- *Batch conversions* should have been included from day one, instead of having it scheduled for later
-- *Not the best code*: I barely /know/ Rust
-- *No support for translations yet*: I have done a minimal POC for the approach
-- *Probably several "obvious things"*
+For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-rust/releases][releases page]].
+- For MacOS users, please download the file =dangerzone-darwin-amd64-<version>.zip=
+- For Linux users, please download the file =dangerzone-linux-amd64-<version>.tar=
+- For Windows users, please download the file =dangerzone-windows-amd64-<version>.zip=
     
 * What is available?
 
+** Key components
+
+|-----------------------+--------------------------------------------|
+| Component             | Purpose                                    |
+|-----------------------+--------------------------------------------|
+| [[./dangerzone-container][dangerzone-container]]  | Document processing "sanbox"               |
+| [[./dangerzone-client][dangerzone-client]]     | Command-line and graphical user interfaces |
+| [[./dangerzone-httpserver][dangerzone-httpserver]] | Online service feature                     |
+| [[./dangerzone-httpclient][dangerzone-httpclient]] | Command-line client for the online service |
+|-----------------------+--------------------------------------------|
+
 ** Architecture overview
 
-Below is a high-level architecture overview.
+Below is a high-level architecture overview, the solution relies on a container engine solution such as [[https://www.docker.com/][Docker]] or [[https://podman.io/][Podman]].
 
 [[./images/image.png]]
 
-** Components description
-
-|--------------------------------------------+---------------------------------|
-| Purpose                                    | Component                       |
-|--------------------------------------------+---------------------------------|
-| Document processing                        | [[./dangerzone-container][dangerzone-container]] component  |
-| Command-line and graphical user interfaces | [[./dangerzone-client][dangerzone-client]] component     |
-| Online service feature                     | [[./dangerzone-httpserver][dangerzone-httpserver]] component |
-| Command-line client for the online service | [[./dangerzone-httpclient][dangerzone-httpclient]] component |
-|--------------------------------------------+---------------------------------|  
-
 * What is required?
 
-- *Operating System*: Linux and MacOS haven been tested
-  - Windows and BSD support will be tested soon enough
-  - Under BSD, the UI is likely not available due to technical challenges (FTLK UI compilation)
+- *Operating System*: Linux, MacOS or Windows
+  - Mostly Linux has been tested
+  - BSD users can probably use the "Online service" and its Web interface
 - *Container Runtime*: [[https://podman.io/][Podman]], [[https://www.docker.com/][Docker]] or [[https://github.com/lima-vm/lima][Lima]]
-  - For MacOS, /please/ use either Docker or Lima, as Podman on MacOS has [[https://github.com/containers/podman/issues/8016][annoyances]] for volumes
-  - The program doesn't auto-configure remote mounts (i.e. [[https://docs.podman.io/en/latest/markdown/podman-machine.1.html][Podman machine]] or [[https://multipass.run/docs][Multipass]])
-
-* Why this?
-
-- *Personal learning*: [[https://www.rust-lang.org/][Rust]] is reasonably high-level and is not garbage collected
-- *Self-Contained tooling with no scripting*
-- *Workflow automation exploration*: Browser plugin, VM orchestration, Web Service, etc.
-- *Optimization opportunities*: Reduced container image size with very low computer resources requirements
+  - On Linux, please install Podman
+  - For Windows, Docker is recommended
+  - For MacOS, /please/ use either Docker or Lima
 
 * What is planned?
 
@@ -75,6 +57,7 @@ Below is a high-level architecture overview.
 - [X] Usability improvements and slightly better MS Windows support ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral06][spiral06 branch]])
 - [X] Online service with Web interface and remote CLI client ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral07][spiral07 branch]])  
 - [X] Look at releases for Linux, MacOS and Windows ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral08][spiral08 branch]])
+- [X] Documentation updates ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral09][spiral09 branch]])  
 - [ ] Implement conversion progress information (completion percentage)
 - [ ] Support batch conversions
 - [ ] Support application preferences (GUI and CLI support)
@@ -83,5 +66,32 @@ Below is a high-level architecture overview.
 - [ ] etc.
   
     
+* What are the differences with the original Dangerzone?
 
+The obvious technical difference is the programming language (Rust instead of Python), for performance reasons and general personal exploration.
+
+** The good
+
+|------------------------------------------+-----------------------------------------------------------------|
+| Topic                                    | Details                                                         |
+|------------------------------------------+-----------------------------------------------------------------|
+| *Likely faster processing*               | Programming language difference and "1-step" conversion process |
+| *Online service*                         | HTTP server with a minimal lightweight Web interface            |
+| *Docker alternative on MacOS*            | Lima was tested a while back                                    |
+| *Less likelyhood of conversion timeouts* | There's only one external program involved                      |
+|------------------------------------------+-----------------------------------------------------------------|
+  
+** The ugly
+
+|------------------------------------------+-----------------------------------------------------------|
+| Topic                                    | Details                                                   |
+|------------------------------------------+-----------------------------------------------------------|
+| *Likely less secure than the dangerzone* | 1 step conversion process, instead of 2 steps             |
+| *This is mostly an experiment*           | Not heavily tested, even if I use =dangerzone-rust= daily |
+| *Docker alternative on MacOS*            | Lima was tested a while back                              |
+| *Not the best code*                      | I barely /know/ Rust, in comparison to Java               |
+| *Lacking support for batch conversions*  | This could have been implemented from day one, maybe      |
+| *No support for translations yet*        | I have done a minimal POC for the approach                |
+| *Incomplete*                             | UI, code polishing, probably several "obvious things"     |
+|------------------------------------------+-----------------------------------------------------------|
   

@@ -2,8 +2,8 @@
 
 * Overview
 
-This repository provides an online service for [[https://github.com/rimerosolutions/dangerzone-rust][suspicious documents conversion to trusted PDFs]].
-- The client sends documents to the server via HTTP (images, PDF or office documents).
+This repository provides an online shared service for [[https://github.com/rimerosolutions/dangerzone-rust][suspicious documents conversion to trusted PDFs]].
+- The client sends documents to the =server= via HTTP (images, PDF or office documents): Web interface.
 - The server sanitizes the original documents and transforms them to PDFs (=dangerzone-cli= command-line invocation).
 
   The high-level architecture is described below.
@@ -34,7 +34,7 @@ This is used for a single workstation, in a multi virtual machines scenario (sev
 
 ** To run
 
-For the "server" component, any OS that can run the [[https://github.com/rimerosolutions/dangerzone-rust/tree/main/dangerzone-client][dangerzone-cli]] binary:
+For the =server= component, any OS that can run the [[https://github.com/rimerosolutions/dangerzone-rust/tree/main/dangerzone-client][dangerzone-cli]] binary:
 - It is assumed that the =dangerzone-cli= program is available
 - The =dangerzone-cli= program must also be directly accessible (i.e. [[https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html][in your PATH variable]])
 
@@ -46,13 +46,13 @@ You can run the server as follow, once the program is built (Linux assumed here)
   
 ** To build
 
-You need to have the rust toolchain installed in order to compile the code.
+You need to have the [[https://www.rust-lang.org/tools/install][rust compiler tools]] installed in order to compile the code.
 
 ** Linux
 
 It's possible to produce standalone binaries on Linux, with no runtime dependencies (for both server and CLI client).
-- You can either build with a musl Linux distribution (Alpine, Void Linux, etc.)
-- Or you can ensure that the musl target is installed =rustup target add x86_64-unknown-linux-musl=
+- You can either build with a [[https://wiki.musl-libc.org/projects-using-musl.html#name=Linux_distributions_using_musl][Musl Linux distribution]] ([[https://www.alpinelinux.org/][Alpine Linux]], [[https://voidlinux.org/][Void Linux]], etc.)
+- Or you can ensure that the Musl target is installed =rustup target add x86_64-unknown-linux-musl=
 
   #+begin_src sh
     RUSTFLAGS="-C target-feature=+crt-static" cargo build --release --target=x86_64-unknown-linux-musl
@@ -60,10 +60,17 @@ It's possible to produce standalone binaries on Linux, with no runtime dependenc
   
 ** Other platforms
 
-Non-Linux platforms haven't been tested yet, but it /should/ work just fine...
+*** MacOS
 
 #+begin_src sh
   RUSTFLAGS="-C target-feature=+crt-static" cargo build --release
+#+end_src
+
+*** Windows
+
+#+begin_src bat
+  RUSTFLAGS=-C target-feature=+crt-static
+  cargo build --release
 #+end_src
 
 ** Next Steps

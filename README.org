@@ -8,7 +8,7 @@
 
 * Where can I get it?
 
-For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-rust/releases][releases page]].
+For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-rust/releases][releases page]] (64 bit operating systems).
 - For MacOS users, please download the file =dangerzone-darwin-amd64-<version>.zip=
 - For Linux users, please download the file =dangerzone-linux-amd64-<version>.tar=
 - For Windows users, please download the file =dangerzone-windows-amd64-<version>.zip=

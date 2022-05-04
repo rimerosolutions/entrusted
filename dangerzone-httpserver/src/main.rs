@@ -1,5 +1,6 @@
 use once_cell::sync::Lazy;
 
+use actix_cors::Cors;
 use clap;
 use std::collections::HashMap;
 use std::env;
@@ -32,11 +33,11 @@ use http_api_problem::{HttpApiProblem, StatusCode};
 use tokio::io::AsyncWriteExt;
 
 const SPA_INDEX_HTML: &str = include_str!("../web-assets/index.html");
+const TMP_DIR_FOLDER_NAME: &str = "dangerzone";
 
 static NOTIFICATIONS_PER_REFID: Lazy<Mutex<HashMap<String, Arc<Mutex<Vec<Notification>>>>>> = Lazy::new(|| {
     Mutex::new(HashMap::<String, Arc<Mutex<Vec<Notification>>>>::new())
 });
-
 
 #[derive(Debug, Clone)]
 pub struct Notification {
@@ -101,11 +102,9 @@ impl Broadcaster {
     fn new_client(&mut self, refid: String) -> Client {
         let (tx, _rx) = channel(100);
 
-        tx.clone()
-            .try_send(Bytes::from("data: connected\n\n"))
-            .unwrap();
+        tx.try_send(Bytes::from("data: connected\n\n")).unwrap();
 
-        self.clients.push(tx.clone());
+        self.clients.push(tx);
         
         let done = false;
         let idx = 0;
@@ -216,18 +215,26 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
             Err(ex) => Err(ex.into()),
         }
     } else {
-        Err("Missing parameters?".into())
+        Err("Server configuration error: missing parameters?".into())
     }
 }
 
 async fn serve(host: &str, port: &str) -> std::io::Result<()> {
     let addr = format!("{}:{}", host, port);
-    println!("Starting server at {}", addr.clone());
+    println!("Starting server at {}", &addr);
 
     HttpServer::new(|| {
+        let cors = Cors::permissive()
+            .send_wildcard()
+            .allowed_methods(vec!["GET", "POST"])
+            .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
+            .allowed_header(header::CONTENT_TYPE)
+            .max_age(3600);
+            
         let data = Broadcaster::create();
 
         App::new()
+            .wrap(cors)
             .app_data(data.clone())
             .service(web::resource("/").route(web::get().to(index)))
             .route("/upload", web::post().to(upload))
@@ -250,8 +257,8 @@ async fn download(info: actix_web::web::Path<String>, req: HttpRequest) -> impl 
     println!("Download from: {}", req.uri());
 
     let file_id = info.into_inner();
-    let filename = [file_id.clone(), "-safe.pdf".to_string()].concat();
-    let filepath = env::temp_dir().join(filename.clone());
+    let filename = [&file_id, "-safe.pdf"].concat();
+    let filepath = env::temp_dir().join(TMP_DIR_FOLDER_NAME).join(filename.clone());
     let filepath_buf = PathBuf::from(filepath);
 
     if !filepath_buf.exists() {
@@ -270,7 +277,9 @@ async fn download(info: actix_web::web::Path<String>, req: HttpRequest) -> impl 
             }
             Err(ex) => {
                 eprintln!("Internal error: {}", ex.to_string());
-                let _ = std::fs::remove_file(filepath_buf);
+                if let Err(ioe) = std::fs::remove_file(&filepath_buf) {
+                    eprintln!("Warning: Could not delete file {}. {}.", &filepath_buf.display(), ioe.to_string());
+                }
                 NOTIFICATIONS_PER_REFID.lock().unwrap().remove(&file_id.to_string());
                 HttpResponse::InternalServerError().body("Internal error")
             }
@@ -297,9 +306,9 @@ async fn upload(req: HttpRequest, payload: Multipart) -> impl Responder {
     let request_id = Uuid::new_v4().to_string();
     let request_id_clone = request_id.clone();
 
-    println!("Starting file upload with refid: {}", request_id.clone());
+    println!("Starting file upload with refid: {}", &request_id);
 
-    let tmpdir = env::temp_dir();
+    let tmpdir = env::temp_dir().join(TMP_DIR_FOLDER_NAME);    
     let input_path_status = save_file(request_id.clone(), payload, tmpdir.clone()).await;
     let mut err_msg = String::new();
     let mut upload_info = (String::new(), String::new(), String::new());
@@ -384,18 +393,19 @@ pub async fn save_file(
     }
 
     let p = std::path::Path::new(&filename);
-    if let Some(fext) = p.extension().map(|i| i.to_str()) {
-        if let Some(ext) = fext {
-            fileext.push_str(ext);
-        }
-    }
 
-    if fileext.len() == 0 {
+    if let Some(fext) = p.extension().map(|i| i.to_str()).and_then(|i| i) {
+        fileext.push_str(fext);
+    } else {
         return Err(format!("Is the document type supported? Could not determine file extension for filename: {}", filename).into());
     }
 
+    if !tmpdir.exists() {
+        fs::create_dir(&tmpdir)?;
+    }
+
     let filepath = tmpdir.join(format!("{}.{}", request_id, fileext));
-    let mut f = tokio::fs::File::create(filepath.clone()).await?;
+    let mut f = tokio::fs::File::create(&filepath).await?;
     f.write_all(&buf).await?;
 
     Ok((ocr_lang, fileext, format!("{}", filepath.display())))
@@ -404,7 +414,7 @@ pub async fn save_file(
 fn progress_made(refid: String, event: &str, data: String, counter: i32) -> Result<(), Box<dyn std::error::Error>> {
     let nevent = event.to_string();
     let nid = format!("{}", counter);
-    let n = Notification::new(nevent, nid, data.clone());
+    let n = Notification::new(nevent, nid, data);
 
     if let Ok(bc) = NOTIFICATIONS_PER_REFID.lock() {
         if let Some(v) = bc.get(&refid) {
@@ -456,9 +466,9 @@ async fn run_dangerzone(
         counter += 1;
     }
 
-    if let Ok(s) = cmd.try_wait() {
-        if let Some(ss) = s {
-            if ss.success() {
+    if let Ok(cmd_exit_status_opt) = cmd.try_wait() {
+        if let Some(cmd_exit_status) = cmd_exit_status_opt {
+            if cmd_exit_status.success() {
                 progress_made(refid.clone(), "processing_success", "success".to_string(), counter)?;
                 let _ = std::fs::remove_file(input_path);
 

@@ -96,7 +96,7 @@
           });
       }
 
-      function doResizeWindow() {
+  function doResizeWindow() {
         let newRows = (Math.max(document.documentElement.clientHeight, window.innerHeight || 0) * 0.4).toFixed(0);
         let eventList = document.getElementById("eventList");
         eventList.style.height = newRows + "px";
@@ -111,7 +111,14 @@
       }, true);
     </script>
 
-    <style>
+    <style>      
+      .title-text {
+        text-align: center;
+        color: maroon;
+        font-size: 1.5em;
+        font-weight: bold;
+      }
+      
       .header-text {
           position:absolute;
           background: #977c27;
@@ -143,17 +150,12 @@
       }
 
       #eventList {
-          overflow: scroll;
-          margin-top: 10px;
-          margin-left: 0;
-          margin-right: 0;
-          margin-bottom: 0;
-          padding-top: 10px;
-          padding-left: 0;
-          padding-right: 0;
-          padding-bottom: 0;
+          overflow: none;          
+          margin: 0;
+          padding: 10px 1px 1px 1px;
           background: yellow;
           border: 5px solid #977c27;
+          font-family: monospace;
       }
 
       #eventList li {
@@ -167,6 +169,7 @@
           background-color: #555555;
           border: none;
           color: white;
+          margin-left: 1%;
           padding: 15px 32px;
           text-align: center;
           text-decoration: none;
@@ -177,12 +180,18 @@
       #submitButton:hover {
           background-color: #000000;
       }
+
+      #submitButton:disabled, #submitButton[disabled]{
+        border: 1px solid #999999;
+        background-color: #cccccc;
+        color: #666666;
+      }      
     </style>
   </head>
 
   <body>
     <noscript>Your browser does not support JavaScript!</noscript>
-    <h2 style="text-align:center;color:maroon">Dangerzone Web</h2>
+    <p class="title-text">Dangerzone Web</p>
     <div>
       <span id="resultSpan"></span> &nbsp;&nbsp;
       <a id="downloadLink" href="#" target="_blank" rel="noopener noreferer"></a>
@@ -369,7 +378,7 @@
       <p><button onclick="submitForm()" id="submitButton" disabled>Convert document!</button></p>
     </div>
     <hr/>
-    <div class="container">
+    <div>
       <div class="header-text">Conversion Log</div>
       <div>
         <br/>      

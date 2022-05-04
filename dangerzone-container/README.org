@@ -4,17 +4,19 @@
 
 This is the =backend/server= part of the solution running inside a container "solution" ([[https://www.docker.com/][Docker]] or [[https://podman.io/][Podman]] or [[https://github.com/lima-vm/lima][Lima]]).
 
-There's a small series of transformations leading to a resulting trusting PDF document (optionally a searchable PDF instead of only images, if [[https://en.wikipedia.org/wiki/Optical_character_recognition][OCR]] was requested).
+There's a small series of transformations leading to the generation of a trusted PDF document (optionally a searchable PDF instead of only images, that is if [[https://en.wikipedia.org/wiki/Optical_character_recognition][OCR]] was requested).
+- Most of the conversion steps happen in memory, except for printing office documents to PDF (early stages of the conversion).
+- OCR is a resources intensive and time consuming: it should always be disabled, unless you NEED to be able to search or select text in the PDF.
 
 [[./images/architecture.png]]
 
 * What is required?
 
-You only need a container engine such as Docker or Podman or Lima. Please note that this has only been tested under Linux ([[https://voidlinux.org/][Void Linux]]) with Podman so far.
+You only need a container engine such as Docker or Podman or Lima. Please note that this has mostly been tested under Linux with Podman so far.
 
 * How to build this?
 
-At the root of this project, please invoke the command below.
+At the root of this project, accordingly your container engine, please invoke one of the commands below.
 
 ** Podman
 

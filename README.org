@@ -2,7 +2,7 @@
 
 * What is this?
 
-=dangerzone-rust= allows converting suspiciuous documents into safe and trusted PDFs, without worrying too much about viruses or evil macros.
+=dangerzone-rust= allows converting suspiciuous documents into safe and trusted PDFs, without worrying too much about viruses or evil macros. *This is not a mature project*.
 - This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation purposes (not an exact port)
 - Similarly to the original Dangerzone tool, documents or images are converted inside a "sandbox"
 
@@ -60,7 +60,7 @@ Below is a high-level architecture overview, the solution relies on a container 
 - [X] Online service with Web interface and remote CLI client ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral07][spiral07 branch]])  
 - [X] Look at releases for Linux, MacOS and Windows ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral08][spiral08 branch]])
 - [X] Documentation updates ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral09][spiral09 branch]])  
-- [ ] Implement conversion progress information (completion percentage)
+- [ ] Implement conversion progress information ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral10][spiral10 branch]])
 - [ ] Support batch conversions
 - [ ] Support application preferences (GUI and CLI support)
 - [ ] Revisit remote mounts options for [[https://github.com/canonical/multipass][Multipass]] and [[https://github.com/containers/podman][Podman]]
@@ -68,9 +68,9 @@ Below is a high-level architecture overview, the solution relies on a container 
 - [ ] etc.
   
     
-* What are the differences with the original Dangerzone?
+* What are the differences with Dangerzone?
 
-The obvious technical difference is the programming language (Rust instead of Python), for performance reasons and general personal exploration.
+This project is more of a hobby at this point: it lacks maturity and several features.
 
 ** The good
 

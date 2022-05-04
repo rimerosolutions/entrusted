@@ -97,7 +97,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
 
     fn mkdirp(p: PathBuf) -> Result<(), Box<dyn Error>> {
         if !p.exists() {
-            let dir_created = fs::create_dir(p.clone());
+            let dir_created = fs::create_dir(&p);
 
             match dir_created {
                 Err(ex) => {
@@ -220,7 +220,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
             err_msg = "Conversion failed!".to_string();
         }
     } else {
-        err_msg.push_str("Cannot find any container runtime executable!\n");
+        err_msg.push_str("Cannot find any supported container runtime executable!\n");
 
         if cfg!(any(target_os="windows")) {
             err_msg.push_str("Please install Docker.");

@@ -2,7 +2,7 @@
 
 * Overview
 
-This repository provides a command-line client for the =dangerzone-httpserver= component.
+This repository provides a command-line client for the =dangerzone-httpserver= component. 
 - Web browsers are resources-heavy nowadays in comparison to 20+ years ago
 - Occasionally you may want to run automation scripts ([[https://unix.stackexchange.com/questions/12902/how-to-run-find-exec][find and exec]]).
   - This can be use for recursive conversions
@@ -18,12 +18,3 @@ In the screenshot below, the client is running in an Ubuntu Linux VM and the ser
 
 [[./images/screenshot-cli.png]]
 
-* Next Steps
-
-List of envisioned efforts.
-
-- [ ] Batch transformations
-- [ ] Conversion progress information
-- [ ] Improve error handling for resuming notifications
-- [ ] SSL support?
-- [ ] Configuration files support

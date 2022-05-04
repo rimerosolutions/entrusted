@@ -69,18 +69,6 @@ It's possible to produce standalone binaries on Linux, with no runtime dependenc
 *** Windows
 
 #+begin_src bat
-  RUSTFLAGS=-C target-feature=+crt-static
+  set RUSTFLAGS=-C target-feature=+crt-static
   cargo build --release
 #+end_src
-
-** Next Steps
-
-List of envisioned efforts.
-
-- [ ] Documentation updates
-- [ ] Dedicated named temporary folder on the server for conversions  
-- [ ] Batch transformations
-- [ ] Conversion progress information
-- [ ] Improve error handling for resuming notifications
-- [ ] SSL support?
-- [ ] Configuration files support

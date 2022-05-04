@@ -18,6 +18,10 @@ use zip;
 
 const SIG_LEGACY_OFFICE: [u8; 8] = [ 208, 207, 17, 224, 161, 177, 26, 225 ];
 
+const IMAGE_DPI: f64   = 150.0;
+const TARGET_DPI : f64 = 72.0;
+const ZOOM_RATIO: f64  = IMAGE_DPI / TARGET_DPI;
+
 #[derive(Clone, Debug)]
 enum ConversionType {
     None,
@@ -273,8 +277,8 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
 
         if mime_type == "application/zip" || mime_type == "application/x-ole-storage" {
             if let Ok(f) = fs::File::open(raw_input_path.clone()) {
-                let mut reader = std::io::BufReader::new(f);
-                let mut buffer: Vec<u8> = vec![];
+                let mut reader = BufReader::new(f);                
+                let mut buffer: Vec<u8> = Vec::with_capacity(f.metadata()?.len());
                 reader.read_to_end(&mut buffer)?;
 
                 if mime_type == "application/zip" {
@@ -505,10 +509,6 @@ fn split_pdf_pages_into_images(src_path: PathBuf, dest_folder: PathBuf) -> Resul
     font_options.set_hint_metrics(cairo::HintMetrics::Default);
     font_options.set_hint_style(cairo::HintStyle::Slight);
 
-    let image_dpi  : f64 = 150.0;
-    let target_dpi : f64 = 72.0;
-    let zoom_ratio = image_dpi / target_dpi;
-
     for i in 0..page_num {
         let page_num = i + 1;
 
@@ -517,14 +517,14 @@ fn split_pdf_pages_into_images(src_path: PathBuf, dest_folder: PathBuf) -> Resul
 
             let dest_path = dest_folder.join(format!("page-{}.png", page_num));
             let (w, h) = page.size();
-            let sw = (w * zoom_ratio) as i32;
-            let sh = (h * zoom_ratio) as i32;
+            let sw = (w * ZOOM_RATIO) as i32;
+            let sh = (h * ZOOM_RATIO) as i32;
 
             let surface_png = ImageSurface::create(Format::Rgb24, sw, sh)?;
 
             let ctx = Context::new(&surface_png)?;
             ctx.set_source_rgb(1.0, 1.0, 1.0);
-            ctx.scale(image_dpi / target_dpi, image_dpi / target_dpi);
+            ctx.scale(ZOOM_RATIO, ZOOM_RATIO);
             ctx.set_antialias(antialias_setting);
             ctx.set_font_options(&font_options);
             ctx.paint()?;
@@ -718,7 +718,7 @@ fn img_to_pdf(src_format: image::ImageFormat, src_path: PathBuf, dest_path: Path
     let f = fs::File::open(src_path)?;
     let reader = BufReader::new(f);
     let img = image::load(reader, src_format)?;
-    let mut buffer: Vec<u8> = vec![];
+    let mut buffer: Vec<u8> = Vec::with_capacity(f.metadata()?.len());
 
     img.write_to(&mut buffer, image::ImageOutputFormat::Png)?;
 

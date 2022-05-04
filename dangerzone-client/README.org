@@ -22,6 +22,8 @@ The user interface is built with the [[https://github.com/fltk-rs/fltk-rs][FLTK]
 
 ** Command-line client
 
+The CLI can be convenient for many reasons, including mitigating the absence of batch conversion feature in the GUI ([[https://unix.stackexchange.com/questions/389705/understanding-the-exec-option-of-find][find-exec]] workflow).
+
 [[./images/cli-screenshot.png]]
 
 

@@ -33,7 +33,7 @@ use http_api_problem::{HttpApiProblem, StatusCode};
 use tokio::io::AsyncWriteExt;
 
 const SPA_INDEX_HTML: &str = include_str!("../web-assets/index.html");
-const TMP_DIR_FOLDER_NAME: &str = "dangerzone";
+const TMP_DIR_FOLDER_NAME: &str = "dangerzone-httpserver";
 
 static NOTIFICATIONS_PER_REFID: Lazy<Mutex<HashMap<String, Arc<Mutex<Vec<Notification>>>>>> = Lazy::new(|| {
     Mutex::new(HashMap::<String, Arc<Mutex<Vec<Notification>>>>::new())
@@ -105,7 +105,7 @@ impl Broadcaster {
         tx.try_send(Bytes::from("data: connected\n\n")).unwrap();
 
         self.clients.push(tx);
-        
+
         let done = false;
         let idx = 0;
 
@@ -224,21 +224,14 @@ async fn serve(host: &str, port: &str) -> std::io::Result<()> {
     println!("Starting server at {}", &addr);
 
     HttpServer::new(|| {
-        let cors = Cors::permissive()
-            .send_wildcard()
-            .allowed_methods(vec!["GET", "POST"])
-            .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
-            .allowed_header(header::CONTENT_TYPE)
-            .max_age(3600);
-            
         let data = Broadcaster::create();
 
         App::new()
-            .wrap(cors)
+            .wrap(Cors::permissive())
             .app_data(data.clone())
             .service(web::resource("/").route(web::get().to(index)))
             .route("/upload", web::post().to(upload))
-            .route("/events/{id}", web::get().to(events))            
+            .route("/events/{id}", web::get().to(events))
             .route("/downloads/{id}", web::get().to(download))
             .default_service(web::get().to(notfound))
     })
@@ -276,7 +269,8 @@ async fn download(info: actix_web::web::Path<String>, req: HttpRequest) -> impl 
                     .body(data)
             }
             Err(ex) => {
-                eprintln!("Internal error: {}", ex.to_string());
+                eprintln!("Could not read input file! {}.", ex.to_string());
+
                 if let Err(ioe) = std::fs::remove_file(&filepath_buf) {
                     eprintln!("Warning: Could not delete file {}. {}.", &filepath_buf.display(), ioe.to_string());
                 }
@@ -288,13 +282,13 @@ async fn download(info: actix_web::web::Path<String>, req: HttpRequest) -> impl 
 }
 
 async fn events(info: actix_web::web::Path<String>, broadcaster: Data<Mutex<Broadcaster>>) -> impl Responder {
-    let ref_id = format!("{}", info.into_inner());    
+    let ref_id = format!("{}", info.into_inner());
     let notifications_per_refid = NOTIFICATIONS_PER_REFID.lock().unwrap();
 
     if !notifications_per_refid.contains_key(&ref_id.clone()) {
         return HttpResponse::NotFound().body("Not found");
     }
-    
+
     let rx = broadcaster.lock().unwrap().new_client(ref_id);
 
     HttpResponse::Ok()
@@ -308,7 +302,7 @@ async fn upload(req: HttpRequest, payload: Multipart) -> impl Responder {
 
     println!("Starting file upload with refid: {}", &request_id);
 
-    let tmpdir = env::temp_dir().join(TMP_DIR_FOLDER_NAME);    
+    let tmpdir = env::temp_dir().join(TMP_DIR_FOLDER_NAME);
     let input_path_status = save_file(request_id.clone(), payload, tmpdir.clone()).await;
     let mut err_msg = String::new();
     let mut upload_info = (String::new(), String::new(), String::new());
@@ -377,7 +371,7 @@ pub async fn save_file(
             while let Some(chunk) = field.next().await {
                 let data = &String::from_utf8(chunk?.to_vec())?;
 
-                if !data.trim().is_empty() {                    
+                if !data.trim().is_empty() {
                     ocr_lang.push_str(data);
                 }
             }

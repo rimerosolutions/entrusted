@@ -105,7 +105,7 @@ impl Broadcaster {
         tx.try_send(Bytes::from("data: connected\n\n")).unwrap();
 
         self.clients.push(tx);
-
+        
         let done = false;
         let idx = 0;
 
@@ -224,14 +224,18 @@ async fn serve(host: &str, port: &str) -> std::io::Result<()> {
     println!("Starting server at {}", &addr);
 
     HttpServer::new(|| {
+        let cors = Cors::permissive()
+            .supports_credentials()
+            .allowed_methods(vec!["GET", "POST", "OPTIONS", "HEAD"])
+            .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT, header::CONTENT_TYPE, ]);
         let data = Broadcaster::create();
 
         App::new()
-            .wrap(Cors::permissive())
+            .wrap(cors)
             .app_data(data.clone())
             .service(web::resource("/").route(web::get().to(index)))
             .route("/upload", web::post().to(upload))
-            .route("/events/{id}", web::get().to(events))
+            .route("/events/{id}", web::get().to(events))            
             .route("/downloads/{id}", web::get().to(download))
             .default_service(web::get().to(notfound))
     })
@@ -274,6 +278,7 @@ async fn download(info: actix_web::web::Path<String>, req: HttpRequest) -> impl 
                 if let Err(ioe) = std::fs::remove_file(&filepath_buf) {
                     eprintln!("Warning: Could not delete file {}. {}.", &filepath_buf.display(), ioe.to_string());
                 }
+
                 NOTIFICATIONS_PER_REFID.lock().unwrap().remove(&file_id.to_string());
                 HttpResponse::InternalServerError().body("Internal error")
             }
@@ -282,13 +287,13 @@ async fn download(info: actix_web::web::Path<String>, req: HttpRequest) -> impl 
 }
 
 async fn events(info: actix_web::web::Path<String>, broadcaster: Data<Mutex<Broadcaster>>) -> impl Responder {
-    let ref_id = format!("{}", info.into_inner());
+    let ref_id = format!("{}", info.into_inner());    
     let notifications_per_refid = NOTIFICATIONS_PER_REFID.lock().unwrap();
 
     if !notifications_per_refid.contains_key(&ref_id.clone()) {
         return HttpResponse::NotFound().body("Not found");
     }
-
+    
     let rx = broadcaster.lock().unwrap().new_client(ref_id);
 
     HttpResponse::Ok()
@@ -302,7 +307,7 @@ async fn upload(req: HttpRequest, payload: Multipart) -> impl Responder {
 
     println!("Starting file upload with refid: {}", &request_id);
 
-    let tmpdir = env::temp_dir().join(TMP_DIR_FOLDER_NAME);
+    let tmpdir = env::temp_dir().join(TMP_DIR_FOLDER_NAME);    
     let input_path_status = save_file(request_id.clone(), payload, tmpdir.clone()).await;
     let mut err_msg = String::new();
     let mut upload_info = (String::new(), String::new(), String::new());
@@ -371,7 +376,7 @@ pub async fn save_file(
             while let Some(chunk) = field.next().await {
                 let data = &String::from_utf8(chunk?.to_vec())?;
 
-                if !data.trim().is_empty() {
+                if !data.trim().is_empty() {                    
                     ocr_lang.push_str(data);
                 }
             }
@@ -393,7 +398,7 @@ pub async fn save_file(
     } else {
         return Err(format!("Is the document type supported? Could not determine file extension for filename: {}", filename).into());
     }
-
+    
     if !tmpdir.exists() {
         fs::create_dir(&tmpdir)?;
     }

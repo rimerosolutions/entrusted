@@ -35,7 +35,8 @@
         resultSpan.innerText = "";
       }
 
-      function submitForm() {
+      function submitForm(source) {        
+        source.disabled = true;
         let suspiciousDocFiles = document.getElementById("fileButton").files;
         let eventList = document.getElementById("eventList");
         let resultSpan = document.getElementById("resultSpan");
@@ -66,7 +67,6 @@
 
                 sse.addEventListener("processing_success", function(e) {
                   uploadForm.reset();
-                  submitButton.disabled = true;
                   resultSpan.innerText = "The conversion succeeded!";
                   resultSpan.className = "success";
                   downloadLink.innerText = "Download trusted PDF here.";
@@ -77,7 +77,6 @@
 
                 sse.addEventListener("processing_failure", function(e) {
                   uploadForm.reset();
-                  submitButton.disabled = true;
                   resultSpan.innerText = "The conversion failed!";
                   resultSpan.className = "error";
                   sse.close();
@@ -91,7 +90,7 @@
                 });
               });
             } else {
-              alert(response.statusText);
+              alert("Could not upload file!\n" + response.statusText);
             }
           });
       }
@@ -156,7 +155,6 @@
           background: yellow;
           border: 5px solid #977c27;
           font-family: monospace;
-          scrollbar-color: #DF9618 #000000;
       }
 
       #eventList li {
@@ -376,7 +374,7 @@
           </div>
         </fieldset>
       </form>
-      <p><button onclick="submitForm()" id="submitButton" disabled>Convert document!</button></p>
+      <p><button onclick="submitForm(this)" id="submitButton" disabled>Convert document!</button></p>
     </div>
     <hr/>
     <div>

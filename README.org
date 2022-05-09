@@ -15,6 +15,12 @@ For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-
     
 * What is available?
 
+** User interfaces
+
+There are 3 user interfaces ([[./dangerzone-httpserver][Web]], [[./dangerzone-client][Desktop and CLI]]).
+
+[[./images/screenshots.png]]
+
 ** Key components
 
 Most users will open a document with the =dangerzone-client=, this will automatically install the =dangerzone-container= (on demand) and generate a PDF.

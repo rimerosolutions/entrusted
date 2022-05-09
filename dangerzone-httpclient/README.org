@@ -1,6 +1,6 @@
 #+TITLE: dangerzone-httpclient README
 
-* Overview
+* What is this?
 
 This repository provides a command-line client for the =dangerzone-httpserver= component. 
 - Web browsers are resources-heavy nowadays in comparison to 20+ years ago
@@ -8,7 +8,9 @@ This repository provides a command-line client for the =dangerzone-httpserver= c
   - This can be use for recursive conversions
   - This can supplement existing workflows driven from shell scripts
 
-* How it works
+* How does it works?
+
+Notifications are received via [[https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events][SSE events]].
 
   [[./images/architecture.png]]
 

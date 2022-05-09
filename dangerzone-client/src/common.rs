@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::path::PathBuf;
 use which;
+use serde::{Deserialize, Serialize};
 
 pub const CONTAINER_IMAGE_NAME: &str = "docker.io/uycyjnzgntrn/dangerzone-converter";
 pub const CONTAINER_IMAGE_EXE: &str = "/usr/local/bin/dangerzone-container";
@@ -176,6 +177,12 @@ fn executable_find(exe_name: &str) -> Option<PathBuf> {
         Err(_) => None,
         Ok(path_location) => Some(path_location)
     }
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct LogMessage {
+    pub data: String,
+    pub percent_complete: usize,
 }
 
 #[derive(Clone)]

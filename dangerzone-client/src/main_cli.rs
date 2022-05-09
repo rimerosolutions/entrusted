@@ -37,6 +37,14 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .help("Optional custom Docker or Podman image name")
                 .required(false)
                 .takes_value(true)
+        ).arg(
+            Arg::with_name("log-format")
+                .long("log-format")
+                .help("Log format (json or plain")
+                .possible_values(&["json", "plain"])
+                .default_value("plain")
+                .required(false)
+                .takes_value(true)
         );
 
     let run_matches= app.to_owned().get_matches();
@@ -90,10 +98,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         None => None
     };
 
+    let log_format = match &run_matches.value_of("log-format") {
+        Some(fmt) => fmt.to_string(),
+        None => "plain".to_string()
+    };
+
     let (tx, rx) = channel();
 
     let exec_handle = thread::spawn(move || {
-        match container::convert(src_path_copy, output_filename, container_image_name, ocr_lang, tx) {
+        match container::convert(src_path_copy, output_filename, container_image_name, log_format, ocr_lang, tx) {
             Ok(_) => None,
             Err(ex) => Some(format!("{}", ex))
         }
@@ -103,11 +116,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("{}", line);
     }
 
-    match exec_handle.join() {
-        Ok(exec_result) => match exec_result {
-            None => Ok(()),
-            Some(msg) => Err(msg.into())
-        },
-        _ => Err("Conversion failed!".into())
-    }
+    let exit_code = {
+        match exec_handle.join() {
+            Ok(exec_result) => match exec_result {
+                None => 0,
+                Some(_) => 1
+            },
+            _ => 1
+        }
+    };
+
+    std::process::exit(exit_code);
 }

@@ -60,8 +60,9 @@ Below is a high-level architecture overview, the solution relies on a container 
 - [X] Online service with Web interface and remote CLI client ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral07][spiral07 branch]])  
 - [X] Look at releases for Linux, MacOS and Windows ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral08][spiral08 branch]])
 - [X] Documentation updates ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral09][spiral09 branch]])  
-- [ ] Implement conversion progress information ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral10][spiral10 branch]])
+- [X] Implement conversion progress information ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral10][spiral10 branch]])
 - [ ] Support batch conversions
+- [ ] Support translations
 - [ ] Support application preferences (GUI and CLI support)
 - [ ] Revisit remote mounts options for [[https://github.com/canonical/multipass][Multipass]] and [[https://github.com/containers/podman][Podman]]
 - [ ] Look at automation scenarios and use-cases (Browser plugin, HTTP Proxy, etc.)
@@ -79,7 +80,7 @@ This project is more of a hobby at this point: it lacks maturity and several fea
 |------------------------------------------+-----------------------------------------------------------------|
 | *Likely faster processing*               | Programming language difference and "1-step" conversion process |
 | *Online service*                         | HTTP server with a minimal lightweight Web interface            |
-| *Docker alternative on MacOS*            | Lima was tested a while back                                    |
+| *Docker alternative on MacOS*            | [[https://github.com/lima-vm/lima][Lima]] was tested, but a while back                               |
 | *Less likelyhood of conversion timeouts* | There's only one external program involved                      |
 |------------------------------------------+-----------------------------------------------------------------|
   
@@ -90,10 +91,13 @@ This project is more of a hobby at this point: it lacks maturity and several fea
 |------------------------------------------+-----------------------------------------------------------|
 | *Likely less secure than the dangerzone* | 1 step conversion process, instead of 2 steps             |
 | *This is mostly an experiment*           | Not heavily tested, even if I use =dangerzone-rust= daily |
-| *Docker alternative on MacOS*            | Lima was tested a while back                              |
 | *Not the best code*                      | I barely /know/ Rust, in comparison to Java               |
 | *Lacking support for batch conversions*  | This could have been implemented from day one, maybe      |
 | *No support for translations yet*        | I have done a minimal POC for the approach                |
 | *Incomplete*                             | UI, code polishing, probably several "obvious things"     |
 |------------------------------------------+-----------------------------------------------------------|
   
+
+* Contributing
+
+All the bugs reports, questions or suggestions are welcome and appreciated. Please note that the best way to contribute is via pull requests.

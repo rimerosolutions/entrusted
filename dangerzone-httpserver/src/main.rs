@@ -205,12 +205,24 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .required(true)
                 .default_value("13000")
                 .takes_value(true),
-        );
+        )
+        .arg(
+            clap::Arg::with_name("container-image-name")
+                .long("container-image-name")
+                .help("Container image name")
+                .required(true)
+                .default_value("docker.io/uycyjnzgntrn/dangerzone-converter")
+                .takes_value(true));
 
     let run_matches = app.to_owned().get_matches();
 
+    let ci_image_name = match run_matches.value_of("container-image-name") {
+        Some(img_name) => img_name.to_string(),
+        _ => "docker.io/uycyjnzgntrn/dangerzone-converter".to_string()
+    };
+
     if let (Some(host), Some(port)) = (run_matches.value_of("host"), run_matches.value_of("port")) {
-        match serve(host, port).await {
+        match serve(host, port, ci_image_name).await {
             Ok(_) => Ok(()),
             Err(ex) => Err(ex.into()),
         }
@@ -219,20 +231,29 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 }
 
-async fn serve(host: &str, port: &str) -> std::io::Result<()> {
+async fn serve(host: &str, port: &str, ci_image_name: String) -> std::io::Result<()> {
     let addr = format!("{}:{}", host, port);
     println!("Starting server at {}", &addr);
 
-    HttpServer::new(|| {
+    let img = ci_image_name.clone();
+    let ci_image_data = {
+        Data::new(Mutex::new(img))
+    };
+    
+    HttpServer::new(move|| {
         let cors = Cors::permissive()
             .supports_credentials()
             .allowed_methods(vec!["GET", "POST", "OPTIONS", "HEAD"])
             .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT, header::CONTENT_TYPE, ]);
+
+        
         let data = Broadcaster::create();
+        
 
         App::new()
             .wrap(cors)
             .app_data(data.clone())
+            .app_data(ci_image_data.clone())
             .service(web::resource("/").route(web::get().to(index)))
             .route("/upload", web::post().to(upload))
             .route("/events/{id}", web::get().to(events))            
@@ -301,7 +322,7 @@ async fn events(info: actix_web::web::Path<String>, broadcaster: Data<Mutex<Broa
         .streaming(rx)
 }
 
-async fn upload(req: HttpRequest, payload: Multipart) -> impl Responder {
+async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<String>>) -> impl Responder {
     let request_id = Uuid::new_v4().to_string();
     let request_id_clone = request_id.clone();
 
@@ -323,8 +344,8 @@ async fn upload(req: HttpRequest, payload: Multipart) -> impl Responder {
 
     if err_msg.is_empty() {
         NOTIFICATIONS_PER_REFID.lock().unwrap().insert(request_id.clone(), Arc::new(Mutex::new(Vec::<Notification>::new())));
-
         let new_upload_info = upload_info.clone();
+
         actix_web::rt::spawn(async move {
             let ocr_lang_opt = if new_upload_info.0.is_empty() {
                 None
@@ -335,7 +356,8 @@ async fn upload(req: HttpRequest, payload: Multipart) -> impl Responder {
             let output_path =
                 PathBuf::from(tmpdir).join([request_id.clone(), "-safe.pdf".to_string()].concat());
 
-            if let Err(ex) = run_dangerzone(request_id, input_path, output_path, ocr_lang_opt).await {
+            let vv = ci_image_name.lock().unwrap().to_string();
+            if let Err(ex) = run_dangerzone(request_id, vv, input_path, output_path, ocr_lang_opt).await {
                 eprintln!("Conversion failed. {}", ex.to_string());
             }
         });
@@ -429,13 +451,18 @@ fn progress_made(refid: String, event: &str, data: String, counter: i32) -> Resu
 
 async fn run_dangerzone(
     refid: String,
+    ci_image_name: String,
     input_path: PathBuf,
     output_path: PathBuf,
     opt_ocr_lang: Option<String>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut cmdline = vec![
         "dangerzone-cli".to_string(),
-        "--output-filename".to_string(),
+        "--log-format".to_string(),
+        "json".to_string(),
+        "--container-image-name".to_string(),
+        ci_image_name,
+        "--output-filename".to_string(),       
         format!("{}", output_path.display()),
         "--input-filename".to_string(),
         format!("{}", input_path.display()),

@@ -27,22 +27,28 @@
         let eventList = document.getElementById("eventList");
         let resultSpan = document.getElementById("resultSpan");
         let downloadLink = document.getElementById("downloadLink");
+        let progressContainer = document.getElementById("progressContainer");
+        let progressbar = document.getElementById("progressbar");
 
         downloadLink.innerText = "";
         downloadLink.title = "";
         downloadLink.href = "#";
         eventList.innerHTML = "";
         resultSpan.innerText = "";
+        progressContainer.className = "invisible";
+        progressbar.value = 0;
       }
 
-      function submitForm(source) {        
+      function submitForm(source) {
         source.disabled = true;
         let suspiciousDocFiles = document.getElementById("fileButton").files;
         let eventList = document.getElementById("eventList");
         let resultSpan = document.getElementById("resultSpan");
         let downloadLink = document.getElementById("downloadLink");
         let ocrCheckbox = document.getElementById("ocrCheckbox");
-        let ocrLangSelect = document.getElementById("ocrLangSelect");        
+        let ocrLangSelect = document.getElementById("ocrLangSelect");
+        let progressContainer = document.getElementById("progressContainer");
+        let progressbar = document.getElementById("progressbar");
 
         let file = suspiciousDocFiles[0];
         let filename = file.name;
@@ -64,6 +70,20 @@
                 let fileId = data.id
                 let statusUrl = "./events/" + fileId;
                 let sse = new EventSource(statusUrl);
+                progressContainer.className = "visible";
+
+                function onComplete() {                  
+                  progressContainer.className = "invisible";
+                  progressbar.value = 0;
+                }
+
+                function handleSseError() {
+                  uploadForm.reset();
+                  resultSpan.innerText = "The conversion failed!";
+                  resultSpan.className = "error";
+                  sse.close();
+                  onComplete();
+                }
 
                 sse.addEventListener("processing_success", function(e) {
                   uploadForm.reset();
@@ -72,19 +92,38 @@
                   downloadLink.innerText = "Download trusted PDF here.";
                   downloadLink.title = "Once downloaded, the PDF will be permanently deleted from the server.";
                   downloadLink.href = "./downloads/" + fileId;
-                  sse.close();
+                  sse.close();                  
+                  onComplete();
                 });
 
                 sse.addEventListener("processing_failure", function(e) {
-                  uploadForm.reset();
-                  resultSpan.innerText = "The conversion failed!";
-                  resultSpan.className = "error";
-                  sse.close();
+                  handleSseError();
+                });
+
+                sse.addEventListener("error", function(e) {
+                  handleSseError();
                 });
 
                 sse.addEventListener("processing_update", function(e) {
                   let eventNode = document.createElement("li");
-                  eventNode.innerText = e.data;
+                  let ndata = e.data;
+
+                  try {
+                    let n = JSON.parse(ndata);
+
+                    if (n != undefined) {
+                      eventNode.innerText = n.data;
+
+                      if (n.percent_complete != 0) {
+                        progressbar.value = n.percent_complete;
+                      }
+                    } else {
+                      eventNode.innerText = ndata;
+                    }
+                  } catch (e) {
+                    eventNode.innerText = ndata;
+                  }
+
                   eventList.appendChild(eventNode);
                   eventList.scrollTop = eventList.scrollHeight;
                 });
@@ -95,7 +134,7 @@
           });
       }
 
-  function doResizeWindow() {
+      function doResizeWindow() {
         let newRows = (Math.max(document.documentElement.clientHeight, window.innerHeight || 0) * 0.4).toFixed(0);
         let eventList = document.getElementById("eventList");
         eventList.style.height = newRows + "px";
@@ -104,20 +143,20 @@
       window.addEventListener("resize", function(event) {
         doResizeWindow();
       }, true);
-
+      
       window.addEventListener("DOMContentLoaded", function(event) {
         doResizeWindow();
       }, true);
     </script>
 
-    <style>      
+    <style>
       .title-text {
-        text-align: center;
-        color: maroon;
-        font-size: 1.5em;
-        font-weight: bold;
+          text-align: center;
+          color: maroon;
+          font-size: 1em;
+          font-weight: bold;
       }
-      
+
       .header-text {
           position:absolute;
           background: #977c27;
@@ -126,7 +165,7 @@
           color: yellow;
           border: 5px solid #977c27;
       }
-      
+
       .success {
           font-weight: bold;
           color: green;
@@ -136,7 +175,15 @@
           font-weight: bold;
           color: red;
       }
-      
+
+      .invisible {
+          display: none;
+      }
+
+      .visible {
+          display: visible;
+      }
+
       fieldset {
           background: cyan;
           border: 5px solid blue;
@@ -149,7 +196,7 @@
       }
 
       #eventList {
-          overflow: auto;          
+          overflow: auto;
           margin: 0;
           padding: 10px 1px 1px 1px;
           background: yellow;
@@ -181,10 +228,10 @@
       }
 
       #submitButton:disabled, #submitButton[disabled]{
-        border: 1px solid #999999;
-        background-color: #cccccc;
-        color: #666666;
-      }      
+          border: 1px solid #999999;
+          background-color: #cccccc;
+          color: #666666;
+      }
     </style>
   </head>
 
@@ -205,7 +252,7 @@
           </div>
           <div>
             <input type="checkbox" id="ocrCheckbox" name="ocr" onchange="toggleOcrCheckbox(this)">
-            <label for="ocrCheckbox">OCR document</label>
+            <label for="ocrCheckbox">Make PDF searchable?</label>
           </div>
           <div>
             <label for="ocrLangSelect">OCR language</label>
@@ -377,10 +424,14 @@
       <p><button onclick="submitForm(this)" id="submitButton" disabled>Convert document!</button></p>
     </div>
     <hr/>
+    <div id="progressContainer" class="invisible">
+      <label for="progressbar">Progress:</label>
+      <progress id="progressbar" value="0" max="100"></progress>
+    </div>
     <div>
       <div class="header-text">Conversion Log</div>
       <div>
-        <br/>      
+        <br/>
         <ul id ="eventList"></ul>
       </div>
     </div>

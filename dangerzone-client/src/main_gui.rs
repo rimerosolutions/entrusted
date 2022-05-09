@@ -1,5 +1,7 @@
 #![windows_subsystem = "windows"]
 
+use std::env;
+use serde_json;
 use std::thread;
 use std::error::Error;
 use std::sync::mpsc;
@@ -44,7 +46,12 @@ fn do_show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: Co
         .center_of_parent()
         .with_type(group::PackType::Vertical);
     pack.set_spacing(20);
-    let mut textdisplay_cmdlog = text::TextDisplay::default_fill().with_label("Conversion output").with_size(340, 320);
+    let progressbar = Rc::new(RefCell::new(misc::Progress::new(20, 20, 300, 20, "")));
+    let progressbar_copy = progressbar.clone();
+
+    progressbar.borrow_mut().set_minimum(0.0);
+    progressbar.borrow_mut().set_maximum(100.0);
+    let mut textdisplay_cmdlog = text::TextDisplay::default_fill().with_label("Conversion output").with_size(340, 280);
     let text_buffer = text::TextBuffer::default();
     let mut text_buffer_copy = text_buffer.clone();
     textdisplay_cmdlog.set_buffer(text_buffer);
@@ -76,7 +83,7 @@ fn do_show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: Co
     let (tx, rx) = mpsc::channel();
 
     let mut exec_handle = Some(thread::spawn(move || {
-        match container::convert(conversion_params.path_in, conversion_params.path_out, Some(conversion_params.oci_image), conversion_params.ocr_lang, tx) {
+        match container::convert(conversion_params.path_in, conversion_params.path_out,  Some(conversion_params.oci_image), "json".to_string(), conversion_params.ocr_lang, tx) {
             Ok(_) => None,
             Err(ex) => Some(format!("{}", ex))
         }
@@ -89,10 +96,21 @@ fn do_show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: Co
 
         if !button_ok_copy.active() {
             if let Ok(raw_msg) = rx.recv() {
-                let msg = format!("{}\n", raw_msg);
-                text_buffer_copy.append(msg.as_str());
-                textdisplay_cmdlog_copy.scroll(text_buffer_copy.count_lines(0, text_buffer_copy.length()), 0);
-                app::awake();
+                let log_msg_ret: serde_json::Result<common::LogMessage> = serde_json::from_slice(raw_msg.as_bytes());
+
+                if let Ok(log_msg) = log_msg_ret {
+                    if log_msg.percent_complete != 0 {
+                        let progress_text = format!("{} %", log_msg.percent_complete);
+                        progressbar_copy.borrow_mut().set_label(&progress_text);
+                        progressbar_copy.borrow_mut().set_value(log_msg.percent_complete as f64);
+                    }
+                    let msg = format!("{}\n", log_msg.data);
+                    text_buffer_copy.append(msg.as_str());
+                    textdisplay_cmdlog_copy.scroll(text_buffer_copy.count_lines(0, text_buffer_copy.length()), 0);
+                    app::awake();
+                } else {
+                    eprintln!("Error: {}", raw_msg);
+                }
             } else {
                 let mut cmdlog_label_color = enums::Color::Red;
                 let mut cmdlog_label_text = "Conversion output (Failure)";
@@ -142,6 +160,7 @@ fn do_show_progress_dialog(x: i32, y: i32, w: i32, h: i32, conversion_params: Co
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let args: Vec<String> = env::args().collect();
     let app = app::App::default().with_scheme(app::Scheme::Gleam);
 
     let wind_title = format!(
@@ -149,7 +168,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"),
         option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown")
     );
-    
+
     let mut wind = window::Window::default()
         .with_size(600, 360)
         .center_screen()
@@ -167,6 +186,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     input_inputfile.borrow_mut().set_tooltip("Path to document to convert");
     let c_input_inputfile = input_inputfile.clone();
     let mut button_inputfile = button::Button::default().with_size(140, 20).with_label("Select document...");
+
+    let mut autoconvert = false;
+
+    if args.len() > 1 {
+        let input_path = PathBuf::from(&args[1]);
+        let path_name = format!("{}", input_path.display());
+        let path_str = path_name.as_str();
+        input_inputfile.borrow_mut().set_value(path_str);
+        autoconvert = true;
+    }
 
     button_inputfile.set_callback({
         move |_| {
@@ -242,7 +271,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut row_openwith = group::Pack::default().with_size(570, 40).below_of(&row_inputloc, size_pack_spacing);
     row_openwith.set_type(group::PackType::Horizontal);
     row_openwith.set_spacing(size_pack_spacing);
-    let mut checkbutton_openwith = button::CheckButton::default().with_size(295, 20).with_label("Open safe document after converting, using");
+    let mut checkbutton_openwith = button::CheckButton::default().with_size(295, 20).with_label("Open document after converting, using");
 
     let pdf_apps_by_name = list_apps_for_pdfs();
     let pdf_viewer_list = Rc::new(RefCell::new(misc::InputChoice::default().with_size(200, 20)));
@@ -310,9 +339,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut row_ocr_language = group::Pack::default().with_size(570, 60).below_of(&row_openwith, size_pack_spacing);
     row_ocr_language.set_type(group::PackType::Horizontal);
     row_ocr_language.set_spacing(size_pack_spacing);
-    let mut checkbutton_ocr_lang = button::CheckButton::default().with_size(300, 20).with_label("OCR document, language");
+    let mut checkbutton_ocr_lang = button::CheckButton::default().with_size(300, 20).with_label("Searchable PDF, with language");
     checkbutton_ocr_lang.set_tooltip("Make the PDF searchable, with a given language for OCR (Optical character recognition).");
-    checkbutton_ocr_lang.set_checked(true);
+    checkbutton_ocr_lang.set_checked(false);
 
     let ocr_language_list = Rc::new(RefCell::new(browser::HoldBrowser::default().with_size(240, 60)));
     let c_ocr_language_list = ocr_language_list.clone();
@@ -334,6 +363,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     if let Some(selected_ocr_language_idx) = ocr_languages.iter().position(|&r| r == "English") {
         ocr_language_list.borrow_mut().select( (selected_ocr_language_idx + 1) as i32);
     }
+
+    ocr_language_list.borrow_mut().deactivate();
 
     checkbutton_ocr_lang.set_callback({
         move |b| {
@@ -443,6 +474,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     wind.end();
     wind.show();
 
+    if autoconvert {
+        button_convert.do_callback();
+    }
+
     match app.run() {
         Ok(_) => Ok(()),
         Err(ex) => Err(ex.into())
@@ -488,7 +523,6 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
 #[cfg(target_os="linux")]
 pub fn list_apps_for_pdfs() -> HashMap<String, String> {
     use freedesktop_entry_parser::parse_entry;
-    use std::env;
 
     // See https://wiki.archlinux.org/title/XDG_MIME_Applications for the logic
 
@@ -510,7 +544,7 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
             if desktop_entry_path.exists() {
                 if let Ok(desktop_entry_data) = parse_entry(desktop_entry_path) {
                     let desktop_entry_section = desktop_entry_data.section("Desktop Entry");
-                    
+
                     if let (Some(app_name), Some(cmd_name)) = (&desktop_entry_section.attr("Name"),
                                                                &desktop_entry_section.attr("TryExec").or(desktop_entry_section.attr("Exec"))) {
                         let cmd_name_sanitized = cmd_name.to_string().replace("%u", "").replace("%U", "").replace("%f", "").replace("%F", "");

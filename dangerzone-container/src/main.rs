@@ -10,6 +10,7 @@ use std::error::Error;
 use std::ffi::CString;
 use std::fs;
 use cfb;
+use serde::{Deserialize, Serialize};
 use std::io::{BufReader, Cursor};
 use std::io::prelude::*;
 use std::path::PathBuf;
@@ -34,18 +35,8 @@ struct TessSettings<'a> {
     data_dir: &'a str,
 }
 
-macro_rules! timed {
-    ($e:expr) => {{
-        let timer = Instant::now();
-        let ret = $e();
-        let millis = timer.elapsed().as_millis();
-        println!("Elapsed time: {}.", elapsed_time_string(millis));
-
-        ret
-    }};
-}
-
 const TESS_DATA_DIR: &str = "/usr/share/tessdata";
+
 
 fn mkdirp(p: PathBuf) -> Result<(), Box<dyn Error>> {
     if !p.exists() {
@@ -63,42 +54,94 @@ fn mkdirp(p: PathBuf) -> Result<(), Box<dyn Error>> {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    timed!(|| {
-        let skip_ocr = match env::var("OCR") {
-            Ok(ocr_set_value) => {
-                match ocr_set_value.as_str() {
-                    "1" => false,
-                    _ => true
-                }
-            },
-            Err(ex) => {
-                return Err(ex.into());
+    let timer = Instant::now();
+
+    let skip_ocr = match env::var("OCR") {
+        Ok(ocr_set_value) => {
+            match ocr_set_value.as_str() {
+                "1" => false,
+                _ => true
             }
-        };
+        },
+        Err(_) => {
+            true
+        }
+    };
+
+    let logger: Box<dyn ConversionLogger> = match env::var("LOG_FORMAT") {
+        Ok(dgz_logformat_value) => {
+            match dgz_logformat_value.as_str() {
+                "json" => {
+                    Box::new(JsonConversionLogger)
+                },
+                _ => Box::new(PlainConversionLogger)
+            }
+        },
+        Err(_) => Box::new(PlainConversionLogger)
+    };
+
+    let ret = {
         let raw_input_path = PathBuf::from("/tmp/input_file");
         let output_file_path = PathBuf::from("/tmp/safe-output-compressed.pdf");
         let output_dir_path = PathBuf::from("/tmp/");
         let safe_dir_path = PathBuf::from("/safezone/safe-output-compressed.pdf");
-        let input_file_path = input_as_pdf_to_pathbuf_uri(raw_input_path)?;
-        let page_count = split_pdf_pages_into_images(input_file_path, output_dir_path.clone())?;
+
+        let mut progress_range = ProgressRange::new(0, 20);
+
+
+        // step 1 0%
+        let input_file_path = input_as_pdf_to_pathbuf_uri(&logger, progress_range, raw_input_path)?;
+
+        let input_file_param = format!("{}", input_file_path.display());
+        let doc = Document::from_file(&input_file_param, None)?;
+        let page_count = doc.n_pages() as usize;
+
+        // step 2 (20%)
+        progress_range = ProgressRange::new(15, 40);
+        split_pdf_pages_into_images(&logger, progress_range, doc, output_dir_path.clone())?;
+
+        // step 3 (40%)
+        progress_range = ProgressRange::new(40, 90);
 
         if skip_ocr {
-            imgs_to_pdf(page_count, output_dir_path.clone(), output_dir_path.clone())?;
+            imgs_to_pdf(&logger, progress_range, page_count, output_dir_path.clone(), output_dir_path.clone())?;
         } else {
             let ocr_lang = env::var("OCR_LANGUAGE")?;
+
             let tess_settings = TessSettings {
                 lang: ocr_lang.as_str(),
                 data_dir: TESS_DATA_DIR,
             };
 
-            ocr_imgs_to_pdf(page_count, tess_settings, output_dir_path.clone(), output_dir_path.clone())?;
+            ocr_imgs_to_pdf(&logger, progress_range, page_count, tess_settings, output_dir_path.clone(), output_dir_path.clone())?;
         }
 
-        pdf_combine_pdfs(page_count, output_dir_path.clone(), output_file_path.clone())?;
-        move_file_to_dir(output_file_path, safe_dir_path)
-    })?;
+        // step 4 (60%)
+        progress_range = ProgressRange::new(90, 98);
+        pdf_combine_pdfs(&logger, progress_range, page_count, output_dir_path.clone(), output_file_path.clone())?;
 
-    Ok(())
+        // step 5 (80%)
+        move_file_to_dir(output_file_path, safe_dir_path)
+    };
+
+    let exit_code = if ret.is_ok() {
+        0
+    } else {
+        1
+    };
+    
+    let msg: String = if let Err(ex) = ret {
+        format!("Conversion failed! {}", ex.to_string())
+    } else {
+        format!("Conversion succeeded!")
+    };
+
+    logger.log(99, msg);
+
+    let millis = timer.elapsed().as_millis();
+    logger.log(100, format!("Elapsed time: {}.", elapsed_time_string(millis)));
+    
+    std::process::exit(exit_code);
 }
 
 fn move_file_to_dir(src_file_path: PathBuf, dest_dir_path: PathBuf) -> Result<(), Box<dyn Error>> {
@@ -108,7 +151,7 @@ fn move_file_to_dir(src_file_path: PathBuf, dest_dir_path: PathBuf) -> Result<()
     Ok(())
 }
 
-fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<dyn Error>> {
+fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRange, raw_input_path: PathBuf) -> Result<PathBuf, Box<dyn Error>> {    
     let conversion_by_mimetype: HashMap<&str, ConversionType> = [
         ("application/pdf", ConversionType::None),
         (
@@ -277,8 +320,9 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
 
         if mime_type == "application/zip" || mime_type == "application/x-ole-storage" {
             if let Ok(f) = fs::File::open(raw_input_path.clone()) {
-                let mut reader = BufReader::new(f);                
-                let mut buffer: Vec<u8> = Vec::with_capacity(f.metadata()?.len());
+                let file_len = raw_input_path.clone().metadata()?.len() as usize;
+                let mut reader = BufReader::new(f);
+                let mut buffer: Vec<u8> = Vec::with_capacity(file_len);
                 reader.read_to_end(&mut buffer)?;
 
                 if mime_type == "application/zip" {
@@ -317,12 +361,12 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
 
             match conversion_type {
                 ConversionType::None => {
-                    println!("+ Copying PDF input to {}.", filename_pdf);
+                    logger.log(5, format!("+ Copying PDF input to {}.", filename_pdf));
 
                     fs::copy(raw_input_path, PathBuf::from(filename_pdf.clone()))?;
                 }
                 ConversionType::Convert => {
-                    println!("+ Converting input image to PDF");
+                    logger.log(5, format!("+ Converting input image to PDF"));
 
                     let img_format = match mime_type {
                         "image/png"    => Ok(image::ImageFormat::Png),
@@ -335,7 +379,7 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
                     img_to_pdf(img_format, raw_input_path, PathBuf::from(filename_pdf.clone()))?;
                 }
                 ConversionType::LibreOffice(output_filter, fileext) => {
-                    println!("Converting to PDF using LibreOffice with filter: {}", output_filter);
+                    logger.log(5, format!("Converting to PDF using LibreOffice with filter: {}", output_filter));
                     let new_input_path = PathBuf::from(format!("/tmp/input.{}", fileext));
                     fs::copy(&raw_input_path, &new_input_path)?;
                     let output_dir_libreoffice = "/tmp/libreoffice";
@@ -368,6 +412,7 @@ fn input_as_pdf_to_pathbuf_uri(raw_input_path: PathBuf) -> Result<PathBuf, Box<d
                         if f_path_name.ends_with(".pdf") {
                             move_file_to_dir(f_path, PathBuf::from(filename_pdf.clone()))?;
                             pdf_file_moved = true;
+                            break;
                         }
                     }
 
@@ -402,17 +447,23 @@ fn elapsed_time_string(millis: u128) -> String {
 }
 
 fn ocr_imgs_to_pdf(
+    logger: &Box<dyn ConversionLogger>,
+    progress_range: ProgressRange,
     page_count: usize,
     tess_settings: TessSettings,
     input_path: PathBuf,
     output_path: PathBuf,
 ) -> Result<(), Box<dyn Error>> {
-    println!("+ Performing OCR to PDF on {} images.", page_count);
+    let progress_delta = progress_range.delta();
+    let mut progress_value: usize = progress_range.min;
+    logger.log(progress_value, format!("+ Performing OCR to PDF on {} images.", page_count));
+
     let api = tesseract_init(tess_settings.lang, tess_settings.data_dir);
 
     for i in 0..page_count {
         let page_num = i + 1;
-        println!("++ Performing OCR on page {}.", page_num);
+        progress_value = progress_range.min + (page_num * progress_delta / page_count);
+        logger.log(progress_value, format!("++ Performing OCR on page {}.", page_num));
         let src = input_path.join(format!("page-{}.png", page_num));
         let dest = output_path.join(format!("page-{}", page_num));
         ocr_img_to_pdf(api, src, dest)?;
@@ -496,12 +547,53 @@ fn ocr_img_to_pdf(
     Ok(())
 }
 
-fn split_pdf_pages_into_images(src_path: PathBuf, dest_folder: PathBuf) -> Result<usize, Box<dyn Error>> {
-    let input_file_param = format!("{}", src_path.display());
-    let doc = Document::from_file(&input_file_param, None)?;
-    let page_num = doc.n_pages();
+trait ConversionLogger {
+    fn log(&self, percent_complete: usize, data: String);
+}
 
-    println!("+ Saving PDF to {} PNG images.", page_num);
+struct PlainConversionLogger;
+struct JsonConversionLogger;
+
+impl ConversionLogger for PlainConversionLogger {
+    fn log(&self, percent_complete: usize, data: String) {
+        println!("{}% {}", percent_complete, data);
+    }
+}
+
+impl ConversionLogger for JsonConversionLogger {
+    fn log(&self, percent_complete: usize, data: String) {
+        let progress_msg = ProgressMessage { percent_complete, data};
+        let progress_json = serde_json::to_string(&progress_msg).unwrap();
+        println!("{}", progress_json);
+    }
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+struct ProgressMessage {
+    percent_complete: usize,
+    data: String
+}
+
+struct ProgressRange {
+    min: usize,
+    max: usize
+}
+
+impl ProgressRange {
+    fn new(min: usize, max: usize) -> Self {
+        Self { min, max }
+    }
+
+    fn delta(&self) -> usize {
+        self.max - self.min
+    }
+}
+
+fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, doc: Document, dest_folder: PathBuf) -> Result<(), Box<dyn Error>> {
+    let page_num = doc.n_pages();
+    let mut progress_value: usize = progress_range.min;
+
+    logger.log(progress_value, format!("+ Saving PDF to {} PNG images.", page_num));
 
     let antialias_setting = cairo::Antialias::Fast;
     let mut font_options = cairo::FontOptions::new()?;
@@ -509,11 +601,14 @@ fn split_pdf_pages_into_images(src_path: PathBuf, dest_folder: PathBuf) -> Resul
     font_options.set_hint_metrics(cairo::HintMetrics::Default);
     font_options.set_hint_style(cairo::HintStyle::Slight);
 
+    let progress_delta = progress_range.delta();
+
     for i in 0..page_num {
         let page_num = i + 1;
 
         if let Some(page) = doc.page(i) {
-            println!("++ Saving page {} to PNG.", page_num);
+            progress_value = progress_range.min + (i * progress_delta as i32 / page_num) as usize;
+            logger.log(progress_value, format!("++ Saving page {} to PNG.", page_num));
 
             let dest_path = dest_folder.join(format!("page-{}.png", page_num));
             let (w, h) = page.size();
@@ -534,14 +629,21 @@ fn split_pdf_pages_into_images(src_path: PathBuf, dest_folder: PathBuf) -> Resul
         }
     }
 
-    Ok(page_num as usize)
+    Ok(())
 }
 
-fn pdf_combine_pdfs(page_count: usize, input_dir_path: PathBuf, output_path: PathBuf) -> Result<(), Box<dyn Error>> {
-    println!("+ Combining {} PDF document(s).", page_count);
+fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, input_dir_path: PathBuf, output_path: PathBuf) -> Result<(), Box<dyn Error>> {
+    logger.log(progress_range.min, format!("+ Combining {} PDF document(s).", page_count));
 
     let mut documents: Vec<lopdf::Document> = Vec::with_capacity(page_count);
+    let step_count = 7;
+    let mut step_num = 1;
 
+    let progress_delta = progress_range.delta();
+
+    // step 1/7
+    let mut progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
+    logger.log(progress_value, format!("++ Collecting documents to merge."));
     for i in 0..page_count {
         let src_path = input_dir_path.join(format!("page-{}.pdf", i + 1));
         let document: lopdf::Document = lopdf::Document::load(src_path)?;
@@ -556,6 +658,11 @@ fn pdf_combine_pdfs(page_count: usize, input_dir_path: PathBuf, output_path: Pat
     let mut documents_pages = BTreeMap::new();
     let mut documents_objects = BTreeMap::new();
     let mut document = lopdf::Document::with_version("1.5");
+
+    // step 2/7
+    step_num += 1;
+    progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
+    logger.log(progress_value, format!("++ Updating documents bookmarks and numbering."));
 
     for mut doc in documents {
         let mut first = false;
@@ -584,7 +691,12 @@ fn pdf_combine_pdfs(page_count: usize, input_dir_path: PathBuf, output_path: Pat
     let mut catalog_object: Option<(lopdf::ObjectId, lopdf::Object)> = None;
     let mut pages_object: Option<(lopdf::ObjectId, lopdf::Object)> = None;
 
-    // Process all objects except "Page" type
+
+    // step 3/7 Process all objects except "Page" type
+    step_num += 1;
+    progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
+    logger.log(progress_value, format!("++ Process objects."));
+
     for (object_id, object) in documents_objects.iter() {
         // We have to ignore "Page" (as are processed later), "Outlines" and "Outline" objects
         // All other objects should be collected and inserted into the main Document
@@ -624,7 +736,11 @@ fn pdf_combine_pdfs(page_count: usize, input_dir_path: PathBuf, output_path: Pat
         return Err("No pages found!".into());
     }
 
-    // Iter over all "Page" and collect with the parent "Pages" created before
+    // step 4/7 Iter over all "Page" and collect with the parent "Pages" created before
+    step_num += 1;
+    progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
+    logger.log(progress_value, format!("++ Update dictionary."));
+
     for (object_id, object) in documents_pages.iter() {
         if let Ok(dictionary) = object.as_dict() {
             let mut dictionary = dictionary.clone();
@@ -641,6 +757,11 @@ fn pdf_combine_pdfs(page_count: usize, input_dir_path: PathBuf, output_path: Pat
     if catalog_object.is_none() {
         return Err("Catalog root not found!".into());
     }
+
+    // step 5/7 Merge objects
+    step_num += 1;
+    progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
+    logger.log(progress_value, format!("++ Merging objects"));
 
     if let (Some(catalog_object), Some(pages_object)) = (catalog_object, pages_object) {
         // Build a new "Pages" with updated fields
@@ -692,20 +813,32 @@ fn pdf_combine_pdfs(page_count: usize, input_dir_path: PathBuf, output_path: Pat
         }
     }
 
+    // step 6/7 Compress the document
+    step_num += 1;
+    progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
+    logger.log(progress_value, format!("++ Compressing PDF."));
     document.compress();
 
-    // Save the merged PDF
+
+    // step 7/7 Save the merged PDF
+    step_num += 1;
+    progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
+    logger.log(progress_value, format!("++ Saving PDF."));
     document.save(output_path)?;
 
     Ok(())
 }
 
-fn imgs_to_pdf(page_count: usize, input_path: PathBuf, output_path: PathBuf) -> Result<(), Box<dyn Error>> {
-    println!("+ Saving {} PNG images to PDFs.", page_count);
+fn imgs_to_pdf(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, input_path: PathBuf, output_path: PathBuf) -> Result<(), Box<dyn Error>> {
+    let progress_delta = progress_range.delta();
+    let mut progress_value: usize = progress_range.min;
+
+    logger.log(progress_value, format!("+ Saving {} PNG images to PDFs.", page_count));
 
     for i in 0..page_count {
         let idx = i + 1;
-        println!("++ Saving PNG image {} to PDF.", idx);
+        progress_value = progress_range.min + (i * progress_delta / page_count) as usize;
+        logger.log(progress_value, format!("++ Saving PNG image {} to PDF.", idx));
         let src = input_path.join(format!("page-{}.png", idx));
         let dest = output_path.join(format!("page-{}.pdf", idx));
         img_to_pdf(image::ImageFormat::Png, src, dest)?;
@@ -715,10 +848,11 @@ fn imgs_to_pdf(page_count: usize, input_path: PathBuf, output_path: PathBuf) -> 
 }
 
 fn img_to_pdf(src_format: image::ImageFormat, src_path: PathBuf, dest_path: PathBuf) -> Result<(), Box<dyn Error>> {
+    let file_len = src_path.metadata()?.len() as usize;
     let f = fs::File::open(src_path)?;
     let reader = BufReader::new(f);
     let img = image::load(reader, src_format)?;
-    let mut buffer: Vec<u8> = Vec::with_capacity(f.metadata()?.len());
+    let mut buffer: Vec<u8> = Vec::with_capacity(file_len);
 
     img.write_to(&mut buffer, image::ImageOutputFormat::Png)?;
 

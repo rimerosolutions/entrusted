@@ -1,3 +1,4 @@
+use serde_json;
 use std::error::Error;
 use std::fs;
 use filetime::FileTime;
@@ -28,7 +29,7 @@ where
         })
 }
 
-fn exec_crt_command(container_program: common::ContainerProgram, args: Vec<&str>, tx: Sender<String>, capture_output: bool) -> Result<(), Box<dyn Error>> {
+fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str>, log_format: String, tx: Sender<String>, capture_output: bool) -> Result<(), Box<dyn Error>> {
     let rt_path = container_program.exec_path;
     let sub_commands = container_program.sub_commands;
     let rt_executable: &str = &format!("{}", rt_path.display());
@@ -37,7 +38,13 @@ fn exec_crt_command(container_program: common::ContainerProgram, args: Vec<&str>
     cmd.extend(sub_commands);
     cmd.extend(args.clone());
 
-    tx.send(format!("\n[CMD_LOCAL]: {} {}", rt_executable, cmd.join(" ")))?;
+    let printer: Box<dyn LogPrinter> = if log_format == "plain".to_string() {
+        Box::new(PlainLogPrinter {})
+    } else {
+        Box::new(JsonLogPrinter {})
+    };
+    
+    tx.send(printer.print(1, format!("\n[CMD_LOCAL]: {} {}", rt_executable, cmd.join(" "))))?;
 
     let mut child = Command::new(rt_executable)
         .args(cmd)
@@ -66,12 +73,44 @@ fn exec_crt_command(container_program: common::ContainerProgram, args: Vec<&str>
     }
 }
 
-pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String>, ocr_lang: Option<String>, tx: Sender<String>) -> Result<bool, Box<dyn Error>> {
+
+trait LogPrinter {
+    fn print(&self, percent_complete: usize, data: String) -> String;
+}
+
+#[derive(Debug, Copy, Clone)]
+struct PlainLogPrinter;
+
+#[derive(Debug, Copy, Clone)]
+struct JsonLogPrinter;
+
+impl LogPrinter for PlainLogPrinter {
+    fn print(&self, percent_complete: usize, data: String) -> String {
+        format!("{}% {}", percent_complete, data)
+    }
+}
+
+impl LogPrinter for JsonLogPrinter {
+    fn print(&self, percent_complete: usize, data: String) -> String{
+        let log_msg = &common::LogMessage {
+            percent_complete, data
+        };
+        serde_json::to_string(log_msg).unwrap()
+    }
+}
+
+pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String>, log_format: String, ocr_lang: Option<String>, tx: Sender<String>) -> Result<bool, Box<dyn Error>> {
     if !input_path.exists() {
         return Err(format!("The selected file {} does not exits!", input_path.display()).into());
     }
 
-    tx.send(format!("Converting {}.", input_path.display()))?;
+    let printer: Box<dyn LogPrinter> = if log_format == "plain".to_string() {
+        Box::new(PlainLogPrinter {})
+    } else {
+        Box::new(JsonLogPrinter {})
+    };
+
+    tx.send(printer.print(1, format!("Converting {}.", input_path.display())))?;
 
     let mut success = false;
 
@@ -141,19 +180,20 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
     // TODO for Lima we assume the default VM instance, that might not be true all the time...
     if let Some(container_rt) = common::container_runtime_path() {
         let mut ensure_image_args = vec!["inspect", container_image_name.as_str()];
-        tx.send("Checking if dangerzone container image exists".to_string())?;
 
-        if let Err(ex) = exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone(), false) {
-            tx.send(format!("Cannot find dangerzone container image! {}", ex.to_string()))?;
+        tx.send(printer.print(1, "Checking if dangerzone container image exists".to_string()))?;
+
+        if let Err(ex) = exec_crt_command(container_rt.clone(), ensure_image_args, log_format.clone(), tx.clone(), false) {
+            tx.send(printer.print(1, format!("Cannot find dangerzone container image! {}.", ex.to_string())))?;
             ensure_image_args = vec!["pull", container_image_name.as_str()];
-            tx.send("Please wait, downloading image...".to_string())?;
+            tx.send(printer.print(1, "Please wait, downloading image..".to_string()))?;
 
-            if let Err(exe) = exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone(), false) {
-                tx.send("Could not download dangerzone container image!".to_string())?;
+            if let Err(exe) = exec_crt_command(container_rt.clone(), ensure_image_args, log_format.clone(), tx.clone(), false) {
+                tx.send(printer.print(1, "Could not download dangerzone container image!".to_string()))?;
                 return Err(exe.into());
             }
 
-            tx.send("Download completed...".to_string())?;
+            tx.send(printer.print(5, "Download completed...".to_string()))?;
         }
 
         let mut pixels_to_pdf_args = vec![];
@@ -183,6 +223,8 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
         let ocr_env = &format!("OCR={}", ocr);
         let ocr_language_env = &format!("OCR_LANGUAGE={}", ocr_language);
 
+        let logformat_env = &format!("LOG_FORMAT={}", log_format);
+
         pixels_to_pdf_args.append(&mut vec![
             "-v",
             input_file_volume,
@@ -191,12 +233,14 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
             "-e",
             ocr_env,
             "-e",
+            logformat_env,
+            "-e",
             ocr_language_env,
             container_image_name.as_str(),
             common::CONTAINER_IMAGE_EXE
         ]);
 
-        if let Ok(_) = exec_crt_command(container_rt, pixels_to_pdf_args, tx, true) {
+        if let Ok(_) = exec_crt_command(container_rt, pixels_to_pdf_args, log_format, tx.clone(), true) {
             if output_path.exists() {
                 fs::remove_file(output_path.clone())?;
             }
@@ -213,7 +257,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
             filetime::set_file_handle_times(&output_file, Some(atime), Some(atime))?;
 
             if let Err(ex) = cleanup_dir(dz_tmp.clone().to_path_buf()) {
-                eprintln!("WARNING: Failed to cleanup temporary folder {}! {}", dz_tmp.clone().display(), ex.to_string());
+                tx.send(printer.print(100, format!("WARNING: Failed to cleanup temporary folder {}! {}", dz_tmp.clone().display(), ex.to_string())))?;
             }
             success = true;
         } else {

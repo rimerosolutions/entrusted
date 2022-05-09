@@ -3,6 +3,7 @@ use futures::stream::StreamExt;
 use reqwest::{Body, Client};
 use reqwest_eventsource::{Event, EventSource};
 use serde::{Deserialize, Serialize};
+use serde_json;
 use std::collections::HashMap;
 
 use std::{
@@ -21,6 +22,12 @@ pub struct UploadResponse {
 pub struct DownloadResponse {
     pub id: String,
     pub data: String,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct LogMessage {
+    pub data: String,
+    pub percent_complete: usize,
 }
 
 #[tokio::main]
@@ -193,8 +200,12 @@ async fn process_notifications(addr: String, request_id: String) -> Result<(), B
             match event {
                 Ok(Event::Open) => println!("Connection open!"),
                 Ok(Event::Message(msg)) => {
-                    if msg.event == "processing_update" {                        
-                            println!("{}", msg.data);
+                    if msg.event == "processing_update" {
+                        let log_msg_ret: serde_json::Result<LogMessage> = serde_json::from_slice(msg.data.as_bytes());
+
+                        if let Ok(log_msg) = log_msg_ret {
+                            println!("{} % {}", log_msg.percent_complete, log_msg.data);
+                        }
                     } else {
                         if msg.event == "processing_success" {
                             println!("Conversion completed!");

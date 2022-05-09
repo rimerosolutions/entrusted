@@ -41,6 +41,7 @@
 
       function submitForm(source) {
         source.disabled = true;
+
         let suspiciousDocFiles = document.getElementById("fileButton").files;
         let eventList = document.getElementById("eventList");
         let resultSpan = document.getElementById("resultSpan");
@@ -72,28 +73,32 @@
                 let sse = new EventSource(statusUrl);
                 progressContainer.className = "visible";
 
-                function onComplete() {                  
+                function onComplete(previousOcrCheckboxState) {
                   progressContainer.className = "invisible";
                   progressbar.value = 0;
+
+                  ocrCheckbox.checked = previousOcrCheckboxState;
                 }
 
                 function handleSseError() {
+                  let previousOcrCheckboxState = ocrCheckbox.checked;
                   uploadForm.reset();
                   resultSpan.innerText = "The conversion failed!";
                   resultSpan.className = "error";
                   sse.close();
-                  onComplete();
+                  onComplete(previousOcrCheckboxState);
                 }
 
                 sse.addEventListener("processing_success", function(e) {
+                  let previousOcrCheckboxState = ocrCheckbox.checked;
                   uploadForm.reset();
                   resultSpan.innerText = "The conversion succeeded!";
                   resultSpan.className = "success";
                   downloadLink.innerText = "Download trusted PDF here.";
                   downloadLink.title = "Once downloaded, the PDF will be permanently deleted from the server.";
                   downloadLink.href = "./downloads/" + fileId;
-                  sse.close();                  
-                  onComplete();
+                  sse.close();
+                  onComplete(previousOcrCheckboxState);
                 });
 
                 sse.addEventListener("processing_failure", function(e) {
@@ -143,7 +148,7 @@
       window.addEventListener("resize", function(event) {
         doResizeWindow();
       }, true);
-      
+
       window.addEventListener("DOMContentLoaded", function(event) {
         doResizeWindow();
       }, true);

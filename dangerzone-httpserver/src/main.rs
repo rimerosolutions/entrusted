@@ -326,7 +326,7 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
     let request_id = Uuid::new_v4().to_string();
     let request_id_clone = request_id.clone();
 
-    println!("Starting file upload with refid: {}", &request_id);
+    println!("Starting file upload with refid: {}.", &request_id);
 
     let tmpdir = env::temp_dir().join(TMP_DIR_FOLDER_NAME);    
     let input_path_status = save_file(request_id.clone(), payload, tmpdir.clone()).await;
@@ -356,8 +356,8 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
             let output_path =
                 PathBuf::from(tmpdir).join([request_id.clone(), "-safe.pdf".to_string()].concat());
 
-            let vv = ci_image_name.lock().unwrap().to_string();
-            if let Err(ex) = run_dangerzone(request_id, vv, input_path, output_path, ocr_lang_opt).await {
+            let container_image_name = ci_image_name.lock().unwrap().to_string();
+            if let Err(ex) = run_dangerzone(request_id, container_image_name, input_path, output_path, ocr_lang_opt).await {
                 eprintln!("Conversion failed. {}", ex.to_string());
             }
         });

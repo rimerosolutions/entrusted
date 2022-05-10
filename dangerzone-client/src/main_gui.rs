@@ -381,9 +381,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     row_oci_image.set_type(group::PackType::Horizontal);
     row_oci_image.set_spacing(size_pack_spacing);
     let mut output_oci_image = frame::Frame::default().with_size(100, 20).with_pos(0, 0);
-    output_oci_image.set_label("OCI Image");
+    output_oci_image.set_label("Container image");
     let mut input_oci_image = input::Input::default().with_size(440, 20);
-    input_oci_image.set_value(common::CONTAINER_IMAGE_NAME);
+    let ci_image_name = common::container_image_name();
+    input_oci_image.set_value(&ci_image_name);
     row_oci_image.end();
 
     let mut row_convert_button = group::Pack::default().with_size(500, 40).below_of(&row_oci_image, size_pack_spacing);

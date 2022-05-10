@@ -186,8 +186,10 @@ fn server_problem(reason: String, uri: &Uri) -> HttpApiProblem {
 
 #[actix_web::main]
 pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let app_version = option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown");
+    let default_ci_image_name = format!("{}:{}", "docker.io/uycyjnzgntrn/dangerzone-converter", app_version);
     let app = clap::App::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
-        .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
+        .version(app_version)
         .author(option_env!("CARGO_PKG_AUTHORS").unwrap_or("Unknown"))
         .about(option_env!("CARGO_PKG_DESCRIPTION").unwrap_or("Unknown"))
         .arg(
@@ -211,14 +213,14 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .long("container-image-name")
                 .help("Container image name")
                 .required(true)
-                .default_value("docker.io/uycyjnzgntrn/dangerzone-converter")
+                .default_value(default_ci_image_name.as_str())
                 .takes_value(true));
 
     let run_matches = app.to_owned().get_matches();
 
     let ci_image_name = match run_matches.value_of("container-image-name") {
         Some(img_name) => img_name.to_string(),
-        _ => "docker.io/uycyjnzgntrn/dangerzone-converter".to_string()
+        _ => default_ci_image_name.clone()
     };
 
     if let (Some(host), Some(port)) = (run_matches.value_of("host"), run_matches.value_of("port")) {

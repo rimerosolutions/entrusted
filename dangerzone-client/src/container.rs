@@ -127,11 +127,11 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
 
     let mut container_image_name = match ci_name {
         Some(image_name) => image_name,
-        None => String::from(common::CONTAINER_IMAGE_NAME)
+        None => common::container_image_name()
     };
 
     if container_image_name.trim().is_empty() {
-        container_image_name = String::from(common::CONTAINER_IMAGE_NAME);
+        container_image_name = common::container_image_name();
     }
 
     fn mkdirp(p: PathBuf) -> Result<(), Box<dyn Error>> {

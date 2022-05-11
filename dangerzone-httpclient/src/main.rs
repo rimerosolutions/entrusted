@@ -5,6 +5,7 @@ use reqwest_eventsource::{Event, EventSource};
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::collections::HashMap;
+use indicatif::ProgressBar;
 
 use std::{
     error::Error,
@@ -194,17 +195,19 @@ async fn convert_file (
 
 async fn process_notifications(addr: String, request_id: String) -> Result<(), Box<dyn Error + Send + Sync>> {
     let mut es = EventSource::get(format!("http://{}/events/{}", addr, request_id));
-
+    let pb = ProgressBar::new(100);
+    
     let processing_status: Result<(), Box<dyn Error>> = {
         while let Some(event) = es.next().await {
             match event {
                 Ok(Event::Open) => println!("Connection open!"),
                 Ok(Event::Message(msg)) => {
                     if msg.event == "processing_update" {
-                        let log_msg_ret: serde_json::Result<LogMessage> = serde_json::from_slice(msg.data.as_bytes());
+                        let log_msg_ret: serde_json::Result<LogMessage> = serde_json::from_str(&msg.data);
 
                         if let Ok(log_msg) = log_msg_ret {
-                            println!("{} % {}", log_msg.percent_complete, log_msg.data);
+                            pb.set_position(log_msg.percent_complete as u64);
+                            pb.println(&log_msg.data);
                         }
                     } else {
                         if msg.event == "processing_success" {
@@ -226,6 +229,8 @@ async fn process_notifications(addr: String, request_id: String) -> Result<(), B
 
         Ok(())
     };
+
+    pb.finish();
 
     match processing_status {
         Ok(_) => Ok(()),

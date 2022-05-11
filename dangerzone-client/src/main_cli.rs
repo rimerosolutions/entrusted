@@ -4,6 +4,8 @@ use std::path::PathBuf;
 use std::sync::mpsc::channel;
 use std::fs;
 use std::thread;
+use serde_json;
+use indicatif::ProgressBar;
 
 mod common;
 mod container;
@@ -106,14 +108,27 @@ fn main() -> Result<(), Box<dyn Error>> {
     let (tx, rx) = channel();
 
     let exec_handle = thread::spawn(move || {
-        match container::convert(src_path_copy, output_filename, container_image_name, log_format, ocr_lang, tx) {
+        match container::convert(src_path_copy, output_filename, container_image_name, String::from("json"), ocr_lang, tx) {
             Ok(_) => None,
             Err(ex) => Some(format!("{}", ex))
         }
     });
 
-    for line in rx {
-        println!("{}", line);
+    // Rendering a progressbar in plain mode
+    if log_format == "plain".to_string() {
+        let pb = ProgressBar::new(100);
+        for line in rx {
+            let log_msg_ret: serde_json::Result<common::LogMessage> = serde_json::from_slice(line.as_bytes());
+
+            if let Ok(log_msg) = log_msg_ret {
+                pb.set_position(log_msg.percent_complete as u64);
+                pb.println(&log_msg.data);
+            }
+        }
+    } else {
+        for line in rx {
+            println!("{}", line);
+        }
     }
 
     let exit_code = {

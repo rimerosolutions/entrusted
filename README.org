@@ -28,10 +28,10 @@ Most users will open a document with the =dangerzone-client=, this will automati
 |-----------------------+---------------------------------------------|
 | Component             | Purpose                                     |
 |-----------------------+---------------------------------------------|
-| [[./dangerzone-container][dangerzone-container]]  | Document processing "sanbox"                |
-| [[./dangerzone-client][dangerzone-client]]     | Command-line and graphical user interfaces  |
-| [[./dangerzone-httpserver][dangerzone-httpserver]] | Online service feature with a Web interface |
-| [[./dangerzone-httpclient][dangerzone-httpclient]] | Command-line client for the online service  |
+| [[./dangerzone_container][dangerzone_container]]  | Document processing "sanbox"                |
+| [[./dangerzone_client][dangerzone_client]]     | Command-line and graphical user interfaces  |
+| [[./dangerzone_httpserver][dangerzone_httpserver]] | Online service feature with a Web interface |
+| [[./dangerzone_httpclient][dangerzone_httpclient]] | Command-line client for the online service  |
 |-----------------------+---------------------------------------------|
 
 ** Architecture overview

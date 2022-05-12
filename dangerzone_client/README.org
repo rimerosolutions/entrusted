@@ -45,6 +45,6 @@ In the example below, a suspicious PDF file is converted to a searchable PDF ([[
 /OCR/ is a time consuming task in comparison to just generating PDF images for pages of the original input.
 
 #+begin_src sh
-   cp ../dangerzone-testdata/gnus-logo.pdf suspicious_file.pdf
+   cp ../test_data/gnus-logo.pdf suspicious_file.pdf
   ./target/debug/dangerzone-cli --input-filename suspicious_file.pdf --ocr-lang eng
 #+end_src

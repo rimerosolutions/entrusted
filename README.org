@@ -17,7 +17,7 @@ For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-
 
 ** User interfaces
 
-There are 3 user interfaces ([[./dangerzone-httpserver][Web]], [[./dangerzone-client][Desktop and CLI]]).
+There are 3 user interfaces ([[./dangerzone_httpserver][Web]], [[./dangerzone_client][Desktop and CLI]]).
 
 [[./images/screenshots.png]]
 

@@ -15,14 +15,13 @@ The current build server is a virtual machine running [[https://ubuntu.com/][Ubu
 
 * About Installers and Packages
 
-I haven't generated software installers for multiple operating systems and their variants (mostly on the Linux side) for many many years...
-- While it could be preferrable on Linux to have a native package instead of an =AppImage= and other binaries, it's time consuming (build, test, maintain/support):
+While it could be preferrable on Linux to have a native package instead of an =AppImage= and other binaries, it's time consuming (build, test, maintain/support):
   - How many distros do you target?
   - How much testing is required and for which versions of a particular Linux distribution?
   - When you have a service, do you provide associated files for any possible [[https://en.wikipedia.org/wiki/Init][init system]]?
 - Under Windows, there are also additional questions:
   - Which software installer to use? Is NSIS still popular, viable and around?
-  - How do you deal with services in "non-involved ways", i.e. =dangerzone-httpserver=?
+  - How do you deal with "services" in "non-involved ways", i.e. =dangerzone-httpserver=?
 
 The binaries are not signed yet (Windows & MacOS), if possible this should be done inside a container too, without having to switch between different machines...
 

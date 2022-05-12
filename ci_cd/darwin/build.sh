@@ -8,6 +8,12 @@ APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2
 ARTIFACTSDIR="${PROJECTDIR}/artifacts/dangerzone-darwin-amd64-${APPVERSION}"
 
 mkdir -p ${ARTIFACTSDIR}
+
+rm -rf ${PROJECTDIR}/dangerzone_container/target
+rm -rf ${PROJECTDIR}/dangerzone_client/target
+rm -rf ${PROJECTDIR}/dangerzone_httpclient/target
+rm -rf ${PROJECTDIR}/dangerzone_httpserver/target
+
 cd ${PROJECTDIR}
 
 echo "Building dangerzone_client"

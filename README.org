@@ -67,11 +67,12 @@ Below is a high-level architecture overview, the solution relies on a container 
 - [X] Look at releases for Linux, MacOS and Windows ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral08][spiral08 branch]])
 - [X] Documentation updates ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral09][spiral09 branch]])  
 - [X] Implement conversion progress information ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral10][spiral10 branch]])
+- [X] Minimal CI/CD pipeline ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral11][spiral11 branch]])
 - [ ] Support batch conversions
 - [ ] Support translations
 - [ ] Support application preferences (GUI and CLI support)
-- [ ] Revisit remote mounts options for [[https://github.com/canonical/multipass][Multipass]] and [[https://github.com/containers/podman][Podman]]
-- [ ] Look at automation scenarios and use-cases (Browser plugin, HTTP Proxy, etc.)
+- [ ] Improve user interface and documentation
+- [ ] Support Tails
 - [ ] etc.
   
     

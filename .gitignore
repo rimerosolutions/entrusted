@@ -1,6 +1,7 @@
 # Created by https://www.toptal.com/developers/gitignore/api/rust,emacs,macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=rust,emacs,macos
 
+artifacts
 .DirIcon
 
 ### Emacs ###

@@ -74,9 +74,9 @@ Below is a high-level architecture overview, the solution relies on a container 
 - [ ] Improve user interface and documentation
 - [ ] Revisit notifications for SSE + HTTP2, browser restrictions
 - [ ] Revisit getting rid of LibreOffice in the container, working Java native code for parsing office documents???
-  - [ ] Does it help deal with password protected documents?
-  - [ ] Does is integrate without crashing at runtime?
-  - [ ] Assuming that it works in Java, there are no great libraries that support OpenOffice documents.
+  - [ ] Does it help deal with password protected documents via SDK/Library calls?
+  - [ ] Does the Java code still crash at runtime?
+  - [ ] Assuming that the initial PDF conversion works for MS Office format conversion to PDF, are there "decent libraries" for  OpenDocument formats?
 - [ ] Support Tails Linux
 - [ ] Rename the Github project 
 - [ ] etc.

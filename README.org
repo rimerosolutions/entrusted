@@ -72,7 +72,10 @@ Below is a high-level architecture overview, the solution relies on a container 
 - [ ] Support translations
 - [ ] Support application preferences (GUI and CLI support)
 - [ ] Improve user interface and documentation
-- [ ] Support Tails
+- [ ] Revisit notifications for SSE + HTTP2, browser restrictions
+- [ ] Revisit getting rid of LibreOffice in the container, working Java native code for parsing office documents???
+- [ ] Support Tails Linux
+- [ ] Rename the Github project 
 - [ ] etc.
   
     

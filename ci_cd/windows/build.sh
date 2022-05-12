@@ -4,7 +4,7 @@ set -x
 PREVIOUSDIR="$(echo $PWD)"
 SCRIPTDIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${SCRIPTDIR}/../..)"
-APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' ${PROJECTDIR}/dangerzone-client/Cargo.toml)
+APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' ${PROJECTDIR}/dangerzone_client/Cargo.toml)
 ARTIFACTSDIR="${PROJECTDIR}/artifacts/dangerzone-windows-amd64-${APPVERSION}"
 
 mkdir -p ${ARTIFACTSDIR}
@@ -39,5 +39,5 @@ if [ $retVal -ne 0 ]; then
 fi
 cp ${PROJECTDIR}/dangerzone_httpclient/target/x86_64-pc-windows-gnu/release/dangerzone-httpclient.exe ${ARTIFACTSDIR}/
 
-cd ${PREVIOUSDIR}
+
 

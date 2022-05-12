@@ -83,5 +83,5 @@ mv  ${ARTIFACTSDIR}/dangerzone-gui ${APPBUNDLEEXE}/${APPNAME}
 perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ${APPBUNDLECONTENTS}/Info.plist
 perl -pi -e "s/_APPVERSION_/${APPBUNDLEVERSION}/g" ${APPBUNDLECONTENTS}/Info.plist
 
-cd ${PREVIOUSDIR}
+
 

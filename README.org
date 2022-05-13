@@ -68,15 +68,15 @@ Below is a high-level architecture overview, the solution relies on a container 
 - [X] Documentation updates ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral09][spiral09 branch]])  
 - [X] Implement conversion progress information ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral10][spiral10 branch]])
 - [X] Minimal CI/CD pipeline ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral11][spiral11 branch]])
-- [ ] Support batch conversions
-- [ ] Support translations
-- [ ] Support application preferences (GUI and CLI support)
-- [ ] Improve user interface and documentation
-- [ ] Revisit notifications for SSE + HTTP2, browser restrictions
 - [ ] Revisit getting rid of LibreOffice in the container, working Java native code for parsing office documents???
   - [ ] Does it help deal with password protected documents via SDK/Library calls?
   - [ ] Does the Java code still crash at runtime?
   - [ ] Assuming that the initial PDF conversion works for MS Office format conversion to PDF, are there "decent libraries" for  OpenDocument formats?
+- [ ] Support batch conversions
+- [ ] Support translations
+- [ ] Support application preferences (GUI and CLI support)
+- [ ] Improve user interface and documentation
+- [ ] Revisit notifications for SSE + HTTP2, browser restrictions    
 - [ ] Support Tails Linux
 - [ ] Rename the Github project 
 - [ ] etc.

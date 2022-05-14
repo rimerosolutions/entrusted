@@ -1,0 +1,312 @@
+#+TITLE: live_cd README
+
+* Overview
+
+** Notes
+- *EVERYTHING* below is based on the work of =Will Haley= documented [[https://willhaley.com/blog/custom-debian-live-environment/][here]], with very minimal variation/adaptation.
+- This document is incomplete and created after the fact, some steps might be missing or incorrect
+- /In the future/, There's a strong desire to automate most of the commands outline in this document
+  - It's a lot of typing
+  - It needs to be easily repeatable/reproducible  
+
+** About this document
+
+This document describes the step for creating a minimal [[https://www.debian.org/][Debian GNU/Linux]] image of =dangerzone-rust= with its "Online service feature".
+- It is not clear yet if providing a "ready to go" virtual machine is the best option for most users
+- It seems that many users occasionally experience issues with Podman or Docker on various Operating systems (original Dangerzone issues)
+
+** Expected User journey
+
+- The user downloads the ISO Live CD image of =dangerzone-rust= from the [[https://github.com/rimerosolutions/dangerzone-rust/releases][Github releases page]], instead of other binaries.
+- The user runs the live-CD in a virtual machine environment (QEMU, VirtualBox, VMWare, Parallels, etc.)
+- Once the live-cd system is up and running, the user can access the =dangerzone-rust= Web interface at http://ipaddress:13000
+
+* Requirements
+
+An existing Debian installation is assumed for the rest of this document.
+
+#+begin_src sh
+  sudo apt install \
+      debootstrap \
+      squashfs-tools \
+      xorriso \
+      isolinux \
+      syslinux-efi \
+      grub-pc-bin \
+      grub-efi-amd64-bin \
+      mtools \
+      systemd-container
+#+end_src
+
+Prepare the live CD folders
+
+#+begin_src sh
+  mkdir -p $HOME/LIVE_BOOT
+#+end_src
+
+* Bootstrap and Configure Debian
+
+** Bootstrap the environment
+
+#+begin_src sh
+  sudo debootstrap \
+      --arch=amd64 \
+      --variant=minbase \
+      bullseye \
+      $HOME/LIVE_BOOT/chroot \
+      http://ftp.us.debian.org/debian/
+#+end_src
+
+** Switch to the chroot environment
+
+Get into the chroot environment with the command below
+
+#+begin_src sh
+  sudo systemd-nspawn -D /home/dangerzone/LIVE_BOOT/chroot /bin/bash
+#+end_src
+
+*** Setup the hostname
+
+#+begin_src sh
+  echo "dangerzone-live" > /etc/hostname
+#+end_src
+
+*** Install required live-cd packages
+
+#+begin_src sh
+  apt update && \
+      apt install --no-install-recommends -y \
+      linux-image-amd64 \
+      doas \
+      uidmap \
+      dbus-user-session \
+      ca-certificates \
+      curl \
+      locales \
+      network-manager \
+      net-tools \
+      mg \
+      openssh-sftp-server \
+      openssh-server \
+      podman \
+      live-boot \
+      systemd-sysv
+#+end_src
+
+*** Change the root password
+
+#+begin_src sh
+  passwd root
+#+end_src
+
+*** Enable few systemd services
+
+#+begin_src sh
+systemctl enable sshd
+systemctl enable systemd-networkd
+#+end_src
+
+*** Setup dangerzone-rust
+
+**** Create user
+
+Create a new user named =dangerzone=.
+
+#+begin_src sh
+  useradd -ms /bin/bash dangerzone
+#+end_src
+
+**** Download and extract dangerzone-rust
+
+#+begin_src sh
+  curl -L -O https://github.com/rimerosolutions/dangerzone-rust/releases/download/0.0.2/dangerzone-linux-amd64-0.0.2.tar
+  tar xf dangerzone-linux-amd64-0.0.2.tar && cd dangerzone-linux-amd64-0.0.2
+  chmod +x dangerzone-*
+  mv dangerzone-httpserver dangerzone-cli /usr/local/bin
+#+end_src
+
+**** Setup dangerzone-httpserver with systemd
+
+Create a file at =/etc/systemd/system/dangerzone-httpserver.service=
+
+#+begin_src conf-toml
+  [Unit]
+  Description=Dangerzone HTTP server
+  After=network.target
+
+  [Service]
+  Type=simple
+  User=dangerzone
+  ExecStart=/usr/local/bin/dangerzone-http-server --host 0.0.0.0 --port 13000
+  Restart=always
+
+  [Install]
+  WantedBy=multi-user.target
+#+end_src
+
+#+begin_src sh
+  systemctl enable dangerzone-httpserver
+#+end_src
+
+**** Setup podman
+
+#+begin_src conf-toml
+  [engine]
+  cgroup_manager= "cgroupfs"
+#+end_src
+
+*** Exit the chroot environment
+
+#+begin_src sh
+  exit
+#+end_src
+
+** Create the base file system
+
+#+begin_src sh
+  mkdir -p $HOME/LIVE_BOOT/{staging/{EFI/boot,boot/grub/x86_64-efi,isolinux,live},tmp}
+#+end_src
+
+#+begin_src sh
+  sudo mksquashfs \
+      $HOME/LIVE_BOOT/chroot \
+      $HOME/LIVE_BOOT/staging/live/filesystem.squashfs \
+      -e boot
+#+end_src
+
+#+begin_src sh
+  cp $HOME/LIVE_BOOT/chroot/boot/vmlinuz-* \
+      $HOME/LIVE_BOOT/staging/live/vmlinuz && \
+  cp $HOME/LIVE_BOOT/chroot/boot/initrd.img-* \
+      $HOME/LIVE_BOOT/staging/live/initrd
+#+end_src
+
+* Prepare boot loader menus
+
+#+begin_src sh
+  cat <<'EOF' >$HOME/LIVE_BOOT/staging/isolinux/isolinux.cfg
+  UI vesamenu.c32
+
+  MENU TITLE Boot Menu
+  DEFAULT linux
+  TIMEOUT 600
+  MENU RESOLUTION 640 480
+  MENU COLOR border       30;44   #40ffffff #a0000000 std
+  MENU COLOR title        1;36;44 #9033ccff #a0000000 std
+  MENU COLOR sel          7;37;40 #e0ffffff #20ffffff all
+  MENU COLOR unsel        37;44   #50ffffff #a0000000 std
+  MENU COLOR help         37;40   #c0ffffff #a0000000 std
+  MENU COLOR timeout_msg  37;40   #80ffffff #00000000 std
+  MENU COLOR timeout      1;37;40 #c0ffffff #00000000 std
+  MENU COLOR msg07        37;40   #90ffffff #a0000000 std
+  MENU COLOR tabmsg       31;40   #30ffffff #00000000 std
+
+  LABEL linux
+    MENU LABEL Dangerzone Live [BIOS/ISOLINUX]
+    MENU DEFAULT
+    KERNEL /live/vmlinuz
+    APPEND initrd=/live/initrd boot=live
+
+  LABEL linux
+    MENU LABEL Dangerzone Live [BIOS/ISOLINUX] (nomodeset)
+    MENU DEFAULT
+    KERNEL /live/vmlinuz
+    APPEND initrd=/live/initrd boot=live nomodeset
+  EOF
+#+end_src
+
+#+begin_src sh
+  cat <<'EOF' >$HOME/LIVE_BOOT/staging/boot/grub/grub.cfg
+  search --set=root --file /DEBIAN_CUSTOM
+
+  set default="0"
+  set timeout=30
+
+  # If X has issues finding screens, experiment with/without nomodeset.
+
+  menuentry "Dangerzone Live [EFI/GRUB]" {
+      linux ($root)/live/vmlinuz boot=live
+      initrd ($root)/live/initrd
+  }
+
+  menuentry "Dangerzone Live [EFI/GRUB] (nomodeset)" {
+      linux ($root)/live/vmlinuz boot=live nomodeset
+      initrd ($root)/live/initrd
+  }
+  EOF
+#+end_src
+
+#+begin_src sh
+  cat <<'EOF' >$HOME/LIVE_BOOT/tmp/grub-standalone.cfg
+  search --set=root --file /DEBIAN_CUSTOM
+  set prefix=($root)/boot/grub/
+  configfile /boot/grub/grub.cfg
+  EOF
+#+end_src
+
+#+begin_src sh
+  touch $HOME/LIVE_BOOT/staging/DEBIAN_CUSTOM
+#+end_src
+
+* Prepare boot loader files
+
+Copy BIOS/legacy boot required files into our workspace.
+
+#+begin_src sh
+  cp /usr/lib/ISOLINUX/isolinux.bin "${HOME}/LIVE_BOOT/staging/isolinux/" && \
+  cp /usr/lib/syslinux/modules/bios/* "${HOME}/LIVE_BOOT/staging/isolinux/"
+#+end_src
+
+Copy EFI/modern boot required files into our workspace.
+
+#+begin_src sh
+  cp -r /usr/lib/grub/x86_64-efi/* "${HOME}/LIVE_BOOT/staging/boot/grub/x86_64-efi/"
+#+end_src
+
+Generate an EFI bootable GRUB image.
+
+#+begin_src sh
+  grub-mkstandalone \
+      --format=x86_64-efi \
+      --output=$HOME/LIVE_BOOT/tmp/bootx64.efi \
+      --locales="" \
+      --fonts="" \
+      "boot/grub/grub.cfg=$HOME/LIVE_BOOT/tmp/grub-standalone.cfg"
+#+end_src
+
+Create a FAT16 UEFI boot disk image containing the EFI bootloader.
+
+#+begin_src sh
+  (cd $HOME/LIVE_BOOT/staging/EFI/boot && \
+      dd if=/dev/zero of=efiboot.img bs=1M count=20 && \
+      mkfs.vfat efiboot.img && \
+      mmd -i efiboot.img efi efi/boot && \
+      mcopy -vi efiboot.img $HOME/LIVE_BOOT/tmp/bootx64.efi ::efi/boot/
+  )
+#+end_src
+
+* Create bootable ISO
+
+The command below will create the final ISO at =${HOME}/LIVE_BOOT/dangerzone-live.iso=.
+
+#+begin_src sh
+  xorriso \
+      -as mkisofs \
+      -iso-level 3 \
+      -o "${HOME}/LIVE_BOOT/dangerzone-live.iso" \
+      -full-iso9660-filenames \
+      -volid "DEBIAN_CUSTOM" \
+      -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
+      -eltorito-boot \
+          isolinux/isolinux.bin \
+          -no-emul-boot \
+          -boot-load-size 4 \
+          -boot-info-table \
+          --eltorito-catalog isolinux/isolinux.cat \
+      -eltorito-alt-boot \
+          -e /EFI/boot/efiboot.img \
+          -no-emul-boot \
+          -isohybrid-gpt-basdat \
+      -append_partition 2 0xef ${HOME}/LIVE_BOOT/staging/EFI/boot/efiboot.img \
+      "${HOME}/LIVE_BOOT/staging"
+#+end_src

@@ -68,6 +68,7 @@ Below is a high-level architecture overview, the solution relies on a container 
 - [X] Documentation updates ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral09][spiral09 branch]])  
 - [X] Implement conversion progress information ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral10][spiral10 branch]])
 - [X] Minimal CI/CD pipeline ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral11][spiral11 branch]])
+- [X] Provide live CD ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral12][spiral12 branch]])
 - [ ] Revisit getting rid of LibreOffice in the container, working Java native code for parsing office documents???
   - [ ] Does it help deal with password protected documents via SDK/Library calls?
   - [ ] Does the Java code still crash at runtime?

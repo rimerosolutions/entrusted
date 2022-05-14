@@ -19,7 +19,7 @@ Excerpt of the build process from a Debian VM
 
 [[./images/live_prelogin.png]]
 
-** Post-Login messag
+** Post-Login message
 
 [[./images/live_postlogin.png]]
 
@@ -28,7 +28,7 @@ Excerpt of the build process from a Debian VM
 
 By default, the /Dangerzone Online Service/ is running on port =13000= and binds to all interfaces (=0.0.0.0=).
 
-You can access it from your machine http://IP_ADDRESS_OF_VIRTUAL_MACHINE:13000
+You can access it from your machine =http://IP_ADDRESS_OF_VIRTUAL_MACHINE:13000=
 
 Please *replace* =IP_ADDRESS_OF_VIRTUAL_MACHINE= with a valid IP address or hostname, based on your virtual machine network settings.
 

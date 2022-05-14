@@ -1,6 +1,9 @@
 # CI_CD
 
+/There's ongoing work to automate the creation of a [[./live_cd][live CD]]./
+
 * Overview
+
 A bunch of script help build automatically release artifacts for few operating systems (Linux, MacOS or Windows).
 
 The current build server is a virtual machine running [[https://ubuntu.com/][Ubuntu Linux]] with the following software installed (among other applications).
@@ -37,8 +40,8 @@ The GUI is built on a Centos 7 container image to achieve maximal binary compati
   
 * Windows
 
-The performance, binaries and other details hasn't been assessed, ut this seems to be running just fine.
+The performance, binaries and other details hasn't been assessed, but this seems to be running just fine.
 
 * MacOS
 
-The performance, binaries and other details hasn't been assessed, ut this seems to be running just fine.
+The performance, binaries and other details hasn't been assessed, but this seems to be running just fine.

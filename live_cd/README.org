@@ -79,6 +79,8 @@ Get into the chroot environment with the command below
   apt update && \
       apt install --no-install-recommends -y \
       linux-image-amd64 \
+      auditd \
+      iptables-persistent \
       doas \
       uidmap \
       dbus-user-session \
@@ -104,8 +106,28 @@ Get into the chroot environment with the command below
 *** Enable few systemd services
 
 #+begin_src sh
-systemctl enable sshd
-systemctl enable systemd-networkd
+  systemctl enable sshd
+  systemctl enable auditd
+  systemctl enable netfilter-persistent
+  systemctl enable systemd-networkd
+#+end_src
+
+*** Setup firewall rules
+
+Create a file at =/etc/iptables/rules.v4= with the following contents
+
+#+begin_src sh
+  *filter
+  -P INPUT DROP
+  -P OUTPUT DROP
+  -A INPUT -i lo -j ACCEPT
+  -A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+  -A INPUT -p tcp -m tcp --dport 13000 -j ACCEPT
+  -A  OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+  -A OUTPUT -o lo -j ACCEPT
+  -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+  COMMIT
 #+end_src
 
 *** Setup dangerzone-rust
@@ -152,9 +174,54 @@ Create a file at =/etc/systemd/system/dangerzone-httpserver.service=
 
 **** Setup podman
 
+Switch to the =dangerzone= user: =su - dangerzone=.
+
+We need to deal with potential console warnings while running dangerzone. It's very important to control the standard output messages, as that information is parsed to collect conversion progress information.
+
+Create a file as the =dangerzone= user at  =/home/dangerzone/.config/containers/containers.conf=.
+
 #+begin_src conf-toml
   [engine]
   cgroup_manager= "cgroupfs"
+#+end_src
+
+Setup variables at the end of =/home/dangerzone/.bashrc=
+
+#+begin_src sh
+  mkdir -p /tmp/runtime
+  export XDG_RUNTIME_DIR=/tmp/runtime
+  export RUNLEVEL=3
+#+end_src
+
+**** Setup firewall scripts
+
+Create a file at =/usr/local/bin/dangerzone-fw-enable=
+
+#+begin_src sh
+  #!/usr/bin/env sh
+  iptables -P INPUT DROP
+  iptables -P OUTPUT DROP
+  iptables -A INPUT -i lo -j ACCEPT
+  iptables -A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+  iptables -A INPUT -p tcp -m tcp --dport 13000 -j ACCEPT
+  iptables -A  OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+  iptables -A OUTPUT -o lo -j ACCEPT
+  iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+#+end_src
+
+Create a file at =/usr/local/bin/dangerzone-fw-disable=
+
+#+begin_src sh
+  #!/usr/bin/env sh
+  iptables -P INPUT ACCEPT
+  iptables -P OUTPUT ACCEPT
+#+end_src
+
+Make scripts executable.
+
+#+begin_src sh
+  chmod +x /usr/local/bin/dangerzone-fw-enable
+  chmod +x /usr/local/bin/dangerzone-fw-disable
 #+end_src
 
 *** Exit the chroot environment

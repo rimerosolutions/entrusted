@@ -75,6 +75,10 @@ Get into the chroot environment with the command below
 
 *** Install required live-cd packages
 
+**** Minimal packages
+
+Install minimal packages to setup =dangerzone-httpserver= service later.
+
 #+begin_src sh
   apt update && \
       apt install --no-install-recommends -y \
@@ -97,13 +101,23 @@ Get into the chroot environment with the command below
       systemd-sysv
 #+end_src
 
+**** Cleanup packages
+
+Reclaim some disk space.
+
+#+begin_src sh
+  apt clean
+#+end_src
+
 *** Change the root password
 
 #+begin_src sh
   passwd root
 #+end_src
 
-*** Enable few systemd services
+*** Enable few services
+
+Couple of services need to run on startup
 
 #+begin_src sh
   systemctl enable sshd
@@ -181,16 +195,20 @@ We need to deal with potential console warnings while running dangerzone. It's v
 Create a file as the =dangerzone= user at  =/home/dangerzone/.config/containers/containers.conf=.
 
 #+begin_src conf-toml
+  tee -a /home/dangerzone/.config/containers/containers.conf<<EOF
   [engine]
   cgroup_manager= "cgroupfs"
+  EOF
 #+end_src
 
 Setup variables at the end of =/home/dangerzone/.bashrc=
 
 #+begin_src sh
+  tee -a /home/dangerzone/.bashrc<<EOF
   mkdir -p /tmp/runtime
   export XDG_RUNTIME_DIR=/tmp/runtime
   export RUNLEVEL=3
+  EOF
 #+end_src
 
 **** Setup firewall scripts

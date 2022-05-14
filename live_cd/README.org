@@ -7,9 +7,9 @@
 ** Notes
 
 - This document is incomplete and created after the fact, some instructions might be missing or incorrect
-- /In the future/, There's a strong desire to automate most of the commands outline in this document
-  - It's a lot of typing
-  - It needs to be easily repeatable/reproducible  
+- /In the future/, There's a strong desire to automate most of the commands outlined in this document:
+  - It's too much typing
+  - It needs to be easily repeatable/reproducible (build the ISO from a container image)
 
 ** About this document
 
@@ -117,7 +117,7 @@ Reclaim some disk space.
 
 *** Enable few services
 
-Couple of services need to run on startup
+Couple of services need to run on startup.
 
 #+begin_src sh
   systemctl enable sshd
@@ -128,7 +128,7 @@ Couple of services need to run on startup
 
 *** Setup firewall rules
 
-Create a file at =/etc/iptables/rules.v4= with the following contents
+We need to only accept SSH and connections to the Dangerzone HTTP server. Please create a file at =/etc/iptables/rules.v4= with the following contents.
 
 #+begin_src sh
   *filter
@@ -213,7 +213,9 @@ Setup variables at the end of =/home/dangerzone/.bashrc=
 
 **** Setup firewall scripts
 
-Create a file at =/usr/local/bin/dangerzone-fw-enable=
+Create a file at
+
+=/usr/local/bin/dangerzone-fw-enable=.
 
 #+begin_src sh
   #!/usr/bin/env sh

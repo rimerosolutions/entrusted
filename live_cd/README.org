@@ -1,25 +1,27 @@
 #+TITLE: live_cd README
 
+*EVERYTHING* below is based on the work of =Will Haley= documented [[https://willhaley.com/blog/custom-debian-live-environment/][here]], with very minimal variation/adaptation.
+  
 * Overview
 
 ** Notes
-- *EVERYTHING* below is based on the work of =Will Haley= documented [[https://willhaley.com/blog/custom-debian-live-environment/][here]], with very minimal variation/adaptation.
-- This document is incomplete and created after the fact, some steps might be missing or incorrect
+
+- This document is incomplete and created after the fact, some instructions might be missing or incorrect
 - /In the future/, There's a strong desire to automate most of the commands outline in this document
   - It's a lot of typing
   - It needs to be easily repeatable/reproducible  
 
 ** About this document
 
-This document describes the step for creating a minimal [[https://www.debian.org/][Debian GNU/Linux]] image of =dangerzone-rust= with its "Online service feature".
+This document describes the steps for creating a minimal [[https://www.debian.org/][Debian GNU/Linux]] image of =dangerzone-rust= with its "Online service feature".
 - It is not clear yet if providing a "ready to go" virtual machine is the best option for most users
-- It seems that many users occasionally experience issues with Podman or Docker on various Operating systems (original Dangerzone issues)
+- It seems that many users often have issues with Podman/Docker on various Operating systems ([[https://github.com/firstlookmedia/dangerzone/issues][Original Dangerzone issues]])
 
 ** Expected User journey
 
 - The user downloads the ISO Live CD image of =dangerzone-rust= from the [[https://github.com/rimerosolutions/dangerzone-rust/releases][Github releases page]], instead of other binaries.
 - The user runs the live-CD in a virtual machine environment (QEMU, VirtualBox, VMWare, Parallels, etc.)
-- Once the live-cd system is up and running, the user can access the =dangerzone-rust= Web interface at http://ipaddress:13000
+- Once the live-CD is done booting, the user can access the =dangerzone-rust= Web interface at http://ipaddress:13000
 
 * Requirements
 

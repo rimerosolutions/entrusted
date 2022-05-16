@@ -15,8 +15,6 @@ authors = [
 [dependencies]
 image = "0.23.14"
 poppler-rs = "0.18.0"
-poppler-sys-rs = "0.18.0"
-cairo-sys-rs = "0.14.9"
 cairo-rs = { version = "0.14.9", features = ["png", "pdf"] }
 tesseract-plumbing = "0.6.1"
 lopdf = "0.27.0"

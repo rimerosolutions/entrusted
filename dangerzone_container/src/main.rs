@@ -37,7 +37,6 @@ struct TessSettings<'a> {
 
 const TESS_DATA_DIR: &str = "/usr/share/tessdata";
 
-
 fn mkdirp(p: PathBuf) -> Result<(), Box<dyn Error>> {
     if !p.exists() {
         let dir_created = fs::create_dir(p.clone());
@@ -86,10 +85,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         let output_dir_path = PathBuf::from("/tmp/");
         let safe_dir_path = PathBuf::from("/safezone/safe-output-compressed.pdf");
 
-        let mut progress_range = ProgressRange::new(0, 20);
-
-
         // step 1 0%
+        let mut progress_range = ProgressRange::new(0, 20);
         let input_file_path = input_as_pdf_to_pathbuf_uri(&logger, progress_range, raw_input_path)?;
 
         let input_file_param = format!("{}", input_file_path.display());
@@ -818,7 +815,6 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: Progress
     progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
     logger.log(progress_value, format!("++ Compressing PDF."));
     document.compress();
-
 
     // step 7/7 Save the merged PDF
     step_num += 1;

@@ -1,7 +1,10 @@
 #+TITLE: live_cd README
 
-Build instructions can be found in the [[./INSTRUCTIONS.org][INSTRUCTIONS.org]] file.
- 
+The steps below have been tested on Debian 11 (=sudo= and =bash= installed):
+- Copy the contents of this folder to the build machine (=git clone=, =rsync=, etc.)
+- Run the =build.sh= script in this directory: =chmod +x build.sh && ./build.sh=
+- The resulting ISO will be available at =$HOME/LIVE_BOOT/dangerzone-livecd-VERSION_NUMBER.iso=
+  
 * Screenshot build process
 
 Excerpt of the build process from a Debian VM

@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+/sbin/iptables -P INPUT DROP
+/sbin/iptables -P OUTPUT DROP
+/sbin/iptables -A INPUT -i lo -j ACCEPT
+/sbin/iptables -A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+/sbin/iptables -A INPUT -p tcp -m tcp --dport 13000 -j ACCEPT
+/sbin/iptables -A  OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+/sbin/iptables -A OUTPUT -o lo -j ACCEPT
+/sbin/iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT

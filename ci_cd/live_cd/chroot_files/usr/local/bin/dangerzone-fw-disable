@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+/sbin/iptables -P INPUT ACCEPT
+/sbin/iptables -P OUTPUT ACCEPT

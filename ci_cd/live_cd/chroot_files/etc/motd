@@ -1,0 +1,20 @@
+
+
+The programs included with the Debian GNU/Linux system are free software; 
+the exact distribution terms for each program are described in the 
+individual files in /usr/share/doc/*/copyright. 
+  
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent 
+permitted by applicable law. 
+ 
+-------- DANGERZONE LIVE CD -------- 
+ 
+This is a live CD of dangerzone-rust 
+- 'doas' is installed instead of 'sudo', the general usage is similar 
+- Standard service management: systemctl <action> dangerzone-httpserver 
+- The relevant binaries are in /usr/local/bin 
+- By default the server binds to 0.0.0.0 on port 13000 
+- By default internet connectivity is forbidden 
+  - As root, run 'dangerzone-fw-disable' to allow internet access 
+  - As root, run 'dangerzone-fw-enable' to restore firewall rules
+

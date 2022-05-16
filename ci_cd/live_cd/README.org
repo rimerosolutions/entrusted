@@ -1,13 +1,27 @@
 #+TITLE: live_cd README
 
-The steps below have been tested on Debian 11 (=sudo= and =bash= installed):
+* Overview
+
+The live CD aims to provide a relatively painless installation of =dangerzone-rust=.
+- It's not always that easy for many to install Docker or Podman (OS or Linux distro specific issues)
+- You may not want to run Docker or Podman directly on your main machine
+
+** User journey
+
+- Download the live CD iso image from the Github releases page
+- Boot the live CD iso from the virtualization solution of your choice (QEMU, VirtualBox, etc.)
+- Convert your documents via the =dangerzone-rust= online service (Web Interface)
+  
+** Build steps
+
+The steps below have been tested on Debian 11 (bullseye) and Ubuntu 22.04 (jammy).
 - Copy the contents of this folder to the build machine (=git clone=, =rsync=, etc.)
 - Run the =build.sh= script in this directory: =chmod +x build.sh && ./build.sh=
 - The resulting ISO will be available at =$HOME/LIVE_BOOT/dangerzone-livecd-VERSION_NUMBER.iso=
   
 * Screenshot build process
 
-Excerpt of the build process from a Debian VM
+Excerpt of the build process from a Debian VM.
 
 [[./images/build_iso.png]]
 

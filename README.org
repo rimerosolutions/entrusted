@@ -12,6 +12,7 @@ For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-
 - For MacOS users, please download the file =dangerzone-darwin-amd64-<version>.zip=
 - For Linux users, please download the file =dangerzone-linux-amd64-<version>.tar=
 - For Windows users, please download the file =dangerzone-windows-amd64-<version>.zip=
+- If you prefer a live CD, please download the ISO image =dangerzone-livecd-<version>.iso=
     
 * What is available?
 

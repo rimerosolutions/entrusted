@@ -4,7 +4,7 @@ ROOT_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
 
 echo "Deleting previous artifacts ISO and squashfs files"
 DANGERZONE_VERSION=$(cat $HOME/LIVE_BOOT/chroot/etc/dangerzone_release | head -1)
-rm $HOME/LIVE_BOOT/dangerzone-livecd.iso
+rm $HOME/LIVE_BOOT/dangerzone-livecd-${DANGERZONE_VERSION}.iso
 sudo rm $HOME/LIVE_BOOT/staging/live/filesystem.squashfs
 
 echo "Creating filesystem"

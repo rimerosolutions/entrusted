@@ -70,8 +70,8 @@ Below is a high-level architecture overview, the solution relies on a container 
 - [X] Implement conversion progress information ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral10][spiral10 branch]])
 - [X] Minimal CI/CD pipeline ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral11][spiral11 branch]])
 - [X] Provide live CD ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral12][spiral12 branch]])
-- [ ] Support batch conversions ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral13][spiral13 branch]])
-  - [ ] In the Web user interface
+- [-] Support serial batch conversions ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral13][spiral13 branch]])
+  - [X] In the Web user interface
   - [ ] In the graphical desktop interface    
   - [ ] In the command-line client
 - [ ] Support translations
@@ -84,8 +84,7 @@ Below is a high-level architecture overview, the solution relies on a container 
   - [ ] Does the Java code still crash at runtime?
   - [ ] Assuming that the initial PDF conversion works for MS Office format conversion to PDF, are there "decent libraries" for  OpenDocument formats?
 - [ ] Rename the Github project
-- [ ] etc.
-  
+- [ ] etc.  
     
 * What are the differences with Dangerzone?
 

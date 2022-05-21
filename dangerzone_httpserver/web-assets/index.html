@@ -14,91 +14,235 @@
     <meta name="description" content="Dangerzone Web app"/>
     <title>Dangerzone Web</title>
     <script>
+      let fileCounter = 0;
+      let fileList = new Array();
+      let logByFileId = new Map();
+
+      function deleteFileId(fileId) {
+        for (let i = 0; i < fileList.length; i++) {
+          if (fileList[i].id == fileId) {
+            fileList.splice(i, 1);
+
+            let parentElement = document.getElementById("fileListTable");
+            let childElement = document.getElementById(fileId);
+            logByFileId.delete(fileId);
+            parentElement.removeChild(childElement);
+
+            return true;
+          }
+        };
+
+        return false;
+      }
+
+      function fileSelectionChanged(event) {
+        let fileButtonElement = document.getElementById("fileButton");
+        updateFileList(fileButtonElement.files);
+      }
+
+      function fileExplorer(event) {
+        let fileButton = document.getElementById("fileButton");
+        fileButton.click();
+      }
+
+      function uploadFile(event) {
+        event.preventDefault();
+        let currentFileList = event.dataTransfer.files;
+        updateFileList(currentFileList);
+      }
+
+      function resetFileListTable() {
+        if (fileList.length == 0) {
+          logByFileId.clear();
+          let fileListTableElement = document.getElementById("fileListTable");
+
+          for (let i = fileListTableElement.children.length - 1; i > 0; i--) {
+            fileListTableElement.removeChild(fileListTableElement.children[fileListTableElement.children.length - 1]);
+          }
+        }
+      }
+
+      function updateFileList(currentFileList) {
+        if (fileList.length == 0) {
+          resetFileListTable();
+        }
+
+        if (currentFileList != undefined) {
+          let submitButton = document.getElementById("submitButton");
+          submitButton.disabled = false;
+          let fileListTable = document.getElementById("fileListTable");
+          let documentFragment = document.createDocumentFragment();
+          let columnClasses = [
+            "column fileNameColumn",
+            "column processingStatusColumn",
+            "column progressStatusColumn",
+            "column progressMessageColumn",
+            "column fileRemoveColumn deleteFileIcon"
+          ];
+
+          for (let i = 0; i < currentFileList.length; i++) {
+            let fileObj = {
+              id: "file-" + Date.now() + "" + i,
+              fileName: currentFileList[i].name,
+              progressStatus: "0%",
+              processingStatus: 'PENDING',
+              progressMessage: "",
+              file: currentFileList[i]
+            };
+
+            fileList.push(fileObj);
+
+            let columnData = [fileObj.fileName, fileObj.processingStatus, fileObj.progressStatus, fileObj.progressMessage, "X"];
+            let idPrefixes = ["filename-", "processing-status-", "progress-status-", "progress-message-", "fileremove-"];
+            let rowElement = document.createElement("div");
+            rowElement.id = fileObj.id;
+            rowElement.className = "row";
+
+            for (let j = 0; j < columnClasses.length; j++) {
+              let rowColumnElement = document.createElement("div");
+              rowColumnElement.id = idPrefixes[j] + fileObj.id;
+              rowColumnElement.className = columnClasses[j];
+
+              if (j == 2) {
+                let progressElement = document.createElement("progress");
+                progressElement.id = "progress-" + fileObj.id;
+                progressElement.value = 0;
+                progressElement.max = 100;
+                rowColumnElement.appendChild(progressElement);
+              } else {
+                rowColumnElement.innerText = columnData[j];
+              }
+
+              rowElement.appendChild(rowColumnElement);
+            }
+
+            documentFragment.appendChild(rowElement);
+          }
+
+          fileListTable.appendChild(documentFragment);
+        }
+      }
+
       function toggleOcrCheckbox(source) {
         let ocrLangSelect = document.getElementById("ocrLangSelect");
         ocrLangSelect.disabled = !(source.checked);
       }
 
-      function toggleSubmit(source) {
-        let suspiciousDocFiles = source.files;
+      function toggleSubmitButtonState() {
+        let suspiciousDocFiles = fileList;
         let submitButton = document.getElementById("submitButton");
-        submitButton.disabled = (suspiciousDocFiles.length == 0);
-
-        let eventList = document.getElementById("eventList");
-        let resultSpan = document.getElementById("resultSpan");
-        let downloadLink = document.getElementById("downloadLink");
-        let progressContainer = document.getElementById("progressContainer");
-        let progressbar = document.getElementById("progressbar");
-
-        downloadLink.innerText = "";
-        downloadLink.title = "";
-        downloadLink.href = "#";
-        eventList.innerHTML = "";
-        resultSpan.innerText = "";
-        progressContainer.className = "invisible";
-        progressbar.value = 0;
+        submitButton.disabled = (fileList.length == 0);
       }
 
-      function submitForm(source) {
-        source.disabled = true;
+      function disableLinkListener(event) {
+        let source = event.target;
+        source.className = "visitedLink";
+        source.title = "File deleted from server.";
+        source.removeEventListener("click", disableLinkListener);
+      }
 
-        let suspiciousDocFiles = document.getElementById("fileButton").files;
-        let eventList = document.getElementById("eventList");
-        let resultSpan = document.getElementById("resultSpan");
-        let downloadLink = document.getElementById("downloadLink");
-        let ocrCheckbox = document.getElementById("ocrCheckbox");
-        let ocrLangSelect = document.getElementById("ocrLangSelect");
-        let progressContainer = document.getElementById("progressContainer");
-        let progressbar = document.getElementById("progressbar");
+      function openLog(fileId) {
+        let modal = document.getElementById("logWindow");
+        let modalContent = document.getElementById("modalContent");
+        let logs = logByFileId.get(fileId) || [];
+        let documentFragment = document.createDocumentFragment();
 
-        let file = suspiciousDocFiles[0];
-        let filename = file.name;
-        let uploadForm = document.getElementById("uploadForm");
-        let uploadUrl = uploadForm.action;
+        for (let i = 0; i < logs.length; i++) {
+          let logElement = document.createElement("li");
+          logElement.innerText = logs[i].data;
+          documentFragment.appendChild(logElement);
+        }
+
+        modalContent.appendChild(documentFragment);
+
+        modal.style.display = "block";
+      }
+
+      function submitOneFile(fileObj, ocrSettings, uploadUrl) {
+        let file = fileObj.file;
+        let fileObjId = fileObj.id;
+
+        let filename = fileObj.fileName;
 
         let formData = new FormData();
         formData.append("file", file);
         formData.append("filename", filename);
 
-        if (ocrCheckbox.checked) {
-          formData.append("ocrlang", ocrLangSelect.value);
+        if (ocrSettings["ocrlang"] != null && ocrSettings["ocrlang"] != undefined) {
+          formData.append("ocrlang", ocrSettings["ocrlang"]);
         }
 
-        fetch(uploadUrl, {method: "POST", body: formData })
+        let progressElement = document.getElementById("progress-" + fileObjId);
+        let processingStatusElement = document.getElementById("processing-status-" + fileObjId);
+        let progressMessageElement = document.getElementById("progress-message-" + fileObjId);
+
+        logByFileId.set(fileObjId, new Array());
+
+        function onComplete(fileObjId, fileStatus, downloadLocation) {
+          let fprogressElement = document.getElementById("progress-" + fileObjId);
+          let fprocessingStatusElement = document.getElementById("processing-status-" + fileObjId);
+
+          fprogressElement.value = 100;
+          fprogressElement.classList.add(fileStatus.toLowerCase());
+          fprocessingStatusElement.innerText = fileStatus;
+          fprocessingStatusElement.classList.add(fileStatus.toLowerCase());
+
+          let fprocessingMessageElement = document.getElementById("progress-message-" + fileObjId);
+          fprocessingMessageElement.innerHTML = "";
+
+          if (downloadLocation) {
+            let downloadElement = document.createElement("a");
+            downloadElement.target = "_blank";
+            downloadElement.rel = "noopener noreferer";
+            downloadElement.innerText = "Download trusted PDF";
+            downloadElement.title = "Once downloaded, the PDF will be permanently deleted from the server.";
+            downloadElement.href = downloadLocation;
+            downloadElement.addEventListener("click", disableLinkListener);
+            fprocessingMessageElement.appendChild(downloadElement);
+          }
+
+          if (downloadLocation) {
+            let spacerElement = document.createElement("span");          
+            spacerElement.innerHTML = "&nbsp;|&nbsp;"
+            fprocessingMessageElement.appendChild(spacerElement);
+          }
+
+          let fullLogElement = document.createElement("a");
+          fullLogElement.innerText = "Log";
+          fullLogElement.href = "#";
+          fullLogElement.addEventListener("click", function(e) {
+            openLog(fileObjId);
+          });
+          fprocessingMessageElement.appendChild(fullLogElement);
+
+          if (fileList.length != 0) {
+            let nextFileObj = fileList.shift();
+            let fileRemoveElement = document.getElementById("fileremove-" + nextFileObj.id);
+            let parentFileRemoveElement = fileRemoveElement.parentElement;
+            parentFileRemoveElement.removeChild(fileRemoveElement);
+            submitOneFile(nextFileObj, ocrSettings, uploadUrl);
+          }
+        }
+
+        processingStatusElement.innerText = "INPROGRESS";
+
+        return fetch(uploadUrl, {method: "POST", body: formData })
           .then( response => {
             if (response.ok) {
               response.json().then(data => {
                 let fileId = data.id
                 let statusUrl = "./events/" + fileId;
                 let sse = new EventSource(statusUrl);
-                progressContainer.className = "visible";
-
-                function onComplete(previousOcrCheckboxState) {
-                  progressContainer.className = "invisible";
-                  progressbar.value = 0;
-
-                  ocrCheckbox.checked = previousOcrCheckboxState;
-                }
 
                 function handleSseError() {
-                  let previousOcrCheckboxState = ocrCheckbox.checked;
-                  uploadForm.reset();
-                  resultSpan.innerText = "The conversion failed!";
-                  resultSpan.className = "error";
                   sse.close();
-                  onComplete(previousOcrCheckboxState);
+                  onComplete(fileObjId, "ERROR");
                 }
 
                 sse.addEventListener("processing_success", function(e) {
-                  let previousOcrCheckboxState = ocrCheckbox.checked;
-                  uploadForm.reset();
-                  resultSpan.innerText = "The conversion succeeded!";
-                  resultSpan.className = "success";
-                  downloadLink.innerText = "Download trusted PDF here.";
-                  downloadLink.title = "Once downloaded, the PDF will be permanently deleted from the server.";
-                  downloadLink.href = "./downloads/" + fileId;
                   sse.close();
-                  onComplete(previousOcrCheckboxState);
+                  let downloadLocation = "./downloads/" + fileId;
+                  onComplete(fileObjId, "SUCCESS", downloadLocation);
                 });
 
                 sse.addEventListener("processing_failure", function(e) {
@@ -110,38 +254,70 @@
                 });
 
                 sse.addEventListener("processing_update", function(e) {
-                  let eventNode = document.createElement("li");
                   let ndata = e.data;
 
                   try {
                     let n = JSON.parse(ndata);
 
                     if (n != undefined) {
-                      eventNode.innerText = n.data;
+                      logByFileId.get(fileObjId).push(n);
+                      progressMessageElement.innerText = n.data;
 
                       if (n.percent_complete != 0) {
-                        progressbar.value = n.percent_complete;
+                        progressElement.value = n.percent_complete;
                       }
                     } else {
-                      eventNode.innerText = ndata;
+                      progressMessageElement.innerText = ndata;
                     }
                   } catch (e) {
-                    eventNode.innerText = ndata;
+                    console.log("error:", e);
                   }
-
-                  eventList.appendChild(eventNode);
-                  eventList.scrollTop = eventList.scrollHeight;
                 });
               });
             } else {
-              alert("Could not upload file!\n" + response.statusText);
+              progressMessageElement.innerText = response.statusText;
+              logByFileId.get(fileObjId).push({
+                percent_complete: 100,
+                data: response.statusText
+              });
+              onComplete(fileObjId, "ERROR", null);
             }
+          })
+          .catch(function(error) {
+            progressMessageElement.innerText = error;
+            logByFileId.get(fileObjId).push({
+              percent_complete: 100,
+              data: error
+            });
+            onComplete(fileObjId, "ERROR", null);
           });
+      }
+
+      function submitForm(source) {
+        source.disabled = true;
+
+        let ocrCheckbox = document.getElementById("ocrCheckbox");
+        let ocrLangSelect = document.getElementById("ocrLangSelect");
+        let uploadForm = document.getElementById("uploadForm");
+        let uploadUrl = uploadForm.action;
+
+        let ocrSettings = {};
+
+        if (ocrCheckbox.checked) {
+          ocrSettings.ocrlang = ocrLangSelect.value;
+        }
+
+        let fileObj = fileList.shift();
+        let fileRemoveElement = document.getElementById("fileremove-" + fileObj.id);
+        let parentFileRemoveElement = fileRemoveElement.parentElement;
+        parentFileRemoveElement.removeChild(fileRemoveElement);
+
+        submitOneFile(fileObj, ocrSettings, uploadUrl);
       }
 
       function doResizeWindow() {
         let newRows = (Math.max(document.documentElement.clientHeight, window.innerHeight || 0) * 0.4).toFixed(0);
-        let eventList = document.getElementById("eventList");
+        let eventList = document.getElementById("fileListTable");
         eventList.style.height = newRows + "px";
       }
 
@@ -149,16 +325,160 @@
         doResizeWindow();
       }, true);
 
+      function clearModalContents() {
+        let modal = document.getElementById("logWindow");
+        let modalContent = document.getElementById("modalContent");
+
+        for (let i = modalContent.children.length - 1; i > 0; i--) {
+          modalContent.removeChild(modalContent.children[modalContent.children.length - 1]);
+        }
+
+        modal.style.display = "none";
+      }
+
       window.addEventListener("DOMContentLoaded", function(event) {
         doResizeWindow();
+
+        let modalCloseElement = document.getElementById("modalClose");
+        modalCloseElement.addEventListener("click", function(event) {
+          clearModalContents();
+        }, true);
+
+        window.onclick = function(event) {
+          if (event.target.className == "modal") {
+            clearModalContents();
+          }
+        }
+
+        let fileListTable = document.getElementById("fileListTable");
+        fileListTable.addEventListener("click", function(event) {
+          let clickedElement = event.target;
+
+          if (clickedElement.classList.contains("deleteFileIcon")) {
+            let rowElement = clickedElement.parentElement;
+            let fileId = rowElement.id;
+
+            if (deleteFileId(fileId)) {
+              toggleSubmitButtonState();
+            }
+          }
+        });
       }, true);
     </script>
 
     <style>
+      .modal {
+          display: none; /* Hidden by default */
+          position: fixed; /* Stay in place */
+          z-index: 1; /* Sit on top */
+          padding-top: 5%; /* Location of the box */
+          left: 0;
+          top: 0;
+          width: 100%; /* Full width */
+          height: 100%; /* Full height */
+          overflow: auto; /* Enable scroll if needed */
+          background-color: rgb(0,0,0); /* Fallback color */
+          background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+      }
+
+      /* Modal Content */
+      .modal-content {
+          background-color: #fefefe;
+          margin: auto;
+          padding: 5%;
+          border: 1px solid #888;
+          width: 80%;
+          height: 60%;
+          overflow:auto;
+      }
+
+      /* The Close Button */
+      .close {
+          color: #aaaaaa;
+          float: right;
+          font-size: 2em;
+          font-weight: bold;
+      }
+
+      .close:hover,
+      .close:focus {
+          color: #000;
+          text-decoration: none;
+          cursor: pointer;
+      }
+      
+      .row:after {
+          float:left;
+          text-align: left;
+          content: "";
+          display: table;
+          clear: both;
+      }
+
+      .column {
+          float: left;
+          text-align: left;
+          border: 1px solid yellow;
+          background: yellow;
+      }
+
+      .fileNameColumn {
+          width: 25%;
+      }
+
+      .progressStatusColumn {
+          width: 8%;
+      }
+
+      progress {
+          width:80%;
+          accent-color: blue;
+      }
+
+      .processingStatusColumn {
+          width: 10%;
+      }
+
+      .progressMessageColumn {
+          width: 48%;
+      }
+
+      .fileRemoveColumn {
+          width: 8%;
+          text-align: center;
+          color: red;
+      }
+
+      .fileRemoveColumn:hover {
+          font-weight: bold;
+          cursor: pointer;
+      }
+
+      #dropFileZone {
+          background-color: #EEE;
+          border: #999 2px dashed;
+          width: 100%;
+          height: 1%;
+          font-size: 1em;
+      }
+
+      #dragUploadFile {
+          width: 50%;
+          margin: 0 auto;
+      }
+
+      #dragUploadFile p {
+          text-align: center;
+      }
+
+      #dragUploadFile #fileButton {
+          display: none;
+      }
+
       .title-text {
           text-align: center;
           color: maroon;
-          font-size: 1em;
+          font-size: 1.5em;
           font-weight: bold;
       }
 
@@ -171,13 +491,33 @@
           border: 5px solid #977c27;
       }
 
+      .header {
+          font-weight:bold;
+          background: #977c27;
+          color: yellow;
+          border: 1px solid yellow;
+      }
+
+      #fileListTable {
+          border: 5px solid #977c27;
+          background: yellow;
+          overflow: auto;
+      }
+
+      .visitedLink {
+          text-decoration: line-through;
+      }
+
       .success {
           font-weight: bold;
+          accent-color: green;
           color: green;
       }
 
       .error {
           font-weight: bold;
+          color: red;
+          accent-color: red;
           color: red;
       }
 
@@ -242,18 +582,25 @@
 
   <body>
     <noscript>Your browser does not support JavaScript!</noscript>
-    <p class="title-text">Dangerzone Web</p>
-    <div>
-      <span id="resultSpan"></span> &nbsp;&nbsp;
-      <a id="downloadLink" href="#" target="_blank" rel="noopener noreferer"></a>
+    <div id="logWindow" class="modal">
+      <div class="modal-content" id="modalContent">
+        <span class="close" id="modalClose">&times;</span>
+      </div>
     </div>
+
+    <p class="title-text">Dangerzone Web</p>
     <br/>
     <div>
-      <form id="uploadForm" action="./upload" method="post" enctype="multipart/form-data">
+      <form id="uploadForm" action="./upload" method="post" enctype="multipart/form-data" onsubmit="function(e) { e.preventDefault(); }">
         <fieldset>
           <legend>Conversion Options</legend>
-          <div>
-            <input type="file" name="fileButton" id="fileButton" onchange="toggleSubmit(this)">
+          <div id="dropFileZone" ondrop="uploadFile(event)" ondragover="return false">
+            <div id="dragUploadFile">
+              <p>Drop file(s) here</p>
+              <p>or</p>
+              <p><input type="button" value="Select File(s)" onclick="fileExplorer(event)"></p>
+              <input type="file" name="fileButton" id="fileButton" onChange="fileSelectionChanged(event)" multiple>
+            </div>
           </div>
           <div>
             <input type="checkbox" id="ocrCheckbox" name="ocr" onchange="toggleOcrCheckbox(this)">
@@ -426,20 +773,17 @@
           </div>
         </fieldset>
       </form>
-      <p><button onclick="submitForm(this)" id="submitButton" disabled>Convert document!</button></p>
+      <p><button onclick="submitForm(this)" id="submitButton" disabled>Convert document(s)!</button></p>
     </div>
     <hr/>
-    <div id="progressContainer" class="invisible">
-      <label for="progressbar">Progress:</label>
-      <progress id="progressbar" value="0" max="100"></progress>
-    </div>
-    <div>
-      <div class="header-text">Conversion Log</div>
-      <div>
-        <br/>
-        <ul id ="eventList"></ul>
+    <div id="fileListTable">
+      <div class="row">
+        <div class="column fileNameColumn header">Filename</div>
+        <div class="column processingStatusColumn header">Status</div>
+        <div class="column progressStatusColumn header">Progress(%)</div>
+        <div class="column progressMessageColumn header">Message</div>
+        <div class="column fileRemoveColumn header">Remove</div>
       </div>
-    </div>
   </body>
 
 </html>

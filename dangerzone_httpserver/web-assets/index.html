@@ -23,8 +23,8 @@
           if (fileList[i].id == fileId) {
             fileList.splice(i, 1);
 
-            let parentElement = document.getElementById("fileListTable");
             let childElement = document.getElementById(fileId);
+            let parentElement = childElement.parentElement;
             logByFileId.delete(fileId);
             parentElement.removeChild(childElement);
 
@@ -33,6 +33,10 @@
         };
 
         return false;
+      }
+
+      function preventDefaults(event) {
+        event.preventDefault();
       }
 
       function fileSelectionChanged(event) {
@@ -54,11 +58,14 @@
       function resetFileListTable() {
         if (fileList.length == 0) {
           logByFileId.clear();
-          let fileListTableElement = document.getElementById("fileListTable");
+          let fileListTableBodyElement = document.getElementById("fileListTableBody");
 
-          for (let i = fileListTableElement.children.length - 1; i > 0; i--) {
-            fileListTableElement.removeChild(fileListTableElement.children[fileListTableElement.children.length - 1]);
+          for (let i = fileListTableBodyElement.children.length - 1; i > 0; i--) {
+            fileListTableBodyElement.removeChild(fileListTableBodyElement.children[fileListTableBodyElement.children.length - 1]);
           }
+
+          let fileListTableElement = document.getElementById("conversionContainer");
+          fileListTableElement.className = "invisible";
         }
       }
 
@@ -68,9 +75,15 @@
         }
 
         if (currentFileList != undefined) {
+          let fileListTableElement = document.getElementById("conversionContainer");
+
+          if (fileListTableElement.className != "visible") {
+            fileListTableElement.className = "visible";
+          }
+          
           let submitButton = document.getElementById("submitButton");
           submitButton.disabled = false;
-          let fileListTable = document.getElementById("fileListTable");
+          let fileListTable = document.getElementById("fileListTableBody");
           let documentFragment = document.createDocumentFragment();
           let columnClasses = [
             "column fileNameColumn",
@@ -94,14 +107,16 @@
 
             let columnData = [fileObj.fileName, fileObj.processingStatus, fileObj.progressStatus, fileObj.progressMessage, "X"];
             let idPrefixes = ["filename-", "processing-status-", "progress-status-", "progress-message-", "fileremove-"];
-            let rowElement = document.createElement("div");
+            let rowElement = document.createElement("tr");
             rowElement.id = fileObj.id;
-            rowElement.className = "row";
 
-            for (let j = 0; j < columnClasses.length; j++) {
-              let rowColumnElement = document.createElement("div");
+            for (let j = 0; j < idPrefixes.length; j++) {
+              let rowColumnElement = document.createElement("td");
               rowColumnElement.id = idPrefixes[j] + fileObj.id;
-              rowColumnElement.className = columnClasses[j];
+
+              if (j == idPrefixes.length - 1) {
+                rowColumnElement.className = "deleteFileIcon";
+              }
 
               if (j == 2) {
                 let progressElement = document.createElement("progress");
@@ -146,6 +161,10 @@
         let modalContent = document.getElementById("modalContent");
         let logs = logByFileId.get(fileId) || [];
         let documentFragment = document.createDocumentFragment();
+        let windowTitle = document.createElement("h3");
+
+        windowTitle.innerText = "Conversion log";
+        documentFragment.appendChild(windowTitle);
 
         for (let i = 0; i < logs.length; i++) {
           let logElement = document.createElement("li");
@@ -154,7 +173,6 @@
         }
 
         modalContent.appendChild(documentFragment);
-
         modal.style.display = "block";
       }
 
@@ -202,7 +220,7 @@
           }
 
           if (downloadLocation) {
-            let spacerElement = document.createElement("span");          
+            let spacerElement = document.createElement("span");
             spacerElement.innerHTML = "&nbsp;|&nbsp;"
             fprocessingMessageElement.appendChild(spacerElement);
           }
@@ -316,9 +334,9 @@
       }
 
       function doResizeWindow() {
-        let newRows = (Math.max(document.documentElement.clientHeight, window.innerHeight || 0) * 0.4).toFixed(0);
-        let eventList = document.getElementById("fileListTable");
-        eventList.style.height = newRows + "px";
+        // let newRows = (Math.max(document.documentElement.clientHeight, window.innerHeight || 0) * 0.4).toFixed(0);
+        // let eventList = document.getElementById("fileListTable");
+        // eventList.style.height = newRows + "px";
       }
 
       window.addEventListener("resize", function(event) {
@@ -340,19 +358,24 @@
         doResizeWindow();
 
         let modalCloseElement = document.getElementById("modalClose");
-        modalCloseElement.addEventListener("click", function(event) {
+        modalCloseElement.addEventListener("click", function(evt) {
           clearModalContents();
         }, true);
 
-        window.onclick = function(event) {
-          if (event.target.className == "modal") {
+        window.addEventListener("click", function(evt) {
+          let x = evt.clientX;
+          let y = evt.clientY;
+          let modalContent = document.getElementById("modalContent");
+          let rect = modalContent.getBoundingClientRect();
+
+          if (!(rect.x <= x && rect.x + rect.width >= x && rect.y <= y && rect.y + rect.height >= y)) {
             clearModalContents();
           }
-        }
+        }, true);
 
         let fileListTable = document.getElementById("fileListTable");
-        fileListTable.addEventListener("click", function(event) {
-          let clickedElement = event.target;
+        fileListTable.addEventListener("click", function(evt) {
+          let clickedElement = evt.target;
 
           if (clickedElement.classList.contains("deleteFileIcon")) {
             let rowElement = clickedElement.parentElement;
@@ -362,7 +385,7 @@
               toggleSubmitButtonState();
             }
           }
-        });
+        }, true);
       }, true);
     </script>
 
@@ -384,12 +407,17 @@
       /* Modal Content */
       .modal-content {
           background-color: #fefefe;
+          text-align:center;
           margin: auto;
           padding: 5%;
           border: 1px solid #888;
           width: 80%;
-          height: 60%;
+          height: 70%;
           overflow:auto;
+      }
+
+      .modal-content li {
+          text-align:left;
       }
 
       /* The Close Button */
@@ -406,7 +434,7 @@
           text-decoration: none;
           cursor: pointer;
       }
-      
+
       .row:after {
           float:left;
           text-align: left;
@@ -416,18 +444,10 @@
       }
 
       .column {
+          display: table;
           float: left;
           text-align: left;
-          border: 1px solid yellow;
           background: yellow;
-      }
-
-      .fileNameColumn {
-          width: 25%;
-      }
-
-      .progressStatusColumn {
-          width: 8%;
       }
 
       progress {
@@ -435,29 +455,33 @@
           accent-color: blue;
       }
 
+      .fileNameColumn {
+          width: 25%;
+      }
+
+      .progressStatusColumn {
+          width: 10%;
+      }
+
       .processingStatusColumn {
           width: 10%;
       }
 
       .progressMessageColumn {
-          width: 48%;
+          width: 50%;
       }
 
       .fileRemoveColumn {
-          width: 8%;
-          text-align: center;
-          color: red;
+           width: 5%;
       }
 
       .fileRemoveColumn:hover {
-          font-weight: bold;
-          cursor: pointer;
+          
       }
 
       #dropFileZone {
           background-color: #EEE;
           border: #999 2px dashed;
-          width: 100%;
           height: 1%;
           font-size: 1em;
       }
@@ -475,6 +499,17 @@
           display: none;
       }
 
+      thead {
+          vertical-align: top;
+          border: 1px solid black;
+      }
+
+      thead tr {
+          text-align: left;
+          background: yellow;
+          border: 1px solid black;
+      }
+      
       .title-text {
           text-align: center;
           color: maroon;
@@ -484,24 +519,32 @@
 
       .header-text {
           position:absolute;
+          margin-left: 1%;
           background: #977c27;
           text-align:left;
-          margin-left: 1%;
+          margin-bottom: 1%;
           color: yellow;
           border: 5px solid #977c27;
       }
 
+      .deleteFileIcon {
+          font-weight: bold;
+          cursor: pointer;
+          text-align:center;
+          color: red;
+      }
       .header {
-          font-weight:bold;
-          background: #977c27;
+          margin-top: 0.5%;
+          background: #a69350;
           color: yellow;
-          border: 1px solid yellow;
+          border: 1px solid #a69350;
       }
 
       #fileListTable {
           border: 5px solid #977c27;
           background: yellow;
           overflow: auto;
+          width: 100%;
       }
 
       .visitedLink {
@@ -587,18 +630,17 @@
         <span class="close" id="modalClose">&times;</span>
       </div>
     </div>
-
     <p class="title-text">Dangerzone Web</p>
     <br/>
     <div>
-      <form id="uploadForm" action="./upload" method="post" enctype="multipart/form-data" onsubmit="function(e) { e.preventDefault(); }">
+      <form id="uploadForm" action="./upload" method="post" enctype="multipart/form-data" onsubmit="preventDefaults(event)">
         <fieldset>
           <legend>Conversion Options</legend>
           <div id="dropFileZone" ondrop="uploadFile(event)" ondragover="return false">
             <div id="dragUploadFile">
               <p>Drop file(s) here</p>
               <p>or</p>
-              <p><input type="button" value="Select File(s)" onclick="fileExplorer(event)"></p>
+              <p><input type="button" value="Click here to select file(s)" onclick="fileExplorer(event)"></p>
               <input type="file" name="fileButton" id="fileButton" onChange="fileSelectionChanged(event)" multiple>
             </div>
           </div>
@@ -775,15 +817,26 @@
       </form>
       <p><button onclick="submitForm(this)" id="submitButton" disabled>Convert document(s)!</button></p>
     </div>
-    <hr/>
-    <div id="fileListTable">
-      <div class="row">
-        <div class="column fileNameColumn header">Filename</div>
-        <div class="column processingStatusColumn header">Status</div>
-        <div class="column progressStatusColumn header">Progress(%)</div>
-        <div class="column progressMessageColumn header">Message</div>
-        <div class="column fileRemoveColumn header">Remove</div>
-      </div>
+    
+    <div id="conversionContainer" class="invisible">
+      <hr/>
+      <div class="header-text">Conversion Queue</div>
+      <br/>
+      <table id="fileListTable">
+        <thead>
+          <tr>
+            <th class="fileNameColumn">Filename</th>
+            <th class="processingStatusColumn">Status</th>
+            <th class="progressStatusColumn">Progress(%)</th>
+            <th class="progressMessageColumn">Message</th>
+            <th class="fileRemoveColumn">Remove</th>
+          </tr>
+        </thead>
+        <tbody id="fileListTableBody">
+
+        </tbody>
+      </table>
+    </div>
   </body>
 
 </html>

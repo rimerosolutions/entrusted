@@ -89,7 +89,7 @@ impl Broadcaster {
         let mut ok_clients = Vec::new();
 
         for client in self.clients.iter() {
-            let result = client.clone().try_send(msg.clone());
+            let result = client.try_send(msg.clone());
 
             if let Ok(_) = result {
                 ok_clients.push(client.clone());
@@ -177,7 +177,6 @@ async fn notfound() -> impl Responder {
     HttpResponse::NotFound().body("File not found")
 }
 
-
 fn server_problem(reason: String, uri: &Uri) -> HttpApiProblem {
     HttpApiProblem::with_title_and_type_from_status(StatusCode::INTERNAL_SERVER_ERROR)
         .set_detail(reason)
@@ -247,10 +246,8 @@ async fn serve(host: &str, port: &str, ci_image_name: String) -> std::io::Result
             .supports_credentials()
             .allowed_methods(vec!["GET", "POST", "OPTIONS", "HEAD"])
             .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT, header::CONTENT_TYPE, ]);
-
         
-        let data = Broadcaster::create();
-        
+        let data = Broadcaster::create();        
 
         App::new()
             .wrap(cors)
@@ -444,10 +441,10 @@ fn progress_made(refid: String, event: &str, data: String, counter: i32) -> Resu
             v.lock().unwrap().push(n);
             Ok(())
         } else {
-            Err(format!("Could not find notification group for : {}", refid).into())
+            Err(format!("Could not find notification group for : {}.", refid).into())
         }
     } else {
-        Err("Could not send notification".into())
+        Err("Could not acquire notifications handle.".into())
     }
 }
 

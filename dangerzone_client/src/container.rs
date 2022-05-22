@@ -172,7 +172,6 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
         "--network",
         "none"
     ];
-
     
     let input_file_volume = &format!("{}:/tmp/input_file", input_path.display());
     let mut err_msg = "".to_string();

@@ -170,7 +170,8 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
     let run_args:Vec<&str> = vec![
         "run",
         "--network",
-        "none"
+        "none",
+        "--read-only"
     ];
     
     let input_file_volume = &format!("{}:/tmp/input_file", input_path.display());

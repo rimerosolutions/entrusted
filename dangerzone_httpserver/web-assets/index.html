@@ -10,8 +10,8 @@
     <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
     <meta http-equiv="pragma" content="no-cache" />
     <meta name="author" content="Rimero Solutions Inc."/>
-    <meta name="application-name" content="dangerzone-spa"/>
-    <meta name="description" content="Dangerzone Web app"/>
+    <meta name="application-name" content="dangerzone-web"/>
+    <meta name="description" content="Dangerzone Web Application"/>
     <title>Dangerzone Web</title>
     <script>
       let fileCounter = 0;
@@ -80,7 +80,7 @@
           if (fileListTableElement.className != "visible") {
             fileListTableElement.className = "visible";
           }
-          
+
           let submitButton = document.getElementById("submitButton");
           submitButton.disabled = false;
           let fileListTable = document.getElementById("fileListTableBody");
@@ -472,15 +472,17 @@
       }
 
       .fileRemoveColumn {
-           width: 5%;
+          width: 5%;
       }
 
       .fileRemoveColumn:hover {
-          
+
       }
 
       #dropFileZone {
-          background-color: #EEE;
+          background-color: red;
+          color: white;
+          font-weight: bold;
           border: #999 2px dashed;
           height: 1%;
           font-size: 1em;
@@ -509,12 +511,10 @@
           background: yellow;
           border: 1px solid black;
       }
-      
+
       .title-text {
           text-align: center;
           color: maroon;
-          font-size: 1.5em;
-          font-weight: bold;
       }
 
       .header-text {
@@ -630,7 +630,7 @@
         <span class="close" id="modalClose">&times;</span>
       </div>
     </div>
-    <p class="title-text">Dangerzone Web</p>
+    <h3 class="title-text">Dangerzone Web</h3>
     <br/>
     <div>
       <form id="uploadForm" action="./upload" method="post" enctype="multipart/form-data" onsubmit="preventDefaults(event)">
@@ -644,180 +644,185 @@
               <input type="file" name="fileButton" id="fileButton" onChange="fileSelectionChanged(event)" multiple>
             </div>
           </div>
-          <div>
-            <input type="checkbox" id="ocrCheckbox" name="ocr" onchange="toggleOcrCheckbox(this)">
-            <label for="ocrCheckbox">Make PDF searchable?</label>
-          </div>
-          <div>
-            <label for="ocrLangSelect">OCR language</label>
-            <select id="ocrLangSelect" name="ocrLangSelect" disabled>
-              <option value="ar">Afrikaans</option>
-              <option value="sqi">Albanian</option>
-              <option value="amh">Amharic</option>
-              <option value="ara">Arabic</option>
-              <option value="Arabic">Arabic script</option>
-              <option value="hye">Armenian</option>
-              <option value="Armenian">Armenian script</option>
-              <option value="asm">Assamese</option>
-              <option value="aze">Azerbaijani</option>
-              <option value="aze_cyrl">Azerbaijani (Cyrillic)</option>
-              <option value="eus">Basque</option>
-              <option value="bel">Belarusian</option>
-              <option value="ben">Bengali</option>
-              <option value="Bengali">Bengali script</option>
-              <option value="bos">Bosnian</option>
-              <option value="bre">Breton</option>
-              <option value="bul">Bulgarian</option>
-              <option value="mya">Burmese</option>
-              <option value="Canadian_Aboriginal">Canadian Aboriginal script</option>
-              <option value="cat">Catalan</option>
-              <option value="ceb">Cebuano</option>
-              <option value="chr">Cherokee</option>
-              <option value="Cherokee">Cherokee script</option>
-              <option value="chi_sim">Chinese - Simplified</option>
-              <option value="chi_sim_vert">Chinese - Simplified (vertical)</option>
-              <option value="chi_tra">Chinese - Traditional</option>
-              <option value="chi_tra_vert">Chinese - Traditional (vertical)</option>
-              <option value="cos">Corsican</option>
-              <option value="hrv">Croatian</option>
-              <option value="Cyrillic">Cyrillic script</option>
-              <option value="ces">Czech</option>
-              <option value="dan">Danish</option>
-              <option value="Devanagari">Devanagari script</option>
-              <option value="div">Divehi</option>
-              <option value="nld">Dutch</option>
-              <option value="dzo">Dzongkha</option>
-              <option value="eng" selected>English</option>
-              <option value="enm">English, Middle (1100-1500)</option>
-              <option value="epo">Esperanto</option>
-              <option value="est">Estonian</option>
-              <option value="Ethiopic">Ethiopic script</option>
-              <option value="fao">Faroese</option>
-              <option value="fil">Filipino</option>
-              <option value="fin">Finnish</option>
-              <option value="Fraktur">Fraktur script</option>
-              <option value="frk">Frankish</option>
-              <option value="fra">French</option>
-              <option value="frm">French, Middle (ca.1400-1600)</option>
-              <option value="fry">Frisian (Western)</option>
-              <option value="gla">Gaelic (Scots)</option>
-              <option value="glg">Galician</option>
-              <option value="kat">Georgian</option>
-              <option value="Georgian">Georgian script</option>
-              <option value="deu">German</option>
-              <option value="ell">Greek</option>
-              <option value="Greek">Greek script</option>
-              <option value="guj">Gujarati</option>
-              <option value="Gujarati">Gujarati script</option>
-              <option value="Gurmukhi">Gurmukhi script</option>
-              <option value="Hangul">Hangul script</option>
-              <option value="Hangul_vert">Hangul (vertical) script</option>
-              <option value="HanS">Han - Simplified script</option>
-              <option value="HanS_vert">Han - Simplified (vertical) script</option>
-              <option value="HanT">Han - Traditional script</option>
-              <option value="HanT_vert">Han - Traditional (vertical) script</option>
-              <option value="hat">Hatian</option>
-              <option value="heb">Hebrew</option>
-              <option value="Hebrew">Hebrew script</option>
-              <option value="hin">Hindi</option>
-              <option value="hun">Hungarian</option>
-              <option value="isl">Icelandic</option>
-              <option value="ind">Indonesian</option>
-              <option value="iku">Inuktitut</option>
-              <option value="gle">Irish</option>
-              <option value="ita">Italian</option>
-              <option value="ita_old">Italian - Old</option>
-              <option value="jpn">Japanese</option>
-              <option value="Japanese">Japanese script</option>
-              <option value="jpn_vert">Japanese (vertical)</option>
-              <option value="Japanese_vert">Japanese (vertical) script</option>
-              <option value="jav">Javanese</option>
-              <option value="kan">Kannada</option>
-              <option value="Kannada">Kannada script</option>
-              <option value="kaz">Kazakh</option>
-              <option value="khm">Khmer</option>
-              <option value="Khmer">Khmer script</option>
-              <option value="kor">Korean</option>
-              <option value="kor_vert">Korean (vertical)</option>
-              <option value="kur_ara">Kurdish (Arabic)</option>
-              <option value="kir">Kyrgyz</option>
-              <option value="lao">Lao</option>
-              <option value="Lao">Lao script</option>
-              <option value="lat">Latin</option>
-              <option value="Latin">Latin script</option>
-              <option value="lav">Latvian</option>
-              <option value="lit">Lithuanian</option>
-              <option value="ltz">Luxembourgish</option>
-              <option value="mkd">Macedonian</option>
-              <option value="mal">Malayalam</option>
-              <option value="Malayalam">Malayalam script</option>
-              <option value="msa">Malay</option>
-              <option value="mlt">Maltese</option>
-              <option value="mri">Maori</option>
-              <option value="mar">Marathi</option>
-              <option value="mon">Mongolian</option>
-              <option value="Myanmar">Myanmar script</option>
-              <option value="nep">Nepali</option>
-              <option value="nor">Norwegian</option>
-              <option value="oci">Occitan (post 1500)</option>
-              <option value="kat_old">Old Georgian</option>
-              <option value="Oriya">Oriya (Odia) script</option>
-              <option value="ori">Oriya</option>
-              <option value="pus">Pashto</option>
-              <option value="fas">Persian</option>
-              <option value="pol">Polish</option>
-              <option value="por">Portuguese</option>
-              <option value="pan">Punjabi</option>
-              <option value="que">Quechua</option>
-              <option value="ron">Romanian</option>
-              <option value="rus">Russian</option>
-              <option value="san">Sanskrit</option>
-              <option value="osd">script and orientation</option>
-              <option value="srp_latn">Serbian (Latin)</option>
-              <option value="srp">Serbian</option>
-              <option value="snd">Sindhi</option>
-              <option value="Sinhala">Sinhala script</option>
-              <option value="sin">Sinhala</option>
-              <option value="slk">Slovakian</option>
-              <option value="slv">Slovenian</option>
-              <option value="spa_old">Spanish, Castilian - Old</option>
-              <option value="spa">Spanish</option>
-              <option value="sun">Sundanese</option>
-              <option value="swa">Swahili</option>
-              <option value="swe">Swedish</option>
-              <option value="Syriac">Syriac script</option>
-              <option value="syr">Syriac</option>
-              <option value="tgk">Tajik</option>
-              <option value="Tamil">Tamil script</option>
-              <option value="tam">Tamil</option>
-              <option value="tat">Tatar</option>
-              <option value="Telugu">Telugu script</option>
-              <option value="tel">Telugu</option>
-              <option value="Thaana">Thaana script</option>
-              <option value="Thai">Thai script</option>
-              <option value="tha">Thai</option>
-              <option value="Tibetan">Tibetan script</option>
-              <option value="bod">Tibetan Standard</option>
-              <option value="tir">Tigrinya</option>
-              <option value="ton">Tonga</option>
-              <option value="tur">Turkish</option>
-              <option value="ukr">Ukrainian</option>
-              <option value="urd">Urdu</option>
-              <option value="uig">Uyghur</option>
-              <option value="uzb_cyrl">Uzbek (Cyrillic)</option>
-              <option value="uzb">Uzbek</option>
-              <option value="Vietnamese">Vietnamese script</option>
-              <option value="vie">Vietnamese</option>
-              <option value="cym">Welsh</option>
-              <option value="yid">Yiddish</option>
-              <option value="yor">Yoruba</option>
-            </select>
-          </div>
+          <table>
+            <tbody>
+              <tr>
+                <td>
+                  <input type="checkbox" id="ocrCheckbox" name="ocr" onchange="toggleOcrCheckbox(this)">
+                  <label for="ocrCheckbox">Make PDF searchable?</label>
+                </td>
+                <td>
+                  <label for="ocrLangSelect">Yes, with language:</label>
+                  <select id="ocrLangSelect" name="ocrLangSelect" disabled>
+                    <option value="ar">Afrikaans</option>
+                    <option value="sqi">Albanian</option>
+                    <option value="amh">Amharic</option>
+                    <option value="ara">Arabic</option>
+                    <option value="Arabic">Arabic script</option>
+                    <option value="hye">Armenian</option>
+                    <option value="Armenian">Armenian script</option>
+                    <option value="asm">Assamese</option>
+                    <option value="aze">Azerbaijani</option>
+                    <option value="aze_cyrl">Azerbaijani (Cyrillic)</option>
+                    <option value="eus">Basque</option>
+                    <option value="bel">Belarusian</option>
+                    <option value="ben">Bengali</option>
+                    <option value="Bengali">Bengali script</option>
+                    <option value="bos">Bosnian</option>
+                    <option value="bre">Breton</option>
+                    <option value="bul">Bulgarian</option>
+                    <option value="mya">Burmese</option>
+                    <option value="Canadian_Aboriginal">Canadian Aboriginal script</option>
+                    <option value="cat">Catalan</option>
+                    <option value="ceb">Cebuano</option>
+                    <option value="chr">Cherokee</option>
+                    <option value="Cherokee">Cherokee script</option>
+                    <option value="chi_sim">Chinese - Simplified</option>
+                    <option value="chi_sim_vert">Chinese - Simplified (vertical)</option>
+                    <option value="chi_tra">Chinese - Traditional</option>
+                    <option value="chi_tra_vert">Chinese - Traditional (vertical)</option>
+                    <option value="cos">Corsican</option>
+                    <option value="hrv">Croatian</option>
+                    <option value="Cyrillic">Cyrillic script</option>
+                    <option value="ces">Czech</option>
+                    <option value="dan">Danish</option>
+                    <option value="Devanagari">Devanagari script</option>
+                    <option value="div">Divehi</option>
+                    <option value="nld">Dutch</option>
+                    <option value="dzo">Dzongkha</option>
+                    <option value="eng" selected>English</option>
+                    <option value="enm">English, Middle (1100-1500)</option>
+                    <option value="epo">Esperanto</option>
+                    <option value="est">Estonian</option>
+                    <option value="Ethiopic">Ethiopic script</option>
+                    <option value="fao">Faroese</option>
+                    <option value="fil">Filipino</option>
+                    <option value="fin">Finnish</option>
+                    <option value="Fraktur">Fraktur script</option>
+                    <option value="frk">Frankish</option>
+                    <option value="fra">French</option>
+                    <option value="frm">French, Middle (ca.1400-1600)</option>
+                    <option value="fry">Frisian (Western)</option>
+                    <option value="gla">Gaelic (Scots)</option>
+                    <option value="glg">Galician</option>
+                    <option value="kat">Georgian</option>
+                    <option value="Georgian">Georgian script</option>
+                    <option value="deu">German</option>
+                    <option value="ell">Greek</option>
+                    <option value="Greek">Greek script</option>
+                    <option value="guj">Gujarati</option>
+                    <option value="Gujarati">Gujarati script</option>
+                    <option value="Gurmukhi">Gurmukhi script</option>
+                    <option value="Hangul">Hangul script</option>
+                    <option value="Hangul_vert">Hangul (vertical) script</option>
+                    <option value="HanS">Han - Simplified script</option>
+                    <option value="HanS_vert">Han - Simplified (vertical) script</option>
+                    <option value="HanT">Han - Traditional script</option>
+                    <option value="HanT_vert">Han - Traditional (vertical) script</option>
+                    <option value="hat">Hatian</option>
+                    <option value="heb">Hebrew</option>
+                    <option value="Hebrew">Hebrew script</option>
+                    <option value="hin">Hindi</option>
+                    <option value="hun">Hungarian</option>
+                    <option value="isl">Icelandic</option>
+                    <option value="ind">Indonesian</option>
+                    <option value="iku">Inuktitut</option>
+                    <option value="gle">Irish</option>
+                    <option value="ita">Italian</option>
+                    <option value="ita_old">Italian - Old</option>
+                    <option value="jpn">Japanese</option>
+                    <option value="Japanese">Japanese script</option>
+                    <option value="jpn_vert">Japanese (vertical)</option>
+                    <option value="Japanese_vert">Japanese (vertical) script</option>
+                    <option value="jav">Javanese</option>
+                    <option value="kan">Kannada</option>
+                    <option value="Kannada">Kannada script</option>
+                    <option value="kaz">Kazakh</option>
+                    <option value="khm">Khmer</option>
+                    <option value="Khmer">Khmer script</option>
+                    <option value="kor">Korean</option>
+                    <option value="kor_vert">Korean (vertical)</option>
+                    <option value="kur_ara">Kurdish (Arabic)</option>
+                    <option value="kir">Kyrgyz</option>
+                    <option value="lao">Lao</option>
+                    <option value="Lao">Lao script</option>
+                    <option value="lat">Latin</option>
+                    <option value="Latin">Latin script</option>
+                    <option value="lav">Latvian</option>
+                    <option value="lit">Lithuanian</option>
+                    <option value="ltz">Luxembourgish</option>
+                    <option value="mkd">Macedonian</option>
+                    <option value="mal">Malayalam</option>
+                    <option value="Malayalam">Malayalam script</option>
+                    <option value="msa">Malay</option>
+                    <option value="mlt">Maltese</option>
+                    <option value="mri">Maori</option>
+                    <option value="mar">Marathi</option>
+                    <option value="mon">Mongolian</option>
+                    <option value="Myanmar">Myanmar script</option>
+                    <option value="nep">Nepali</option>
+                    <option value="nor">Norwegian</option>
+                    <option value="oci">Occitan (post 1500)</option>
+                    <option value="kat_old">Old Georgian</option>
+                    <option value="Oriya">Oriya (Odia) script</option>
+                    <option value="ori">Oriya</option>
+                    <option value="pus">Pashto</option>
+                    <option value="fas">Persian</option>
+                    <option value="pol">Polish</option>
+                    <option value="por">Portuguese</option>
+                    <option value="pan">Punjabi</option>
+                    <option value="que">Quechua</option>
+                    <option value="ron">Romanian</option>
+                    <option value="rus">Russian</option>
+                    <option value="san">Sanskrit</option>
+                    <option value="osd">script and orientation</option>
+                    <option value="srp_latn">Serbian (Latin)</option>
+                    <option value="srp">Serbian</option>
+                    <option value="snd">Sindhi</option>
+                    <option value="Sinhala">Sinhala script</option>
+                    <option value="sin">Sinhala</option>
+                    <option value="slk">Slovakian</option>
+                    <option value="slv">Slovenian</option>
+                    <option value="spa_old">Spanish, Castilian - Old</option>
+                    <option value="spa">Spanish</option>
+                    <option value="sun">Sundanese</option>
+                    <option value="swa">Swahili</option>
+                    <option value="swe">Swedish</option>
+                    <option value="Syriac">Syriac script</option>
+                    <option value="syr">Syriac</option>
+                    <option value="tgk">Tajik</option>
+                    <option value="Tamil">Tamil script</option>
+                    <option value="tam">Tamil</option>
+                    <option value="tat">Tatar</option>
+                    <option value="Telugu">Telugu script</option>
+                    <option value="tel">Telugu</option>
+                    <option value="Thaana">Thaana script</option>
+                    <option value="Thai">Thai script</option>
+                    <option value="tha">Thai</option>
+                    <option value="Tibetan">Tibetan script</option>
+                    <option value="bod">Tibetan Standard</option>
+                    <option value="tir">Tigrinya</option>
+                    <option value="ton">Tonga</option>
+                    <option value="tur">Turkish</option>
+                    <option value="ukr">Ukrainian</option>
+                    <option value="urd">Urdu</option>
+                    <option value="uig">Uyghur</option>
+                    <option value="uzb_cyrl">Uzbek (Cyrillic)</option>
+                    <option value="uzb">Uzbek</option>
+                    <option value="Vietnamese">Vietnamese script</option>
+                    <option value="vie">Vietnamese</option>
+                    <option value="cym">Welsh</option>
+                    <option value="yid">Yiddish</option>
+                    <option value="yor">Yoruba</option>
+                  </select>
+                </td>
+            </tbody>
+          </table>
         </fieldset>
       </form>
       <p><button onclick="submitForm(this)" id="submitButton" disabled>Convert document(s)!</button></p>
     </div>
-    
+
     <div id="conversionContainer" class="invisible">
       <hr/>
       <div class="header-text">Conversion Queue</div>

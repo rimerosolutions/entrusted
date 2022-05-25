@@ -363,7 +363,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     checkbutton_custom_output.set_callback({
         let input_outputlocx2 = input_outputlocx.clone();
-        
+
         move|b| {
             if b.is_checked() {
                 input_outputlocx2.borrow_mut().activate();
@@ -630,6 +630,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_size(200, 20)
         .with_label("Convert to Trusted PDF(s)");
     let button_convertx = button_convert.clone();
+    let mut button_convertxx = button_convert.clone();
     button_convert.set_label_color(enums::Color::White);
     button_convert.set_frame(enums::FrameType::ThinUpBox);
     button_convert.set_color(enums::Color::Black);
@@ -640,7 +641,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let scroll = group::Scroll::default().with_size(580, 200);
 
-    let filelist_widget = FileListWidget::new();
+    let mut filelist_widget = FileListWidget::new();
 
     button_delete_file.set_callback({
         let mut filelist_widget2 = filelist_widget.clone();
@@ -667,15 +668,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         let input_oci_image2 = input_oci_image.clone();
         let cc_pdf_viewer_list2 = cc_pdf_viewer_list.clone();
         let input_outputloc2 = input_outputlocx.clone();
-        
+
         move |b| {
             let file_suffix = input_outputloc2.borrow().value();
             let mut file_suffix = String::from(file_suffix.clone().trim());
 
             if file_suffix.is_empty() {
                 file_suffix = String::from(common::DEFAULT_FILE_SUFFIX);
-            }            
-            
+            }
+
             let viewer_app_name = cc_pdf_viewer_list2.borrow_mut().input().value();
             let viewer_app_exec = if checkbutton_openwith.is_checked() {
                 if let Some(viewer_app_path) = pdf_apps_by_name.get(&viewer_app_name) {
@@ -1182,9 +1183,27 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
+    let mut autoconvert = false;
+
+    let args: Vec<String> = env::args().skip(1).collect();
+    if !args.is_empty() {
+        for arg in args.iter() {
+            let input_path = PathBuf::from(&arg);
+
+            if input_path.exists() {
+                filelist_widget.add_file(input_path);
+                autoconvert = true;
+            }
+        }
+    }
+
     wind.end();
     wind.show();
     wind.resize(wind.x(), wind.y(), 680, 600);
+
+    if autoconvert {
+        button_convertxx.do_callback();
+    }
 
     match app.run() {
         Ok(_) => Ok(()),

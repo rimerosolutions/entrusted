@@ -5,6 +5,10 @@
 =dangerzone-rust= allows converting "potentially suspiciuous documents" into safe and trusted PDFs, without worrying too much about viruses or evil macros. *This is not a mature project*.
 - This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation purposes (not an exact port)
 - Similarly to the original Dangerzone tool, documents or images are converted inside a "sandbox"
+- On top of basic features, additional functionality include:
+  - Support for batch conversions
+  - Web user interface that can act as an "online service" (multi-tenancy)
+  - Live CD user experience for both enhanced security and convenience (user specific issues while installing a [[https://xebia.com/blog/podman-the-free-container-engine-alternative-to-docker/][container solution]])
     
 * What is available?
 

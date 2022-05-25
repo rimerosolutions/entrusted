@@ -1,10 +1,10 @@
 # CI_CD
 
-/There's ongoing work to automate the creation of a [[./live_cd][live CD]]./
+ Except for the the live CD, all the release artifacts are created within [[https://podman.io/][Podman]].
 
 * Overview
 
-A bunch of script help build automatically release artifacts for few operating systems (Linux, MacOS or Windows).
+A bunch of script help build automatically release artifacts for few operating systems (Linux, MacOS or Windows). /There's ongoing work to automate the creation of a [[./live_cd][live CD]]./
 
 The current build server is a virtual machine running [[https://ubuntu.com/][Ubuntu Linux]] with the following software installed (among other applications).
 

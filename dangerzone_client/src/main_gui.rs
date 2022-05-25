@@ -353,7 +353,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_size(160, 20)
         .with_label("Custom file suffix");
     checkbutton_custom_output
-        .set_tooltip("The safe PDF will be named <input>-safe.pdf by default.");
+        .set_tooltip("The safe PDF will be named <input>-<suffix>.pdf by default.");
     checkbutton_custom_output.set_checked(false);
 
     let input_outputloc = Rc::new(RefCell::new(input::Input::default().with_size(290, 20)));

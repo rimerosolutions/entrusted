@@ -5,7 +5,7 @@ use which;
 use serde::{Deserialize, Serialize};
 
 pub const CONTAINER_IMAGE_EXE: &str = "/usr/local/bin/dangerzone-container";
-pub const DEFAULT_FILE_SUFFIX: &str = "-safe";
+pub const DEFAULT_FILE_SUFFIX: &str = "dgz";
 pub fn container_image_name() -> String {
     let app_version = option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown");
 
@@ -248,7 +248,7 @@ pub fn default_output_path(input: PathBuf, file_suffix: String) -> Result<PathBu
     let output_filename_opt = input.parent().map(|i| i.to_path_buf());
 
     if let (Some(input_name), Some(mut output_filename)) = (input_name_opt, output_filename_opt) {
-        let filename = format!("{}{}.pdf", input_name.to_owned(), file_suffix);
+        let filename = format!("{}-{}.pdf", input_name.to_owned(), file_suffix);
         output_filename.push(filename);
         Ok(output_filename)
     } else {

@@ -18,7 +18,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .arg(
             Arg::with_name("output-filename")
                 .long("output-filename")
-                .help("Optional output filename defaulting to <filename>-safe.pdf.")
+                .help("Optional output filename defaulting to <filename>-dgz.pdf.")
                 .required(false)
                 .takes_value(true)
         ).arg(
@@ -45,6 +45,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .help("Log format (json or plain")
                 .possible_values(&["json", "plain"])
                 .default_value("plain")
+                .required(false)
+                .takes_value(true)
+        ).arg(
+            Arg::with_name("file-suffix")
+                .long("file-suffix")
+                .help("Default file suffix")                
+                .default_value(common::DEFAULT_FILE_SUFFIX)
                 .required(false)
                 .takes_value(true)
         );
@@ -89,7 +96,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let src_path = fs::canonicalize(input_filename);
     let src_path_copy = fs::canonicalize(input_filename)?;
-    let abs_output_filename = common::default_output_path(src_path?, String::from(common::DEFAULT_FILE_SUFFIX))?;
+    let file_suffix = if let Some(proposed_file_suffix) = &run_matches.value_of("file-suffix") {
+        String::from(proposed_file_suffix.clone())
+    } else {
+        String::from(common::DEFAULT_FILE_SUFFIX)
+    };
+    
+    let abs_output_filename = common::default_output_path(src_path?, file_suffix)?;
 
     if output_filename.file_name().is_none() {
         output_filename = abs_output_filename;

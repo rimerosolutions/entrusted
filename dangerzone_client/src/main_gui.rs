@@ -314,7 +314,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         .center_screen()
         .with_label(&wind_title);
     let mut wind2 = wind.clone();
-    let mut windx = wind.clone();
     wind.make_resizable(true);
 
     let size_pack_spacing = 20;
@@ -356,11 +355,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     checkbutton_custom_output
         .set_tooltip("The safe PDF will be named <input>-safe.pdf by default.");
     checkbutton_custom_output.set_checked(false);
-    let checkbutton_custom_outputx = checkbutton_custom_output.clone();
 
     let input_outputloc = Rc::new(RefCell::new(input::Input::default().with_size(290, 20)));
     let input_outputlocx = input_outputloc.clone();
-    let input_outputlocx2 = input_outputloc.clone();
     input_outputloc.borrow_mut().set_value(common::DEFAULT_FILE_SUFFIX);
     input_outputloc.borrow_mut().deactivate();
 
@@ -515,7 +512,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     output_oci_image.set_checked(false);
 
     let input_oci_image = Rc::new(RefCell::new(input::Input::default().with_size(440, 20)));
-    let input_oci_imagex = input_oci_image.clone();
     input_oci_image.borrow_mut().set_value(&common::container_image_name());
     input_oci_image.borrow_mut().deactivate();
     row_oci_image.end();
@@ -1020,14 +1016,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         let deselect_all_frame2 = deselect_all_framex.clone();
         let mut group_ocr_language = row_ocr_language.clone();
         let ocr_language_list_copy = ocr_language_list2.clone();
-        let mut input_oci_image_2 = input_oci_image.clone();
+        let input_oci_image_2 = input_oci_image.clone();
         let mut output_oci_image2 = output_oci_image.clone();
         let mut row_oci_image2 = row_oci_image.clone();
         let mut row_openwith2 = row_openwith.clone();
-        let windx = windx.clone();
-        let mut button_browse_for_pdf_app_copy2 = button_browse_for_pdf_appx.clone();
-        let mut cc_pdf_viewer_list2  = cc_pdf_viewer_list.clone();
-        let checkbutton_ocr_lang2 = checkbutton_ocr_lang.clone();
+        let button_browse_for_pdf_app_copy2 = button_browse_for_pdf_appx.clone();
+        let cc_pdf_viewer_list2  = cc_pdf_viewer_list.clone();
 
         let mut row_inputloc2 = row_inputloc.clone();
         let mut checkbutton_custom_output2 = checkbutton_custom_output.clone();
@@ -1138,7 +1132,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                 input_outputloc2.borrow_mut().resize(xx, yyy, ocw, hhh);
 
 
-                let xxxx = cc_pdf_viewer_list2.borrow().x();
                 let yyyy = cc_pdf_viewer_list2.borrow().y();
                 let hhhh = cc_pdf_viewer_list2.borrow().h();
                 cc_pdf_viewer_list.borrow_mut().resize(

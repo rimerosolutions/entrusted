@@ -1,6 +1,6 @@
 [package]
 name = "dangerzone-httpserver"
-version = "0.0.2"
+version = "0.1.0"
 edition = "2018"
 description = "dangerzone HTTP server" 
 keywords = ["dangerzone", "remoting", "http"]

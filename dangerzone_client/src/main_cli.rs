@@ -89,7 +89,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let src_path = fs::canonicalize(input_filename);
     let src_path_copy = fs::canonicalize(input_filename)?;
-    let abs_output_filename = common::default_output_path(src_path?)?;
+    let abs_output_filename = common::default_output_path(src_path?, String::from(common::DEFAULT_FILE_SUFFIX))?;
 
     if output_filename.file_name().is_none() {
         output_filename = abs_output_filename;

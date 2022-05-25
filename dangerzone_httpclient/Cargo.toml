@@ -1,6 +1,6 @@
 [package]
 name = "dangerzone-httpclient"
-version = "0.0.2"
+version = "0.1.0"
 edition = "2018"
 description = "dangerzone HTTP client" 
 keywords = ["dangerzone", "remoting", "http"]

@@ -5,7 +5,7 @@ use which;
 use serde::{Deserialize, Serialize};
 
 pub const CONTAINER_IMAGE_EXE: &str = "/usr/local/bin/dangerzone-container";
-
+pub const DEFAULT_FILE_SUFFIX: &str = "-safe";
 pub fn container_image_name() -> String {
     let app_version = option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown");
 
@@ -243,12 +243,13 @@ pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
     None
 }
 
-pub fn default_output_path(input: PathBuf) -> Result<PathBuf, Box<dyn Error>> {
+pub fn default_output_path(input: PathBuf, file_suffix: String) -> Result<PathBuf, Box<dyn Error>> {
     let input_name_opt = input.file_stem().map(|i| i.to_str()).and_then(|v| v);
     let output_filename_opt = input.parent().map(|i| i.to_path_buf());
 
     if let (Some(input_name), Some(mut output_filename)) = (input_name_opt, output_filename_opt) {
-        output_filename.push(input_name.to_owned() + "-safe.pdf");
+        let filename = format!("{}{}.pdf", input_name.to_owned(), file_suffix);
+        output_filename.push(filename);
         Ok(output_filename)
     } else {
         Err("Cannot determine resulting PDF output path based on selected input document location!".into())

@@ -18,11 +18,17 @@ Please note that this has *been mostly tested under Linux* so far ([[https://voi
 
 The user interface is built with the [[https://github.com/fltk-rs/fltk-rs][FLTK]] toolkit because it's lightweight and /relatively/ easy to use.
 
+** Settings window
+
+[[./images/gui-screenshot2.png]]
+
+** Conversion window
+
 [[./images/gui-screenshot.png]]
 
 ** Command-line client
 
-The CLI can be convenient for many reasons, including mitigating the absence of batch conversion feature in the GUI ([[https://unix.stackexchange.com/questions/389705/understanding-the-exec-option-of-find][find-exec]] workflow).
+The CLI can be convenient for "terminal warriors" or to supplement existing shell scripts workflows (i.e. [[https://unix.stackexchange.com/questions/389705/understanding-the-exec-option-of-find][find-exec]]).
 
 [[./images/cli-screenshot.png]]
 

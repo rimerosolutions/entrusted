@@ -2,23 +2,17 @@
 
 * What is this?
 
-=dangerzone-rust= allows converting suspiciuous documents into safe and trusted PDFs, without worrying too much about viruses or evil macros. *This is not a mature project*.
+=dangerzone-rust= allows converting "potentially suspiciuous documents" into safe and trusted PDFs, without worrying too much about viruses or evil macros. *This is not a mature project*.
 - This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation purposes (not an exact port)
 - Similarly to the original Dangerzone tool, documents or images are converted inside a "sandbox"
-
-* Where can I get it?
-
-For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-rust/releases][releases page]] (64 bit operating systems).
-- For MacOS users, please download the file =dangerzone-darwin-amd64-<version>.zip=
-- For Linux users, please download the file =dangerzone-linux-amd64-<version>.tar=
-- For Windows users, please download the file =dangerzone-windows-amd64-<version>.zip=
-- If you prefer a live CD, please download the ISO image =dangerzone-livecd-amd64-<version>.iso=
     
 * What is available?
 
 ** User interfaces
 
-There are 3 user interfaces ([[./dangerzone_httpserver][Web]], [[./dangerzone_client][Desktop and CLI]]).
+There are 3 user interfaces ([[./dangerzone_client][Desktop and CLI]], [[./dangerzone_httpserver][Web]]).
+- Most users will likely want the Desktop version
+- If you prefer the Web interface, please download the live CD ISO for an "out of the box non-involved user experience" (/unless you'd rather setup the Web server yourself/)
 
 [[./images/screenshots.png]]
 
@@ -40,6 +34,15 @@ Most users will open a document with the =dangerzone-client=, this will automati
 Below is a high-level architecture overview, the solution relies on a container engine solution (i.e. [[https://www.docker.com/][Docker]]).
 
 [[./images/image.png]]
+
+
+* Where can I get it?
+
+For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-rust/releases][releases page]] (64 bit operating systems).
+- For MacOS users, please download the file =dangerzone-darwin-amd64-<version>.zip=
+- For Linux users, please download the file =dangerzone-linux-amd64-<version>.tar=
+- For Windows users, please download the file =dangerzone-windows-amd64-<version>.zip=
+- If you prefer a live CD, please download the ISO image =dangerzone-livecd-amd64-<version>.iso=
 
 * What is required?
 
@@ -70,10 +73,10 @@ Below is a high-level architecture overview, the solution relies on a container 
 - [X] Implement conversion progress information ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral10][spiral10 branch]])
 - [X] Minimal CI/CD pipeline ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral11][spiral11 branch]])
 - [X] Provide live CD ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral12][spiral12 branch]])
-- [-] Support serial batch conversions ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral13][spiral13 branch]])
+- [X] Support minimal serial batch conversions ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral13][spiral13 branch]])
   - [X] In the Web user interface
-  - [ ] In the graphical desktop interface    
-  - [ ] In the command-line client
+  - [X] In the graphical desktop interface    
+  - [X] Document a simple =find-exec= workflow for the command-line client
 - [ ] Support translations
 - [ ] Support application preferences (GUI and CLI support)
 - [ ] Improve user interface and documentation

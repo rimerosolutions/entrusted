@@ -90,16 +90,6 @@ impl FileListWidget {
         container.end();
         container.auto_layout();
 
-        container.handle({
-            move |w, ev| match ev {
-                enums::Event::Resize => {
-//                    println!("New size::: {}x{}", w.w(), w.h());
-                    true
-                },
-                _ => false
-            }
-        });
-
         Self {
             container,
             selected_indices: Rc::new(RefCell::new(vec![])),
@@ -107,36 +97,31 @@ impl FileListWidget {
         }
     }
 
-    pub fn resize(&mut self, x: i32, y: i32, ww: i32) {
-        self.container.resize(x, y, ww, self.container.h());
+    pub fn resize(&mut self, x: i32, y: i32, w: i32, _: i32) {
+        self.container.resize(x, y, w, self.container.h());
 
         for row in self.rows.borrow_mut().iter() {
             let mut active_child = row.clone();
-            
-                    let w1 = (ww as f64 * 0.4) as i32;
-                    let w2 = (ww as f64 * 0.2) as i32;
-                    let w3 = (ww as f64 * 0.15) as i32;
-                    let w4 = (ww as f64 * 0.1) as i32;
 
-                    let mut xx = active_child.checkbox.x();
-                    active_child.checkbox.resize(xx, active_child.checkbox.y(), w1, active_child.checkbox.h());
-                   active_child.checkbox.set_label(&self.adjust_label(active_child.file, w1));
+            let w1 = (w as f64 * 0.4) as i32;
+            let w2 = (w as f64 * 0.2) as i32;
+            let w3 = (w as f64 * 0.2) as i32;
+            let w4 = (w as f64 * 0.1) as i32;
 
-                    xx += w1 + WIDGET_GAP;
-                    active_child.progressbar.resize(xx, active_child.progressbar.y(), w2, active_child.progressbar.h());
+            let mut pos_x = active_child.checkbox.x();
+            active_child.checkbox.resize(pos_x, active_child.checkbox.y(), w1, active_child.checkbox.h());
+            active_child.checkbox.set_label(&self.adjust_label(active_child.file, w1));
 
-            xx += w2 + WIDGET_GAP;
-            
-                    active_child.status.resize(xx, active_child.status.y(), w3, active_child.status.h());
+            pos_x += w1 + WIDGET_GAP;
+            active_child.progressbar.resize(pos_x, active_child.progressbar.y(), w2, active_child.progressbar.h());
 
-            xx += w3 + WIDGET_GAP;
+            pos_x += w2 + WIDGET_GAP;
 
-            active_child.log_link.resize(xx, active_child.log_link.y(), w4, active_child.log_link.h());
-            
-            // println!("Active child::: {}", active_child.checkbox.label());
-            // let mut active_parent = active_child.root;
-            // active_parent.resize(x, active_parent.y(), w, active_parent.h());
+            active_child.status.resize(pos_x, active_child.status.y(), w3, active_child.status.h());
 
+            pos_x += w3 + WIDGET_GAP;
+
+            active_child.log_link.resize(pos_x, active_child.log_link.y(), w4, active_child.log_link.h());
         }
     }
 
@@ -198,16 +183,16 @@ impl FileListWidget {
     }
 
     pub fn adjust_label(&self, path: PathBuf, w1: i32) -> String {
-        let pp = format!("{}", path.display());
-        let mut path_name = path.file_name().unwrap().to_str().unwrap().to_string();
+        let mut path_name = format!("{}", path.file_name().and_then(|x| x.to_str()).unwrap());
+        let effective_w = w1 - WIDGET_GAP;
 
         let (mut xx, _) = draw::measure(&path_name, true);
-        if xx > w1 {
+        if xx > effective_w {
             path_name = path_name
                 .chars()
                 .take(path_name.len() - cmp::min(3, path_name.len()))
                 .collect::<String>();
-            while xx > w1 - 5{
+            while xx > effective_w {
                 path_name = path_name
                     .chars()
                     .take(path_name.len() - 1)
@@ -222,13 +207,12 @@ impl FileListWidget {
     }
 
     pub fn add_file(&mut self, path: PathBuf) {
-        // let pp = app::first_window().unwrap();
-        let ww = self.container.w();//pp.w() - (WIDGET_GAP * 3);
+        let ww = self.container.w();
 
         let w1 = (ww as f64 * 0.4) as i32;
-                    let w2 = (ww as f64 * 0.2) as i32;
-                    let w3 = (ww as f64 * 0.15) as i32;
-                    let w4 = (ww as f64 * 0.1) as i32;
+        let w2 = (ww as f64 * 0.2) as i32;
+        let w3 = (ww as f64 * 0.2) as i32;
+        let w4 = (ww as f64 * 0.1) as i32;
 
         let mut row = group::Pack::default()
             .with_type(group::PackType::Horizontal)
@@ -236,49 +220,42 @@ impl FileListWidget {
 
         row.set_spacing(WIDGET_GAP);
 
-        let pp = format!("{}", path.display());
-        let mut check_button = button::CheckButton::default()
+        let path_tooltip = format!("{}", path.display());
+        let mut select_row_checkbutton = button::CheckButton::default()
             .with_size(w1, 30)
             .with_label(&self.adjust_label(path.clone(), w1));
-        check_button.set_tooltip(&pp);
+        select_row_checkbutton.set_tooltip(&path_tooltip);
 
-        let check_buttonx2 = check_button.clone();
-        //let check_buttonx = check_button.clone();
+        let check_buttonx2 = select_row_checkbutton.clone();
         let progressbar = misc::Progress::default().with_size(w2, 20).with_label("0%");
 
-        let progressbarx = progressbar.clone();
-        let mut f = frame::Frame::default()
+        let mut status_frame = frame::Frame::default()
             .with_size(w3, 30)
             .with_label("PENDING")
             .with_align(enums::Align::Inside | enums::Align::Left);
-        f.set_label_color(enums::Color::Magenta);
+        status_frame.set_label_color(enums::Color::Magenta);
 
-        let mut fx = f.clone();
-
-        let mut f2 = button::Button::default()
+        let mut logs_button = button::Button::default()
             .with_size(w4, 30)
             .with_label("   ");
-        f2.set_frame(enums::FrameType::NoBox);
-        f2.set_down_frame(enums::FrameType::NoBox);
-        f2.deactivate();
-
-        f2.set_label_color(enums::Color::Blue);
+        logs_button.set_frame(enums::FrameType::NoBox);
+        logs_button.set_down_frame(enums::FrameType::NoBox);
+        logs_button.deactivate();
+        logs_button.set_label_color(enums::Color::Blue);
 
         row.end();
-        // row.auto_layout();
-        let row2 = row.clone();
 
         let file_list_row = FileListRow {
             checkbox: check_buttonx2,
             progressbar,
-            status: f,
-            log_link: f2.clone(),
+            status: status_frame,
+            log_link: logs_button.clone(),
             logs: Rc::new(RefCell::new(vec![])),
             file: path.clone(),
         };
 
-        f2.set_callback({
-            let arow = file_list_row.clone();
+        logs_button.set_callback({
+            let active_row = file_list_row.clone();
 
             move |_| {
                 if let Some(current_wind) = app::first_window() {
@@ -297,10 +274,12 @@ impl FileListWidget {
                     container.set_spacing(WIDGET_GAP);
                     let mut textdisplay_cmdlog = text::TextDisplay::default().with_size(400, 350);
                     let mut text_buffer = text::TextBuffer::default();
-                    let logs = arow.logs.borrow().join("\n");
+                    let logs = active_row.logs.borrow().join("\n");
+
                     let mut log_close_button = button::Button::default()
                         .with_size(100, 30)
                         .with_label("Close");
+                    
                     log_close_button.set_callback({
                         let mut win_copy = win.clone();
                         move |_| {
@@ -314,6 +293,7 @@ impl FileListWidget {
 
                     win.end();
                     win.make_modal(true);
+                    win.make_resizable(true);
                     win.show();
 
                     while win.shown() {
@@ -323,71 +303,38 @@ impl FileListWidget {
             }
         });
 
-        check_button.set_callback({
+        select_row_checkbutton.set_callback({
             let selfie = self.clone();
-            let ppp = path.clone();
+            let current_path = path.clone();
 
             move |b| {
-                let idx = selfie.row_index(ppp.clone());
+                let idx = selfie.row_index(current_path.clone());
 
-                if b.is_checked() {
-                    selfie.selected_indices.borrow_mut().push(idx);
-                } else {
-                    selfie.selected_indices.borrow_mut().remove(idx);
+                if idx != -1 {
+                    if b.is_checked() {
+                        selfie.selected_indices.borrow_mut().push(idx as usize);
+                    } else {
+                        selfie.selected_indices.borrow_mut().remove(idx as usize);
+                    }
+
+                    let _ = app::handle_main(FileListWidgetEvent::SELECTION_CHANGED);
                 }
-
-                let _ = app::handle_main(FileListWidgetEvent::SELECTION_CHANGED);
             }
         });
 
-        /*row.handle({
-            let mut check_button2 = check_button.clone();
-            let mut progressbar2 = progressbarx.clone();
-            let mut ff = fx.clone();
-            let mut f2f = f2.clone();
-
-            move |w, ev| match ev {
-                enums::Event::Resize => {
-                    let ww = w.w();
-                    let w1 = (ww as f64 * 0.3) as i32;
-                    let w2 = (ww as f64 * 0.2) as i32;
-                    let w3 = (ww as f64 * 0.2) as i32;
-                    let w4 = (ww as f64 * 0.1) as i32;
-
-                    let mut xx = check_button2.x();
-                    check_button2.resize(xx, check_button2.y(), w1, check_button2.h());
-                    println!("LABEL:: {:?}", w.child(0).unwrap().label());
-
-                    xx += w1 + WIDGET_GAP;
-                    progressbar2.resize(xx, progressbar2.y(), w2, progressbar2.h());
-
-                    xx += w2 + WIDGET_GAP;
-                    ff.resize(check_button2.x(), ff.y(), w3, ff.h());
-
-                    xx += w3 + WIDGET_GAP;
-                    f2f.resize(xx, f2f.y(), w4, f2f.h());
-
-                    true
-                },
-                _ => false
-            }
-        });*/
         self.container.add(&row);
-
-        if let Some(pp) = app::first_window() {
-            self.container.resize(self.container.x(), self.container.y(), pp.w() - (WIDGET_GAP * 4), self.container.h());
-        }
-        self.container.redraw();
         self.rows.borrow_mut().push(file_list_row);
+
+        self.resize(self.container.x(), self.container.y(), ww, self.container.h());
     }
 
-    fn row_index(&self, file: PathBuf) -> usize {
-        let idx = 0;
+    fn row_index(&self, file: PathBuf) -> i32 {
+        let idx = -1;
 
-        let v = self.rows.borrow_mut().iter().position(|r| r.file == file);
+        let ret = self.rows.borrow().iter().position(|r| r.file == file);
 
-        if let Some(vv) = v {
-            vv
+        if let Some(pos) = ret {
+            pos as i32
         } else {
             idx
         }
@@ -487,8 +434,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     let ocr_language_list = Rc::new(RefCell::new(
         browser::HoldBrowser::default().with_size(240, 60),
     ));
-    let ocr_language_listx = ocr_language_list.clone();
-    let ocr_language_list2 = ocr_language_list.clone();
     let ocr_languages_by_name = common::ocr_lang_key_by_name();
     let mut ocr_languages_by_lang = HashMap::with_capacity(ocr_languages_by_name.len());
     let mut ocr_languages: Vec<&str> = Vec::with_capacity(ocr_languages_by_name.len());
@@ -513,11 +458,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     ocr_language_list.borrow_mut().deactivate();
 
     checkbutton_ocr_lang.set_callback({
+        let ocr_language_list_ref = ocr_language_list.clone();
+        
         move |b| {
             if !b.is_checked() {
-                ocr_language_list.borrow_mut().deactivate();
+                ocr_language_list_ref.borrow_mut().deactivate();
             } else {
-                ocr_language_list.borrow_mut().activate();
+                ocr_language_list_ref.borrow_mut().activate();
             }
         }
     });
@@ -528,12 +475,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_type(group::PackType::Horizontal);
     row_openwith.set_spacing(size_pack_spacing);
     let mut checkbutton_openwith = button::CheckButton::default().with_size(295, 20).with_label("Open document after converting, using");
-    checkbutton_openwith.set_tooltip("Open the converted files automatically.");
 
     let pdf_apps_by_name = list_apps_for_pdfs();
     let pdf_viewer_list = Rc::new(RefCell::new(misc::InputChoice::default().with_size(240, 20)));
-    let pdf_viewer_list_copy = pdf_viewer_list.clone();
-    let cc_pdf_viewer_list = pdf_viewer_list.clone();
     let mut pdf_viewer_app_names = Vec::with_capacity(pdf_apps_by_name.len());
 
     for (k, _v) in &pdf_apps_by_name {
@@ -546,7 +490,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         pdf_viewer_list.borrow_mut().add(k);
     }
 
-    pdf_viewer_list.borrow_mut().set_tooltip("You can also enter the path to a PDF viewer.");
+    pdf_viewer_list.borrow_mut().set_tooltip("You can also paste the path to a PDF viewer");
 
     if pdf_apps_by_name.len() != 0 {
         pdf_viewer_list.borrow_mut().set_value_index(0);
@@ -561,21 +505,25 @@ fn main() -> Result<(), Box<dyn Error>> {
     button_browse_for_pdf_app.borrow_mut().deactivate();
 
     checkbutton_openwith.set_callback({
+        let pdf_viewer_list_ref = pdf_viewer_list.clone();
+        
         move |b| {
             let will_be_read_only = !b.is_checked();
-            pdf_viewer_list.borrow_mut().input().set_readonly(will_be_read_only);
+            pdf_viewer_list_ref.borrow_mut().input().set_readonly(will_be_read_only);
 
             if will_be_read_only {
-                pdf_viewer_list.borrow_mut().deactivate();
+                pdf_viewer_list_ref.borrow_mut().deactivate();
                 button_browse_for_pdf_app_copy.borrow_mut().deactivate();
             } else {
-                pdf_viewer_list.borrow_mut().activate();
+                pdf_viewer_list_ref.borrow_mut().activate();
                 button_browse_for_pdf_app_copy.borrow_mut().activate();
             };
         }
     });
 
     button_browse_for_pdf_app.borrow_mut().set_callback({
+        let pdf_viewer_list_ref = pdf_viewer_list.clone();
+        
         move |_| {
             let mut dlg = dialog::FileDialog::new(dialog::FileDialogType::BrowseFile);
             dlg.set_title("Select PDF viewer program");
@@ -586,11 +534,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             if !selected_filename.as_os_str().is_empty() {
                 let path_name = format!("{}", dlg.filename().display());
                 let path_str = path_name.as_str();
-                pdf_viewer_list_copy.borrow_mut().set_value(path_str);
+                pdf_viewer_list_ref.borrow_mut().set_value(path_str);
             }
         }
     });
-
 
     row_openwith.end();
 
@@ -604,8 +551,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_pos(0, 0)
         .with_align(enums::Align::Inside | enums::Align::Left);
     output_oci_image.set_label("Custom container image");
-    output_oci_image.set_tooltip("Please only modify for expert-level customization.");
-    
     output_oci_image.set_checked(false);
 
     let input_oci_image = Rc::new(RefCell::new(input::Input::default().with_size(440, 20)));
@@ -760,10 +705,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         let windx = wind2.clone();
         let filelist_widget2 = filelist_widget.clone();
         let mut messages_frame2 = messages_framex.clone();
-        let ocr_language_list2 = ocr_language_listx.clone();
+        let ocr_language_list2 = ocr_language_list.clone();
         let checkbutton_ocr_lang2 = checkbutton_ocr_langx.clone();
         let input_oci_image2 = input_oci_image.clone();
-        let cc_pdf_viewer_list2 = cc_pdf_viewer_list.clone();
+        let pdf_viewer_list_ref = pdf_viewer_list.clone();
         let input_outputloc2 = input_outputlocx.clone();
 
         move |b| {
@@ -774,7 +719,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 file_suffix = String::from(common::DEFAULT_FILE_SUFFIX);
             }
 
-            let viewer_app_name = cc_pdf_viewer_list2.borrow_mut().input().value();
+            let viewer_app_name = pdf_viewer_list_ref.borrow_mut().input().value();
             let viewer_app_exec = if checkbutton_openwith.is_checked() {
                 if let Some(viewer_app_path) = pdf_apps_by_name.get(&viewer_app_name) {
                     Some(viewer_app_path.clone())
@@ -805,13 +750,14 @@ fn main() -> Result<(), Box<dyn Error>> {
             };
 
             let oci_image_text = input_oci_image2.borrow().value();
+
             let oci_image  = if oci_image_text.trim().is_empty() {
                 None
             } else {
                 Some(String::from(oci_image_text.trim()))
             };
-            let viewer_app_option = viewer_app_exec.clone();
 
+            let viewer_app_option = viewer_app_exec.clone();
 
             for current_row in filelist_widget2.rows.borrow_mut().iter() {
                 let result = Arc::new(AtomicBool::new(false));
@@ -1113,13 +1059,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         let select_all_frame2 = select_all_framex.clone();
         let deselect_all_frame2 = deselect_all_framex.clone();
         let mut group_ocr_language = row_ocr_language.clone();
-        let ocr_language_list_copy = ocr_language_list2.clone();
+        let ocr_language_list_copy = ocr_language_list.clone();
         let input_oci_image_2 = input_oci_image.clone();
         let mut output_oci_image2 = output_oci_image.clone();
         let mut row_oci_image2 = row_oci_image.clone();
         let mut row_openwith2 = row_openwith.clone();
         let button_browse_for_pdf_app_copy2 = button_browse_for_pdf_appx.clone();
-        let cc_pdf_viewer_list2  = cc_pdf_viewer_list.clone();
+        let pdf_viewer_list_ref = pdf_viewer_list.clone();
 
         let mut row_inputloc2 = row_inputloc.clone();
         let mut checkbutton_custom_output2 = checkbutton_custom_output.clone();
@@ -1165,8 +1111,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 let wval = w.w() - (size_pack_spacing * 3);
 
-                filelist_widget2.resize(scroller.x(), scroller.y(), wval);
-                // println!("WVAL: {}", wval);
+                filelist_widget2.resize(scroller.x(), scroller.y(), wval, 0);
+
                 scroller.redraw();
 
                 let xx = ocr_language_list_copy.borrow_mut().x();
@@ -1234,10 +1180,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let hhh = input_outputloc.borrow().h();
                 input_outputloc2.borrow_mut().resize(xx, yyy, ocw, hhh);
 
-
-                let yyyy = cc_pdf_viewer_list2.borrow().y();
-                let hhhh = cc_pdf_viewer_list2.borrow().h();
-                cc_pdf_viewer_list.borrow_mut().resize(
+                let yyyy = pdf_viewer_list_ref.borrow().y();
+                let hhhh = pdf_viewer_list_ref.borrow().h();
+                pdf_viewer_list_ref.borrow_mut().resize(
                     xx,
                     yyyy,
                     ocw - button_browse_for_pdf_app_copy2.borrow().w() - WIDGET_GAP ,
@@ -1271,6 +1216,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                         select_all_frame2.borrow_mut().hide();
                         deselect_all_frame2.borrow_mut().hide();
                     }
+
+                    filelist_widget2.container.redraw();
+                    scroller.redraw();
                     true
                 } else if ev.bits() == FileListWidgetEvent::ALL_SELECTED {
                     filelist_widget2.select_all();

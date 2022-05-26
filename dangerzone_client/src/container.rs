@@ -171,7 +171,6 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
         "run",
         "--network",
         "none",
-        "--read-only"
     ];
     
     let input_file_volume = &format!("{}:/tmp/input_file", input_path.display());

@@ -27,7 +27,9 @@ This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dang
 
 There are 3 user interfaces ([[./dangerzone_client][Desktop and CLI]], [[./dangerzone_httpserver][Web]])
 - Most users will likely want the Desktop version
-- If you prefer the Web interface, please download the live CD ISO for an "out of the box non-involved user experience" (/unless you'd rather setup the Web server yourself/). The Web UI is available at =http://localhost:13000=.
+- If you prefer the Web interface, please download the live CD ISO for an "out of the box non-involved user experience" (/unless you'd rather setup the Web server yourself/)
+  - The Web UI is available at =http://localhost:13000=
+  - Replace =localhost= by the IP address of your virtual machine in the above-mentioned link
 
 [[./images/screenshots.png]]
 
@@ -92,7 +94,7 @@ For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-
   - [X] In the Web user interface
   - [X] In the graphical desktop interface    
   - [X] Document a simple =find-exec= workflow for the command-line client
-- [ ] Fix few obvious UI issues and then release new batch conversion feature ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral14][spiral14 branch]])
+- [X] Fix few obvious UI issues and then release new batch conversion feature ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral14][spiral14 branch]])
 - [ ] Support application preferences (GUI and CLI support)
 - [ ] Support translations
 - [ ] Revisit notifications for SSE + HTTP2, browser restrictions    
@@ -127,6 +129,6 @@ This project is more of a hobby at this point: it lacks maturity and several fea
 | *Incomplete*                             | UI, code polishing, probably several "obvious things"     |
 |------------------------------------------+-----------------------------------------------------------|
 
-* Contributing
+* How to contribute?
 
-All the bugs reports, questions or suggestions are welcome and appreciated. Please note that the best way to contribute is via pull requests.
+All the bugs reports, questions or suggestions are welcome and appreciated. Please note that the best way to contribute is via pull requests: this is a hobby project more than anything else at this time...

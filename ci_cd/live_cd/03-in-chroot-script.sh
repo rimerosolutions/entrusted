@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
+set -x
 
 DANGERZONE_VERSION=$(cat /etc/dangerzone_release | head -1)
 
@@ -57,6 +58,7 @@ chmod +x /usr/local/bin/dangerzone-*
 echo "Updating default screen messages"
 cp /files/etc/motd /etc/motd
 cp /files/etc/issue /etc/issue
+cp /files/usr/share/containers/containers.conf /usr/share/containers/containers.conf
 
 echo "Updating passwords"
 echo 'root:root' | /usr/sbin/chpasswd

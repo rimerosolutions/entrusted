@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 DANGERZONE_VERSION=$(cat $HOME/LIVE_BOOT/chroot/etc/dangerzone_release | head -1)
 

@@ -1,14 +1,19 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
+set -x
 
 ROOT_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
 
 echo "Deleting previous artifacts ISO and squashfs files"
 DANGERZONE_VERSION=$(cat $HOME/LIVE_BOOT/chroot/etc/dangerzone_release | head -1)
-rm $HOME/LIVE_BOOT/dangerzone-livecd-${DANGERZONE_VERSION}.iso
+rm $HOME/LIVE_BOOT/dangerzone-livecd-amd64-${DANGERZONE_VERSION}.iso
 sudo rm $HOME/LIVE_BOOT/staging/live/filesystem.squashfs
 
 echo "Creating filesystem"
-mkdir -p $HOME/LIVE_BOOT/{staging/{EFI/boot,boot/grub/x86_64-efi,isolinux,live},tmp}
+mkdir -p $HOME/LIVE_BOOT/staging/EFI/boot/
+mkdir -p $HOME/LIVE_BOOT/staging/boot/grub/x86_64-efi                          
+mkdir -p $HOME/LIVE_BOOT/staging/isolinux
+mkdir -p $HOME/LIVE_BOOT/staging/live
+mkdir -p $HOME/LIVE_BOOT/tmp
 sudo mksquashfs $HOME/LIVE_BOOT/chroot $HOME/LIVE_BOOT/staging/live/filesystem.squashfs -e boot
 
 echo "Preparing boot files"
@@ -21,7 +26,8 @@ cp "${ROOT_SCRIPTS_DIR}"/post_chroot_files/home/dangerzone/LIVE_BOOT/tmp/grub-st
 
 touch $HOME/LIVE_BOOT/staging/DEBIAN_CUSTOM
 
-cp /usr/lib/ISOLINUX/isolinux.bin  $HOME/LIVE_BOOT/staging/isolinux/ && cp /usr/lib/syslinux/modules/bios/* $HOME/LIVE_BOOT/staging/isolinux/
+cp /usr/lib/ISOLINUX/isolinux.bin  $HOME/LIVE_BOOT/staging/isolinux/ \
+    && cp /usr/lib/syslinux/modules/bios/* $HOME/LIVE_BOOT/staging/isolinux/
 cp -r /usr/lib/grub/x86_64-efi/* $HOME/LIVE_BOOT/staging/boot/grub/x86_64-efi/
 
 grub-mkstandalone --format=x86_64-efi --output=$HOME/LIVE_BOOT/tmp/bootx64.efi --locales= --fonts= boot/grub/grub.cfg=$HOME/LIVE_BOOT/tmp/grub-standalone.cfg

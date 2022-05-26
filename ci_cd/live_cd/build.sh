@@ -1,12 +1,21 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
+set -x
+
+PREVIOUSDIR="$(echo $PWD)"
+SCRIPTDIR="$(realpath $(dirname "$0"))"
+PROJECTDIR="$(realpath ${SCRIPTDIR}/../..)"
+APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' ${PROJECTDIR}/dangerzone_client/Cargo.toml)
+
 
 DANGERZONE_VERSION=0.0.2
 
 if [ -n "$1" ]; then  
   DANGERZONE_VERSION=$1
 fi
+ARTIFACTSDIR="${PROJECTDIR}/artifacts/dangerzone-livecd-amd64-${DANGERZONE_VERSION}"
+echo "Building dangerzone version: ${DANGERZONE_VERSION}"
 
-echo "Using custom dangerzone version ${DANGERZONE_VERSION}"
+mkdir -p "${ARTIFACTSDIR}"
 
 ROOT_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
 chmod +x "${ROOT_SCRIPTS_DIR}"/*.sh

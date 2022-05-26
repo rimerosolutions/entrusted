@@ -1,10 +1,9 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
+set -x
 
 DANGERZONE_VERSION=$(cat /etc/dangerzone_release | head -1)
 
 mkdir -p $HOME/.config/containers
-cp /files/home/dangerzone/.config/containers/containers.conf $HOME/.config/containers/containers.conf
-cp /files/usr/share/containers/containers.conf /usr/share/containers/containers.conf
 
 cd /tmp
 wget https://github.com/rimerosolutions/dangerzone-rust/releases/download/${DANGERZONE_VERSION}/dangerzone-linux-amd64-${DANGERZONE_VERSION}.tar

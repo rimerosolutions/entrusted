@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
+set -x
 
 ROOT_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
 

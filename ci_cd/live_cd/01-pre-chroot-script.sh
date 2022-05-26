@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
+set -x
 
 DANGERZONE_VERSION=$1
 ROOT_SCRIPTS_DIR="$(realpath $(dirname "$0"))"

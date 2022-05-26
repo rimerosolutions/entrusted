@@ -13,7 +13,8 @@ This is a live CD of dangerzone-rust
 - 'doas' is installed instead of 'sudo', the general usage is similar 
 - Standard service management: systemctl <action> dangerzone-httpserver 
 - The relevant binaries are in /usr/local/bin 
-- By default the server binds to 0.0.0.0 on port 13000 
+- By default the server binds to ALL interfaces on port 13000 
+- The Web interface is available at http://127.0.0.1:13000
 - By default internet connectivity is forbidden 
   - As root, run 'dangerzone-fw-disable' to allow internet access 
   - As root, run 'dangerzone-fw-enable' to restore firewall rules

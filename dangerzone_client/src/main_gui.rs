@@ -528,7 +528,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_type(group::PackType::Horizontal);
     row_openwith.set_spacing(size_pack_spacing);
     let mut checkbutton_openwith = button::CheckButton::default().with_size(295, 20).with_label("Open document after converting, using");
-    checkbutton_openwith.set_tooltip("Open the converted files automatically.")
+    checkbutton_openwith.set_tooltip("Open the converted files automatically.");
 
     let pdf_apps_by_name = list_apps_for_pdfs();
     let pdf_viewer_list = Rc::new(RefCell::new(misc::InputChoice::default().with_size(240, 20)));

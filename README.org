@@ -1,5 +1,7 @@
 #+TITLE: README
 
+*This is not a mature project and pretty much work in progress*.
+
 * What is this?
 
 ** Overview
@@ -11,22 +13,21 @@
 *NOTE*: Unless you download the live CD, you MUST install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior running this application.
 
 ** Features
-This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation purposes (not an exact port).
+
+This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation purposes (/not an exact port/).
 - Similarly to the original Dangerzone tool, documents or images are converted inside a "sandbox"
 - On top of basic features, additional functionality include:
   - Support for batch conversions
-  - Web user interface that can act as an "online service" (multi-tenancy)
-  - Live CD user experience for both enhanced security and convenience (user specific issues while installing a [[https://xebia.com/blog/podman-the-free-container-engine-alternative-to-docker/][container solution]])
-
-*This is not a mature project*.    
+  - Optional Web interface that can act as an "online service" (multi-tenancy)
+  - Live CD user experience for both enhanced security and convenience (user specific issues while installing a [[https://xebia.com/blog/podman-the-free-container-engine-alternative-to-docker/][container solution]]). This leverages the "online service" and its Web interface
     
 * What is available?
 
 ** User interfaces
 
-There are 3 user interfaces ([[./dangerzone_client][Desktop and CLI]], [[./dangerzone_httpserver][Web]]).
+There are 3 user interfaces ([[./dangerzone_client][Desktop and CLI]], [[./dangerzone_httpserver][Web]])
 - Most users will likely want the Desktop version
-- If you prefer the Web interface, please download the live CD ISO for an "out of the box non-involved user experience" (/unless you'd rather setup the Web server yourself/)
+- If you prefer the Web interface, please download the live CD ISO for an "out of the box non-involved user experience" (/unless you'd rather setup the Web server yourself/). The Web UI is available at =http://localhost:13000=.
 
 [[./images/screenshots.png]]
 

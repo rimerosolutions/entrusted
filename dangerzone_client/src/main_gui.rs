@@ -528,6 +528,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_type(group::PackType::Horizontal);
     row_openwith.set_spacing(size_pack_spacing);
     let mut checkbutton_openwith = button::CheckButton::default().with_size(295, 20).with_label("Open document after converting, using");
+    checkbutton_openwith.set_tooltip("Open the converted files automatically.")
 
     let pdf_apps_by_name = list_apps_for_pdfs();
     let pdf_viewer_list = Rc::new(RefCell::new(misc::InputChoice::default().with_size(240, 20)));
@@ -545,7 +546,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         pdf_viewer_list.borrow_mut().add(k);
     }
 
-    pdf_viewer_list.borrow_mut().set_tooltip("You can also paste the path to a PDF viewer");
+    pdf_viewer_list.borrow_mut().set_tooltip("You can also enter the path to a PDF viewer.");
 
     if pdf_apps_by_name.len() != 0 {
         pdf_viewer_list.borrow_mut().set_value_index(0);

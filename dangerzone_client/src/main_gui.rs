@@ -85,13 +85,58 @@ impl DerefMut for FileListWidget {
 
 impl FileListWidget {
     pub fn new() -> Self {
-        let mut container = group::Pack::default_fill().with_type(group::PackType::Vertical);
-        container.make_resizable(true);
+        let mut container = group::Pack::default().with_type(group::PackType::Vertical).with_size(300,300);
+        container.set_spacing(WIDGET_GAP);
         container.end();
+        container.auto_layout();
+
+        container.handle({
+            move |w, ev| match ev {
+                enums::Event::Resize => {
+//                    println!("New size::: {}x{}", w.w(), w.h());
+                    true
+                },
+                _ => false
+            }
+        });
+
         Self {
             container,
             selected_indices: Rc::new(RefCell::new(vec![])),
             rows: Rc::new(RefCell::new(vec![])),
+        }
+    }
+
+    pub fn resize(&mut self, x: i32, y: i32, ww: i32) {
+        self.container.resize(x, y, ww, self.container.h());
+
+        for row in self.rows.borrow_mut().iter() {
+            let mut active_child = row.clone();
+            
+                    let w1 = (ww as f64 * 0.4) as i32;
+                    let w2 = (ww as f64 * 0.2) as i32;
+                    let w3 = (ww as f64 * 0.15) as i32;
+                    let w4 = (ww as f64 * 0.1) as i32;
+
+                    let mut xx = active_child.checkbox.x();
+                    active_child.checkbox.resize(xx, active_child.checkbox.y(), w1, active_child.checkbox.h());
+                   active_child.checkbox.set_label(&self.adjust_label(active_child.file, w1));
+
+                    xx += w1 + WIDGET_GAP;
+                    active_child.progressbar.resize(xx, active_child.progressbar.y(), w2, active_child.progressbar.h());
+
+            xx += w2 + WIDGET_GAP;
+            
+                    active_child.status.resize(xx, active_child.status.y(), w3, active_child.status.h());
+
+            xx += w3 + WIDGET_GAP;
+
+            active_child.log_link.resize(xx, active_child.log_link.y(), w4, active_child.log_link.h());
+            
+            // println!("Active child::: {}", active_child.checkbox.label());
+            // let mut active_parent = active_child.root;
+            // active_parent.resize(x, active_parent.y(), w, active_parent.h());
+
         }
     }
 
@@ -152,19 +197,7 @@ impl FileListWidget {
         let _ = app::handle_main(FileListWidgetEvent::SELECTION_CHANGED);
     }
 
-    pub fn add_file(&mut self, path: PathBuf) {
-        let ww = 580;
-        let w1 = (ww as f64 * 0.4) as i32;
-        let w2 = (ww as f64 * 0.2) as i32;
-        let w3 = (ww as f64 * 0.2) as i32;
-
-        let mut row = group::Pack::default()
-            .with_type(group::PackType::Horizontal)
-            .with_pos(0, WIDGET_GAP)
-            .with_size(ww, 40);
-        row.make_resizable(false);
-        row.set_spacing(WIDGET_GAP);
-
+    pub fn adjust_label(&self, path: PathBuf, w1: i32) -> String {
         let pp = format!("{}", path.display());
         let mut path_name = path.file_name().unwrap().to_str().unwrap().to_string();
 
@@ -174,7 +207,7 @@ impl FileListWidget {
                 .chars()
                 .take(path_name.len() - cmp::min(3, path_name.len()))
                 .collect::<String>();
-            while xx > w1 {
+            while xx > w1 - 5{
                 path_name = path_name
                     .chars()
                     .take(path_name.len() - 1)
@@ -185,21 +218,45 @@ impl FileListWidget {
             path_name = path_name + "...";
         }
 
+        path_name
+    }
+
+    pub fn add_file(&mut self, path: PathBuf) {
+        // let pp = app::first_window().unwrap();
+        let ww = self.container.w();//pp.w() - (WIDGET_GAP * 3);
+
+        let w1 = (ww as f64 * 0.4) as i32;
+                    let w2 = (ww as f64 * 0.2) as i32;
+                    let w3 = (ww as f64 * 0.15) as i32;
+                    let w4 = (ww as f64 * 0.1) as i32;
+
+        let mut row = group::Pack::default()
+            .with_type(group::PackType::Horizontal)
+            .with_size(ww, 40);
+
+        row.set_spacing(WIDGET_GAP);
+
+        let pp = format!("{}", path.display());
         let mut check_button = button::CheckButton::default()
             .with_size(w1, 30)
-            .with_label(&path_name);
+            .with_label(&self.adjust_label(path.clone(), w1));
         check_button.set_tooltip(&pp);
+
         let check_buttonx2 = check_button.clone();
         //let check_buttonx = check_button.clone();
         let progressbar = misc::Progress::default().with_size(w2, 20).with_label("0%");
-        //let progressbarx = progressbar.clone();
+
+        let progressbarx = progressbar.clone();
         let mut f = frame::Frame::default()
             .with_size(w3, 30)
-            .with_label("PENDING");
+            .with_label("PENDING")
+            .with_align(enums::Align::Inside | enums::Align::Left);
         f.set_label_color(enums::Color::Magenta);
 
+        let mut fx = f.clone();
+
         let mut f2 = button::Button::default()
-            .with_size(w3, 30)
+            .with_size(w4, 30)
             .with_label("   ");
         f2.set_frame(enums::FrameType::NoBox);
         f2.set_down_frame(enums::FrameType::NoBox);
@@ -208,6 +265,8 @@ impl FileListWidget {
         f2.set_label_color(enums::Color::Blue);
 
         row.end();
+        // row.auto_layout();
+        let row2 = row.clone();
 
         let file_list_row = FileListRow {
             checkbox: check_buttonx2,
@@ -281,8 +340,43 @@ impl FileListWidget {
             }
         });
 
-        row.make_resizable(true);
+        /*row.handle({
+            let mut check_button2 = check_button.clone();
+            let mut progressbar2 = progressbarx.clone();
+            let mut ff = fx.clone();
+            let mut f2f = f2.clone();
+
+            move |w, ev| match ev {
+                enums::Event::Resize => {
+                    let ww = w.w();
+                    let w1 = (ww as f64 * 0.3) as i32;
+                    let w2 = (ww as f64 * 0.2) as i32;
+                    let w3 = (ww as f64 * 0.2) as i32;
+                    let w4 = (ww as f64 * 0.1) as i32;
+
+                    let mut xx = check_button2.x();
+                    check_button2.resize(xx, check_button2.y(), w1, check_button2.h());
+                    println!("LABEL:: {:?}", w.child(0).unwrap().label());
+
+                    xx += w1 + WIDGET_GAP;
+                    progressbar2.resize(xx, progressbar2.y(), w2, progressbar2.h());
+
+                    xx += w2 + WIDGET_GAP;
+                    ff.resize(check_button2.x(), ff.y(), w3, ff.h());
+
+                    xx += w3 + WIDGET_GAP;
+                    f2f.resize(xx, f2f.y(), w4, f2f.h());
+
+                    true
+                },
+                _ => false
+            }
+        });*/
         self.container.add(&row);
+
+        if let Some(pp) = app::first_window() {
+            self.container.resize(self.container.x(), self.container.y(), pp.w() - (WIDGET_GAP * 4), self.container.h());
+        }
         self.container.redraw();
         self.rows.borrow_mut().push(file_list_row);
     }
@@ -1065,6 +1159,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                     w.w() - (size_pack_spacing * 3),
                     scroller_height,
                 );
+
+                let wval = w.w() - (size_pack_spacing * 3);
+
+                filelist_widget2.resize(scroller.x(), scroller.y(), wval);
+                // println!("WVAL: {}", wval);
                 scroller.redraw();
 
                 let xx = ocr_language_list_copy.borrow_mut().x();

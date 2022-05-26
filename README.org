@@ -88,19 +88,15 @@ For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-
 - [X] Implement conversion progress information ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral10][spiral10 branch]])
 - [X] Minimal CI/CD pipeline ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral11][spiral11 branch]])
 - [X] Provide live CD ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral12][spiral12 branch]])
-- [X] Support minimal serial batch conversions ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral13][spiral13 branch]])
+- [X] Initial support for batch conversions ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral13][spiral13 branch]])
   - [X] In the Web user interface
   - [X] In the graphical desktop interface    
   - [X] Document a simple =find-exec= workflow for the command-line client
-- [ ] Support translations
+- [ ] Fix few obvious UI issues and then release new batch conversion feature ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral14][spiral14 branch]])
 - [ ] Support application preferences (GUI and CLI support)
-- [ ] Improve user interface and documentation
+- [ ] Support translations
 - [ ] Revisit notifications for SSE + HTTP2, browser restrictions    
-- [ ] Support Tails Linux    
-- [ ] Revisit getting rid of LibreOffice in the container, working Java native code for parsing office documents???
-  - [ ] Does it help deal with password protected documents via SDK/Library calls?
-  - [ ] Does the Java code still crash at runtime?
-  - [ ] Assuming that the initial PDF conversion works for MS Office format conversion to PDF, are there "decent libraries" for  OpenDocument formats?
+- [ ] Support Tails Linux
 - [ ] Rename the Github project
 - [ ] etc.  
     
@@ -130,7 +126,6 @@ This project is more of a hobby at this point: it lacks maturity and several fea
 | *No support for translations yet*        | I have done a minimal POC for the approach                |
 | *Incomplete*                             | UI, code polishing, probably several "obvious things"     |
 |------------------------------------------+-----------------------------------------------------------|
-  
 
 * Contributing
 

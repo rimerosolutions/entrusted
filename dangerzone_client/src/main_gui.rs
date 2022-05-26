@@ -603,6 +603,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_pos(0, 0)
         .with_align(enums::Align::Inside | enums::Align::Left);
     output_oci_image.set_label("Custom container image");
+    output_oci_image.set_tooltip("Please only modify for expert-level customization.");
+    
     output_oci_image.set_checked(false);
 
     let input_oci_image = Rc::new(RefCell::new(input::Input::default().with_size(440, 20)));

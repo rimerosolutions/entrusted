@@ -163,7 +163,7 @@
         let documentFragment = document.createDocumentFragment();
         let windowTitle = document.createElement("h3");
 
-        windowTitle.innerText = "Conversion log";
+        windowTitle.innerText = "Logs";
         documentFragment.appendChild(windowTitle);
 
         for (let i = 0; i < logs.length; i++) {
@@ -226,7 +226,7 @@
           }
 
           let fullLogElement = document.createElement("a");
-          fullLogElement.innerText = "Log";
+          fullLogElement.innerText = "Logs";
           fullLogElement.href = "#";
           fullLogElement.addEventListener("click", function(e) {
             openLog(fileObjId);

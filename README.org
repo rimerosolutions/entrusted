@@ -115,7 +115,7 @@ This project is more of a hobby at this point: it lacks maturity and several fea
 |------------------------------------------+-----------------------------------------------------------------|
 | *Likely faster processing*               | Programming language difference and "1-step" conversion process |
 | *Online service*                         | HTTP server with a minimal lightweight Web interface            |
-| *Docker alternative on MacOS*            | [[https://github.com/lima-vm/lima][Lima]] was tested, but a while back                               |
+| *Docker alternative on MacOS*            | [[https://github.com/lima-vm/lima][Lima]] was tested (Only support for "default instance")           |
 | *Less likelyhood of conversion timeouts* | There's only one external program involved                      |
 |------------------------------------------+-----------------------------------------------------------------|
   
@@ -127,7 +127,6 @@ This project is more of a hobby at this point: it lacks maturity and several fea
 | *Likely less secure than the dangerzone* | 1 step conversion process, instead of 2 steps             |
 | *This is mostly an experiment*           | Not heavily tested, even if I use =dangerzone-rust= daily |
 | *Not the best code*                      | I barely /know/ Rust, in comparison to Java               |
-| *Lacking support for batch conversions*  | This could have been implemented from day one, maybe      |
 | *No support for translations yet*        | I have done a minimal POC for the approach                |
 | *Incomplete*                             | UI, code polishing, probably several "obvious things"     |
 |------------------------------------------+-----------------------------------------------------------|

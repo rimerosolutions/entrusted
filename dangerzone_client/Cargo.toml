@@ -2,7 +2,7 @@
 name = "dangerzone-client"
 version = "0.1.0"
 edition = "2018"
-description = "dangerzone client" 
+description = "Dangerzone client" 
 keywords = ["dangerzone", "client"]
 license = "GPL"
 repository = "https://github.com/rimerosolutions/dangerzone-rust"

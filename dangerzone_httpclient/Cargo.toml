@@ -2,7 +2,7 @@
 name = "dangerzone-httpclient"
 version = "0.1.0"
 edition = "2018"
-description = "dangerzone HTTP client" 
+description = "Dangerzone HTTP client" 
 keywords = ["dangerzone", "remoting", "http"]
 license = "GPL"
 repository = "https://github.com/rimerosolutions/dangerzone-rust"

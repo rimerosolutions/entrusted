@@ -17,6 +17,7 @@
       let fileCounter = 0;
       let fileList = new Array();
       let logByFileId = new Map();
+      let isConverting = false;
 
       function deleteFileId(fileId) {
         for (let i = 0; i < fileList.length; i++) {
@@ -52,6 +53,12 @@
       function uploadFile(event) {
         event.preventDefault();
         let currentFileList = event.dataTransfer.files;
+
+        if (isConverting) {
+          isConverting = false;
+          fileList.clear();
+        }
+        
         updateFileList(currentFileList);
       }
 
@@ -60,7 +67,7 @@
           logByFileId.clear();
           let fileListTableBodyElement = document.getElementById("fileListTableBody");
 
-          for (let i = fileListTableBodyElement.children.length - 1; i > 0; i--) {
+          for (let i = fileListTableBodyElement.children.length - 1; i >= 0; i--) {
             fileListTableBodyElement.removeChild(fileListTableBodyElement.children[fileListTableBodyElement.children.length - 1]);
           }
 
@@ -312,6 +319,7 @@
       }
 
       function submitForm(source) {
+        isConverting = true;
         source.disabled = true;
 
         let ocrCheckbox = document.getElementById("ocrCheckbox");
@@ -837,9 +845,7 @@
             <th class="fileRemoveColumn">Remove</th>
           </tr>
         </thead>
-        <tbody id="fileListTableBody">
-
-        </tbody>
+        <tbody id="fileListTableBody"></tbody>
       </table>
     </div>
   </body>

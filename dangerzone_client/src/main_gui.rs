@@ -175,9 +175,14 @@ impl FileListWidget {
                 self.container.remove(&row.checkbox.parent().unwrap());
             }
         }
-
+        
         self.container.redraw();
-        self.container.parent().unwrap().redraw();
+        
+        if let Some(container_parent) = self.container.parent() {
+            let mut container_parent = container_parent;
+            container_parent.resize(container_parent.x(), container_parent.y(), container_parent.w(), container_parent.h());
+            container_parent.redraw();
+        }
 
         let _ = app::handle_main(FileListWidgetEvent::SELECTION_CHANGED);
     }
@@ -474,7 +479,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_size(570, 40)
         .with_type(group::PackType::Horizontal);
     row_openwith.set_spacing(size_pack_spacing);
-    let mut checkbutton_openwith = button::CheckButton::default().with_size(295, 20).with_label("Open document after converting, using");
+    let mut checkbutton_openwith = button::CheckButton::default().with_size(295, 20).with_label("Open document after conversion, using");
+    checkbutton_openwith.set_tooltip("Automatically open resulting PDFs with a given program.");
 
     let pdf_apps_by_name = list_apps_for_pdfs();
     let pdf_viewer_list = Rc::new(RefCell::new(misc::InputChoice::default().with_size(240, 20)));
@@ -551,6 +557,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_pos(0, 0)
         .with_align(enums::Align::Inside | enums::Align::Left);
     output_oci_image.set_label("Custom container image");
+    output_oci_image.set_tooltip("Expert option for sandbox solution");
     output_oci_image.set_checked(false);
 
     let input_oci_image = Rc::new(RefCell::new(input::Input::default().with_size(440, 20)));
@@ -670,7 +677,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut button_convert = button::Button::default()
         .with_size(200, 20)
-        .with_label("Convert to Trusted PDF(s)");
+        .with_label("Convert to trusted PDF(s)");
     let button_convertx = button_convert.clone();
     let mut button_convertxx = button_convert.clone();
     button_convert.set_label_color(enums::Color::White);
@@ -867,21 +874,21 @@ fn main() -> Result<(), Box<dyn Error>> {
         menu::mac_set_about({
             let current_wind = wind.clone();
             move || {
-                let ww = 300;
-                let wh = 100;
+                let ww = 350;
+                let wh = 150;
                 let wwx = current_wind.x() + (current_wind.w() / 2) - (ww / 2);
                 let wwy = current_wind.y() + (current_wind.h() / 2) - (wh / 2);
 
+                let win_title = format!("About {}", option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"));
                 let mut win = window::Window::default()
                     .with_size(ww, wh)
                     .with_pos(wwx, wwy)
-                    .with_label("About");
+                    .with_label(&win_title);
 
                 let dialog_text = format!(
-                    "{} {}\n{}",
-                    option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"),
-                    option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"),
+                    "{}\nVersion {}",
                     option_env!("CARGO_PKG_DESCRIPTION").unwrap_or("Unknown"),
+                    option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown")
                 );
 
                 frame::Frame::default_fill()

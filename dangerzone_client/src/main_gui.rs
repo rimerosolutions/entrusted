@@ -1240,11 +1240,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
-    let mut autoconvert = false;
-
+    let mut autoconvert = false;    
     let args: Vec<String> = env::args().skip(1).collect();
+
     if !args.is_empty() {
         for arg in args.iter() {
+            
             let input_path = PathBuf::from(&arg);
 
             if input_path.exists() {

@@ -96,8 +96,8 @@ For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-
   - [X] In the graphical desktop interface    
   - [X] Document a simple =find-exec= workflow for the command-line client
 - [X] Fix few obvious issues and then release new batch conversion feature ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral14][spiral14 branch]])
-  - Do not ship an unsigned app bundle for Mac OS as it doesn't behave without permissions
-  - Mitigate some of the new Desktop and Web UI bugs as much as possible
+  - [X] Do not ship an unsigned app bundle for Mac OS as it doesn't behave/work anyway
+  - [X] Mitigate some of the new Desktop and Web UI bugs as much as possible
 - [ ] Additional release artifacts for convenience
   - [ ] Add DMG installer for Mac OS with proper app permissions and signing
   - [ ] Add MSI installer for Windows with proper app signing

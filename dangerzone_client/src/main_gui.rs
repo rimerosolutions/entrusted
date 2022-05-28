@@ -16,8 +16,7 @@ use std::sync::Arc;
 use std::thread;
 
 use fltk::{
-    app, browser, button, dialog, draw, enums, frame, group, input, menu, misc, prelude::*, text,
-    window,
+    app, browser, button, dialog, draw, enums, frame, group, input, menu, misc, prelude::*, text, window,
 };
 
 mod common;
@@ -85,7 +84,7 @@ impl DerefMut for FileListWidget {
 
 impl FileListWidget {
     pub fn new() -> Self {
-        let mut container = group::Pack::default().with_type(group::PackType::Vertical).with_size(300,300);
+        let mut container = group::Pack::default().with_type(group::PackType::Vertical).with_size(300, 300);
         container.set_spacing(WIDGET_GAP);
         container.end();
         container.auto_layout();
@@ -100,28 +99,28 @@ impl FileListWidget {
     pub fn resize(&mut self, x: i32, y: i32, w: i32, _: i32) {
         self.container.resize(x, y, w, self.container.h());
 
-        for row in self.rows.borrow_mut().iter() {
+        for row in self.rows.borrow().iter() {
             let mut active_child = row.clone();
 
-            let w1 = (w as f64 * 0.4) as i32;
-            let w2 = (w as f64 * 0.2) as i32;
-            let w3 = (w as f64 * 0.2) as i32;
-            let w4 = (w as f64 * 0.1) as i32;
+            let width_checkbox    = (w as f64 * 0.4) as i32;
+            let width_progressbar = (w as f64 * 0.2) as i32;
+            let width_status      = (w as f64 * 0.2) as i32;
+            let width_logs        = (w as f64 * 0.1) as i32;
 
             let mut pos_x = active_child.checkbox.x();
-            active_child.checkbox.resize(pos_x, active_child.checkbox.y(), w1, active_child.checkbox.h());
-            active_child.checkbox.set_label(&self.adjust_label(active_child.file, w1));
+            active_child.checkbox.resize(pos_x, active_child.checkbox.y(), width_checkbox, active_child.checkbox.h());
+            active_child.checkbox.set_label(&self.adjust_label(active_child.file, width_checkbox));
 
-            pos_x += w1 + WIDGET_GAP;
-            active_child.progressbar.resize(pos_x, active_child.progressbar.y(), w2, active_child.progressbar.h());
+            pos_x += width_checkbox + WIDGET_GAP;
+            active_child.progressbar.resize(pos_x, active_child.progressbar.y(), width_progressbar, active_child.progressbar.h());
 
-            pos_x += w2 + WIDGET_GAP;
+            pos_x += width_progressbar + WIDGET_GAP;
 
-            active_child.status.resize(pos_x, active_child.status.y(), w3, active_child.status.h());
+            active_child.status.resize(pos_x, active_child.status.y(), width_status, active_child.status.h());
 
-            pos_x += w3 + WIDGET_GAP;
+            pos_x += width_status + WIDGET_GAP;
 
-            active_child.log_link.resize(pos_x, active_child.log_link.y(), w4, active_child.log_link.h());
+            active_child.log_link.resize(pos_x, active_child.log_link.y(), width_logs, active_child.log_link.h());
         }
     }
 
@@ -175,9 +174,9 @@ impl FileListWidget {
                 self.container.remove(&row.checkbox.parent().unwrap());
             }
         }
-        
+
         self.container.redraw();
-        
+
         if let Some(container_parent) = self.container.parent() {
             let mut container_parent = container_parent;
             container_parent.resize(container_parent.x(), container_parent.y(), container_parent.w(), container_parent.h());
@@ -284,7 +283,7 @@ impl FileListWidget {
                     let mut log_close_button = button::Button::default()
                         .with_size(100, 30)
                         .with_label("Close");
-                    
+
                     log_close_button.set_callback({
                         let mut win_copy = win.clone();
                         move |_| {
@@ -347,6 +346,7 @@ impl FileListWidget {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let is_converting = Arc::new(AtomicBool::new(false));
     let app = app::App::default().with_scheme(app::Scheme::Gleam);
 
     let wind_title = format!(
@@ -362,15 +362,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut wind2 = wind.clone();
     wind.make_resizable(true);
 
-    let size_pack_spacing = 20;
-
     let mut top_group = group::Pack::default()
         .with_pos(20, 20)
         .with_size(680, 25)
         .with_type(group::PackType::Horizontal)
         .with_align(enums::Align::Inside | enums::Align::Right);
 
-    top_group.set_spacing(size_pack_spacing);
+    top_group.set_spacing(WIDGET_GAP);
 
     let mut settings_togglebutton = button::Button::default()
         .with_size(80, 20)
@@ -384,17 +382,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         group::Pack::default()
             .with_pos(20, 20)
             .with_size(600, 580)
-            .below_of(&top_group, size_pack_spacing)
+            .below_of(&top_group, WIDGET_GAP)
             .with_type(group::PackType::Vertical),
     ));
 
-    settings_group.borrow_mut().set_spacing(size_pack_spacing);
+    settings_group.borrow_mut().set_spacing(WIDGET_GAP);
 
     let mut row_inputloc = group::Pack::default()
         .with_size(570, 40)
         .with_type(group::PackType::Horizontal);
 
-    row_inputloc.set_spacing(size_pack_spacing);
+    row_inputloc.set_spacing(WIDGET_GAP);
     let mut checkbutton_custom_output = button::CheckButton::default()
         .with_size(160, 20)
         .with_label("Custom file suffix");
@@ -424,9 +422,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut row_ocr_language = group::Pack::default()
         .with_size(570, 60)
-        .below_of(&row_inputloc, size_pack_spacing);
+        .below_of(&row_inputloc, WIDGET_GAP);
     row_ocr_language.set_type(group::PackType::Horizontal);
-    row_ocr_language.set_spacing(size_pack_spacing);
+    row_ocr_language.set_spacing(WIDGET_GAP);
     let mut checkbutton_ocr_lang = button::CheckButton::default()
         .with_size(300, 20)
         .with_label("Searchable PDF, with language");
@@ -464,7 +462,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     checkbutton_ocr_lang.set_callback({
         let ocr_language_list_ref = ocr_language_list.clone();
-        
+
         move |b| {
             if !b.is_checked() {
                 ocr_language_list_ref.borrow_mut().deactivate();
@@ -478,7 +476,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut row_openwith = group::Pack::default()
         .with_size(570, 40)
         .with_type(group::PackType::Horizontal);
-    row_openwith.set_spacing(size_pack_spacing);
+    row_openwith.set_spacing(WIDGET_GAP);
     let mut checkbutton_openwith = button::CheckButton::default().with_size(295, 20).with_label("Open document after conversion, using");
     checkbutton_openwith.set_tooltip("Automatically open resulting PDFs with a given program.");
 
@@ -512,7 +510,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     checkbutton_openwith.set_callback({
         let pdf_viewer_list_ref = pdf_viewer_list.clone();
-        
+
         move |b| {
             let will_be_read_only = !b.is_checked();
             pdf_viewer_list_ref.borrow_mut().input().set_readonly(will_be_read_only);
@@ -529,7 +527,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     button_browse_for_pdf_app.borrow_mut().set_callback({
         let pdf_viewer_list_ref = pdf_viewer_list.clone();
-        
+
         move |_| {
             let mut dlg = dialog::FileDialog::new(dialog::FileDialogType::BrowseFile);
             dlg.set_title("Select PDF viewer program");
@@ -549,9 +547,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut row_oci_image = group::Pack::default()
         .with_size(550, 40)
-        .below_of(&row_ocr_language, size_pack_spacing);
+        .below_of(&row_ocr_language, WIDGET_GAP);
     row_oci_image.set_type(group::PackType::Horizontal);
-    row_oci_image.set_spacing(size_pack_spacing);
+    row_oci_image.set_spacing(WIDGET_GAP);
     let mut output_oci_image = button::CheckButton::default()
         .with_size(100, 20)
         .with_pos(0, 0)
@@ -584,11 +582,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         group::Pack::default()
             .with_pos(20, 20)
             .with_size(600, 580)
-            .below_of(&top_group, size_pack_spacing)
+            .below_of(&top_group, WIDGET_GAP)
             .with_type(group::PackType::Vertical),
     ));
 
-    convert_group.borrow_mut().set_spacing(size_pack_spacing);
+    convert_group.borrow_mut().set_spacing(WIDGET_GAP);
 
     let mut convert_frame = frame::Frame::default().with_size(500, 80).with_pos(10, 10);
     convert_frame.set_frame(enums::FrameType::RFlatBox);
@@ -600,7 +598,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_size(500, 40)
         .below_of(&convert_frame, 30);
     row_convert_button.set_type(group::PackType::Horizontal);
-    row_convert_button.set_spacing(size_pack_spacing);
+    row_convert_button.set_spacing(WIDGET_GAP);
 
     let mut file_actions_group = group::Pack::default()
         .with_size(150, 20)
@@ -626,7 +624,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     deselect_all_frame
         .borrow_mut()
         .set_label_color(enums::Color::Blue);
-    file_actions_group.set_spacing(size_pack_spacing / 2);
+    file_actions_group.set_spacing(WIDGET_GAP / 2);
 
     let select_all_framex = select_all_frame.clone();
     let deselect_all_framex = deselect_all_frame.clone();
@@ -717,8 +715,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         let input_oci_image2 = input_oci_image.clone();
         let pdf_viewer_list_ref = pdf_viewer_list.clone();
         let input_outputloc2 = input_outputlocx.clone();
+        let is_converting_ref = is_converting.clone();
 
         move |b| {
+            is_converting_ref.store(true, Ordering::Relaxed);
             let file_suffix = input_outputloc2.borrow().value();
             let mut file_suffix = String::from(file_suffix.clone().trim());
 
@@ -969,6 +969,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut released = false;
         let mut scroller = scroll.clone();
         let mut filelist_widget2 = filelist_widget.clone();
+        let is_converting_ref = is_converting.clone();
 
         move |_, ev| match ev {
             enums::Event::DndEnter => {
@@ -986,6 +987,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                     let path = path.trim();
                     let path = path.replace("file://", "");
                     let paths = path.split("\n");
+
+                    if is_converting_ref.load(Ordering::Relaxed) {
+                        is_converting_ref.store(false, Ordering::Relaxed);
+                        filelist_widget2.select_all();
+                        filelist_widget2.delete_selection();
+                    }
 
                     let file_paths: Vec<PathBuf> = paths
                         .map(|p| PathBuf::from(p))
@@ -1033,6 +1040,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                         !filelist_widget2.contains_path(p.to_path_buf())
                     })
                     .collect();
+
+                if is_converting_ref.load(Ordering::Relaxed) {
+                    is_converting_ref.store(false, Ordering::Relaxed);
+                    filelist_widget2.select_all();
+                    filelist_widget2.delete_selection();
+                }
+
                 if add_to_conversion_queue(file_paths, &mut filelist_widget2, &mut scroller) {
                     if !button_convert.active() {
                         button_convert.activate();
@@ -1084,39 +1098,39 @@ fn main() -> Result<(), Box<dyn Error>> {
         move |w, ev| match ev {
             enums::Event::Resize => {
                 tg.resize(
-                    size_pack_spacing,
-                    size_pack_spacing,
-                    w.w() - (size_pack_spacing * 2),
+                    WIDGET_GAP,
+                    WIDGET_GAP,
+                    w.w() - (WIDGET_GAP * 2),
                     30,
                 );
-                // resize_widgets(w, &tg, &sg, &cg, size_pack_spacing);
-                convert_togglebutton.resize(size_pack_spacing, tg.y() + size_pack_spacing, 80, 30);
-                settings_togglebutton.resize(size_pack_spacing, tg.y() + size_pack_spacing, 80, 30);
-                let new_y = tg.y() + tg.h() + size_pack_spacing;
+                // resize_widgets(w, &tg, &sg, &cg, WIDGET_GAP);
+                convert_togglebutton.resize(WIDGET_GAP, tg.y() + WIDGET_GAP, 80, 30);
+                settings_togglebutton.resize(WIDGET_GAP, tg.y() + WIDGET_GAP, 80, 30);
+                let new_y = tg.y() + tg.h() + WIDGET_GAP;
 
-                let scroller_height = ((w.h() - tg.h() + size_pack_spacing) as f64 * 0.5) as i32;
+                let scroller_height = ((w.h() - tg.h() + WIDGET_GAP) as f64 * 0.5) as i32;
 
                 cg.borrow_mut().resize(
-                    size_pack_spacing,
+                    WIDGET_GAP,
                     new_y,
-                    w.w() - (size_pack_spacing * 2),
-                    w.h() - tg.h() + size_pack_spacing,
+                    w.w() - (WIDGET_GAP * 2),
+                    w.h() - tg.h() + WIDGET_GAP,
                 );
 
                 sg.borrow_mut().resize(
-                    size_pack_spacing,
+                    WIDGET_GAP,
                     new_y,
-                    w.w() - (size_pack_spacing * 2),
-                    w.h() - tg.h() + size_pack_spacing,
+                    w.w() - (WIDGET_GAP * 2),
+                    w.h() - tg.h() + WIDGET_GAP,
                 );
                 scroller.resize(
                     scroller.x(),
                     scroller.y(),
-                    w.w() - (size_pack_spacing * 3),
+                    w.w() - (WIDGET_GAP * 3),
                     scroller_height,
                 );
 
-                let wval = w.w() - (size_pack_spacing * 3);
+                let wval = w.w() - (WIDGET_GAP * 3);
 
                 filelist_widget2.resize(scroller.x(), scroller.y(), wval, 0);
 
@@ -1127,19 +1141,19 @@ fn main() -> Result<(), Box<dyn Error>> {
                 row_oci_image2.resize(
                     row_oci_image.x(),
                     row_oci_image.y(),
-                    w.w() - (size_pack_spacing * 2),
+                    w.w() - (WIDGET_GAP * 2),
                     row_oci_image.h(),
                 );
                 row_inputloc2.resize(
                     row_inputloc2.x(),
                     row_inputloc2.y(),
-                    w.w() - (size_pack_spacing * 2),
+                    w.w() - (WIDGET_GAP * 2),
                     row_inputloc2.h(),
                 );
                 row_openwith2.resize(
                     row_inputloc2.x() + WIDGET_GAP / 2,
                     row_openwith.y(),
-                    w.w() - (size_pack_spacing * 2),
+                    w.w() - (WIDGET_GAP * 2),
                     row_openwith.h(),
                 );
                 checkbutton_custom_output2.resize(
@@ -1155,7 +1169,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     checkbutton_custom_output2.h(),
                 );
 
-                let ocw = w.w() - (size_pack_spacing * 3) - checkbutton_ocr_lang.w();
+                let ocw = w.w() - (WIDGET_GAP * 3) - checkbutton_ocr_lang.w();
                 let och = (w.h() as f64 * 0.5) as i32;
 
                 output_oci_image2.resize(
@@ -1168,7 +1182,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 group_ocr_language.resize(
                     xx,
                     group_ocr_language.y(),
-                    w.w() - (size_pack_spacing * 4),
+                    w.w() - (WIDGET_GAP * 4),
                     och,
                 );
 
@@ -1177,7 +1191,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     xx,
                     yy,
                     ocw,
-                    och - (size_pack_spacing * 2),
+                    och - (WIDGET_GAP * 2),
                 );
 
                 let input_oci_image_2_y = input_oci_image.borrow().y();
@@ -1199,7 +1213,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 messages_frame2.resize(
                     messages_framex.x(),
                     messages_framex.y(),
-                    w.w() - (size_pack_spacing * 4),
+                    w.w() - (WIDGET_GAP * 4),
                     60,
                 );
 
@@ -1240,12 +1254,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
-    let mut autoconvert = false;    
+    let mut autoconvert = false;
     let args: Vec<String> = env::args().skip(1).collect();
 
     if !args.is_empty() {
         for arg in args.iter() {
-            
+
             let input_path = PathBuf::from(&arg);
 
             if input_path.exists() {

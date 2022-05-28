@@ -106,12 +106,12 @@ For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-
 - [ ] Support translations
 - [ ] Revisit notifications for SSE + HTTP2, browser restrictions    
 - [ ] Support Tails Linux
-- [ ] Rename the Github project
+- [ ] Create artwork and rename the GitHub project
 - [ ] etc.  
     
 * What are the differences with Dangerzone?
 
-This project is more of a hobby at this point: it lacks maturity and several features.
+This project is more of a hobby at this point: it lacks testing, maturity and several features.
 
 ** The good
 
@@ -120,7 +120,7 @@ This project is more of a hobby at this point: it lacks maturity and several fea
 |------------------------------------------+-----------------------------------------------------------------|
 | *Likely faster processing*               | Programming language difference and "1-step" conversion process |
 | *Online service*                         | HTTP server with a minimal lightweight Web interface            |
-| *Docker alternative on Mac OS*            | [[https://github.com/lima-vm/lima][Lima]] was tested (Only support for "default instance")           |
+| *Docker alternative on Mac OS*           | [[https://github.com/lima-vm/lima][Lima]] was tested (Only support for "default instance")           |
 | *Less likelihood of conversion timeouts* | There's only one external program involved                      |
 |------------------------------------------+-----------------------------------------------------------------|
   

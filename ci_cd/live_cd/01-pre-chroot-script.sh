@@ -36,7 +36,7 @@ sudo debootstrap \
     --variant=minbase \
     bullseye \
     $HOME/LIVE_BOOT/chroot \
-    http://ftp.us.debian.org/debian/
+    https://mirror.csclub.uwaterloo.ca/debian/
 
 echo "${DANGERZONE_VERSION}" > /tmp/dangerzone_release
 sudo cp /tmp/dangerzone_release $HOME/LIVE_BOOT/chroot/etc/dangerzone_release

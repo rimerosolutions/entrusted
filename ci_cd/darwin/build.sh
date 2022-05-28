@@ -60,6 +60,7 @@ echo "Creating dangerzone appbundle"
 cd ${SCRIPTDIR}
 APPNAME=Dangerzone
 APPBUNDLE=${ARTIFACTSDIR}/${APPNAME}.app
+APPDMGDIR=${ARTIFACTSDIR}/dmg
 APPBUNDLECONTENTS=${APPBUNDLE}/Contents
 APPBUNDLEEXE=${APPBUNDLECONTENTS}/MacOS
 APPBUNDLERESOURCES=${APPBUNDLECONTENTS}/Resources
@@ -67,10 +68,11 @@ APPBUNDLEICON=${APPBUNDLECONTENTS}/Resources
 APPBUNDLECOMPANY="Rimero Solutions Inc"
 APPBUNDLEVERSION=${APPVERSION}
 
-mkdir ${APPBUNDLE}
-mkdir ${APPBUNDLE}/Contents
-mkdir ${APPBUNDLE}/Contents/MacOS
-mkdir ${APPBUNDLE}/Contents/Resources
+mkdir -p ${APPDMGDIR}
+mkdir -p ${APPBUNDLE}
+mkdir -p ${APPBUNDLE}/Contents
+mkdir -p ${APPBUNDLE}/Contents/MacOS
+mkdir -p ${APPBUNDLE}/Contents/Resources
 
 convert -scale 16x16 macosx/${APPNAME}.png macosx/${APPNAME}_16_16.png
 convert -scale 32x32 macosx/${APPNAME}.png macosx/${APPNAME}_32_32.png
@@ -88,6 +90,11 @@ cp ${PROJECTDIR}/dangerzone_client/target/x86_64-apple-darwin/release/dangerzone
 mv  ${ARTIFACTSDIR}/dangerzone-gui ${APPBUNDLEEXE}/${APPNAME}
 perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ${APPBUNDLECONTENTS}/Info.plist
 perl -pi -e "s/_APPVERSION_/${APPBUNDLEVERSION}/g" ${APPBUNDLECONTENTS}/Info.plist
+
+mv ${APPBUNDLE} ${APPDMGDIR}/
+ln -s /Applications ${APPDMGDIR}/
+podman run --rm -v "$${ARTIFACTSDIR}":/files sporsh/create-dmg "Dangerzone" /files/dmg/ /files/Dangerzone.dmg
+rm -rf ${APPDMGDIR}
 
 
 

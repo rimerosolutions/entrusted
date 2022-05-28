@@ -6,7 +6,7 @@
 
 ** Overview
 
-=dangerzone-rust= allows converting "potentially suspiciuous documents" into safe and trusted PDFs, without worrying too much about viruses or evil macros.
+=dangerzone-rust= allows converting "/potentially suspicious documents/" into safe and trusted PDFs, without worrying too much about viruses or evil macros.
 - This is achieved by transforming documents inside a "lightweight sandbox" ([[https://www.ibm.com/cloud/learn/containerization][containerization]]): =containerization= itself does not provide absolute security guarantees...
 - Supported file formats include PDF, common image formats, Office documents ([[https://www.office.com/][Microsoft Office]] or [[https://www.libreoffice.org/discover/what-is-opendocument/][OpenDocument]]). For Office documents, supported is limited to text documents, spreadsheets and presentations.
 
@@ -41,7 +41,7 @@ Most users will open a document with the =dangerzone-client=, this will automati
 |-----------------------+---------------------------------------------|
 | Component             | Purpose                                     |
 |-----------------------+---------------------------------------------|
-| [[./dangerzone_container][dangerzone_container]]  | Document processing "sanbox"                |
+| [[./dangerzone_container][dangerzone_container]]  | Document processing "sandbox"                |
 | [[./dangerzone_client][dangerzone_client]]     | Command-line and graphical user interfaces  |
 | [[./dangerzone_httpserver][dangerzone_httpserver]] | Online service feature with a Web interface |
 | [[./dangerzone_httpclient][dangerzone_httpclient]] | Command-line client for the online service  |
@@ -57,20 +57,20 @@ Below is a high-level architecture overview, the solution relies on a container 
 * Where can I get it?
 
 For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-rust/releases][releases page]] (64 bit operating systems).
-- For MacOS users, please download the file =dangerzone-darwin-amd64-<version>.zip=
+- For Mac OS users, please download the file =dangerzone-darwin-amd64-<version>.zip=
 - For Linux users, please download the file =dangerzone-linux-amd64-<version>.tar=
 - For Windows users, please download the file =dangerzone-windows-amd64-<version>.zip=
 - If you prefer a live CD, please download the ISO image =dangerzone-livecd-amd64-<version>.iso=
 
 * What is required?
 
-- *Operating System*: Linux, MacOS or Windows
+- *Operating System*: Linux, Mac OS or Windows
   - Mostly Linux has been tested
   - BSD users can probably use the "Online service" and its Web interface
 - *Container Runtime*: [[https://podman.io/][Podman]], [[https://www.docker.com/][Docker]] or [[https://github.com/lima-vm/lima][Lima]]
   - On Linux, please install Podman
   - For Windows, Docker is recommended
-  - For MacOS, /please/ use either Docker or Lima
+  - For Mac OS, /please/ use either Docker or Lima
 
 * What is planned?
 
@@ -82,11 +82,11 @@ For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-
 - [X] UI and other improvements, including tech debt and other issues ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral03][spiral03 branch]])
 - [X] Bring back Office document support via LibreOffice ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral04][spiral04 branch]])
   - [X] Add workarounds for mime-type detection library (OpenDocument, OOXML, Legacy office format)
-  - [X] Update processing logic to use libreoffice for initial PDF conversion, prior further processing
+  - [X] Update processing logic to use libreOffice for initial PDF conversion, prior further processing
 - [X] Documentation updates and compilation error fix ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral05][spiral05 branch]])
 - [X] Usability improvements and slightly better MS Windows support ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral06][spiral06 branch]])
 - [X] Online service with Web interface and remote CLI client ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral07][spiral07 branch]])  
-- [X] Look at releases for Linux, MacOS and Windows ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral08][spiral08 branch]])
+- [X] Look at releases for Linux, Mac OS and Windows ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral08][spiral08 branch]])
 - [X] Documentation updates ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral09][spiral09 branch]])  
 - [X] Implement conversion progress information ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral10][spiral10 branch]])
 - [X] Minimal CI/CD pipeline ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral11][spiral11 branch]])
@@ -96,10 +96,10 @@ For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-
   - [X] In the graphical desktop interface    
   - [X] Document a simple =find-exec= workflow for the command-line client
 - [X] Fix few obvious issues and then release new batch conversion feature ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral14][spiral14 branch]])
-  - Do not ship an unsigned app bundle for MacOS as it doesn't behave without permissions
+  - Do not ship an unsigned app bundle for Mac OS as it doesn't behave without permissions
   - Mitigate some of the new Desktop and Web UI bugs as much as possible
 - [ ] Additional release artifacts for convenience
-  - [ ] Add DMG installer for MacOS with proper app permissions and signing
+  - [ ] Add DMG installer for Mac OS with proper app permissions and signing
   - [ ] Add MSI installer for Windows with proper app signing
   - [ ] Create =rpm= and =deb= packages  
 - [ ] Support application preferences (GUI and CLI support)
@@ -120,8 +120,8 @@ This project is more of a hobby at this point: it lacks maturity and several fea
 |------------------------------------------+-----------------------------------------------------------------|
 | *Likely faster processing*               | Programming language difference and "1-step" conversion process |
 | *Online service*                         | HTTP server with a minimal lightweight Web interface            |
-| *Docker alternative on MacOS*            | [[https://github.com/lima-vm/lima][Lima]] was tested (Only support for "default instance")           |
-| *Less likelyhood of conversion timeouts* | There's only one external program involved                      |
+| *Docker alternative on Mac OS*            | [[https://github.com/lima-vm/lima][Lima]] was tested (Only support for "default instance")           |
+| *Less likelihood of conversion timeouts* | There's only one external program involved                      |
 |------------------------------------------+-----------------------------------------------------------------|
   
 ** The ugly

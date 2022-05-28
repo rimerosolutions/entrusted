@@ -27,7 +27,8 @@ This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dang
 
 There are 3 user interfaces ([[./dangerzone_client][Desktop and CLI]], [[./dangerzone_httpserver][Web]])
 - Most users will likely want the Desktop version
-- If you prefer the Web interface, please download the live CD ISO for an "out of the box non-involved user experience" (/unless you'd rather setup the Web server yourself/)
+- If you prefer the Web interface, please download the live CD ISO for an "out of the box non-involved user experience" (/unless you'd rather setup the Web server yourself/):
+  - You can run the live CD with tools such as [[https://www.qemu.org/][QEMU]], [[https://www.virtualbox.org/wiki/Downloads][VirtualBox]], [[https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v][Hyper-V]], etc.
   - The Web UI is available at =http://localhost:13000=
   - Replace =localhost= by the IP address of your virtual machine in the above-mentioned link
 
@@ -94,7 +95,13 @@ For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-
   - [X] In the Web user interface
   - [X] In the graphical desktop interface    
   - [X] Document a simple =find-exec= workflow for the command-line client
-- [X] Fix few obvious UI issues and then release new batch conversion feature ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral14][spiral14 branch]])
+- [X] Fix few obvious issues and then release new batch conversion feature ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral14][spiral14 branch]])
+  - Do not ship an unsigned app bundle for MacOS as it doesn't behave without permissions
+  - Mitigate some of the new Desktop and Web UI bugs as much as possible
+- [ ] Additional release artifacts for convenience
+  - [ ] Add DMG installer for MacOS with proper app permissions and signing
+  - [ ] Add MSI installer for Windows with proper app signing
+  - [ ] Create =rpm= and =deb= packages  
 - [ ] Support application preferences (GUI and CLI support)
 - [ ] Support translations
 - [ ] Revisit notifications for SSE + HTTP2, browser restrictions    

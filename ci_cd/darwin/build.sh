@@ -56,45 +56,50 @@ if [ $retVal -ne 0 ]; then
 fi
 cp ${PROJECTDIR}/dangerzone_httpserver/target/x86_64-apple-darwin/release/dangerzone-httpserver ${ARTIFACTSDIR}
 
-echo "Creating dangerzone appbundle"
-cd ${SCRIPTDIR}
-APPNAME=Dangerzone
-APPBUNDLE=${ARTIFACTSDIR}/${APPNAME}.app
-APPDMGDIR=${ARTIFACTSDIR}/dmg
-APPBUNDLECONTENTS=${APPBUNDLE}/Contents
-APPBUNDLEEXE=${APPBUNDLECONTENTS}/MacOS
-APPBUNDLERESOURCES=${APPBUNDLECONTENTS}/Resources
-APPBUNDLEICON=${APPBUNDLECONTENTS}/Resources
-APPBUNDLECOMPANY="Rimero Solutions Inc"
-APPBUNDLEVERSION=${APPVERSION}
 
-mkdir -p ${APPDMGDIR}
-mkdir -p ${APPBUNDLE}
-mkdir -p ${APPBUNDLE}/Contents
-mkdir -p ${APPBUNDLE}/Contents/MacOS
-mkdir -p ${APPBUNDLE}/Contents/Resources
+# See https://github.com/zhlynn/zsign
+# See https://forums.ivanti.com/s/article/Obtaining-an-Apple-Developer-ID-Certificate-for-macOS-Provisioning?language=en_US&ui-force-components-controllers-recordGlobalValueProvider.RecordGvp.getRecord=1
+echo "TODO need to create signed app bundle with proper entitlements"
 
-convert -scale 16x16 macosx/${APPNAME}.png macosx/${APPNAME}_16_16.png
-convert -scale 32x32 macosx/${APPNAME}.png macosx/${APPNAME}_32_32.png
-convert -scale 128x128 macosx/${APPNAME}.png macosx/${APPNAME}_128_128.png
-convert -scale 256x256 macosx/${APPNAME}.png macosx/${APPNAME}_256_256.png
-convert -scale 512x512 macosx/${APPNAME}.png macosx/${APPNAME}_512_512.png
+# echo "Creating dangerzone appbundle"
+# cd ${SCRIPTDIR}
+# APPNAME=Dangerzone
+# APPBUNDLE=${ARTIFACTSDIR}/${APPNAME}.app
+# APPDMGDIR=${ARTIFACTSDIR}/dmg
+# APPBUNDLECONTENTS=${APPBUNDLE}/Contents
+# APPBUNDLEEXE=${APPBUNDLECONTENTS}/MacOS
+# APPBUNDLERESOURCES=${APPBUNDLECONTENTS}/Resources
+# APPBUNDLEICON=${APPBUNDLECONTENTS}/Resources
+# APPBUNDLECOMPANY="Rimero Solutions Inc"
+# APPBUNDLEVERSION=${APPVERSION}
 
-cp macosx/Info.plist ${APPBUNDLECONTENTS}/
-cp macosx/PkgInfo ${APPBUNDLECONTENTS}/
-png2icns ${APPBUNDLEICON}/${APPNAME}.icns macosx/${APPNAME}_16_16.png macosx/${APPNAME}_32_32.png macosx/${APPNAME}_128_128.png macosx/${APPNAME}_256_256.png macosx/${APPNAME}_512_512.png
+# mkdir -p ${APPDMGDIR}
+# mkdir -p ${APPBUNDLE}
+# mkdir -p ${APPBUNDLE}/Contents
+# mkdir -p ${APPBUNDLE}/Contents/MacOS
+# mkdir -p ${APPBUNDLE}/Contents/Resources
 
-rm macosx/${APPNAME}_16_16.png macosx/${APPNAME}_32_32.png macosx/${APPNAME}_128_128.png macosx/${APPNAME}_256_256.png macosx/${APPNAME}_512_512.png
+# convert -scale 16x16 macosx/${APPNAME}.png macosx/${APPNAME}_16_16.png
+# convert -scale 32x32 macosx/${APPNAME}.png macosx/${APPNAME}_32_32.png
+# convert -scale 128x128 macosx/${APPNAME}.png macosx/${APPNAME}_128_128.png
+# convert -scale 256x256 macosx/${APPNAME}.png macosx/${APPNAME}_256_256.png
+# convert -scale 512x512 macosx/${APPNAME}.png macosx/${APPNAME}_512_512.png
 
-cp ${PROJECTDIR}/dangerzone_client/target/x86_64-apple-darwin/release/dangerzone-cli ${APPBUNDLEEXE}/
-mv  ${ARTIFACTSDIR}/dangerzone-gui ${APPBUNDLEEXE}/${APPNAME}
-perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ${APPBUNDLECONTENTS}/Info.plist
-perl -pi -e "s/_APPVERSION_/${APPBUNDLEVERSION}/g" ${APPBUNDLECONTENTS}/Info.plist
+# cp macosx/Info.plist ${APPBUNDLECONTENTS}/
+# cp macosx/PkgInfo ${APPBUNDLECONTENTS}/
+# png2icns ${APPBUNDLEICON}/${APPNAME}.icns macosx/${APPNAME}_16_16.png macosx/${APPNAME}_32_32.png macosx/${APPNAME}_128_128.png macosx/${APPNAME}_256_256.png macosx/${APPNAME}_512_512.png
 
-mv ${APPBUNDLE} ${APPDMGDIR}/
-ln -s /Applications ${APPDMGDIR}/
-podman run --rm -v "${ARTIFACTSDIR}":/files sporsh/create-dmg "Dangerzone" /files/dmg/ /files/Dangerzone.dmg
-rm -rf ${APPDMGDIR}
+# rm macosx/${APPNAME}_16_16.png macosx/${APPNAME}_32_32.png macosx/${APPNAME}_128_128.png macosx/${APPNAME}_256_256.png macosx/${APPNAME}_512_512.png
+
+# cp ${PROJECTDIR}/dangerzone_client/target/x86_64-apple-darwin/release/dangerzone-cli ${APPBUNDLEEXE}/
+# mv  ${ARTIFACTSDIR}/dangerzone-gui ${APPBUNDLEEXE}/${APPNAME}
+# perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ${APPBUNDLECONTENTS}/Info.plist
+# perl -pi -e "s/_APPVERSION_/${APPBUNDLEVERSION}/g" ${APPBUNDLECONTENTS}/Info.plist
+
+# mv ${APPBUNDLE} ${APPDMGDIR}/
+# ln -s /Applications ${APPDMGDIR}/
+# podman run --rm -v "${ARTIFACTSDIR}":/files sporsh/create-dmg "Dangerzone" /files/dmg/ /files/Dangerzone.dmg
+# rm -rf ${APPDMGDIR}
 
 
 

@@ -1,6 +1,6 @@
 #+TITLE: README
 
-*This is not a mature project and pretty much work in progress*.
+This is work in progress and this NOT a mature project.
 
 * What is this?
 
@@ -72,6 +72,10 @@ For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-
   - For Windows, Docker is recommended
   - For Mac OS, /please/ use either Docker or Lima
 
+The tool will prompt you if it cannot find a container runtime.
+  - It doesn't attempt to install the container runtime itself
+  - It doesn't attempt to start/stop/monitor the container runtime itself
+
 * What is planned?
 
 - [X] Replicate CLI functions of the original tool, not necessarily the exact behavior ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral01][spiral01 branch]])
@@ -121,7 +125,7 @@ This project is more of a hobby at this point: it lacks testing, maturity and se
 | *Likely faster processing*               | Programming language difference and "1-step" conversion process |
 | *Online service*                         | HTTP server with a minimal lightweight Web interface            |
 | *Docker alternative on Mac OS*           | [[https://github.com/lima-vm/lima][Lima]] was tested (Only support for "default instance")           |
-| *Less likelihood of conversion timeouts* | There's only one external program involved                      |
+| *Less likelihood of conversion timeouts* | There's only one external program involved (=LibreOffice=)      |
 |------------------------------------------+-----------------------------------------------------------------|
   
 ** The ugly
@@ -131,9 +135,9 @@ This project is more of a hobby at this point: it lacks testing, maturity and se
 |------------------------------------------+-----------------------------------------------------------|
 | *Likely less secure than the dangerzone* | 1 step conversion process, instead of 2 steps             |
 | *This is mostly an experiment*           | Not heavily tested, even if I use =dangerzone-rust= daily |
-| *Not the best code*                      | I barely /know/ Rust, in comparison to Java               |
+| *Not the best code*                      | I barely /know/ =Rust=, in comparison to =Java=           |
 | *No support for translations yet*        | I have done a minimal POC for the approach                |
-| *Incomplete*                             | UI, code polishing, probably several "obvious things"     |
+| *Incomplete*                             | UI &code polishing, probably several "obvious things"     |
 |------------------------------------------+-----------------------------------------------------------|
 
 * How to contribute?

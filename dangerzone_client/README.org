@@ -2,15 +2,13 @@
 
 * What is this?
 
-This is an application (command-line & desktop GUI), that converts suspicious documents to safe trusted PDF documents.
+This is an application (command-line & desktop GUI), that converts /potentially suspicious documents/ to safe trusted PDF documents.
 
 * What is required?
 
 This application relies on common Rust tooling for builds and a container engine solution for execution:
 - For compilation, you need a recent version of the Rust toolchain ([[https://www.rust-lang.org/tools/install][rustc]] compiler and [[https://doc.rust-lang.org/cargo/][cargo]]).
 - For execution, it is assumed that the =dangerzone-container= application is deployed under [[https://www.docker.com/][Docker]] or [[https://podman.io/][Podman]] or [[https://github.com/lima-vm/lima][Lima]].
-
-Please note that this has *been mostly tested under Linux* so far ([[https://voidlinux.org/][Void Linux]] & [[https://sparkylinux.org/][SparkyLinux]] more specifically).
 
 * What does it look like?
 

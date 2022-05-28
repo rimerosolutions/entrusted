@@ -45,7 +45,7 @@ macro_rules! enum_str {
 enum_str! {
     enum FileListRowStatus {
         Pending    = 0x00,
-        Inprogress = 0x01,
+        InProgress = 0x01,
         Succeeded  = 0x02,
         Failed     = 0x03,
     }
@@ -123,16 +123,22 @@ impl FileListWidget {
         }
     }
 
+    pub fn column_widths(&self, w: i32) -> (i32, i32, i32, i32){
+        let width_checkbox    = (w as f64 * 0.4) as i32;
+        let width_progressbar = (w as f64 * 0.2) as i32;
+        let width_status      = (w as f64 * 0.2) as i32;
+        let width_logs        = (w as f64 * 0.1) as i32;
+
+        (width_checkbox, width_progressbar, width_status, width_logs)
+    }
+
     pub fn resize(&mut self, x: i32, y: i32, w: i32, _: i32) {
         self.container.resize(x, y, w, self.container.h());
 
+        let (width_checkbox, width_progressbar, width_status, width_logs) = self.column_widths(w);
+        
         for row in self.rows.borrow().iter() {
             let mut active_child = row.clone();
-
-            let width_checkbox    = (w as f64 * 0.4) as i32;
-            let width_progressbar = (w as f64 * 0.2) as i32;
-            let width_status      = (w as f64 * 0.2) as i32;
-            let width_logs        = (w as f64 * 0.1) as i32;
 
             let mut pos_x = active_child.checkbox.x();
             active_child.checkbox.resize(pos_x, active_child.checkbox.y(), width_checkbox, active_child.checkbox.h());
@@ -240,10 +246,7 @@ impl FileListWidget {
     pub fn add_file(&mut self, path: PathBuf) {
         let ww = self.container.w();
 
-        let w1 = (ww as f64 * 0.4) as i32;
-        let w2 = (ww as f64 * 0.2) as i32;
-        let w3 = (ww as f64 * 0.2) as i32;
-        let w4 = (ww as f64 * 0.1) as i32;
+        let (width_checkbox, width_progressbar, width_status, width_logs) = self.column_widths(ww);
 
         let mut row = group::Pack::default()
             .with_type(group::PackType::Horizontal)
@@ -253,21 +256,21 @@ impl FileListWidget {
 
         let path_tooltip = format!("{}", path.display());
         let mut select_row_checkbutton = button::CheckButton::default()
-            .with_size(w1, 30)
-            .with_label(&self.adjust_label(path.clone(), w1));
+            .with_size(width_checkbox, 30)
+            .with_label(&self.adjust_label(path.clone(), width_checkbox));
         select_row_checkbutton.set_tooltip(&path_tooltip);
 
         let check_buttonx2 = select_row_checkbutton.clone();
-        let progressbar = misc::Progress::default().with_size(w2, 20).with_label("0%");
+        let progressbar = misc::Progress::default().with_size(width_progressbar, 20).with_label("0%");
 
         let mut status_frame = frame::Frame::default()
-            .with_size(w3, 30)
+            .with_size(width_status, 30)
             .with_label(FileListRowStatus::Pending.name())
             .with_align(enums::Align::Inside | enums::Align::Left);
         status_frame.set_label_color(enums::Color::Magenta);
 
         let mut logs_button = button::Button::default()
-            .with_size(w4, 30)
+            .with_size(width_logs, 30)
             .with_label("   ");
         logs_button.set_frame(enums::FrameType::NoBox);
         logs_button.set_down_frame(enums::FrameType::NoBox);
@@ -290,14 +293,14 @@ impl FileListWidget {
 
             move |_| {
                 if let Some(current_wind) = app::first_window() {
-                    let ww = 400;
-                    let wh = 400;
-                    let wwx = current_wind.x() + (current_wind.w() / 2) - (ww / 2);
-                    let wwy = current_wind.y() + (current_wind.h() / 2) - (wh / 2);
+                    let wind_w = 400;
+                    let wind_h = 400;
+                    let wind_x = current_wind.x() + (current_wind.w() / 2) - (wind_w / 2);
+                    let wind_y = current_wind.y() + (current_wind.h() / 2) - (wind_h / 2);
 
                     let mut win = window::Window::default()
-                        .with_size(ww, wh)
-                        .with_pos(wwx, wwy)
+                        .with_size(wind_w, wind_h)
+                        .with_pos(wind_x, wind_y)
                         .with_label("Conversion log");
 
                     let mut container =
@@ -355,7 +358,6 @@ impl FileListWidget {
 
         self.container.add(&row);
         self.rows.borrow_mut().push(file_list_row);
-
         self.resize(self.container.x(), self.container.y(), ww, self.container.h());
     }
 
@@ -382,7 +384,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_size(680, 600)
         .center_screen()
         .with_label(&wind_title);
-    let mut wind2 = wind.clone();
+
     wind.make_resizable(true);
 
     let mut top_group = group::Pack::default()
@@ -429,14 +431,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     input_outputloc.borrow_mut().deactivate();
 
     checkbutton_custom_output.set_callback({
-        let input_outputlocx2 = input_outputlocx.clone();
+        let input_outputloc_ref = input_outputlocx.clone();
 
         move|b| {
             if b.is_checked() {
-                input_outputlocx2.borrow_mut().activate();
+                input_outputloc_ref.borrow_mut().activate();
             } else {
-                input_outputlocx2.borrow_mut().set_value(common::DEFAULT_FILE_SUFFIX);
-                input_outputlocx2.borrow_mut().deactivate();
+                input_outputloc_ref.borrow_mut().set_value(common::DEFAULT_FILE_SUFFIX);
+                input_outputloc_ref.borrow_mut().deactivate();
             }
         }
     });
@@ -709,10 +711,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut filelist_widget = FileListWidget::new();
 
     button_delete_file.set_callback({
-        let mut filelist_widget2 = filelist_widget.clone();
+        let mut filelist_widget_ref = filelist_widget.clone();
 
         move |_| {
-            filelist_widget2.delete_selection();
+            filelist_widget_ref.delete_selection();
         }
     });
 
@@ -722,12 +724,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_size(580, 50)
         .with_label(" ")
         .with_align(enums::Align::Left | enums::Align::Inside);
-    let messages_framex = messages_frame.clone();
 
     button_convert.set_callback({
-        let windx = wind2.clone();
-        let filelist_widget2 = filelist_widget.clone();
-        let mut messages_frame2 = messages_framex.clone();
+        let wind_ref = wind.clone();
+        let filelist_widget_ref = filelist_widget.clone();
+        let mut messages_frame_ref = messages_frame.clone();
         let ocr_language_list_ref = ocr_language_list.clone();
         let checkbutton_ocr_lang_ref = checkbutton_ocr_lang.clone();
         let input_oci_image_ref = input_oci_image.clone();
@@ -757,7 +758,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             b.deactivate();
 
-            for current_row in filelist_widget2.rows.borrow_mut().iter() {
+            for current_row in filelist_widget_ref.rows.borrow_mut().iter() {
                 let mut active_row = current_row.clone();
                 active_row.reset_ui_state();
             }
@@ -784,7 +785,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             let viewer_app_option = viewer_app_exec.clone();
 
-            for current_row in filelist_widget2.rows.borrow_mut().iter() {
+            for current_row in filelist_widget_ref.rows.borrow_mut().iter() {
                 let result = Arc::new(AtomicBool::new(false));
                 let mut row = current_row.clone();
                 let input_path = row.file.clone();
@@ -797,7 +798,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if let Ok(output_path) = common::default_output_path(input_path.clone(), file_suffix_value) {
                     let output_path2 = output_path.clone();
                     let input_path2 = input_path.clone();
-                    row.status.set_label(FileListRowStatus::Inprogress.name());
+                    row.status.set_label(FileListRowStatus::InProgress.name());
                     row.status.set_label_color(enums::Color::DarkYellow);
 
                     let mut exec_handle = Some(thread::spawn(move || {
@@ -823,7 +824,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                             let progress_text = format!("{} %", log_msg.percent_complete);
                             row.progressbar.set_label(&progress_text);
                             row.progressbar.set_value(log_msg.percent_complete as f64);
-                            messages_frame2.set_label(&log_msg.data);
+                            messages_frame_ref.set_label(&log_msg.data);
                             row.logs.borrow_mut().push(log_msg.data);
                             row.progressbar.parent().unwrap().redraw();
                         }
@@ -870,13 +871,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                     row.log_link.set_frame(enums::FrameType::ThinUpBox);
                     row.log_link.set_down_frame(enums::FrameType::ThinDownBox);
                     row.log_link.activate();
-                    messages_frame2.set_label("");
+                    messages_frame_ref.set_label("");
 
                     if result.load(Ordering::Relaxed) && viewer_app_option2.is_some() {
                         if let Some(viewer_exe) = viewer_app_option2 {
                             if let Err(exe) = pdf_open_with(viewer_exe, output_path2.clone()) {
                                 let err_text = format!("Could not open PDF result\n.{}.", exe.to_string());
-                                dialog::alert(windx.x(), windx.y() + windx.height() / 2, &err_text);
+                                dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, &err_text);
                             }
                         }
                     }
@@ -930,31 +931,34 @@ fn main() -> Result<(), Box<dyn Error>> {
     settings_group.borrow_mut().hide();
 
     settings_togglebutton.set_callback({
-        let cg = convert_group.clone();
-        let sg = settings_group.clone();
-        let mut other_button = convert_togglebutton.clone();
-        let mut scroller = scroll.clone();
+        let convert_group_ref = convert_group.clone();
+        let settings_group_ref = settings_group.clone();
+        let mut convert_togglebutton_ref = convert_togglebutton.clone();
+        let mut scroll_ref = scroll.clone();
+
         move |b| {
-            if !sg.borrow().visible() {
-                other_button.set_frame(enums::FrameType::UpBox);
+            if !settings_group_ref.borrow().visible() {
+                convert_togglebutton_ref.set_frame(enums::FrameType::UpBox);
                 b.set_frame(enums::FrameType::DownBox);
-                cg.borrow_mut().hide();
-                sg.borrow_mut().show();
-                scroller.redraw();
+                convert_group_ref.borrow_mut().hide();
+                settings_group_ref.borrow_mut().show();
+                scroll_ref.redraw();
             }
         }
     });
     convert_togglebutton.set_callback({
-        let cg = convert_group.clone();
-        let mut other_button = settings_togglebutton.clone();
-        let sg = settings_group.clone();
+        let convert_group_ref = convert_group.clone();
+        let mut settings_togglebutton_ref = settings_togglebutton.clone();
+        let settings_group_ref = settings_group.clone();
+        let mut wind_ref = wind.clone();
+
         move |b| {
-            if !cg.borrow().visible() {
-                other_button.set_frame(enums::FrameType::UpBox);
+            if !convert_group_ref.borrow().visible() {
+                settings_togglebutton_ref.set_frame(enums::FrameType::UpBox);
                 b.set_frame(enums::FrameType::DownBox);
-                sg.borrow_mut().hide();
-                cg.borrow_mut().show();
-                wind2.redraw();
+                settings_group_ref.borrow_mut().hide();
+                convert_group_ref.borrow_mut().show();
+                wind_ref.redraw();
             }
         }
     });
@@ -1231,8 +1235,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 );
 
                 messages_frame_ref.resize(
-                    messages_framex.x(),
-                    messages_framex.y(),
+                    messages_frame_ref.x(),
+                    messages_frame_ref.y(),
                     w.w() - (WIDGET_GAP * 4),
                     60,
                 );

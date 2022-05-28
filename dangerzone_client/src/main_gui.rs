@@ -24,12 +24,39 @@ mod container;
 
 const WIDGET_GAP: i32 = 20;
 
+macro_rules! enum_str {
+    (enum $name:ident {
+        $($variant:ident = $val:expr),*,
+    }) => {
+        enum $name {
+            $($variant = $val),*
+        }
+
+        impl $name {
+            fn name(&self) -> &'static str {
+                match self {
+                    $($name::$variant => stringify!($variant)),*
+                }
+            }
+        }
+    };
+}
+
+enum_str! {
+    enum FileListRowStatus {
+        Pending    = 0x00,
+        Inprogress = 0x01,
+        Succeeded  = 0x02,
+        Failed     = 0x03,
+    }
+}
+
 struct FileListWidgetEvent;
 
 impl FileListWidgetEvent {
     const SELECTION_CHANGED: i32 = 50;
-    const ALL_SELECTED: i32 = 51;
-    const ALL_DESELECTED: i32 = 52;
+    const ALL_SELECTED: i32      = 51;
+    const ALL_DESELECTED: i32    = 52;
 }
 
 #[derive(Clone)]
@@ -44,7 +71,7 @@ struct FileListRow {
 
 impl FileListRow {
     pub fn reset_ui_state(&mut self) {
-        self.status.set_label("PENDING");
+        self.status.set_label(FileListRowStatus::Pending.name());
         self.status.set_label_color(enums::Color::Magenta);
 
         self.progressbar.set_label("0%");
@@ -235,7 +262,7 @@ impl FileListWidget {
 
         let mut status_frame = frame::Frame::default()
             .with_size(w3, 30)
-            .with_label("PENDING")
+            .with_label(FileListRowStatus::Pending.name())
             .with_align(enums::Align::Inside | enums::Align::Left);
         status_frame.set_label_color(enums::Color::Magenta);
 
@@ -333,14 +360,10 @@ impl FileListWidget {
     }
 
     fn row_index(&self, file: PathBuf) -> i32 {
-        let idx = -1;
-
-        let ret = self.rows.borrow().iter().position(|r| r.file == file);
-
-        if let Some(pos) = ret {
+        if let Some(pos) = self.rows.borrow().iter().position(|r| r.file == file) {
             pos as i32
         } else {
-            idx
+            -1
         }
     }
 }
@@ -428,7 +451,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut checkbutton_ocr_lang = button::CheckButton::default()
         .with_size(300, 20)
         .with_label("Searchable PDF, with language");
-    let checkbutton_ocr_langx = checkbutton_ocr_lang.clone();
     checkbutton_ocr_lang.set_tooltip(
         "Make the PDF searchable, with a given language for OCR (Optical character recognition).",
     );
@@ -564,14 +586,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     row_oci_image.end();
 
     output_oci_image.set_callback({
-        let input_oci_image2 = input_oci_image.clone();
+        let input_oci_image_ref = input_oci_image.clone();
 
         move|b| {
             if !b.is_checked() {
-                input_oci_image2.borrow_mut().deactivate();
-                input_oci_image2.borrow_mut().set_value(&common::container_image_name());
+                input_oci_image_ref.borrow_mut().deactivate();
+                input_oci_image_ref.borrow_mut().set_value(&common::container_image_name());
             } else {
-                input_oci_image2.borrow_mut().activate();
+                input_oci_image_ref.borrow_mut().activate();
             }
         }
     });
@@ -604,7 +626,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_size(150, 20)
         .with_type(group::PackType::Vertical)
         .below_of(&convert_frame, 30);
-    let file_actions_groupx = file_actions_group.clone();
 
     let select_all_frame = Rc::new(RefCell::new(
         frame::Frame::default()
@@ -625,9 +646,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         .borrow_mut()
         .set_label_color(enums::Color::Blue);
     file_actions_group.set_spacing(WIDGET_GAP / 2);
-
-    let select_all_framex = select_all_frame.clone();
-    let deselect_all_framex = deselect_all_frame.clone();
 
     select_all_frame.borrow_mut().draw({
         move |w| {
@@ -710,16 +728,16 @@ fn main() -> Result<(), Box<dyn Error>> {
         let windx = wind2.clone();
         let filelist_widget2 = filelist_widget.clone();
         let mut messages_frame2 = messages_framex.clone();
-        let ocr_language_list2 = ocr_language_list.clone();
-        let checkbutton_ocr_lang2 = checkbutton_ocr_langx.clone();
-        let input_oci_image2 = input_oci_image.clone();
+        let ocr_language_list_ref = ocr_language_list.clone();
+        let checkbutton_ocr_lang_ref = checkbutton_ocr_lang.clone();
+        let input_oci_image_ref = input_oci_image.clone();
         let pdf_viewer_list_ref = pdf_viewer_list.clone();
-        let input_outputloc2 = input_outputlocx.clone();
+        let input_outputloc_ref = input_outputlocx.clone();
         let is_converting_ref = is_converting.clone();
 
         move |b| {
             is_converting_ref.store(true, Ordering::Relaxed);
-            let file_suffix = input_outputloc2.borrow().value();
+            let file_suffix = input_outputloc_ref.borrow().value();
             let mut file_suffix = String::from(file_suffix.clone().trim());
 
             if file_suffix.is_empty() {
@@ -744,8 +762,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 active_row.reset_ui_state();
             }
 
-            let ocr_lang_setting = if checkbutton_ocr_lang2.is_checked() {
-                if let Some(selected_lang) = ocr_language_list2.borrow().selected_text() {
+            let ocr_lang_setting = if checkbutton_ocr_lang_ref.is_checked() {
+                if let Some(selected_lang) = ocr_language_list_ref.borrow().selected_text() {
                     ocr_languages_by_lang
                         .get(selected_lang.as_str())
                         .map(|i| format!("{}", i))
@@ -756,7 +774,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 None
             };
 
-            let oci_image_text = input_oci_image2.borrow().value();
+            let oci_image_text = input_oci_image_ref.borrow().value();
 
             let oci_image  = if oci_image_text.trim().is_empty() {
                 None
@@ -779,7 +797,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if let Ok(output_path) = common::default_output_path(input_path.clone(), file_suffix_value) {
                     let output_path2 = output_path.clone();
                     let input_path2 = input_path.clone();
-                    row.status.set_label("INPROGRESS");
+                    row.status.set_label(FileListRowStatus::Inprogress.name());
                     row.status.set_label_color(enums::Color::DarkYellow);
 
                     let mut exec_handle = Some(thread::spawn(move || {
@@ -814,7 +832,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
 
                     let mut status_color = enums::Color::Red;
-                    let mut row_status = "FAILED";
+                    let mut row_status = FileListRowStatus::Failed.name();
 
                     match exec_handle.take().map(thread::JoinHandle::join) {
                         Some(exec_handle_result) => match exec_handle_result {
@@ -823,7 +841,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                                 row.progressbar.set_label("100%");
                                 row.progressbar.set_value(100.0);
                                 status_color = enums::Color::DarkGreen;
-                                row_status = "SUCCEEDED";
+                                row_status = FileListRowStatus::Succeeded.name();
                             }
                             Ok(err_string_opt) => {
                                 if let Some(err_text) = err_string_opt {
@@ -967,9 +985,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     convert_frame.handle({
         let mut dnd = false;
         let mut released = false;
-        let mut scroller = scroll.clone();
-        let mut filelist_widget2 = filelist_widget.clone();
+        let mut scroll_ref = scroll.clone();
+        let mut filelist_widget_ref = filelist_widget.clone();
+        let mut file_actions_group_ref = file_actions_group.clone();
         let is_converting_ref = is_converting.clone();
+        let select_all_frame_ref = select_all_frame.clone();
+        let deselect_all_frame_ref = deselect_all_frame.clone();
 
         move |_, ev| match ev {
             enums::Event::DndEnter => {
@@ -990,8 +1011,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                     if is_converting_ref.load(Ordering::Relaxed) {
                         is_converting_ref.store(false, Ordering::Relaxed);
-                        filelist_widget2.select_all();
-                        filelist_widget2.delete_selection();
+                        filelist_widget_ref.select_all();
+                        filelist_widget_ref.delete_selection();
                     }
 
                     let file_paths: Vec<PathBuf> = paths
@@ -1000,24 +1021,24 @@ fn main() -> Result<(), Box<dyn Error>> {
                             if !p.exists() {
                                 return false;
                             }
-                            !filelist_widget2.contains_path(p.to_path_buf())
+                            !filelist_widget_ref.contains_path(p.to_path_buf())
                         })
                         .collect();
-                    if add_to_conversion_queue(file_paths, &mut filelist_widget2, &mut scroller) {
+                    if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut scroll_ref) {
                         if !button_convert.active() {
                             button_convert.activate();
-                            file_actions_group.set_damage(true);
-                            select_all_frame.borrow_mut().show();
-                            deselect_all_frame.borrow_mut().show();
+                            file_actions_group_ref.set_damage(true);
+                            select_all_frame_ref.borrow_mut().show();
+                            deselect_all_frame_ref.borrow_mut().show();
 
-                            file_actions_group.resize(
-                                file_actions_group.x(),
-                                file_actions_group.y(),
+                            file_actions_group_ref.resize(
+                                file_actions_group_ref.x(),
+                                file_actions_group_ref.y(),
                                 150,
                                 40,
                             );
-                            file_actions_group.set_damage(true);
-                            file_actions_group.redraw();
+                            file_actions_group_ref.set_damage(true);
+                            file_actions_group_ref.redraw();
                         }
                     }
                 }
@@ -1037,31 +1058,31 @@ fn main() -> Result<(), Box<dyn Error>> {
                         if !p.exists() {
                             return false;
                         }
-                        !filelist_widget2.contains_path(p.to_path_buf())
+                        !filelist_widget_ref.contains_path(p.to_path_buf())
                     })
                     .collect();
 
                 if is_converting_ref.load(Ordering::Relaxed) {
                     is_converting_ref.store(false, Ordering::Relaxed);
-                    filelist_widget2.select_all();
-                    filelist_widget2.delete_selection();
+                    filelist_widget_ref.select_all();
+                    filelist_widget_ref.delete_selection();
                 }
 
-                if add_to_conversion_queue(file_paths, &mut filelist_widget2, &mut scroller) {
+                if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut scroll_ref) {
                     if !button_convert.active() {
                         button_convert.activate();
-                        file_actions_group.set_damage(true);
-                        select_all_frame.borrow_mut().show();
-                        deselect_all_frame.borrow_mut().show();
+                        file_actions_group_ref.set_damage(true);
+                        select_all_frame_ref.borrow_mut().show();
+                        deselect_all_frame_ref.borrow_mut().show();
 
-                        file_actions_group.resize(
-                            file_actions_group.x(),
-                            file_actions_group.y(),
+                        file_actions_group_ref.resize(
+                            file_actions_group_ref.x(),
+                            file_actions_group_ref.y(),
                             150,
                             40,
                         );
-                        file_actions_group.set_damage(true);
-                        file_actions_group.redraw();
+                        file_actions_group_ref.set_damage(true);
+                        file_actions_group_ref.redraw();
                     }
                 }
                 true
@@ -1071,112 +1092,111 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     wind.handle({
-        let mut file_actions_group2 = file_actions_groupx.clone();
-        let cg = convert_group.clone();
-        let sg = settings_group.clone();
-        let mut tg = top_group.clone();
-        let mut scroller = scroll.clone();
-        let mut button_convert2 = button_convertx.clone();
-        let select_all_frame2 = select_all_framex.clone();
-        let deselect_all_frame2 = deselect_all_framex.clone();
+        let mut file_actions_group_ref = file_actions_group.clone();
+        let convert_group_ref = convert_group.clone();
+        let settings_group_ref = settings_group.clone();
+        let mut top_group_ref = top_group.clone();
+        let mut scroll_ref = scroll.clone();
+        let mut button_convert_ref = button_convertx.clone();
+        let select_all_frame_ref = select_all_frame.clone();
+        let deselect_all_frame_ref = deselect_all_frame.clone();
         let mut group_ocr_language = row_ocr_language.clone();
-        let ocr_language_list_copy = ocr_language_list.clone();
-        let input_oci_image_2 = input_oci_image.clone();
-        let mut output_oci_image2 = output_oci_image.clone();
-        let mut row_oci_image2 = row_oci_image.clone();
-        let mut row_openwith2 = row_openwith.clone();
+        let ocr_language_list_ref = ocr_language_list.clone();
+        let input_oci_image_ref = input_oci_image.clone();
+        let mut output_oci_image_ref = output_oci_image.clone();
+        let mut row_oci_image_ref = row_oci_image.clone();
+        let mut row_openwith_ref = row_openwith.clone();
         let button_browse_for_pdf_app_copy2 = button_browse_for_pdf_appx.clone();
         let pdf_viewer_list_ref = pdf_viewer_list.clone();
-
-        let mut row_inputloc2 = row_inputloc.clone();
-        let mut checkbutton_custom_output2 = checkbutton_custom_output.clone();
-        let mut checkbutton_ocr_lang2 = checkbutton_ocr_langx.clone();
+        let mut row_inputloc_ref = row_inputloc.clone();
+        let mut checkbutton_custom_output_ref = checkbutton_custom_output.clone();
+        let mut checkbutton_ocr_lang_ref = checkbutton_ocr_lang.clone();
         let input_outputloc2 = input_outputloc.clone();
-        let mut filelist_widget2 = filelist_widget.clone();
-        let mut messages_frame2 = messages_frame.clone();
+        let mut filelist_widget_ref = filelist_widget.clone();
+        let mut messages_frame_ref = messages_frame.clone();
 
         move |w, ev| match ev {
             enums::Event::Resize => {
-                tg.resize(
+                top_group_ref.resize(
                     WIDGET_GAP,
                     WIDGET_GAP,
                     w.w() - (WIDGET_GAP * 2),
                     30,
                 );
-                // resize_widgets(w, &tg, &sg, &cg, WIDGET_GAP);
-                convert_togglebutton.resize(WIDGET_GAP, tg.y() + WIDGET_GAP, 80, 30);
-                settings_togglebutton.resize(WIDGET_GAP, tg.y() + WIDGET_GAP, 80, 30);
-                let new_y = tg.y() + tg.h() + WIDGET_GAP;
 
-                let scroller_height = ((w.h() - tg.h() + WIDGET_GAP) as f64 * 0.5) as i32;
+                convert_togglebutton.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, 80, 30);
+                settings_togglebutton.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, 80, 30);
+                let new_y = top_group_ref.y() + top_group_ref.h() + WIDGET_GAP;
 
-                cg.borrow_mut().resize(
+                let scroller_height = ((w.h() - top_group_ref.h() + WIDGET_GAP) as f64 * 0.5) as i32;
+
+                convert_group_ref.borrow_mut().resize(
                     WIDGET_GAP,
                     new_y,
                     w.w() - (WIDGET_GAP * 2),
-                    w.h() - tg.h() + WIDGET_GAP,
+                    w.h() - top_group_ref.h() + WIDGET_GAP,
                 );
 
-                sg.borrow_mut().resize(
+                settings_group_ref.borrow_mut().resize(
                     WIDGET_GAP,
                     new_y,
                     w.w() - (WIDGET_GAP * 2),
-                    w.h() - tg.h() + WIDGET_GAP,
+                    w.h() - top_group_ref.h() + WIDGET_GAP,
                 );
-                scroller.resize(
-                    scroller.x(),
-                    scroller.y(),
+                scroll_ref.resize(
+                    scroll_ref.x(),
+                    scroll_ref.y(),
                     w.w() - (WIDGET_GAP * 3),
                     scroller_height,
                 );
 
                 let wval = w.w() - (WIDGET_GAP * 3);
 
-                filelist_widget2.resize(scroller.x(), scroller.y(), wval, 0);
+                filelist_widget_ref.resize(scroll_ref.x(), scroll_ref.y(), wval, 0);
 
-                scroller.redraw();
+                scroll_ref.redraw();
 
-                let xx = ocr_language_list_copy.borrow_mut().x();
+                let xx = ocr_language_list_ref.borrow_mut().x();
 
-                row_oci_image2.resize(
+                row_oci_image_ref.resize(
                     row_oci_image.x(),
                     row_oci_image.y(),
                     w.w() - (WIDGET_GAP * 2),
                     row_oci_image.h(),
                 );
-                row_inputloc2.resize(
-                    row_inputloc2.x(),
-                    row_inputloc2.y(),
+                row_inputloc_ref.resize(
+                    row_inputloc_ref.x(),
+                    row_inputloc_ref.y(),
                     w.w() - (WIDGET_GAP * 2),
-                    row_inputloc2.h(),
+                    row_inputloc_ref.h(),
                 );
-                row_openwith2.resize(
-                    row_inputloc2.x() + WIDGET_GAP / 2,
+                row_openwith_ref.resize(
+                    row_inputloc_ref.x() + WIDGET_GAP / 2,
                     row_openwith.y(),
                     w.w() - (WIDGET_GAP * 2),
                     row_openwith.h(),
                 );
-                checkbutton_custom_output2.resize(
+                checkbutton_custom_output_ref.resize(
                     xx,
-                    checkbutton_custom_output2.y(),
-                    checkbutton_ocr_lang2.w(),
-                    checkbutton_custom_output2.h(),
+                    checkbutton_custom_output_ref.y(),
+                    checkbutton_ocr_lang_ref.w(),
+                    checkbutton_custom_output_ref.h(),
                 );
-                checkbutton_ocr_lang2.resize(
+                checkbutton_ocr_lang_ref.resize(
                     xx,
-                    checkbutton_ocr_lang2.y(),
-                    checkbutton_ocr_lang2.w(),
-                    checkbutton_custom_output2.h(),
+                    checkbutton_ocr_lang_ref.y(),
+                    checkbutton_ocr_lang_ref.w(),
+                    checkbutton_custom_output_ref.h(),
                 );
 
                 let ocw = w.w() - (WIDGET_GAP * 3) - checkbutton_ocr_lang.w();
                 let och = (w.h() as f64 * 0.5) as i32;
 
-                output_oci_image2.resize(
-                    checkbutton_ocr_lang2.x(),
-                    output_oci_image2.y(),
-                    checkbutton_ocr_lang2.w(),
-                    output_oci_image2.h(),
+                output_oci_image_ref.resize(
+                    checkbutton_ocr_lang_ref.x(),
+                    output_oci_image_ref.y(),
+                    checkbutton_ocr_lang_ref.w(),
+                    output_oci_image_ref.h(),
                 );
 
                 group_ocr_language.resize(
@@ -1186,8 +1206,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                     och,
                 );
 
-                let yy = ocr_language_list_copy.borrow_mut().y();
-                ocr_language_list_copy.borrow_mut().resize(
+                let yy = ocr_language_list_ref.borrow_mut().y();
+                ocr_language_list_ref.borrow_mut().resize(
                     xx,
                     yy,
                     ocw,
@@ -1196,7 +1216,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 let input_oci_image_2_y = input_oci_image.borrow().y();
                 let input_oci_image_2_h = input_oci_image.borrow().h();
-                input_oci_image_2.borrow_mut().resize(xx, input_oci_image_2_y, ocw, input_oci_image_2_h);
+                input_oci_image_ref.borrow_mut().resize(xx, input_oci_image_2_y, ocw, input_oci_image_2_h);
                 let yyy = input_outputloc.borrow().y();
                 let hhh = input_outputloc.borrow().h();
                 input_outputloc2.borrow_mut().resize(xx, yyy, ocw, hhh);
@@ -1210,19 +1230,19 @@ fn main() -> Result<(), Box<dyn Error>> {
                     hhhh
                 );
 
-                messages_frame2.resize(
+                messages_frame_ref.resize(
                     messages_framex.x(),
                     messages_framex.y(),
                     w.w() - (WIDGET_GAP * 4),
                     60,
                 );
 
-                scroller.redraw();
+                scroll_ref.redraw();
                 true
             }
             _ => {
                 if ev.bits() == FileListWidgetEvent::SELECTION_CHANGED {
-                    let selection = filelist_widget2.selected_indices();
+                    let selection = filelist_widget_ref.selected_indices();
                     let empty_selection = selection.is_empty();
 
                     if empty_selection && button_delete_file.active() {
@@ -1231,21 +1251,21 @@ fn main() -> Result<(), Box<dyn Error>> {
                         button_delete_file.activate();
                     }
 
-                    if !filelist_widget2.has_files() {
-                        file_actions_group2.redraw();
-                        button_convert2.deactivate();
-                        select_all_frame2.borrow_mut().hide();
-                        deselect_all_frame2.borrow_mut().hide();
+                    if !filelist_widget_ref.has_files() {
+                        file_actions_group_ref.redraw();
+                        button_convert_ref.deactivate();
+                        select_all_frame_ref.borrow_mut().hide();
+                        deselect_all_frame_ref.borrow_mut().hide();
                     }
 
-                    filelist_widget2.container.redraw();
-                    scroller.redraw();
+                    filelist_widget_ref.container.redraw();
+                    scroll_ref.redraw();
                     true
                 } else if ev.bits() == FileListWidgetEvent::ALL_SELECTED {
-                    filelist_widget2.select_all();
+                    filelist_widget_ref.select_all();
                     true
                 } else if ev.bits() == FileListWidgetEvent::ALL_DESELECTED {
-                    filelist_widget2.deselect_all();
+                    filelist_widget_ref.deselect_all();
                     true
                 } else {
                     false
@@ -1300,10 +1320,10 @@ pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> 
                     if exit_status.success() {
                         Ok(())
                     } else {
-                        Err("Cannot run PDF viewer".into())
+                        Err("Could not open PDF file!".into())
                     }
                 } else {
-                    Err("Cannot run PDF viewer".into())
+                    Err("Could not run PDF viewer!".into())
                 }
             }
             Err(ex) => Err(ex.into()),

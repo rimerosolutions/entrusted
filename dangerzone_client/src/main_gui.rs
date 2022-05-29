@@ -358,7 +358,6 @@ impl FileListWidget {
 
         self.container.add(&row);
         self.rows.borrow_mut().push(file_list_row);
-        self.resize(self.container.x(), self.container.y(), ww, self.container.h());
     }
 
     fn row_index(&self, file: PathBuf) -> i32 {

@@ -295,20 +295,18 @@ impl FileListWidget {
                 if let Some(current_wind) = app::first_window() {
                     let wind_w = 400;
                     let wind_h = 400;
-                    let button_width = 40;
+                    let button_width = 50;
+                    let button_height = 30;
                     let wind_x = current_wind.x() + (current_wind.w() / 2) - (wind_w / 2);
                     let wind_y = current_wind.y() + (current_wind.h() / 2) - (wind_h / 2);
-                    let button_x = current_wind.x() + (current_wind.w() / 2) - (button_width / 2);
 
                     let mut dialog = window::Window::default()
                         .with_size(wind_w, wind_h)
                         .with_pos(wind_x, wind_y)
                         .with_label("Logs");
 
-                    let mut container = group::Pack::default().size_of_parent()
-                        .center_of_parent()
-                        .with_type(group::PackType::Vertical);
-                    container.set_spacing(WIDGET_GAP);
+                    dialog.begin();
+
                     let mut textdisplay_cmdlog = text::TextDisplay::default()
                         .with_type(group::PackType::Vertical)
                         .with_size(wind_w, 350);
@@ -316,7 +314,8 @@ impl FileListWidget {
                     let logs = active_row.logs.borrow().join("\n") + "\n";
 
                     let mut log_close_button = button::Button::default()
-                        .with_size(40, 30)
+                        .with_pos((wind_w / 2) - (button_width / 2), 400 - button_height - (WIDGET_GAP / 2))
+                        .with_size(button_width, button_height)
                         .with_label("Close");
 
 
@@ -330,8 +329,18 @@ impl FileListWidget {
 
                     text_buffer.set_text(&logs);
                     textdisplay_cmdlog.set_buffer(text_buffer);
-                    container.resizable(&textdisplay_cmdlog);
-                    container.end();
+
+                    dialog.handle({
+                        move |wid, ev| match ev {
+                            enums::Event::Resize => {
+                                let x = (wid.w() / 2) - (button_width / 2);
+                                let y = wid.h() - button_height - (WIDGET_GAP / 2);
+                                log_close_button.resize(x, y, button_width, button_height);
+                                true
+                            },
+                            _ => false
+                        }
+                    });
 
                     dialog.end();
                     dialog.make_modal(true);

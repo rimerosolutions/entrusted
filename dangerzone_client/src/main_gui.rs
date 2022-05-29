@@ -295,16 +295,19 @@ impl FileListWidget {
                 if let Some(current_wind) = app::first_window() {
                     let wind_w = 400;
                     let wind_h = 400;
+                    let button_width = 40;
                     let wind_x = current_wind.x() + (current_wind.w() / 2) - (wind_w / 2);
                     let wind_y = current_wind.y() + (current_wind.h() / 2) - (wind_h / 2);
+                    let button_x = current_wind.x() + (current_wind.w() / 2) - (button_width / 2);
 
                     let mut dialog = window::Window::default()
                         .with_size(wind_w, wind_h)
                         .with_pos(wind_x, wind_y)
                         .with_label("Logs");
 
-                    let mut container =
-                        group::Pack::default_fill().with_size(400, 400);
+                    let mut container = group::Pack::default().size_of_parent()
+                        .center_of_parent()
+                        .with_type(group::PackType::Vertical);
                     container.set_spacing(WIDGET_GAP);
                     let mut textdisplay_cmdlog = text::TextDisplay::default()
                         .with_type(group::PackType::Vertical)
@@ -327,6 +330,7 @@ impl FileListWidget {
 
                     text_buffer.set_text(&logs);
                     textdisplay_cmdlog.set_buffer(text_buffer);
+                    container.resizable(&textdisplay_cmdlog);
                     container.end();
 
                     dialog.end();

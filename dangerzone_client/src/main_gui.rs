@@ -132,7 +132,7 @@ impl FileListWidget {
         (width_checkbox, width_progressbar, width_status, width_logs)
     }
 
-    pub fn resize(&mut self, x: i32, y: i32, w: i32, _: i32) {
+    pub fn resize(&mut self, x: i32, y: i32, w: i32, _: i32) {        
         self.container.resize(x, y, w, self.container.h());
 
         let (width_checkbox, width_progressbar, width_status, width_logs) = self.column_widths(w);
@@ -155,6 +155,7 @@ impl FileListWidget {
 
             active_child.log_link.resize(pos_x, active_child.log_link.y(), width_logs, active_child.log_link.h());
         }
+
     }
 
     pub fn contains_path(&self, p: PathBuf) -> bool {
@@ -375,6 +376,7 @@ impl FileListWidget {
 
         self.container.add(&row);
         self.rows.borrow_mut().push(file_list_row);
+        self.resize(self.container.x(), self.container.y(), ww, self.container.h());
     }
 
     fn row_index(&self, file: &PathBuf) -> i32 {
@@ -1309,7 +1311,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     wind.end();
-    wind.show();
+    wind.show();    
     wind.resize(wind.x(), wind.y(), 680, 600);
 
     if autoconvert {

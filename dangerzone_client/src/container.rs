@@ -178,13 +178,13 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
 
     // TODO for Lima we assume the default VM instance, that might not be true all the time...
     if let Some(container_rt) = common::container_runtime_path() {
-        let mut ensure_image_args = vec!["inspect", container_image_name.as_str()];
+        let mut ensure_image_args = vec!["inspect", &container_image_name];
 
         tx.send(printer.print(1, "Checking if dangerzone container image exists".to_string()))?;
 
         if let Err(ex) = exec_crt_command(container_rt.clone(), ensure_image_args, log_format.clone(), tx.clone(), false) {
             tx.send(printer.print(1, format!("Cannot find dangerzone container image! {}.", ex.to_string())))?;
-            ensure_image_args = vec!["pull", container_image_name.as_str()];
+            ensure_image_args = vec!["pull", &container_image_name];
             tx.send(printer.print(1, "Please wait, downloading image (roughly 600 MB).".to_string()))?;
 
             if let Err(exe) = exec_crt_command(container_rt.clone(), ensure_image_args, log_format.clone(), tx.clone(), false) {
@@ -235,7 +235,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
             logformat_env,
             "-e",
             ocr_language_env,
-            container_image_name.as_str(),
+            &container_image_name,
             common::CONTAINER_IMAGE_EXE
         ]);
 

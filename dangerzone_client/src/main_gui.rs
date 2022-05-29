@@ -136,7 +136,7 @@ impl FileListWidget {
         self.container.resize(x, y, w, self.container.h());
 
         let (width_checkbox, width_progressbar, width_status, width_logs) = self.column_widths(w);
-        
+
         for row in self.rows.borrow().iter() {
             let mut active_child = row.clone();
 
@@ -298,39 +298,43 @@ impl FileListWidget {
                     let wind_x = current_wind.x() + (current_wind.w() / 2) - (wind_w / 2);
                     let wind_y = current_wind.y() + (current_wind.h() / 2) - (wind_h / 2);
 
-                    let mut win = window::Window::default()
+                    let mut dialog = window::Window::default()
                         .with_size(wind_w, wind_h)
                         .with_pos(wind_x, wind_y)
-                        .with_label("Conversion log");
+                        .with_label("Logs");
 
                     let mut container =
-                        group::Pack::default_fill().with_type(group::PackType::Vertical);
+                        group::Pack::default_fill().with_size(400, 400);
                     container.set_spacing(WIDGET_GAP);
-                    let mut textdisplay_cmdlog = text::TextDisplay::default().with_size(400, 350);
+                    let mut textdisplay_cmdlog = text::TextDisplay::default()
+                        .with_type(group::PackType::Vertical)
+                        .with_size(wind_w, 350);
                     let mut text_buffer = text::TextBuffer::default();
-                    let logs = active_row.logs.borrow().join("\n");
+                    let logs = active_row.logs.borrow().join("\n") + "\n";
 
                     let mut log_close_button = button::Button::default()
-                        .with_size(100, 30)
+                        .with_size(40, 30)
                         .with_label("Close");
 
+
                     log_close_button.set_callback({
-                        let mut win_copy = win.clone();
+                        let mut dialog_window = dialog.clone();
                         move |_| {
-                            win_copy.hide();
+                            dialog_window.hide();
                             app::awake();
                         }
                     });
+
                     text_buffer.set_text(&logs);
                     textdisplay_cmdlog.set_buffer(text_buffer);
                     container.end();
 
-                    win.end();
-                    win.make_modal(true);
-                    win.make_resizable(true);
-                    win.show();
+                    dialog.end();
+                    dialog.make_modal(true);
+                    dialog.make_resizable(true);
+                    dialog.show();
 
-                    while win.shown() {
+                    while dialog.shown() {
                         app::wait();
                     }
                 }
@@ -342,7 +346,7 @@ impl FileListWidget {
             let current_path = path.clone();
 
             move |b| {
-                let idx = selfie.row_index(current_path.clone());
+                let idx = selfie.row_index(&current_path);
 
                 if idx != -1 {
                     if b.is_checked() {
@@ -360,8 +364,8 @@ impl FileListWidget {
         self.rows.borrow_mut().push(file_list_row);
     }
 
-    fn row_index(&self, file: PathBuf) -> i32 {
-        if let Some(pos) = self.rows.borrow().iter().position(|r| r.file == file) {
+    fn row_index(&self, file: &PathBuf) -> i32 {
+        if let Some(pos) = self.rows.borrow().iter().position(|r| r.file == *file) {
             pos as i32
         } else {
             -1
@@ -560,8 +564,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             if !selected_filename.as_os_str().is_empty() {
                 let path_name = format!("{}", dlg.filename().display());
-                let path_str = path_name.as_str();
-                pdf_viewer_list_ref.borrow_mut().set_value(path_str);
+                pdf_viewer_list_ref.borrow_mut().set_value(&path_name);
             }
         }
     });

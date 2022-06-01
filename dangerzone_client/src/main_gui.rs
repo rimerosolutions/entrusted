@@ -16,7 +16,7 @@ use std::sync::Arc;
 use std::thread;
 
 use fltk::{
-    app, browser, button, dialog, draw, enums, frame, group, input, menu, misc, prelude::*, text, window,
+    app, browser, button, dialog, draw, enums, frame, group, input, menu, misc, prelude::*, text, window, image
 };
 
 mod common;
@@ -57,6 +57,7 @@ impl FileListWidgetEvent {
     const SELECTION_CHANGED: i32 = 50;
     const ALL_SELECTED: i32      = 51;
     const ALL_DESELECTED: i32    = 52;
+
 }
 
 #[derive(Clone)]
@@ -132,7 +133,7 @@ impl FileListWidget {
         (width_checkbox, width_progressbar, width_status, width_logs)
     }
 
-    pub fn resize(&mut self, x: i32, y: i32, w: i32, _: i32) {        
+    pub fn resize(&mut self, x: i32, y: i32, w: i32, _: i32) {
         self.container.resize(x, y, w, self.container.h());
 
         let (width_checkbox, width_progressbar, width_status, width_logs) = self.column_widths(w);
@@ -391,6 +392,7 @@ impl FileListWidget {
 fn main() -> Result<(), Box<dyn Error>> {
     let is_converting = Arc::new(AtomicBool::new(false));
     let app = app::App::default().with_scheme(app::Scheme::Gleam);
+    let (_, r) = app::channel::<String>();
 
     let wind_title = format!(
         "{} {}",
@@ -632,7 +634,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut convert_frame = frame::Frame::default().with_size(500, 80).with_pos(10, 10);
     convert_frame.set_frame(enums::FrameType::RFlatBox);
     convert_frame.set_label_color(enums::Color::White);
-    convert_frame.set_label("Drop file(s) here\nor Click here to select file(s)");
+    convert_frame.set_label("Drop 'potentially suspicious' file(s) here\nor Click here to select file(s)");
     convert_frame.set_color(enums::Color::Red);
 
     let mut row_convert_button = group::Pack::default()
@@ -906,7 +908,19 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
+
     if cfg!(target_os = "macos") {
+        app::raw_open_callback(Some(|s| {
+            let input_path: String = {
+                let ret = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().to_string() };
+                ret.to_owned()
+            };
+            let s = app::Sender::<String>::get();
+            s.send(input_path);
+        }));
+
+        let logo_image_bytes = include_bytes!("../../images/Dangerzone.png");
+
         menu::mac_set_about({
             let current_wind = wind.clone();
             move || {
@@ -914,7 +928,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let wh = 150;
                 let wwx = current_wind.x() + (current_wind.w() / 2) - (ww / 2);
                 let wwy = current_wind.y() + (current_wind.h() / 2) - (wh / 2);
-
                 let win_title = format!("About {}", option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"));
                 let mut win = window::Window::default()
                     .with_size(ww, wh)
@@ -922,13 +935,25 @@ fn main() -> Result<(), Box<dyn Error>> {
                     .with_label(&win_title);
 
                 let dialog_text = format!(
-                    "{}\nVersion {}",
+                    "{}\nVersion {}\n{}",
                     option_env!("CARGO_PKG_DESCRIPTION").unwrap_or("Unknown"),
-                    option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown")
+                    option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"),
+                    "Copyright Rimero Solutions, 2022-present"
                 );
 
-                frame::Frame::default_fill()
-                    .center_of_parent()
+                let mut logo_frame = frame::Frame::default()
+                    .with_size(200, 50)
+                    .with_pos(ww/2 - 100, WIDGET_GAP);
+
+                if let Ok(img) = image::PngImage::from_data(logo_image_bytes) {
+                    let mut img = img;
+                    img.scale(50, 50, true, true);
+                    logo_frame.set_image(Some(img));
+                }
+
+                frame::Frame::default()
+                    .with_size(200, 60)
+                    .below_of(&logo_frame, WIDGET_GAP)
                     .with_label(&dialog_text)
                     .with_align(enums::Align::Center | enums::Align::Inside);
                 win.end();
@@ -952,14 +977,18 @@ fn main() -> Result<(), Box<dyn Error>> {
         let settings_group_ref = settings_group.clone();
         let mut convert_togglebutton_ref = convert_togglebutton.clone();
         let mut scroll_ref = scroll.clone();
+        let mut wind_ref = wind.clone();
 
         move |b| {
+            wind_ref.resize(wind_ref.x(), wind_ref.y(), wind_ref.w(), wind_ref.h());
+            
             if !settings_group_ref.borrow().visible() {
                 convert_togglebutton_ref.set_frame(enums::FrameType::UpBox);
                 b.set_frame(enums::FrameType::DownBox);
                 convert_group_ref.borrow_mut().hide();
                 settings_group_ref.borrow_mut().show();
                 scroll_ref.redraw();
+                
             }
         }
     });
@@ -970,12 +999,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut wind_ref = wind.clone();
 
         move |b| {
+            wind_ref.resize(wind_ref.x(), wind_ref.y(), wind_ref.w(), wind_ref.h());
+            
             if !convert_group_ref.borrow().visible() {
                 settings_togglebutton_ref.set_frame(enums::FrameType::UpBox);
                 b.set_frame(enums::FrameType::DownBox);
                 settings_group_ref.borrow_mut().hide();
                 convert_group_ref.borrow_mut().show();
-                wind_ref.redraw();
             }
         }
     });
@@ -990,7 +1020,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         for p in paths {
             let path = PathBuf::from(p);
 
-            if path.exists() {
+            if path.exists() && !row_pack.contains_path(path.clone()) {
                 row_pack.add_file(path);
                 added = true;
             }
@@ -1039,10 +1069,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     let file_paths: Vec<PathBuf> = paths
                         .map(|p| PathBuf::from(p))
                         .filter(|p| {
-                            if !p.exists() {
-                                return false;
-                            }
-                            !filelist_widget_ref.contains_path(p.to_path_buf())
+                            p.exists()
                         })
                         .collect();
                     if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut scroll_ref) {
@@ -1068,7 +1095,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
             enums::Event::Push => {
                 let mut dlg = dialog::FileDialog::new(dialog::FileDialogType::BrowseMultiFile);
-                dlg.set_title("Select suspicious file(s)");
+                dlg.set_title("Select 'potentially suspicious' file(s)");
                 dlg.show();
 
                 let file_paths: Vec<PathBuf> = dlg
@@ -1137,6 +1164,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut messages_frame_ref = messages_frame.clone();
 
         move |w, ev| match ev {
+            enums::Event::Move => {
+                w.redraw();
+                true
+            },
             enums::Event::Resize => {
                 top_group_ref.resize(
                     WIDGET_GAP,
@@ -1311,17 +1342,49 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     wind.end();
-    wind.show();    
+    wind.show();
     wind.resize(wind.x(), wind.y(), 680, 600);
 
     if autoconvert {
         button_convertxx.do_callback();
     }
 
-    match app.run() {
-        Ok(_) => Ok(()),
-        Err(ex) => Err(ex.into()),
+    while app.wait() {
+        if let Some(msg) = r.recv() {
+            let mut filelist_widget_ref = filelist_widget.clone();
+            let mut scroll_ref = scroll.clone();
+            let file_path = PathBuf::from(msg);
+            let mut file_actions_group_ref = file_actions_group.clone();
+            let select_all_frame_ref = select_all_frame.clone();
+            let deselect_all_frame_ref = deselect_all_frame.clone();
+
+            if file_path.exists() {
+                let file_paths = vec![file_path];
+
+                if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut scroll_ref) {
+                    if !button_convertxx.active() {
+                        button_convertxx.activate();
+                        file_actions_group_ref.set_damage(true);
+                        select_all_frame_ref.borrow_mut().show();
+                        deselect_all_frame_ref.borrow_mut().show();
+
+
+                        file_actions_group_ref.resize(
+                            file_actions_group_ref.x(),
+                            file_actions_group_ref.y(),
+                            150,
+                            40,
+                        );
+
+                        file_actions_group_ref.set_damage(true);
+                        file_actions_group_ref.redraw();
+                    }
+                }
+            }
+        }
     }
+
+    Ok(())
 }
 
 #[cfg(not(any(target_os = "macos")))]
@@ -1334,8 +1397,8 @@ pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> 
 
 #[cfg(target_os = "macos")]
 pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> {
-    match which::which("open") {
-        Ok(open_cmd) => match Command::new(open_cmd).arg("-a").arg(cmd).arg(input).spawn() {
+    match common::executable_find("open") {
+        Some(open_cmd) => match Command::new(open_cmd).arg("-a").arg(cmd).arg(input).spawn() {
             Ok(mut child_proc) => {
                 if let Ok(exit_status) = child_proc.wait() {
                     if exit_status.success() {
@@ -1349,7 +1412,7 @@ pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> 
             }
             Err(ex) => Err(ex.into()),
         },
-        Err(ex) => Err(ex.into()),
+        None => Err("Could not find open command in path".into()),
     }
 }
 

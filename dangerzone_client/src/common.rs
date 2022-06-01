@@ -177,7 +177,7 @@ pub fn ocr_lang_key_by_name() -> HashMap<&'static str, &'static str> {
     ].map( |(k, v)| (v, k)).iter().cloned().collect()
 }
 
-fn executable_find(exe_name: &str) -> Option<PathBuf> {
+pub fn executable_find(exe_name: &str) -> Option<PathBuf> {
     match which::which(exe_name) {
         Err(_) => None,
         Ok(path_location) => Some(path_location)

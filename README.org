@@ -12,6 +12,8 @@ This is work in progress and this NOT a mature project.
 
 *NOTE*: Unless you download the live CD, you MUST install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior running this application.
 
+[[./images/ui-screenshot.png]]
+
 ** Features
 
 This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation purposes (/not an exact port/).

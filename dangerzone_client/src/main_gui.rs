@@ -156,7 +156,6 @@ impl FileListWidget {
 
             active_child.log_link.resize(pos_x, active_child.log_link.y(), width_logs, active_child.log_link.h());
         }
-
     }
 
     pub fn contains_path(&self, p: PathBuf) -> bool {
@@ -969,7 +968,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     convert_group.borrow_mut().end();
     convert_togglebutton.set_frame(enums::FrameType::DownBox);
-
     settings_group.borrow_mut().hide();
 
     settings_togglebutton.set_callback({
@@ -980,18 +978,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut wind_ref = wind.clone();
 
         move |b| {
-            wind_ref.resize(wind_ref.x(), wind_ref.y(), wind_ref.w(), wind_ref.h());
-            
             if !settings_group_ref.borrow().visible() {
                 convert_togglebutton_ref.set_frame(enums::FrameType::UpBox);
                 b.set_frame(enums::FrameType::DownBox);
                 convert_group_ref.borrow_mut().hide();
                 settings_group_ref.borrow_mut().show();
                 scroll_ref.redraw();
-                
-            }
+                wind_ref.redraw();
+            }            
         }
     });
+
     convert_togglebutton.set_callback({
         let convert_group_ref = convert_group.clone();
         let mut settings_togglebutton_ref = settings_togglebutton.clone();
@@ -999,13 +996,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut wind_ref = wind.clone();
 
         move |b| {
-            wind_ref.resize(wind_ref.x(), wind_ref.y(), wind_ref.w(), wind_ref.h());
-            
             if !convert_group_ref.borrow().visible() {
                 settings_togglebutton_ref.set_frame(enums::FrameType::UpBox);
                 b.set_frame(enums::FrameType::DownBox);
                 settings_group_ref.borrow_mut().hide();
                 convert_group_ref.borrow_mut().show();
+                wind_ref.redraw();
             }
         }
     });
@@ -1055,9 +1051,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
             enums::Event::Paste => {
                 if dnd && released {
-                    let path = app::event_text();
-                    let path = path.trim();
-                    let path = path.replace("file://", "");
+                    let path  = app::event_text();
+                    let path  = path.trim();
+                    let path  = path.replace("file://", "");
                     let paths = path.split("\n");
 
                     if is_converting_ref.load(Ordering::Relaxed) {
@@ -1068,10 +1064,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                     let file_paths: Vec<PathBuf> = paths
                         .map(|p| PathBuf::from(p))
-                        .filter(|p| {
-                            p.exists()
-                        })
+                        .filter(|p| p.exists())
                         .collect();
+
                     if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut scroll_ref) {
                         if !button_convert.active() {
                             button_convert.activate();
@@ -1085,6 +1080,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                                 150,
                                 40,
                             );
+
                             file_actions_group_ref.set_damage(true);
                             file_actions_group_ref.redraw();
                         }
@@ -1102,12 +1098,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     .filenames()
                     .iter()
                     .map(|p| p.clone())
-                    .filter(|p| {
-                        if !p.exists() {
-                            return false;
-                        }
-                        !filelist_widget_ref.contains_path(p.to_path_buf())
-                    })
+                    .filter(|p| p.exists())
                     .collect();
 
                 if is_converting_ref.load(Ordering::Relaxed) {
@@ -1129,6 +1120,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                             150,
                             40,
                         );
+
                         file_actions_group_ref.set_damage(true);
                         file_actions_group_ref.redraw();
                     }
@@ -1140,26 +1132,26 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     wind.handle({
-        let mut file_actions_group_ref = file_actions_group.clone();
         let convert_group_ref = convert_group.clone();
         let settings_group_ref = settings_group.clone();
+        let select_all_frame_ref = select_all_frame.clone();
+        let deselect_all_frame_ref = deselect_all_frame.clone();
+        let ocr_language_list_ref = ocr_language_list.clone();
+        let input_oci_image_ref = input_oci_image.clone();
+        let button_browse_for_pdf_app_copy2 = button_browse_for_pdf_appx.clone();
+        let pdf_viewer_list_ref = pdf_viewer_list.clone();
+        let input_outputloc_ref = input_outputloc.clone();
+        let mut file_actions_group_ref = file_actions_group.clone();
         let mut top_group_ref = top_group.clone();
         let mut scroll_ref = scroll.clone();
         let mut button_convert_ref = button_convertx.clone();
-        let select_all_frame_ref = select_all_frame.clone();
-        let deselect_all_frame_ref = deselect_all_frame.clone();
         let mut group_ocr_language = row_ocr_language.clone();
-        let ocr_language_list_ref = ocr_language_list.clone();
-        let input_oci_image_ref = input_oci_image.clone();
         let mut output_oci_image_ref = output_oci_image.clone();
         let mut row_oci_image_ref = row_oci_image.clone();
         let mut row_openwith_ref = row_openwith.clone();
-        let button_browse_for_pdf_app_copy2 = button_browse_for_pdf_appx.clone();
-        let pdf_viewer_list_ref = pdf_viewer_list.clone();
         let mut row_inputloc_ref = row_inputloc.clone();
         let mut checkbutton_custom_output_ref = checkbutton_custom_output.clone();
         let mut checkbutton_ocr_lang_ref = checkbutton_ocr_lang.clone();
-        let input_outputloc2 = input_outputloc.clone();
         let mut filelist_widget_ref = filelist_widget.clone();
         let mut messages_frame_ref = messages_frame.clone();
 
@@ -1271,7 +1263,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 input_oci_image_ref.borrow_mut().resize(xx, input_oci_image_2_y, ocw, input_oci_image_2_h);
                 let yyy = input_outputloc.borrow().y();
                 let hhh = input_outputloc.borrow().h();
-                input_outputloc2.borrow_mut().resize(xx, yyy, ocw, hhh);
+                input_outputloc_ref.borrow_mut().resize(xx, yyy, ocw, hhh);
 
                 let yyyy = pdf_viewer_list_ref.borrow().y();
                 let hhhh = pdf_viewer_list_ref.borrow().h();
@@ -1359,15 +1351,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             let deselect_all_frame_ref = deselect_all_frame.clone();
 
             if file_path.exists() {
-                let file_paths = vec![file_path];
-
-                if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut scroll_ref) {
+                if add_to_conversion_queue(vec![file_path], &mut filelist_widget_ref, &mut scroll_ref) {
                     if !button_convertxx.active() {
                         button_convertxx.activate();
                         file_actions_group_ref.set_damage(true);
                         select_all_frame_ref.borrow_mut().show();
                         deselect_all_frame_ref.borrow_mut().show();
-
 
                         file_actions_group_ref.resize(
                             file_actions_group_ref.x(),
@@ -1652,7 +1641,7 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
                 }
             }
         }
-
-        ret
     }
+
+    ret
 }

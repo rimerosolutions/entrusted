@@ -16,7 +16,7 @@ use std::sync::Arc;
 use std::thread;
 
 use fltk::{
-    app, browser, button, dialog, draw, enums, frame, group, input, menu, misc, prelude::*, text, window, image
+    app, browser, button, dialog, draw, enums, frame, group, input, misc, prelude::*, text, window
 };
 
 mod common;
@@ -723,7 +723,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut convert_button = button::Button::default()
         .with_size(200, 20)
         .with_label("Convert to trusted PDF(s)");
-    
+
     convert_button.set_label_color(enums::Color::White);
     convert_button.set_frame(enums::FrameType::ThinUpBox);
     convert_button.set_color(enums::Color::Black);
@@ -765,7 +765,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         move |b| {
             tabsettings_button_ref.deactivate();
-            
+
             is_converting_ref.store(true, Ordering::Relaxed);
             let file_suffix = filesuffix_input_rc_ref.borrow().value();
             let mut file_suffix = String::from(file_suffix.clone().trim());
@@ -920,8 +920,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
-
-    if cfg!(target_os = "macos") {
+    #[cfg(target_os = "macos")] {
+        use fltk::{image, menu};
         app::raw_open_callback(Some(|s| {
             let input_path: String = {
                 let ret = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().to_string() };
@@ -1149,11 +1149,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     wind.handle({
         let mut top_group_ref = top_group.clone();
-        
+
         let settings_pack_ref = settings_pack.clone();
-        
+
         let mut filesuffix_pack_ref = filesuffix_pack.clone();
-        let mut filesuffix_checkbutton_ref = filesuffix_checkbutton.clone();        
+        let mut filesuffix_checkbutton_ref = filesuffix_checkbutton.clone();
         let filesuffix_input_rc_ref = filesuffix_input_rc.clone();
 
         let mut ocrlang_pack_ref = ocrlang_pack.clone();
@@ -1170,7 +1170,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut ociimage_pack_ref = ociimage_pack.clone();
 
         let convert_pack_rc_ref = convert_pack_rc.clone();
-        
+
         let mut selection_pack_ref = selection_pack.clone();
         let select_all_frame_ref = selectall_frame_rc.clone();
         let deselect_all_frame_ref = deselectall_frame_rc.clone();
@@ -1294,7 +1294,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let ociimage_input_rc_y = ociimage_input_rc.borrow().y();
                 let ociimage_input_rc_h = ociimage_input_rc.borrow().h();
                 ociimage_input_rc_ref.borrow_mut().resize(xx, ociimage_input_rc_y, ocw, ociimage_input_rc_h);
-                
+
                 let filesuffix_input_rc_ref_y = filesuffix_input_rc_ref.borrow().y();
                 let filesuffix_input_rc_ref_h = filesuffix_input_rc_ref.borrow().h();
                 filesuffix_input_rc_ref.borrow_mut().resize(xx, filesuffix_input_rc_ref_y, ocw, filesuffix_input_rc_ref_h);

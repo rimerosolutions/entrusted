@@ -8,6 +8,7 @@ APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2
 ARTIFACTSDIR="${PROJECTDIR}/artifacts/dangerzone-windows-amd64-${APPVERSION}"
 
 mkdir -p ${ARTIFACTSDIR}
+cp ${PROJECTDIR}/LICENSE ${ARTIFACTSDIR}/
 
 rm -rf ${PROJECTDIR}/dangerzone_container/target
 rm -rf ${PROJECTDIR}/dangerzone_client/target
@@ -45,5 +46,8 @@ if [ $retVal -ne 0 ]; then
 fi
 cp ${PROJECTDIR}/dangerzone_httpclient/target/x86_64-pc-windows-gnu/release/dangerzone-httpclient.exe ${ARTIFACTSDIR}/
 
-
-
+echo "Generate windows installer"
+cp ${SCRIPTDIR}/installer.nsi ${ARTIFACTSDIR}/
+perl -pi -e "s/_APPVERSION_/${APPVERSION}/g" ${ARTIFACTSDIR}/installer.nsi
+podman run -v "${ARTIFACTSDIR}":/build docker.io/binfalse/nsis installer.nsi
+rm ${ARTIFACTSDIR}/installer.nsi

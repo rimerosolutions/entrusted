@@ -481,9 +481,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     ocrlang_pack.set_spacing(WIDGET_GAP);
     let mut ocrlang_checkbutton = button::CheckButton::default()
         .with_size(300, 20)
-        .with_label("Searchable PDF, with language");
+        .with_label("Make PDF Searchable? Yes, with language:");
     ocrlang_checkbutton.set_tooltip(
-        "Make the PDF searchable, with a given language for OCR (Optical character recognition).",
+        "OCR (Optical character recognition) will be applied.",
     );
     ocrlang_checkbutton.set_checked(false);
 
@@ -641,7 +641,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut convert_frame = frame::Frame::default().with_size(500, 80).with_pos(10, 10);
     convert_frame.set_frame(enums::FrameType::RFlatBox);
     convert_frame.set_label_color(enums::Color::White);
-    convert_frame.set_label("Drop 'potentially suspicious' file(s) here\nor Click here to select file(s)");
+    convert_frame.set_label("Drop 'potentially suspicious' file(s) here\nor\nClick here to select file(s)");
     convert_frame.set_color(enums::Color::Red);
 
     let mut row_convert_button = group::Pack::default()

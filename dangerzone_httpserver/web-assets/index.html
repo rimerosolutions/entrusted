@@ -19,21 +19,111 @@
       let logByFileId = new Map();
       let isConverting = false;
 
-      function deleteFileId(fileId) {
-        for (let i = 0; i < fileList.length; i++) {
-          if (fileList[i].id == fileId) {
-            fileList.splice(i, 1);
+      function toggleOneSelection(source) {
+        let found = false;
 
-            let childElement = document.getElementById(fileId);
-            let parentElement = childElement.parentElement;
-            logByFileId.delete(fileId);
-            parentElement.removeChild(childElement);
+        for (let i = 0; i < fileList.length && !found; i++) {
+          let fileObj = fileList[i];
+          let chkFileId = "chk-" + fileObj.id;
 
-            return true;
+          if (chkFileId == source.id) {
+            found = true;
           }
-        };
+        }
 
-        return false;
+        if (found) {
+          fireSelectionChange();
+        }
+      }
+
+      function toggleSelection(selectedFlag) {
+        let ret = false;
+
+        for (let i = 0; i < fileList.length; i++) {
+          let fileObj = fileList[i];
+          let chkFileId = "chk-" + fileObj.id;
+          let checkboxElement = document.getElementById(chkFileId);
+
+          if (checkboxElement.checked != selectedFlag) {
+            if (!checkboxElement.disabled) {
+              checkboxElement.checked = selectedFlag;
+            }
+            ret = true;
+          }
+        }
+
+        return ret;
+      }
+
+      function selectAll() {
+        if (toggleSelection(true)) {
+          fireSelectionChange();
+        }
+      }
+
+      function selectedIndices() {
+        let ret = [];
+
+        for (let i = 0; i < fileList.length; i++) {
+          let fileObj = fileList[i];
+          let chkFileId = "chk-" + fileObj.id;
+          let checkboxElement = document.getElementById(chkFileId);
+
+          if (checkboxElement.checked && !checkboxElement.disabled) {
+            ret.push(i);
+          }
+        }
+
+        return ret;
+      }
+
+      function deleteSelection() {
+        let indices = selectedIndices();
+        let ret = false;
+
+        while (indices.length != 0) {
+          let i = indices.pop();
+
+          let fileObj = fileList[i];
+          let childElement = document.getElementById(fileObj.id);
+          let parentElement = childElement.parentElement;
+
+          logByFileId.delete(fileObj.id);
+          parentElement.removeChild(childElement);
+          fileList.splice(i, 1);
+
+          ret = true;
+        }
+
+        if (ret) {
+          fireSelectionChange();
+        }
+      }
+
+      function fireSelectionChange() {
+        let indices = selectedIndices();
+        let noDataSelected = (indices.length == 0);
+        let deleteButtonElement = document.getElementById("deleteButton");
+
+        if (deleteButtonElement.disabled != noDataSelected) {
+          deleteButtonElement.disabled = noDataSelected;
+        }
+
+        if (noDataSelected) {
+          let submitButton = document.getElementById("submitButton");
+          submitButton.disabled = true;
+
+          if (fileList.length == 0) {
+            let conversionContainerElement = document.getElementById("conversionContainer");
+            conversionContainerElement.className = "invisible";
+          }
+        }
+      }
+
+      function deselectAll() {
+        if (toggleSelection(false)) {
+          fireSelectionChange();
+        }
       }
 
       function preventDefaults(event) {
@@ -92,27 +182,21 @@
           submitButton.disabled = false;
           let fileListTable = document.getElementById("fileListTableBody");
           let documentFragment = document.createDocumentFragment();
-          let columnClasses = [
-            "column fileNameColumn",
-            "column processingStatusColumn",
-            "column progressStatusColumn",
-            "column progressMessageColumn"
-          ];
 
           for (let i = 0; i < currentFileList.length; i++) {
             let fileObj = {
               id: "file-" + Date.now() + "" + i,
               fileName: currentFileList[i].name,
               progressStatus: "0%",
-              processingStatus: 'PENDING',
+              processingStatus: 'Pending',
               progressMessage: "",
               file: currentFileList[i]
             };
 
             fileList.push(fileObj);
 
-            let columnData = [fileObj.fileName, fileObj.processingStatus, fileObj.progressStatus, fileObj.progressMessage];
-            let idPrefixes = ["filename-", "processing-status-", "progress-status-", "progress-message-"];
+            let columnData = [fileObj.fileName, fileObj.progressStatus, fileObj.processingStatus, fileObj.progressMessage];
+            let idPrefixes = ["filename-", "progress-status-", "processing-status-", "progress-message-"];
             let rowElement = document.createElement("tr");
             rowElement.id = fileObj.id;
 
@@ -120,28 +204,29 @@
               let rowColumnElement = document.createElement("td");
               rowColumnElement.id = idPrefixes[j] + fileObj.id;
 
-              if (j == idPrefixes.length - 1) {
-                rowColumnElement.className = "deleteFileIcon";
-              }
-
               if (j == 0) {
                 let checkboxElement = document.createElement("input");
                 checkboxElement.type = "checkbox";
-                checkboxElement.id = "chk" + fileObj.id;
+                checkboxElement.id = "chk-" + fileObj.id;
                 checkboxElement.name = "chk" + fileObj.id;
+                checkboxElement.className = "deleteFileIcon";
                 rowColumnElement.appendChild(checkboxElement);
 
                 let checkboxLabelElement = document.createElement("label");
-                checkboxLabelElement.for = "chk" + fileObj.id;
+                checkboxLabelElement.for = "chk-" + fileObj.id;
                 checkboxLabelElement.innerText = columnData[j];
-                rowColumnElement.appendChild(checkboxLabelElement);                
-              } else if (j == 2) {
+                rowColumnElement.appendChild(checkboxLabelElement);
+              } else if (j == 1) {
                 let progressElement = document.createElement("progress");
                 progressElement.id = "progress-" + fileObj.id;
                 progressElement.value = 0;
                 progressElement.max = 100;
                 rowColumnElement.appendChild(progressElement);
               } else {
+                if (j == 2) {
+                  rowColumnElement.className= "pending";
+                }
+
                 rowColumnElement.innerText = columnData[j];
               }
 
@@ -193,6 +278,11 @@
         modal.style.display = "block";
       }
 
+      function transitionStatusElement(element, value) {
+        element.innerText = value;
+        element.className = value.toLowerCase();
+      }
+
       function submitOneFile(fileObj, ocrSettings, uploadUrl) {
         let file = fileObj.file;
         let fileObjId = fileObj.id;
@@ -218,9 +308,8 @@
           let fprocessingStatusElement = document.getElementById("processing-status-" + fileObjId);
 
           fprogressElement.value = 100;
-          fprogressElement.classList.add(fileStatus.toLowerCase());
-          fprocessingStatusElement.innerText = fileStatus;
-          fprocessingStatusElement.classList.add(fileStatus.toLowerCase());
+          fprogressElement.className = fileStatus.toLowerCase();
+          transitionStatusElement(fprocessingStatusElement, fileStatus);
 
           let fprocessingMessageElement = document.getElementById("progress-message-" + fileObjId);
           fprocessingMessageElement.innerHTML = "";
@@ -252,14 +341,13 @@
 
           if (fileList.length != 0) {
             let nextFileObj = fileList.shift();
-            let fileRemoveElement = document.getElementById("fileremove-" + nextFileObj.id);
-            let parentFileRemoveElement = fileRemoveElement.parentElement;
-            parentFileRemoveElement.removeChild(fileRemoveElement);
+            let checkboxElement = document.getElementById("chk-" + nextFileObj.id);
+            checkboxElement.disabled = true;
             submitOneFile(nextFileObj, ocrSettings, uploadUrl);
           }
         }
 
-        processingStatusElement.innerText = "INPROGRESS";
+        transitionStatusElement(processingStatusElement, "InProgress");
 
         return fetch(uploadUrl, {method: "POST", body: formData })
           .then( response => {
@@ -271,13 +359,13 @@
 
                 function handleSseError() {
                   sse.close();
-                  onComplete(fileObjId, "ERROR");
+                  onComplete(fileObjId, "Failed");
                 }
 
                 sse.addEventListener("processing_success", function(e) {
                   sse.close();
                   let downloadLocation = "./downloads/" + fileId;
-                  onComplete(fileObjId, "SUCCESS", downloadLocation);
+                  onComplete(fileObjId, "Succeeded", downloadLocation);
                 });
 
                 sse.addEventListener("processing_failure", function(e) {
@@ -315,7 +403,7 @@
                 percent_complete: 100,
                 data: response.statusText
               });
-              onComplete(fileObjId, "ERROR", null);
+              onComplete(fileObjId, "Failed", null);
             }
           })
           .catch(function(error) {
@@ -324,7 +412,7 @@
               percent_complete: 100,
               data: error
             });
-            onComplete(fileObjId, "ERROR", null);
+            onComplete(fileObjId, "Failed", null);
           });
       }
 
@@ -344,22 +432,12 @@
         }
 
         let fileObj = fileList.shift();
-        // let fileRemoveElement = document.getElementById("fileremove-" + fileObj.id);
-        // let parentFileRemoveElement = fileRemoveElement.parentElement;
-        // parentFileRemoveElement.removeChild(fileRemoveElement);
+
+        let checkboxElement = document.getElementById("chk-" + fileObj.id);
+        checkboxElement.disabled = true;
 
         submitOneFile(fileObj, ocrSettings, uploadUrl);
       }
-
-      function doResizeWindow() {
-        // let newRows = (Math.max(document.documentElement.clientHeight, window.innerHeight || 0) * 0.4).toFixed(0);
-        // let eventList = document.getElementById("fileListTable");
-        // eventList.style.height = newRows + "px";
-      }
-
-      window.addEventListener("resize", function(event) {
-        doResizeWindow();
-      }, true);
 
       function clearModalContents() {
         let modal = document.getElementById("logWindow");
@@ -373,7 +451,10 @@
       }
 
       window.addEventListener("DOMContentLoaded", function(event) {
-        doResizeWindow();
+        let submitButton = document.getElementById("submitButton");
+        let deleteButton = document.getElementById("deleteButton");
+        deleteButton.disabled = true;
+        submitButton.disabled = true;
 
         let modalCloseElement = document.getElementById("modalClose");
         modalCloseElement.addEventListener("click", function(evt) {
@@ -396,12 +477,7 @@
           let clickedElement = evt.target;
 
           if (clickedElement.classList.contains("deleteFileIcon")) {
-            let rowElement = clickedElement.parentElement;
-            let fileId = rowElement.id;
-
-            if (deleteFileId(fileId)) {
-              toggleSubmitButtonState();
-            }
+            toggleOneSelection(clickedElement);
           }
         }, true);
       }, true);
@@ -537,11 +613,8 @@
       }
 
       .deleteFileIcon {
-        font-weight: bold;
-        cursor: pointer;
-        text-align:center;
-        color: red;
       }
+
       .header {
         margin-top: 0.5%;
         background: #a69350;
@@ -559,17 +632,24 @@
         text-decoration: line-through;
       }
 
-      .success {
-        font-weight: bold;
+      .succeeded {
         accent-color: green;
         color: green;
       }
 
-      .error {
-        font-weight: bold;
+      .pending {
+        color: magenta;
+        accent-color: magenta;
+      }
+
+      .failed {
         color: red;
         accent-color: red;
-        color: red;
+      }
+
+      .inprogress {
+        color: #CCCC00;
+        accent-color: #CCCC00;
       }
 
       .invisible {
@@ -581,7 +661,6 @@
       }
 
       fieldset {
-        /* background: cyan; */
         border: 2px solid blue;
       }
 
@@ -618,12 +697,6 @@
         display: inline-block;
         font-size: 16px;
       }
-
-      .actionButton:hover {
-        background-color: #000000;
-        color: white;
-      }
-
     </style>
   </head>
 
@@ -639,12 +712,12 @@
     <div>
       <form id="uploadForm" action="./upload" method="post" enctype="multipart/form-data" onsubmit="preventDefaults(event)">
         <fieldset>
-          <legend>Conversion Options</legend>          
+          <legend>Conversion Options</legend>
           <table>
             <tbody>
               <tr>
                 <td>
-                  <input type="checkbox" id="ocrCheckbox" name="ocr" onchange="toggleOcrCheckbox(this)">
+                  <input type="checkbox" id="ocrCheckbox" name="ocr" onchange="toggleOcrCheckbox(this)" title="OCR (Optical character recognition) will be applied.">
                   <label for="ocrCheckbox">Make PDF searchable?</label>
                 </td>
                 <td>
@@ -816,28 +889,28 @@
           </table>
         </fieldset>
         <br/>
-          <div id="dropFileZone" ondrop="uploadFile(event)" ondragover="return false">
-            <div id="dragUploadFile">
-              <p>Drop 'potentially suspicious' file(s) here</p>
-              <p>or</p>
-              <p><input type="button" value="Click here to select file(s)" onclick="fileExplorer(event)"></p>
-              <input type="file" name="fileButton" id="fileButton" onChange="fileSelectionChanged(event)" multiple>
-            </div>
+        <div id="dropFileZone" ondrop="uploadFile(event)" ondragover="return false">
+          <div id="dragUploadFile">
+            <p>Drop 'potentially suspicious' file(s) here</p>
+            <p>or</p>
+            <p><input type="button" value="Click here to select file(s)" onclick="fileExplorer(event)"></p>
+            <input type="file" name="fileButton" id="fileButton" onChange="fileSelectionChanged(event)" multiple>
           </div>
+        </div>
       </form>
     </div>
     <br/>
     <div id="conversionContainer" class="invisible">
-      <hr/>      
+      <hr/>
       <table width="100%">
         <tbody>
           <tr>
             <td width="10%">
-              <p><a href="#">Select all</a></p>
-              <p><a href="#">Deselect all</a></p>
+              <p><a href="#" onclick="selectAll()">Select all</a></p>
+              <p><a href="#" onclick="deselectAll()">Deselect all</a></p>
             </td>
             <td width="25%">
-              <button id="deleteButton" class="actionButton">Remove selected file(s)</button>
+              <button id="deleteButton" class="actionButton" onclick="deleteSelection()" disabled>Remove selected file(s)</button>
             </td>
             <td width="25%">
               <button onclick="submitForm(this)" id="submitButton" class="actionButton" disabled>Convert document(s)!</button>
@@ -845,13 +918,13 @@
             <td></td>
           </tr>
         </tbody>
-      </table>      
+      </table>
       <table id="fileListTable">
         <thead>
           <tr>
             <th class="fileNameColumn">Filename</th>
-            <th class="processingStatusColumn">Status</th>
             <th class="progressStatusColumn">Progress(%)</th>
+            <th class="processingStatusColumn">Status</th>
             <th class="progressMessageColumn">Message</th>
           </tr>
         </thead>

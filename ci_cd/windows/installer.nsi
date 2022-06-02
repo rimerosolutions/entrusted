@@ -5,6 +5,7 @@ Unicode True
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "LICENSE"
 !insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_STARTMENU 0 $SMDir
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 
@@ -55,12 +56,14 @@ Section "Install Dangerzone"
 SectionEnd
 
 ; Optional section (can be disabled by the user)
-Section "Start Menu Shortcuts (required)"
-  SectionIn RO
+Section -StartMenu
+  !insertmacro MUI_STARTMENU_WRITE_BEGIN 0 ;This macro sets $SMDir and skips to MUI_STARTMENU_WRITE_END if the "Don't create shortcuts" checkbox is checked... 
 
   CreateDirectory "$SMPROGRAMS\Dangerzone"
   CreateShortcut "$SMPROGRAMS\Dangerzone\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
   CreateShortcut "$SMPROGRAMS\Dangerzone\Dangerzone.lnk" "$INSTDIR\dangerzone-gui.exe" "" "$INSTDIR\dangerzone-gui.exe" 0
+
+  !insertmacro MUI_STARTMENU_WRITE_END
 SectionEnd
 
 ; uninstaller section

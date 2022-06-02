@@ -140,31 +140,31 @@ impl FileListWidget {
 
         if let Ok(rows) = self.rows.try_borrow() {
             for row in rows.iter() {
-                let mut active_child = row.clone();
+                let mut active_row = row.clone();
 
-                let mut pos_x = active_child.checkbox.x();
-                active_child.checkbox.resize(pos_x, active_child.checkbox.y(), width_checkbox, active_child.checkbox.h());
-                active_child.checkbox.set_label(&self.adjust_label(active_child.file, width_checkbox));
+                let mut pos_x = active_row.checkbox.x();
+                active_row.checkbox.resize(pos_x, active_row.checkbox.y(), width_checkbox, active_row.checkbox.h());
+                active_row.checkbox.set_label(&self.adjust_label(active_row.file, width_checkbox));
 
                 pos_x += width_checkbox + WIDGET_GAP;
-                active_child.progressbar.resize(pos_x, active_child.progressbar.y(), width_progressbar, active_child.progressbar.h());
+                active_row.progressbar.resize(pos_x, active_row.progressbar.y(), width_progressbar, active_row.progressbar.h());
 
                 pos_x += width_progressbar + WIDGET_GAP;
 
-                active_child.status.resize(pos_x, active_child.status.y(), width_status, active_child.status.h());
+                active_row.status.resize(pos_x, active_row.status.y(), width_status, active_row.status.h());
 
                 pos_x += width_status + WIDGET_GAP;
 
-                active_child.log_link.resize(pos_x, active_child.log_link.y(), width_logs, active_child.log_link.h());
+                active_row.log_link.resize(pos_x, active_row.log_link.y(), width_logs, active_row.log_link.h());
             }
         }
     }
 
-    pub fn contains_path(&self, p: PathBuf) -> bool {
+    pub fn contains_path(&self, p: &PathBuf) -> bool {
         self.rows
             .borrow()
             .iter()
-            .find(|row| *row.file == p)
+            .find(|row| *row.file == *p)
             .is_some()
     }
 
@@ -267,12 +267,12 @@ impl FileListWidget {
         row.set_spacing(WIDGET_GAP);
 
         let path_tooltip = format!("{}", path.display());
-        let mut select_row_checkbutton = button::CheckButton::default()
+        let mut selectrow_checkbutton = button::CheckButton::default()
             .with_size(width_checkbox, 30)
             .with_label(&self.adjust_label(path.clone(), width_checkbox));
-        select_row_checkbutton.set_tooltip(&path_tooltip);
+        selectrow_checkbutton.set_tooltip(&path_tooltip);
 
-        let check_buttonx2 = select_row_checkbutton.clone();
+        let check_buttonx2 = selectrow_checkbutton.clone();
         let progressbar = misc::Progress::default().with_size(width_progressbar, 20).with_label("0%");
 
         let mut status_frame = frame::Frame::default()
@@ -366,7 +366,7 @@ impl FileListWidget {
             }
         });
 
-        select_row_checkbutton.set_callback({
+        selectrow_checkbutton.set_callback({
             let selfie = self.clone();
             let current_path = path.clone();
 
@@ -425,15 +425,15 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     top_group.set_spacing(WIDGET_GAP);
 
-    let mut settings_togglebutton = button::Button::default()
+    let mut tabsettings_button = button::Button::default()
         .with_size(80, 20)
         .with_label("Settings");
-    let mut convert_togglebutton = button::Button::default()
+    let mut tabconvert_button = button::Button::default()
         .with_size(80, 20)
         .with_label("Convert");
     top_group.end();
 
-    let settings_group = Rc::new(RefCell::new(
+    let settings_pack = Rc::new(RefCell::new(
         group::Pack::default()
             .with_pos(20, 20)
             .with_size(600, 580)
@@ -441,54 +441,53 @@ fn main() -> Result<(), Box<dyn Error>> {
             .with_type(group::PackType::Vertical),
     ));
 
-    settings_group.borrow_mut().set_spacing(WIDGET_GAP);
+    settings_pack.borrow_mut().set_spacing(WIDGET_GAP);
 
-    let mut row_inputloc = group::Pack::default()
+    let mut filesuffix_pack = group::Pack::default()
         .with_size(570, 40)
         .with_type(group::PackType::Horizontal);
 
-    row_inputloc.set_spacing(WIDGET_GAP);
-    let mut checkbutton_custom_output = button::CheckButton::default()
+    filesuffix_pack.set_spacing(WIDGET_GAP);
+    let mut filesuffix_checkbutton = button::CheckButton::default()
         .with_size(160, 20)
         .with_label("Custom file suffix");
-    checkbutton_custom_output
+    filesuffix_checkbutton
         .set_tooltip("The safe PDF will be named <input>-<suffix>.pdf by default.");
-    checkbutton_custom_output.set_checked(false);
+    filesuffix_checkbutton.set_checked(false);
 
-    let input_outputloc = Rc::new(RefCell::new(input::Input::default().with_size(290, 20)));
-    let input_outputlocx = input_outputloc.clone();
-    input_outputloc.borrow_mut().set_value(common::DEFAULT_FILE_SUFFIX);
-    input_outputloc.borrow_mut().deactivate();
+    let filesuffix_input_rc = Rc::new(RefCell::new(input::Input::default().with_size(290, 20)));
+    filesuffix_input_rc.borrow_mut().set_value(common::DEFAULT_FILE_SUFFIX);
+    filesuffix_input_rc.borrow_mut().deactivate();
 
-    checkbutton_custom_output.set_callback({
-        let input_outputloc_ref = input_outputlocx.clone();
+    filesuffix_checkbutton.set_callback({
+        let filesuffix_input_rc_ref = filesuffix_input_rc.clone();
 
         move|b| {
             if b.is_checked() {
-                input_outputloc_ref.borrow_mut().activate();
+                filesuffix_input_rc_ref.borrow_mut().activate();
             } else {
-                input_outputloc_ref.borrow_mut().set_value(common::DEFAULT_FILE_SUFFIX);
-                input_outputloc_ref.borrow_mut().deactivate();
+                filesuffix_input_rc_ref.borrow_mut().set_value(common::DEFAULT_FILE_SUFFIX);
+                filesuffix_input_rc_ref.borrow_mut().deactivate();
             }
         }
     });
 
-    row_inputloc.end();
+    filesuffix_pack.end();
 
-    let mut row_ocr_language = group::Pack::default()
+    let mut ocrlang_pack = group::Pack::default()
         .with_size(570, 60)
-        .below_of(&row_inputloc, WIDGET_GAP);
-    row_ocr_language.set_type(group::PackType::Horizontal);
-    row_ocr_language.set_spacing(WIDGET_GAP);
-    let mut checkbutton_ocr_lang = button::CheckButton::default()
+        .below_of(&filesuffix_pack, WIDGET_GAP)
+        .with_type(group::PackType::Horizontal);
+    ocrlang_pack.set_spacing(WIDGET_GAP);
+    let mut ocrlang_checkbutton = button::CheckButton::default()
         .with_size(300, 20)
         .with_label("Searchable PDF, with language");
-    checkbutton_ocr_lang.set_tooltip(
+    ocrlang_checkbutton.set_tooltip(
         "Make the PDF searchable, with a given language for OCR (Optical character recognition).",
     );
-    checkbutton_ocr_lang.set_checked(false);
+    ocrlang_checkbutton.set_checked(false);
 
-    let ocr_language_list = Rc::new(RefCell::new(
+    let ocrlang_holdbrowser_rc = Rc::new(RefCell::new(
         browser::HoldBrowser::default().with_size(240, 60),
     ));
     let ocr_languages_by_name = common::ocr_lang_key_by_name();
@@ -503,39 +502,39 @@ fn main() -> Result<(), Box<dyn Error>> {
     ocr_languages.sort();
 
     for v in ocr_languages.iter() {
-        ocr_language_list.borrow_mut().add(v);
+        ocrlang_holdbrowser_rc.borrow_mut().add(v);
     }
 
     if let Some(selected_ocr_language_idx) = ocr_languages.iter().position(|&r| r == "English") {
-        ocr_language_list
+        ocrlang_holdbrowser_rc
             .borrow_mut()
             .select((selected_ocr_language_idx + 1) as i32);
     }
 
-    ocr_language_list.borrow_mut().deactivate();
+    ocrlang_holdbrowser_rc.borrow_mut().deactivate();
 
-    checkbutton_ocr_lang.set_callback({
-        let ocr_language_list_ref = ocr_language_list.clone();
+    ocrlang_checkbutton.set_callback({
+        let ocrlang_holdbrowser_rc_ref = ocrlang_holdbrowser_rc.clone();
 
         move |b| {
             if !b.is_checked() {
-                ocr_language_list_ref.borrow_mut().deactivate();
+                ocrlang_holdbrowser_rc_ref.borrow_mut().deactivate();
             } else {
-                ocr_language_list_ref.borrow_mut().activate();
+                ocrlang_holdbrowser_rc_ref.borrow_mut().activate();
             }
         }
     });
-    row_ocr_language.end();
+    ocrlang_pack.end();
 
-    let mut row_openwith = group::Pack::default()
+    let mut openwith_pack = group::Pack::default()
         .with_size(570, 40)
         .with_type(group::PackType::Horizontal);
-    row_openwith.set_spacing(WIDGET_GAP);
-    let mut checkbutton_openwith = button::CheckButton::default().with_size(295, 20).with_label("Open document after conversion, using");
-    checkbutton_openwith.set_tooltip("Automatically open resulting PDFs with a given program.");
+    openwith_pack.set_spacing(WIDGET_GAP);
+    let mut openwith_checkbutton = button::CheckButton::default().with_size(295, 20).with_label("Open document after conversion, using");
+    openwith_checkbutton.set_tooltip("Automatically open resulting PDFs with a given program.");
 
     let pdf_apps_by_name = list_apps_for_pdfs();
-    let pdf_viewer_list = Rc::new(RefCell::new(misc::InputChoice::default().with_size(240, 20)));
+    let openwith_inputchoice_rc = Rc::new(RefCell::new(misc::InputChoice::default().with_size(240, 20)));
     let mut pdf_viewer_app_names = Vec::with_capacity(pdf_apps_by_name.len());
 
     for (k, _v) in &pdf_apps_by_name {
@@ -545,25 +544,24 @@ fn main() -> Result<(), Box<dyn Error>> {
     pdf_viewer_app_names.sort();
 
     for k in pdf_viewer_app_names {
-        pdf_viewer_list.borrow_mut().add(k);
+        openwith_inputchoice_rc.borrow_mut().add(k);
     }
 
-    pdf_viewer_list.borrow_mut().set_tooltip("You can also paste the path to a PDF viewer");
+    openwith_inputchoice_rc.borrow_mut().set_tooltip("You can also paste the path to a PDF viewer");
 
     if pdf_apps_by_name.len() != 0 {
-        pdf_viewer_list.borrow_mut().set_value_index(0);
+        openwith_inputchoice_rc.borrow_mut().set_value_index(0);
     }
 
-    pdf_viewer_list.borrow_mut().deactivate();
+    openwith_inputchoice_rc.borrow_mut().deactivate();
 
-    let button_browse_for_pdf_app = Rc::new(RefCell::new(button::Button::default().with_size(35, 20).with_label("..")));
-    let button_browse_for_pdf_app_copy = button_browse_for_pdf_app.clone();
-    let button_browse_for_pdf_appx = button_browse_for_pdf_app.clone();
-    button_browse_for_pdf_app.borrow_mut().set_tooltip("Browse for PDF viewer program");
-    button_browse_for_pdf_app.borrow_mut().deactivate();
+    let openwith_button_rc = Rc::new(RefCell::new(button::Button::default().with_size(35, 20).with_label("..")));
+    openwith_button_rc.borrow_mut().set_tooltip("Browse for PDF viewer program");
+    openwith_button_rc.borrow_mut().deactivate();
 
-    checkbutton_openwith.set_callback({
-        let pdf_viewer_list_ref = pdf_viewer_list.clone();
+    openwith_checkbutton.set_callback({
+        let pdf_viewer_list_ref = openwith_inputchoice_rc.clone();
+        let openwith_button_rc_ref = openwith_button_rc.clone();
 
         move |b| {
             let will_be_read_only = !b.is_checked();
@@ -571,16 +569,16 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             if will_be_read_only {
                 pdf_viewer_list_ref.borrow_mut().deactivate();
-                button_browse_for_pdf_app_copy.borrow_mut().deactivate();
+                openwith_button_rc_ref.borrow_mut().deactivate();
             } else {
                 pdf_viewer_list_ref.borrow_mut().activate();
-                button_browse_for_pdf_app_copy.borrow_mut().activate();
+                openwith_button_rc_ref.borrow_mut().activate();
             };
         }
     });
 
-    button_browse_for_pdf_app.borrow_mut().set_callback({
-        let pdf_viewer_list_ref = pdf_viewer_list.clone();
+    openwith_button_rc.borrow_mut().set_callback({
+        let pdf_viewer_list_ref = openwith_inputchoice_rc.clone();
 
         move |_| {
             let mut dlg = dialog::FileDialog::new(dialog::FileDialogType::BrowseFile);
@@ -596,42 +594,42 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
-    row_openwith.end();
+    openwith_pack.end();
 
-    let mut row_oci_image = group::Pack::default()
+    let mut ociimage_pack = group::Pack::default()
         .with_size(550, 40)
-        .below_of(&row_ocr_language, WIDGET_GAP);
-    row_oci_image.set_type(group::PackType::Horizontal);
-    row_oci_image.set_spacing(WIDGET_GAP);
-    let mut output_oci_image = button::CheckButton::default()
+        .below_of(&ocrlang_pack, WIDGET_GAP);
+    ociimage_pack.set_type(group::PackType::Horizontal);
+    ociimage_pack.set_spacing(WIDGET_GAP);
+    let mut ociimage_checkbutton = button::CheckButton::default()
         .with_size(100, 20)
         .with_pos(0, 0)
         .with_align(enums::Align::Inside | enums::Align::Left);
-    output_oci_image.set_label("Custom container image");
-    output_oci_image.set_tooltip("Expert option for sandbox solution");
-    output_oci_image.set_checked(false);
+    ociimage_checkbutton.set_label("Custom container image");
+    ociimage_checkbutton.set_tooltip("Expert option for sandbox solution");
+    ociimage_checkbutton.set_checked(false);
 
-    let input_oci_image = Rc::new(RefCell::new(input::Input::default().with_size(440, 20)));
-    input_oci_image.borrow_mut().set_value(&common::container_image_name());
-    input_oci_image.borrow_mut().deactivate();
-    row_oci_image.end();
+    let ociimage_input_rc = Rc::new(RefCell::new(input::Input::default().with_size(440, 20)));
+    ociimage_input_rc.borrow_mut().set_value(&common::container_image_name());
+    ociimage_input_rc.borrow_mut().deactivate();
+    ociimage_pack.end();
 
-    output_oci_image.set_callback({
-        let input_oci_image_ref = input_oci_image.clone();
+    ociimage_checkbutton.set_callback({
+        let ociimage_input_rc_ref = ociimage_input_rc.clone();
 
         move|b| {
             if !b.is_checked() {
-                input_oci_image_ref.borrow_mut().deactivate();
-                input_oci_image_ref.borrow_mut().set_value(&common::container_image_name());
+                ociimage_input_rc_ref.borrow_mut().deactivate();
+                ociimage_input_rc_ref.borrow_mut().set_value(&common::container_image_name());
             } else {
-                input_oci_image_ref.borrow_mut().activate();
+                ociimage_input_rc_ref.borrow_mut().activate();
             }
         }
     });
 
-    settings_group.borrow_mut().end();
+    settings_pack.borrow_mut().end();
 
-    let convert_group = Rc::new(RefCell::new(
+    let convert_pack_rc = Rc::new(RefCell::new(
         group::Pack::default()
             .with_pos(20, 20)
             .with_size(600, 580)
@@ -639,7 +637,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             .with_type(group::PackType::Vertical),
     ));
 
-    convert_group.borrow_mut().set_spacing(WIDGET_GAP);
+    convert_pack_rc.borrow_mut().set_spacing(WIDGET_GAP);
 
     let mut convert_frame = frame::Frame::default().with_size(500, 80).with_pos(10, 10);
     convert_frame.set_frame(enums::FrameType::RFlatBox);
@@ -653,46 +651,46 @@ fn main() -> Result<(), Box<dyn Error>> {
     row_convert_button.set_type(group::PackType::Horizontal);
     row_convert_button.set_spacing(WIDGET_GAP);
 
-    let mut file_actions_group = group::Pack::default()
+    let mut selection_pack = group::Pack::default()
         .with_size(150, 20)
         .with_type(group::PackType::Vertical)
         .below_of(&convert_frame, 30);
 
-    let select_all_frame = Rc::new(RefCell::new(
+    let selectall_frame_rc = Rc::new(RefCell::new(
         frame::Frame::default()
             .with_size(130, 10)
             .with_label("Select all")
             .with_align(enums::Align::Inside | enums::Align::Left),
     ));
-    select_all_frame
+    selectall_frame_rc
         .borrow_mut()
         .set_label_color(enums::Color::Blue);
-    let deselect_all_frame = Rc::new(RefCell::new(
+    let deselectall_frame_rc = Rc::new(RefCell::new(
         frame::Frame::default()
             .with_size(130, 10)
             .with_label("Deselect all")
             .with_align(enums::Align::Inside | enums::Align::Left),
     ));
-    deselect_all_frame
+    deselectall_frame_rc
         .borrow_mut()
         .set_label_color(enums::Color::Blue);
-    file_actions_group.set_spacing(WIDGET_GAP / 2);
+    selection_pack.set_spacing(WIDGET_GAP / 2);
 
-    select_all_frame.borrow_mut().draw({
+    selectall_frame_rc.borrow_mut().draw({
         move |w| {
             let (lw, _) = draw::measure(&w.label(), true);
             draw::draw_line(w.x() + 3, w.y() + w.h(), w.x() + lw, w.y() + w.h());
         }
     });
 
-    deselect_all_frame.borrow_mut().draw({
+    deselectall_frame_rc.borrow_mut().draw({
         move |w| {
             let (lw, _) = draw::measure(&w.label(), true);
             draw::draw_line(w.x() + 3, w.y() + w.h(), w.x() + lw, w.y() + w.h());
         }
     });
 
-    select_all_frame.borrow_mut().handle({
+    selectall_frame_rc.borrow_mut().handle({
         move |_, ev| match ev {
             enums::Event::Push => {
                 let _ = app::handle_main(FileListWidgetEvent::ALL_SELECTED);
@@ -702,7 +700,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
-    deselect_all_frame.borrow_mut().handle({
+    deselectall_frame_rc.borrow_mut().handle({
         move |_, ev| match ev {
             enums::Event::Push => {
                 let _ = app::handle_main(FileListWidgetEvent::ALL_DESELECTED);
@@ -712,34 +710,32 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
-    select_all_frame.borrow_mut().hide();
-    deselect_all_frame.borrow_mut().hide();
+    selectall_frame_rc.borrow_mut().hide();
+    deselectall_frame_rc.borrow_mut().hide();
 
-    file_actions_group.end();
+    selection_pack.end();
 
-    let mut button_delete_file = button::Button::default()
+    let mut delete_button = button::Button::default()
         .with_size(200, 20)
         .with_label("Remove selected file(s)");
-    button_delete_file.deactivate();
+    delete_button.deactivate();
 
-    let mut button_convert = button::Button::default()
+    let mut convert_button = button::Button::default()
         .with_size(200, 20)
         .with_label("Convert to trusted PDF(s)");
-    let button_convertx = button_convert.clone();
-    let mut button_convertxx = button_convert.clone();
-    button_convert.set_label_color(enums::Color::White);
-    button_convert.set_frame(enums::FrameType::ThinUpBox);
-    button_convert.set_color(enums::Color::Black);
-
-    button_convert.deactivate();
+    
+    convert_button.set_label_color(enums::Color::White);
+    convert_button.set_frame(enums::FrameType::ThinUpBox);
+    convert_button.set_color(enums::Color::Black);
+    convert_button.deactivate();
 
     row_convert_button.end();
 
-    let scroll = group::Scroll::default().with_size(580, 200);
+    let filelist_scroll = group::Scroll::default().with_size(580, 200);
 
     let mut filelist_widget = FileListWidget::new();
 
-    button_delete_file.set_callback({
+    delete_button.set_callback({
         let mut filelist_widget_ref = filelist_widget.clone();
 
         move |_| {
@@ -747,27 +743,31 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
-    scroll.end();
+    filelist_scroll.end();
 
     let messages_frame = frame::Frame::default()
-        .with_size(580, 50)
+        .with_size(580, 80)
         .with_label(" ")
         .with_align(enums::Align::Left | enums::Align::Inside);
 
-    button_convert.set_callback({
+    convert_button.set_callback({
         let wind_ref = wind.clone();
         let filelist_widget_ref = filelist_widget.clone();
         let mut messages_frame_ref = messages_frame.clone();
-        let ocr_language_list_ref = ocr_language_list.clone();
-        let checkbutton_ocr_lang_ref = checkbutton_ocr_lang.clone();
-        let input_oci_image_ref = input_oci_image.clone();
-        let pdf_viewer_list_ref = pdf_viewer_list.clone();
-        let input_outputloc_ref = input_outputlocx.clone();
+        let ocrlang_holdbrowser_rc_ref = ocrlang_holdbrowser_rc.clone();
+        let mut tabsettings_button_ref =  tabsettings_button.clone();
+        let ocrlang_checkbutton_ref = ocrlang_checkbutton.clone();
+        let ociimage_input_rc_ref = ociimage_input_rc.clone();
+        let pdf_viewer_list_ref = openwith_inputchoice_rc.clone();
+        let filesuffix_input_rc_ref = filesuffix_input_rc.clone();
         let is_converting_ref = is_converting.clone();
+        let openwith_checkbutton_ref = openwith_checkbutton.clone();
 
         move |b| {
+            tabsettings_button_ref.deactivate();
+            
             is_converting_ref.store(true, Ordering::Relaxed);
-            let file_suffix = input_outputloc_ref.borrow().value();
+            let file_suffix = filesuffix_input_rc_ref.borrow().value();
             let mut file_suffix = String::from(file_suffix.clone().trim());
 
             if file_suffix.is_empty() {
@@ -775,7 +775,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
 
             let viewer_app_name = pdf_viewer_list_ref.borrow_mut().input().value();
-            let viewer_app_exec = if checkbutton_openwith.is_checked() {
+            let viewer_app_exec = if openwith_checkbutton_ref.is_checked() {
                 if let Some(viewer_app_path) = pdf_apps_by_name.get(&viewer_app_name) {
                     Some(viewer_app_path.clone())
                 } else {
@@ -792,8 +792,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 active_row.reset_ui_state();
             }
 
-            let ocr_lang_setting = if checkbutton_ocr_lang_ref.is_checked() {
-                if let Some(selected_lang) = ocr_language_list_ref.borrow().selected_text() {
+            let ocr_lang_setting = if ocrlang_checkbutton_ref.is_checked() {
+                if let Some(selected_lang) = ocrlang_holdbrowser_rc_ref.borrow().selected_text() {
                     ocr_languages_by_lang
                         .get(selected_lang.as_str())
                         .map(|i| format!("{}", i))
@@ -804,9 +804,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 None
             };
 
-            let oci_image_text = input_oci_image_ref.borrow().value();
+            let oci_image_text = ociimage_input_rc_ref.borrow().value();
 
-            let oci_image  = if oci_image_text.trim().is_empty() {
+            let ociimage_option  = if oci_image_text.trim().is_empty() {
                 None
             } else {
                 Some(String::from(oci_image_text.trim()))
@@ -816,27 +816,28 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             for current_row in filelist_widget_ref.rows.borrow_mut().iter() {
                 let result = Arc::new(AtomicBool::new(false));
-                let mut row = current_row.clone();
-                let input_path = row.file.clone();
-                let ocr_lang_param = ocr_lang_setting.clone();
-                let oci_image_copy = oci_image.clone();
-                let viewer_app_option2 = viewer_app_option.clone();
-                let file_suffix_value = file_suffix.clone();
+                let mut active_row = current_row.clone();
+                let input_path = active_row.file.clone();
+                let active_ocrlang_option = ocr_lang_setting.clone();
+                let active_ociimage_option = ociimage_option.clone();
+                let active_viewer_app_option = viewer_app_option.clone();
+                let active_file_suffix = file_suffix.clone();
                 let (tx, rx) = mpsc::channel();
 
-                if let Ok(output_path) = common::default_output_path(input_path.clone(), file_suffix_value) {
-                    let output_path2 = output_path.clone();
-                    let input_path2 = input_path.clone();
-                    row.status.set_label(FileListRowStatus::InProgress.name());
-                    row.status.set_label_color(enums::Color::DarkYellow);
+                if let Ok(output_path) = common::default_output_path(input_path.clone(), active_file_suffix) {
+                    let current_input_path = input_path.clone();
+                    let current_output_path = output_path.clone();
+                    active_row.status.set_label(FileListRowStatus::InProgress.name());
+                    active_row.checkbox.deactivate();
+                    active_row.status.set_label_color(enums::Color::DarkYellow);
 
                     let mut exec_handle = Some(thread::spawn(move || {
                         match container::convert(
-                            input_path2.clone(),
+                            current_input_path.clone(),
                             output_path.clone(),
-                            oci_image_copy,
+                            active_ociimage_option,
                             String::from("json"),
-                            ocr_lang_param,
+                            active_ocrlang_option,
                             tx,
                         ) {
                             Ok(_) => None,
@@ -851,11 +852,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                         if let Ok(log_msg) = log_msg_ret {
                             let progress_text = format!("{} %", log_msg.percent_complete);
-                            row.progressbar.set_label(&progress_text);
-                            row.progressbar.set_value(log_msg.percent_complete as f64);
+                            active_row.progressbar.set_label(&progress_text);
+                            active_row.progressbar.set_value(log_msg.percent_complete as f64);
                             messages_frame_ref.set_label(&log_msg.data);
-                            row.logs.borrow_mut().push(log_msg.data);
-                            row.progressbar.parent().unwrap().redraw();
+                            active_row.logs.borrow_mut().push(log_msg.data);
+                            active_row.progressbar.parent().unwrap().redraw();
                         }
 
                         app::awake();
@@ -868,43 +869,44 @@ fn main() -> Result<(), Box<dyn Error>> {
                         Some(exec_handle_result) => match exec_handle_result {
                             Ok(None) => {
                                 result.swap(true, Ordering::Relaxed);
-                                row.progressbar.set_label("100%");
-                                row.progressbar.set_value(100.0);
+                                active_row.progressbar.set_label("100%");
+                                active_row.progressbar.set_value(100.0);
                                 status_color = enums::Color::DarkGreen;
                                 row_status = FileListRowStatus::Succeeded.name();
                             }
                             Ok(err_string_opt) => {
                                 if let Some(err_text) = err_string_opt {
-                                    row.logs.borrow_mut().push(err_text.clone());
-                                    row.log_link.set_label(&err_text);
+                                    active_row.logs.borrow_mut().push(err_text.clone());
+                                    active_row.log_link.set_label(&err_text);
                                 }
                             }
                             Err(ex) => {
                                 let err_text = format!("{:?}", ex);
-                                row.logs.borrow_mut().push(err_text.clone());
-                                row.log_link.set_label(&err_text);
+                                active_row.logs.borrow_mut().push(err_text.clone());
+                                active_row.log_link.set_label(&err_text);
                             }
                         },
                         None => {
                             let label_text = "Conversion failed";
-                            row.log_link.set_label(label_text);
-                            row.logs.borrow_mut().push(String::from(label_text));
+                            active_row.log_link.set_label(label_text);
+                            active_row.logs.borrow_mut().push(String::from(label_text));
                         }
                     }
 
-                    row.status.set_label(row_status);
-                    row.status.set_label_color(status_color);
-                    row.progressbar.set_label("100%");
-                    row.progressbar.set_value(100.0);
-                    row.log_link.set_label("Logs");
-                    row.log_link.set_frame(enums::FrameType::ThinUpBox);
-                    row.log_link.set_down_frame(enums::FrameType::ThinDownBox);
-                    row.log_link.activate();
+                    active_row.checkbox.activate();
+                    active_row.status.set_label(row_status);
+                    active_row.status.set_label_color(status_color);
+                    active_row.progressbar.set_label("100%");
+                    active_row.progressbar.set_value(100.0);
+                    active_row.log_link.set_label("Logs");
+                    active_row.log_link.set_frame(enums::FrameType::ThinUpBox);
+                    active_row.log_link.set_down_frame(enums::FrameType::ThinDownBox);
+                    active_row.log_link.activate();
                     messages_frame_ref.set_label("");
 
-                    if result.load(Ordering::Relaxed) && viewer_app_option2.is_some() {
-                        if let Some(viewer_exe) = viewer_app_option2 {
-                            if let Err(exe) = pdf_open_with(viewer_exe, output_path2.clone()) {
+                    if result.load(Ordering::Relaxed) && active_viewer_app_option.is_some() {
+                        if let Some(viewer_exe) = active_viewer_app_option {
+                            if let Err(exe) = pdf_open_with(viewer_exe, current_output_path.clone()) {
                                 let err_text = format!("Could not open PDF result\n.{}.", exe.to_string());
                                 dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, &err_text);
                             }
@@ -914,6 +916,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
 
             b.activate();
+            tabsettings_button_ref.activate();
         }
     });
 
@@ -932,6 +935,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         menu::mac_set_about({
             let current_wind = wind.clone();
+
             move || {
                 let ww = 350;
                 let wh = 150;
@@ -965,6 +969,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     .below_of(&logo_frame, WIDGET_GAP)
                     .with_label(&dialog_text)
                     .with_align(enums::Align::Center | enums::Align::Inside);
+
                 win.end();
                 win.make_modal(true);
                 win.show();
@@ -976,41 +981,41 @@ fn main() -> Result<(), Box<dyn Error>> {
         });
     }
 
-    convert_group.borrow_mut().end();
-    convert_togglebutton.set_frame(enums::FrameType::DownBox);
-    settings_group.borrow_mut().hide();
+    convert_pack_rc.borrow_mut().end();
+    tabconvert_button.set_frame(enums::FrameType::DownBox);
+    settings_pack.borrow_mut().hide();
 
-    settings_togglebutton.set_callback({
-        let convert_group_ref = convert_group.clone();
-        let settings_group_ref = settings_group.clone();
-        let mut convert_togglebutton_ref = convert_togglebutton.clone();
-        let mut scroll_ref = scroll.clone();
+    tabsettings_button.set_callback({
+        let convert_pack_rc_ref = convert_pack_rc.clone();
+        let settings_pack_ref = settings_pack.clone();
+        let mut tabconvert_button_ref = tabconvert_button.clone();
+        let mut filelist_scroll_ref = filelist_scroll.clone();
         let mut wind_ref = wind.clone();
 
         move |b| {
-            if !settings_group_ref.borrow().visible() {
-                convert_togglebutton_ref.set_frame(enums::FrameType::UpBox);
+            if !settings_pack_ref.borrow().visible() {
+                tabconvert_button_ref.set_frame(enums::FrameType::UpBox);
                 b.set_frame(enums::FrameType::DownBox);
-                convert_group_ref.borrow_mut().hide();
-                settings_group_ref.borrow_mut().show();
-                scroll_ref.redraw();
+                convert_pack_rc_ref.borrow_mut().hide();
+                settings_pack_ref.borrow_mut().show();
+                filelist_scroll_ref.redraw();
                 wind_ref.redraw();
             }
         }
     });
 
-    convert_togglebutton.set_callback({
-        let convert_group_ref = convert_group.clone();
-        let mut settings_togglebutton_ref = settings_togglebutton.clone();
-        let settings_group_ref = settings_group.clone();
+    tabconvert_button.set_callback({
+        let convert_pack_rc_ref = convert_pack_rc.clone();
+        let mut tabsettings_button_ref = tabsettings_button.clone();
+        let settings_group_ref = settings_pack.clone();
         let mut wind_ref = wind.clone();
 
         move |b| {
-            if !convert_group_ref.borrow().visible() {
-                settings_togglebutton_ref.set_frame(enums::FrameType::UpBox);
+            if !convert_pack_rc_ref.borrow().visible() {
+                tabsettings_button_ref.set_frame(enums::FrameType::UpBox);
                 b.set_frame(enums::FrameType::DownBox);
                 settings_group_ref.borrow_mut().hide();
-                convert_group_ref.borrow_mut().show();
+                convert_pack_rc_ref.borrow_mut().show();
                 wind_ref.redraw();
             }
         }
@@ -1023,10 +1028,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     ) -> bool {
         let mut added = false;
 
-        for p in paths {
+        for p in paths.iter() {
             let path = PathBuf::from(p);
 
-            if path.exists() && !row_pack.contains_path(path.clone()) {
+            if path.exists() && !row_pack.contains_path(&path) {
                 row_pack.add_file(path);
                 added = true;
             }
@@ -1042,12 +1047,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     convert_frame.handle({
         let mut dnd = false;
         let mut released = false;
-        let mut scroll_ref = scroll.clone();
+        let mut filelist_scroll_ref = filelist_scroll.clone();
         let mut filelist_widget_ref = filelist_widget.clone();
-        let mut file_actions_group_ref = file_actions_group.clone();
+        let mut selection_pack_ref = selection_pack.clone();
         let is_converting_ref = is_converting.clone();
-        let select_all_frame_ref = select_all_frame.clone();
-        let deselect_all_frame_ref = deselect_all_frame.clone();
+        let selectall_frame_rc_ref = selectall_frame_rc.clone();
+        let deselectall_frame_rc_ref = deselectall_frame_rc.clone();
+        let mut convert_button_ref = convert_button.clone();
 
         move |_, ev| match ev {
             enums::Event::DndEnter => {
@@ -1077,22 +1083,22 @@ fn main() -> Result<(), Box<dyn Error>> {
                         .filter(|p| p.exists())
                         .collect();
 
-                    if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut scroll_ref) {
-                        if !button_convert.active() {
-                            button_convert.activate();
-                            file_actions_group_ref.set_damage(true);
-                            select_all_frame_ref.borrow_mut().show();
-                            deselect_all_frame_ref.borrow_mut().show();
+                    if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut filelist_scroll_ref) {
+                        if !convert_button_ref.active() {
+                            convert_button_ref.activate();
+                            selection_pack_ref.set_damage(true);
+                            selectall_frame_rc_ref.borrow_mut().show();
+                            deselectall_frame_rc_ref.borrow_mut().show();
 
-                            file_actions_group_ref.resize(
-                                file_actions_group_ref.x(),
-                                file_actions_group_ref.y(),
+                            selection_pack_ref.resize(
+                                selection_pack_ref.x(),
+                                selection_pack_ref.y(),
                                 150,
                                 40,
                             );
 
-                            file_actions_group_ref.set_damage(true);
-                            file_actions_group_ref.redraw();
+                            selection_pack_ref.set_damage(true);
+                            selection_pack_ref.redraw();
                         }
                     }
                 }
@@ -1117,22 +1123,22 @@ fn main() -> Result<(), Box<dyn Error>> {
                     filelist_widget_ref.delete_selection();
                 }
 
-                if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut scroll_ref) {
-                    if !button_convert.active() {
-                        button_convert.activate();
-                        file_actions_group_ref.set_damage(true);
-                        select_all_frame_ref.borrow_mut().show();
-                        deselect_all_frame_ref.borrow_mut().show();
+                if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut filelist_scroll_ref) {
+                    if !convert_button_ref.active() {
+                        convert_button_ref.activate();
+                        selection_pack_ref.set_damage(true);
+                        selectall_frame_rc_ref.borrow_mut().show();
+                        deselectall_frame_rc_ref.borrow_mut().show();
 
-                        file_actions_group_ref.resize(
-                            file_actions_group_ref.x(),
-                            file_actions_group_ref.y(),
+                        selection_pack_ref.resize(
+                            selection_pack_ref.x(),
+                            selection_pack_ref.y(),
                             150,
                             40,
                         );
 
-                        file_actions_group_ref.set_damage(true);
-                        file_actions_group_ref.redraw();
+                        selection_pack_ref.set_damage(true);
+                        selection_pack_ref.redraw();
                     }
                 }
                 true
@@ -1142,28 +1148,38 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     wind.handle({
-        let convert_group_ref = convert_group.clone();
-        let settings_group_ref = settings_group.clone();
-        let select_all_frame_ref = select_all_frame.clone();
-        let deselect_all_frame_ref = deselect_all_frame.clone();
-        let ocr_language_list_ref = ocr_language_list.clone();
-        let input_oci_image_ref = input_oci_image.clone();
-        let button_browse_for_pdf_app_copy2 = button_browse_for_pdf_appx.clone();
-        let pdf_viewer_list_ref = pdf_viewer_list.clone();
-        let input_outputloc_ref = input_outputloc.clone();
-        let mut file_actions_group_ref = file_actions_group.clone();
         let mut top_group_ref = top_group.clone();
-        let mut scroll_ref = scroll.clone();
-        let mut button_convert_ref = button_convertx.clone();
-        let mut group_ocr_language = row_ocr_language.clone();
-        let mut output_oci_image_ref = output_oci_image.clone();
-        let mut row_oci_image_ref = row_oci_image.clone();
-        let mut row_openwith_ref = row_openwith.clone();
-        let mut row_inputloc_ref = row_inputloc.clone();
-        let mut checkbutton_custom_output_ref = checkbutton_custom_output.clone();
-        let mut checkbutton_ocr_lang_ref = checkbutton_ocr_lang.clone();
-        let mut filelist_widget_ref = filelist_widget.clone();
+        
+        let settings_pack_ref = settings_pack.clone();
+        
+        let mut filesuffix_pack_ref = filesuffix_pack.clone();
+        let mut filesuffix_checkbutton_ref = filesuffix_checkbutton.clone();        
+        let filesuffix_input_rc_ref = filesuffix_input_rc.clone();
+
+        let mut ocrlang_pack_ref = ocrlang_pack.clone();
+        let mut ocrlang_checkbutton_ref = ocrlang_checkbutton.clone();
+        let ocrlang_holdbrowser_rc_ref = ocrlang_holdbrowser_rc.clone();
+
+        let mut openwith_pack_ref = openwith_pack.clone();
+        let mut openwith_checkbutton_ref = openwith_checkbutton.clone();
+        let openwith_inputchoice_rc_ref = openwith_inputchoice_rc.clone();
+        let openwith_button_rc_ref = openwith_button_rc.clone();
+
+        let ociimage_input_rc_ref = ociimage_input_rc.clone();
+        let mut ociimage_checkbutton_ref = ociimage_checkbutton.clone();
+        let mut ociimage_pack_ref = ociimage_pack.clone();
+
+        let convert_pack_rc_ref = convert_pack_rc.clone();
+        
+        let mut selection_pack_ref = selection_pack.clone();
+        let select_all_frame_ref = selectall_frame_rc.clone();
+        let deselect_all_frame_ref = deselectall_frame_rc.clone();
+
+
+        let mut filelist_scroll_ref = filelist_scroll.clone();
+        let mut convert_button_ref = convert_button.clone();
         let mut messages_frame_ref = messages_frame.clone();
+        let mut filelist_widget_ref = filelist_widget.clone();
 
         move |w, ev| match ev {
             enums::Event::Move => {
@@ -1178,120 +1194,138 @@ fn main() -> Result<(), Box<dyn Error>> {
                     30,
                 );
 
-                convert_togglebutton.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, 80, 30);
-                settings_togglebutton.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, 80, 30);
+                tabconvert_button.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, 80, 30);
+                tabsettings_button.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, 80, 30);
                 let new_y = top_group_ref.y() + top_group_ref.h() + WIDGET_GAP;
 
                 let scroller_height = ((w.h() - top_group_ref.h() + WIDGET_GAP) as f64 * 0.5) as i32;
 
-                convert_group_ref.borrow_mut().resize(
+                convert_pack_rc_ref.borrow_mut().resize(
                     WIDGET_GAP,
                     new_y,
                     w.w() - (WIDGET_GAP * 2),
                     w.h() - top_group_ref.h() + WIDGET_GAP,
                 );
 
-                settings_group_ref.borrow_mut().resize(
+                settings_pack_ref.borrow_mut().resize(
                     WIDGET_GAP,
                     new_y,
                     w.w() - (WIDGET_GAP * 2),
                     w.h() - top_group_ref.h() + WIDGET_GAP,
                 );
-                scroll_ref.resize(
-                    scroll_ref.x(),
-                    scroll_ref.y(),
+                filelist_scroll_ref.resize(
+                    filelist_scroll_ref.x(),
+                    filelist_scroll_ref.y(),
                     w.w() - (WIDGET_GAP * 3),
                     scroller_height,
                 );
 
                 let wval = w.w() - (WIDGET_GAP * 3);
 
-                filelist_widget_ref.resize(scroll_ref.x(), scroll_ref.y(), wval, 0);
+                filelist_widget_ref.resize(filelist_scroll_ref.x(), filelist_scroll_ref.y(), wval, 0);
 
-                scroll_ref.redraw();
+                filelist_scroll_ref.redraw();
 
-                let xx = ocr_language_list_ref.borrow_mut().x();
+                let xx = ocrlang_holdbrowser_rc_ref.borrow_mut().x();
 
-                row_oci_image_ref.resize(
-                    row_oci_image.x(),
-                    row_oci_image.y(),
+                ociimage_pack_ref.resize(
+                    ociimage_pack.x(),
+                    ociimage_pack.y(),
                     w.w() - (WIDGET_GAP * 2),
-                    row_oci_image.h(),
+                    ociimage_pack.h(),
                 );
-                row_inputloc_ref.resize(
-                    row_inputloc_ref.x(),
-                    row_inputloc_ref.y(),
+                filesuffix_pack_ref.resize(
+                    filesuffix_pack_ref.x(),
+                    filesuffix_pack_ref.y(),
                     w.w() - (WIDGET_GAP * 2),
-                    row_inputloc_ref.h(),
+                    filesuffix_pack_ref.h(),
                 );
-                row_openwith_ref.resize(
-                    row_inputloc_ref.x() + WIDGET_GAP / 2,
-                    row_openwith.y(),
+                openwith_pack_ref.resize(
+                    openwith_pack_ref.x() + WIDGET_GAP / 2,
+                    openwith_pack_ref.y(),
                     w.w() - (WIDGET_GAP * 2),
-                    row_openwith.h(),
+                    openwith_pack_ref.h(),
                 );
-                checkbutton_custom_output_ref.resize(
+                filesuffix_checkbutton_ref.resize(
                     xx,
-                    checkbutton_custom_output_ref.y(),
-                    checkbutton_ocr_lang_ref.w(),
-                    checkbutton_custom_output_ref.h(),
+                    filesuffix_checkbutton_ref.y(),
+                    ocrlang_checkbutton_ref.w(),
+                    filesuffix_checkbutton_ref.h(),
                 );
-                checkbutton_ocr_lang_ref.resize(
+                ocrlang_checkbutton_ref.resize(
                     xx,
-                    checkbutton_ocr_lang_ref.y(),
-                    checkbutton_ocr_lang_ref.w(),
-                    checkbutton_custom_output_ref.h(),
+                    ocrlang_checkbutton_ref.y(),
+                    ocrlang_checkbutton_ref.w(),
+                    filesuffix_checkbutton_ref.h(),
                 );
 
-                let ocw = w.w() - (WIDGET_GAP * 3) - checkbutton_ocr_lang.w();
+                let ocw = w.w() - (WIDGET_GAP * 3) - ocrlang_checkbutton.w();
                 let och = (w.h() as f64 * 0.5) as i32;
 
-                output_oci_image_ref.resize(
-                    checkbutton_ocr_lang_ref.x(),
-                    output_oci_image_ref.y(),
-                    checkbutton_ocr_lang_ref.w(),
-                    output_oci_image_ref.h(),
+                ociimage_checkbutton_ref.resize(
+                    ocrlang_checkbutton_ref.x(),
+                    ociimage_checkbutton_ref.y(),
+                    ocrlang_checkbutton_ref.w(),
+                    ociimage_checkbutton_ref.h(),
                 );
 
-                group_ocr_language.resize(
+                openwith_checkbutton_ref.resize(
+                    ocrlang_checkbutton_ref.x(),
+                    openwith_checkbutton_ref.y(),
+                    ocrlang_checkbutton_ref.w(),
+                    openwith_checkbutton_ref.h(),
+                );
+
+                ocrlang_pack_ref.resize(
                     xx,
-                    group_ocr_language.y(),
+                    ocrlang_pack_ref.y(),
                     w.w() - (WIDGET_GAP * 4),
                     och,
                 );
 
-                let yy = ocr_language_list_ref.borrow_mut().y();
-                ocr_language_list_ref.borrow_mut().resize(
+                let yy = ocrlang_holdbrowser_rc_ref.borrow_mut().y();
+                ocrlang_holdbrowser_rc_ref.borrow_mut().resize(
                     xx,
                     yy,
                     ocw,
                     och - (WIDGET_GAP * 2),
                 );
 
-                let input_oci_image_2_y = input_oci_image.borrow().y();
-                let input_oci_image_2_h = input_oci_image.borrow().h();
-                input_oci_image_ref.borrow_mut().resize(xx, input_oci_image_2_y, ocw, input_oci_image_2_h);
-                let yyy = input_outputloc_ref.borrow().y();
-                let hhh = input_outputloc_ref.borrow().h();
-                input_outputloc_ref.borrow_mut().resize(xx, yyy, ocw, hhh);
+                let ociimage_input_rc_y = ociimage_input_rc.borrow().y();
+                let ociimage_input_rc_h = ociimage_input_rc.borrow().h();
+                ociimage_input_rc_ref.borrow_mut().resize(xx, ociimage_input_rc_y, ocw, ociimage_input_rc_h);
+                
+                let filesuffix_input_rc_ref_y = filesuffix_input_rc_ref.borrow().y();
+                let filesuffix_input_rc_ref_h = filesuffix_input_rc_ref.borrow().h();
+                filesuffix_input_rc_ref.borrow_mut().resize(xx, filesuffix_input_rc_ref_y, ocw, filesuffix_input_rc_ref_h);
 
-                let yyyy = pdf_viewer_list_ref.borrow().y();
-                let hhhh = pdf_viewer_list_ref.borrow().h();
-                pdf_viewer_list_ref.borrow_mut().resize(
+                let openwith_button_rc_ref_w = openwith_button_rc_ref.borrow().w();
+                let openwith_inputchoice_rc_ref_y = openwith_inputchoice_rc_ref.borrow().y();
+                let openwith_inputchoice_rc_ref_h = openwith_inputchoice_rc_ref.borrow().h();
+                openwith_inputchoice_rc_ref.borrow_mut().resize(
                     xx,
-                    yyyy,
-                    ocw - button_browse_for_pdf_app_copy2.borrow().w() - WIDGET_GAP ,
-                    hhhh
+                    openwith_inputchoice_rc_ref_y,
+                    ocw - WIDGET_GAP - openwith_button_rc_ref_w,
+                    openwith_inputchoice_rc_ref_h
+                );
+
+                let openwith_button_rc_ref_y = openwith_button_rc_ref.borrow().y();
+                let openwith_button_rc_ref_h = openwith_button_rc_ref.borrow().h();
+                openwith_button_rc_ref.borrow_mut().resize(
+                    w.w() - WIDGET_GAP - openwith_button_rc_ref_w,
+                    openwith_button_rc_ref_y,
+                    openwith_button_rc_ref_w,
+                    openwith_button_rc_ref_h
                 );
 
                 messages_frame_ref.resize(
                     messages_frame_ref.x(),
                     messages_frame_ref.y(),
                     w.w() - (WIDGET_GAP * 4),
-                    60,
+                    80,
                 );
 
-                scroll_ref.redraw();
+                filelist_scroll_ref.redraw();
                 true
             }
             _ => {
@@ -1299,21 +1333,21 @@ fn main() -> Result<(), Box<dyn Error>> {
                     let selection = filelist_widget_ref.selected_indices();
                     let empty_selection = selection.is_empty();
 
-                    if empty_selection && button_delete_file.active() {
-                        button_delete_file.deactivate();
-                    } else if !empty_selection && !button_delete_file.active() {
-                        button_delete_file.activate();
+                    if empty_selection && delete_button.active() {
+                        delete_button.deactivate();
+                    } else if !empty_selection && !delete_button.active() {
+                        delete_button.activate();
                     }
 
                     if !filelist_widget_ref.has_files() {
-                        file_actions_group_ref.redraw();
-                        button_convert_ref.deactivate();
+                        selection_pack_ref.redraw();
+                        convert_button_ref.deactivate();
                         select_all_frame_ref.borrow_mut().hide();
                         deselect_all_frame_ref.borrow_mut().hide();
                     }
 
                     filelist_widget_ref.container.redraw();
-                    scroll_ref.redraw();
+                    filelist_scroll_ref.redraw();
                     true
                 } else if ev.bits() == FileListWidgetEvent::ALL_SELECTED {
                     filelist_widget_ref.select_all();
@@ -1347,35 +1381,35 @@ fn main() -> Result<(), Box<dyn Error>> {
     wind.resize(wind.x(), wind.y(), 680, 600);
 
     if autoconvert {
-        button_convertxx.do_callback();
+        convert_button.do_callback();
     }
 
     while app.wait() {
         if let Some(msg) = r.recv() {
             let mut filelist_widget_ref = filelist_widget.clone();
-            let mut scroll_ref = scroll.clone();
+            let mut scroll_ref = filelist_scroll.clone();
             let file_path = PathBuf::from(msg);
-            let mut file_actions_group_ref = file_actions_group.clone();
-            let select_all_frame_ref = select_all_frame.clone();
-            let deselect_all_frame_ref = deselect_all_frame.clone();
+            let mut selection_pack_ref = selection_pack.clone();
+            let select_all_frame_ref = selectall_frame_rc.clone();
+            let deselect_all_frame_ref = deselectall_frame_rc.clone();
 
             if file_path.exists() {
                 if add_to_conversion_queue(vec![file_path], &mut filelist_widget_ref, &mut scroll_ref) {
-                    if !button_convertxx.active() {
-                        button_convertxx.activate();
-                        file_actions_group_ref.set_damage(true);
+                    if !convert_button.active() {
+                        convert_button.activate();
+                        selection_pack_ref.set_damage(true);
                         select_all_frame_ref.borrow_mut().show();
                         deselect_all_frame_ref.borrow_mut().show();
 
-                        file_actions_group_ref.resize(
-                            file_actions_group_ref.x(),
-                            file_actions_group_ref.y(),
+                        selection_pack_ref.resize(
+                            selection_pack_ref.x(),
+                            selection_pack_ref.y(),
                             150,
                             40,
                         );
 
-                        file_actions_group_ref.set_damage(true);
-                        file_actions_group_ref.redraw();
+                        selection_pack_ref.set_damage(true);
+                        selection_pack_ref.redraw();
                     }
                 }
             }

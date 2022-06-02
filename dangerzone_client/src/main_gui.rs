@@ -428,20 +428,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut tabsettings_button = button::Button::default()
         .with_size(80, 20)
         .with_label("Settings");
+
     let mut tabconvert_button = button::Button::default()
         .with_size(80, 20)
         .with_label("Convert");
     top_group.end();
 
-    let settings_pack = Rc::new(RefCell::new(
+    let settings_pack_rc = Rc::new(RefCell::new(
         group::Pack::default()
             .with_pos(20, 20)
             .with_size(600, 580)
             .below_of(&top_group, WIDGET_GAP)
             .with_type(group::PackType::Vertical),
     ));
-
-    settings_pack.borrow_mut().set_spacing(WIDGET_GAP);
+    settings_pack_rc.borrow_mut().set_spacing(WIDGET_GAP);
 
     let mut filesuffix_pack = group::Pack::default()
         .with_size(570, 40)
@@ -627,7 +627,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
-    settings_pack.borrow_mut().end();
+    settings_pack_rc.borrow_mut().end();
 
     let convert_pack_rc = Rc::new(RefCell::new(
         group::Pack::default()
@@ -636,7 +636,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             .below_of(&top_group, WIDGET_GAP)
             .with_type(group::PackType::Vertical),
     ));
-
     convert_pack_rc.borrow_mut().set_spacing(WIDGET_GAP);
 
     let mut convert_frame = frame::Frame::default().with_size(500, 80).with_pos(10, 10);
@@ -718,15 +717,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut delete_button = button::Button::default()
         .with_size(200, 20)
         .with_label("Remove selected file(s)");
+    delete_button.set_label_color(enums::Color::Black);
+    // convert_button.set_frame(enums::FrameType::ThinUpBox);
+    delete_button.set_color(enums::Color::White);
     delete_button.deactivate();
 
     let mut convert_button = button::Button::default()
         .with_size(200, 20)
         .with_label("Convert to trusted PDF(s)");
 
-    convert_button.set_label_color(enums::Color::White);
-    convert_button.set_frame(enums::FrameType::ThinUpBox);
-    convert_button.set_color(enums::Color::Black);
+    convert_button.set_label_color(enums::Color::Black);
+    // convert_button.set_frame(enums::FrameType::ThinUpBox);
+    convert_button.set_color(enums::Color::White);
     convert_button.deactivate();
 
     row_convert_button.end();
@@ -762,9 +764,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         let filesuffix_input_rc_ref = filesuffix_input_rc.clone();
         let is_converting_ref = is_converting.clone();
         let openwith_checkbutton_ref = openwith_checkbutton.clone();
+        let selectall_frame_rc_ref = selectall_frame_rc.clone();
+        let deselectall_frame_rc_ref = deselectall_frame_rc.clone();
 
         move |b| {
             tabsettings_button_ref.deactivate();
+            selectall_frame_rc_ref.borrow_mut().deactivate();
+            deselectall_frame_rc_ref.borrow_mut().deactivate();
 
             is_converting_ref.store(true, Ordering::Relaxed);
             let file_suffix = filesuffix_input_rc_ref.borrow().value();
@@ -917,6 +923,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             b.activate();
             tabsettings_button_ref.activate();
+            selectall_frame_rc_ref.borrow_mut().activate();
+            deselectall_frame_rc_ref.borrow_mut().activate();
         }
     });
 
@@ -983,21 +991,21 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     convert_pack_rc.borrow_mut().end();
     tabconvert_button.set_frame(enums::FrameType::DownBox);
-    settings_pack.borrow_mut().hide();
+    settings_pack_rc.borrow_mut().hide();
 
     tabsettings_button.set_callback({
         let convert_pack_rc_ref = convert_pack_rc.clone();
-        let settings_pack_ref = settings_pack.clone();
+        let settings_pack_rc_ref = settings_pack_rc.clone();
         let mut tabconvert_button_ref = tabconvert_button.clone();
         let mut filelist_scroll_ref = filelist_scroll.clone();
         let mut wind_ref = wind.clone();
 
         move |b| {
-            if !settings_pack_ref.borrow().visible() {
+            if !settings_pack_rc_ref.borrow().visible() {
                 tabconvert_button_ref.set_frame(enums::FrameType::UpBox);
                 b.set_frame(enums::FrameType::DownBox);
                 convert_pack_rc_ref.borrow_mut().hide();
-                settings_pack_ref.borrow_mut().show();
+                settings_pack_rc_ref.borrow_mut().show();
                 filelist_scroll_ref.redraw();
                 wind_ref.redraw();
             }
@@ -1007,14 +1015,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     tabconvert_button.set_callback({
         let convert_pack_rc_ref = convert_pack_rc.clone();
         let mut tabsettings_button_ref = tabsettings_button.clone();
-        let settings_group_ref = settings_pack.clone();
+        let settings_pack_rc_ref = settings_pack_rc.clone();
         let mut wind_ref = wind.clone();
 
         move |b| {
             if !convert_pack_rc_ref.borrow().visible() {
                 tabsettings_button_ref.set_frame(enums::FrameType::UpBox);
                 b.set_frame(enums::FrameType::DownBox);
-                settings_group_ref.borrow_mut().hide();
+                settings_pack_rc_ref.borrow_mut().hide();
                 convert_pack_rc_ref.borrow_mut().show();
                 wind_ref.redraw();
             }
@@ -1150,7 +1158,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     wind.handle({
         let mut top_group_ref = top_group.clone();
 
-        let settings_pack_ref = settings_pack.clone();
+        let settings_pack_rc_ref = settings_pack_rc.clone();
 
         let mut filesuffix_pack_ref = filesuffix_pack.clone();
         let mut filesuffix_checkbutton_ref = filesuffix_checkbutton.clone();
@@ -1207,7 +1215,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     w.h() - top_group_ref.h() + WIDGET_GAP,
                 );
 
-                settings_pack_ref.borrow_mut().resize(
+                settings_pack_rc_ref.borrow_mut().resize(
                     WIDGET_GAP,
                     new_y,
                     w.w() - (WIDGET_GAP * 2),

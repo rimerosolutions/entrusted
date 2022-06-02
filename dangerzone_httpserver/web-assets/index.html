@@ -58,7 +58,7 @@
           isConverting = false;
           fileList.clear();
         }
-        
+
         updateFileList(currentFileList);
       }
 
@@ -96,8 +96,7 @@
             "column fileNameColumn",
             "column processingStatusColumn",
             "column progressStatusColumn",
-            "column progressMessageColumn",
-            "column fileRemoveColumn deleteFileIcon"
+            "column progressMessageColumn"
           ];
 
           for (let i = 0; i < currentFileList.length; i++) {
@@ -112,8 +111,8 @@
 
             fileList.push(fileObj);
 
-            let columnData = [fileObj.fileName, fileObj.processingStatus, fileObj.progressStatus, fileObj.progressMessage, "X"];
-            let idPrefixes = ["filename-", "processing-status-", "progress-status-", "progress-message-", "fileremove-"];
+            let columnData = [fileObj.fileName, fileObj.processingStatus, fileObj.progressStatus, fileObj.progressMessage];
+            let idPrefixes = ["filename-", "processing-status-", "progress-status-", "progress-message-"];
             let rowElement = document.createElement("tr");
             rowElement.id = fileObj.id;
 
@@ -125,7 +124,18 @@
                 rowColumnElement.className = "deleteFileIcon";
               }
 
-              if (j == 2) {
+              if (j == 0) {
+                let checkboxElement = document.createElement("input");
+                checkboxElement.type = "checkbox";
+                checkboxElement.id = "chk" + fileObj.id;
+                checkboxElement.name = "chk" + fileObj.id;
+                rowColumnElement.appendChild(checkboxElement);
+
+                let checkboxLabelElement = document.createElement("label");
+                checkboxLabelElement.for = "chk" + fileObj.id;
+                checkboxLabelElement.innerText = columnData[j];
+                rowColumnElement.appendChild(checkboxLabelElement);                
+              } else if (j == 2) {
                 let progressElement = document.createElement("progress");
                 progressElement.id = "progress-" + fileObj.id;
                 progressElement.value = 0;
@@ -334,9 +344,9 @@
         }
 
         let fileObj = fileList.shift();
-        let fileRemoveElement = document.getElementById("fileremove-" + fileObj.id);
-        let parentFileRemoveElement = fileRemoveElement.parentElement;
-        parentFileRemoveElement.removeChild(fileRemoveElement);
+        // let fileRemoveElement = document.getElementById("fileremove-" + fileObj.id);
+        // let parentFileRemoveElement = fileRemoveElement.parentElement;
+        // parentFileRemoveElement.removeChild(fileRemoveElement);
 
         submitOneFile(fileObj, ocrSettings, uploadUrl);
       }
@@ -399,235 +409,221 @@
 
     <style>
       .modal {
-          display: none; /* Hidden by default */
-          position: fixed; /* Stay in place */
-          z-index: 1; /* Sit on top */
-          padding-top: 5%; /* Location of the box */
-          left: 0;
-          top: 0;
-          width: 100%; /* Full width */
-          height: 100%; /* Full height */
-          overflow: auto; /* Enable scroll if needed */
-          background-color: rgb(0,0,0); /* Fallback color */
-          background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 5%; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
       }
 
       /* Modal Content */
       .modal-content {
-          background-color: #fefefe;
-          text-align:center;
-          margin: auto;
-          padding: 5%;
-          border: 1px solid #888;
-          width: 80%;
-          height: 70%;
-          overflow:auto;
+        background-color: #fefefe;
+        text-align:center;
+        margin: auto;
+        padding: 5%;
+        border: 1px solid #888;
+        width: 80%;
+        height: 70%;
+        overflow:auto;
       }
 
       .modal-content li {
-          text-align:left;
+        text-align:left;
       }
 
       /* The Close Button */
       .close {
-          color: #aaaaaa;
-          float: right;
-          font-size: 2em;
-          font-weight: bold;
+        color: #aaaaaa;
+        float: right;
+        font-size: 2em;
+        font-weight: bold;
       }
 
       .close:hover,
       .close:focus {
-          color: #000;
-          text-decoration: none;
-          cursor: pointer;
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
       }
 
       .row:after {
-          float:left;
-          text-align: left;
-          content: "";
-          display: table;
-          clear: both;
+        float:left;
+        text-align: left;
+        content: "";
+        display: table;
+        clear: both;
       }
 
       .column {
-          display: table;
-          float: left;
-          text-align: left;
-          background: yellow;
+        display: table;
+        float: left;
+        text-align: left;
+        /* background: yellow; */
+      }
+
+      body {
+        background-color: #C8C8C8;
+      }
+
+      hr {
+        width: 50%;
       }
 
       progress {
-          width:80%;
-          accent-color: blue;
+        width:80%;
+        accent-color: blue;
       }
 
       .fileNameColumn {
-          width: 25%;
+        width: 30%;
       }
 
       .progressStatusColumn {
-          width: 10%;
+        width: 10%;
       }
 
       .processingStatusColumn {
-          width: 10%;
+        width: 10%;
       }
 
       .progressMessageColumn {
-          width: 50%;
-      }
-
-      .fileRemoveColumn {
-          width: 5%;
-      }
-
-      .fileRemoveColumn:hover {
-
+        width: 50%;
       }
 
       #dropFileZone {
-          background-color: red;
-          color: white;
-          font-weight: bold;
-          border: #999 2px dashed;
-          height: 1%;
-          font-size: 1em;
+        background-color: red;
+        color: white;
+        font-weight: bold;
+        border: #999 2px solid;
+        border-radius: 1em;
+        height: 1%;
+        font-size: 1em;
       }
 
       #dragUploadFile {
-          width: 50%;
-          margin: 0 auto;
+        width: 50%;
+        margin: 0 auto;
       }
 
       #dragUploadFile p {
-          text-align: center;
+        text-align: center;
       }
 
       #dragUploadFile #fileButton {
-          display: none;
+        display: none;
       }
 
       thead {
-          vertical-align: top;
-          border: 1px solid black;
+        vertical-align: top;
+        border: 1px solid black;
       }
 
       thead tr {
-          text-align: left;
-          background: yellow;
-          border: 1px solid black;
+        text-align: left;
+        /* background: yellow; */
+        border: 1px solid black;
       }
 
       .title-text {
-          text-align: center;
-          color: maroon;
-      }
-
-      .header-text {
-          position:absolute;
-          margin-left: 1%;
-          background: #977c27;
-          text-align:left;
-          margin-bottom: 1%;
-          color: yellow;
-          border: 5px solid #977c27;
+        text-align: center;
+        color: maroon;
       }
 
       .deleteFileIcon {
-          font-weight: bold;
-          cursor: pointer;
-          text-align:center;
-          color: red;
+        font-weight: bold;
+        cursor: pointer;
+        text-align:center;
+        color: red;
       }
       .header {
-          margin-top: 0.5%;
-          background: #a69350;
-          color: yellow;
-          border: 1px solid #a69350;
+        margin-top: 0.5%;
+        background: #a69350;
+        /* color: yellow; */
+        border: 1px solid #a69350;
       }
 
       #fileListTable {
-          border: 5px solid #977c27;
-          background: yellow;
-          overflow: auto;
-          width: 100%;
+        margin-top: 1%;
+        overflow: auto;
+        width: 100%;
       }
 
       .visitedLink {
-          text-decoration: line-through;
+        text-decoration: line-through;
       }
 
       .success {
-          font-weight: bold;
-          accent-color: green;
-          color: green;
+        font-weight: bold;
+        accent-color: green;
+        color: green;
       }
 
       .error {
-          font-weight: bold;
-          color: red;
-          accent-color: red;
-          color: red;
+        font-weight: bold;
+        color: red;
+        accent-color: red;
+        color: red;
       }
 
       .invisible {
-          display: none;
+        display: none;
       }
 
       .visible {
-          display: visible;
+        display: visible;
       }
 
       fieldset {
-          background: cyan;
-          border: 5px solid blue;
+        /* background: cyan; */
+        border: 2px solid blue;
       }
 
       legend {
-          padding: 10px;
-          background: blue;
-          color: cyan;
+        padding: 10px;
+        background: blue;
+        color: cyan;
       }
 
       #eventList {
-          overflow: auto;
-          margin: 0;
-          padding: 10px 1px 1px 1px;
-          background: yellow;
-          border: 5px solid #977c27;
-          font-family: monospace;
+        overflow: auto;
+        margin: 0;
+        padding: 10px 1px 1px 1px;
+        background: yellow;
+        border: 5px solid #977c27;
+        font-family: monospace;
       }
 
       #eventList li {
-          list-style-type: none;
-          text-align: left;
-          margin: 0;
-          padding: 0;
+        list-style-type: none;
+        text-align: left;
+        margin: 0;
+        padding: 0;
       }
 
-      #submitButton {
-          background-color: #555555;
-          border: none;
-          color: white;
-          margin-left: 1%;
-          padding: 15px 32px;
-          text-align: center;
-          text-decoration: none;
-          display: inline-block;
-          font-size: 16px;
+      .actionButton {
+        //background-color: #000000;
+        border: none;
+        //color: white;
+        margin-left: 1%;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
       }
 
-      #submitButton:hover {
-          background-color: #000000;
+      .actionButton:hover {
+        background-color: #000000;
+        color: white;
       }
 
-      #submitButton:disabled, #submitButton[disabled]{
-          border: 1px solid #999999;
-          background-color: #cccccc;
-          color: #666666;
-      }
     </style>
   </head>
 
@@ -643,15 +639,7 @@
     <div>
       <form id="uploadForm" action="./upload" method="post" enctype="multipart/form-data" onsubmit="preventDefaults(event)">
         <fieldset>
-          <legend>Conversion Options</legend>
-          <div id="dropFileZone" ondrop="uploadFile(event)" ondragover="return false">
-            <div id="dragUploadFile">
-              <p>Drop file(s) here</p>
-              <p>or</p>
-              <p><input type="button" value="Click here to select file(s)" onclick="fileExplorer(event)"></p>
-              <input type="file" name="fileButton" id="fileButton" onChange="fileSelectionChanged(event)" multiple>
-            </div>
-          </div>
+          <legend>Conversion Options</legend>          
           <table>
             <tbody>
               <tr>
@@ -827,14 +815,37 @@
             </tbody>
           </table>
         </fieldset>
+        <br/>
+          <div id="dropFileZone" ondrop="uploadFile(event)" ondragover="return false">
+            <div id="dragUploadFile">
+              <p>Drop 'potentially suspicious' file(s) here</p>
+              <p>or</p>
+              <p><input type="button" value="Click here to select file(s)" onclick="fileExplorer(event)"></p>
+              <input type="file" name="fileButton" id="fileButton" onChange="fileSelectionChanged(event)" multiple>
+            </div>
+          </div>
       </form>
-      <p><button onclick="submitForm(this)" id="submitButton" disabled>Convert document(s)!</button></p>
     </div>
-
+    <br/>
     <div id="conversionContainer" class="invisible">
-      <hr/>
-      <div class="header-text">Conversion Queue</div>
-      <br/>
+      <hr/>      
+      <table width="100%">
+        <tbody>
+          <tr>
+            <td width="10%">
+              <p><a href="#">Select all</a></p>
+              <p><a href="#">Deselect all</a></p>
+            </td>
+            <td width="25%">
+              <button id="deleteButton" class="actionButton">Remove selected file(s)</button>
+            </td>
+            <td width="25%">
+              <button onclick="submitForm(this)" id="submitButton" class="actionButton" disabled>Convert document(s)!</button>
+            </td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>      
       <table id="fileListTable">
         <thead>
           <tr>
@@ -842,7 +853,6 @@
             <th class="processingStatusColumn">Status</th>
             <th class="progressStatusColumn">Progress(%)</th>
             <th class="progressMessageColumn">Message</th>
-            <th class="fileRemoveColumn">Remove</th>
           </tr>
         </thead>
         <tbody id="fileListTableBody"></tbody>

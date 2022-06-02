@@ -125,9 +125,9 @@ impl FileListWidget {
     }
 
     pub fn column_widths(&self, w: i32) -> (i32, i32, i32, i32){
-        let width_checkbox    = (w as f64 * 0.4) as i32;
-        let width_progressbar = (w as f64 * 0.2) as i32;
-        let width_status      = (w as f64 * 0.2) as i32;
+        let width_checkbox    = (w as f64 * 0.5) as i32;
+        let width_progressbar = (w as f64 * 0.15) as i32;
+        let width_status      = (w as f64 * 0.15) as i32;
         let width_logs        = (w as f64 * 0.1) as i32;
 
         (width_checkbox, width_progressbar, width_status, width_logs)
@@ -138,23 +138,25 @@ impl FileListWidget {
 
         let (width_checkbox, width_progressbar, width_status, width_logs) = self.column_widths(w);
 
-        for row in self.rows.borrow().iter() {
-            let mut active_child = row.clone();
+        if let Ok(rows) = self.rows.try_borrow() {
+            for row in rows.iter() {
+                let mut active_child = row.clone();
 
-            let mut pos_x = active_child.checkbox.x();
-            active_child.checkbox.resize(pos_x, active_child.checkbox.y(), width_checkbox, active_child.checkbox.h());
-            active_child.checkbox.set_label(&self.adjust_label(active_child.file, width_checkbox));
+                let mut pos_x = active_child.checkbox.x();
+                active_child.checkbox.resize(pos_x, active_child.checkbox.y(), width_checkbox, active_child.checkbox.h());
+                active_child.checkbox.set_label(&self.adjust_label(active_child.file, width_checkbox));
 
-            pos_x += width_checkbox + WIDGET_GAP;
-            active_child.progressbar.resize(pos_x, active_child.progressbar.y(), width_progressbar, active_child.progressbar.h());
+                pos_x += width_checkbox + WIDGET_GAP;
+                active_child.progressbar.resize(pos_x, active_child.progressbar.y(), width_progressbar, active_child.progressbar.h());
 
-            pos_x += width_progressbar + WIDGET_GAP;
+                pos_x += width_progressbar + WIDGET_GAP;
 
-            active_child.status.resize(pos_x, active_child.status.y(), width_status, active_child.status.h());
+                active_child.status.resize(pos_x, active_child.status.y(), width_status, active_child.status.h());
 
-            pos_x += width_status + WIDGET_GAP;
+                pos_x += width_status + WIDGET_GAP;
 
-            active_child.log_link.resize(pos_x, active_child.log_link.y(), width_logs, active_child.log_link.h());
+                active_child.log_link.resize(pos_x, active_child.log_link.y(), width_logs, active_child.log_link.h());
+            }
         }
     }
 
@@ -170,12 +172,19 @@ impl FileListWidget {
         !self.rows.borrow().is_empty()
     }
 
-    fn toggle_selection(&mut self, select: bool) {
+    fn toggle_selection(&mut self, select: bool) -> bool {
+        let mut selection_changed = false;
+
         for row in self.rows.borrow().iter() {
             if row.checkbox.active() {
-                row.checkbox.set_checked(select);
+                if row.checkbox.is_checked() != select {
+                    row.checkbox.set_checked(select);
+                    selection_changed = true;
+                }
             }
         }
+
+        selection_changed
     }
 
     pub fn selected_indices(&self) -> Vec<usize> {
@@ -187,16 +196,18 @@ impl FileListWidget {
     }
 
     pub fn select_all(&mut self) {
-        let row_count = self.rows.borrow().len();
-        self.toggle_selection(true);
-        self.selected_indices.borrow_mut().extend(0..row_count);
-        let _ = app::handle_main(FileListWidgetEvent::SELECTION_CHANGED);
+        if self.toggle_selection(true) {
+            let row_count = self.rows.borrow().len();
+            self.selected_indices.borrow_mut().extend(0..row_count);
+            let _ = app::handle_main(FileListWidgetEvent::SELECTION_CHANGED);
+        }
     }
 
     pub fn deselect_all(&mut self) {
-        self.toggle_selection(false);
-        self.selected_indices.borrow_mut().clear();
-        let _ = app::handle_main(FileListWidgetEvent::SELECTION_CHANGED);
+        if self.toggle_selection(false) {
+            self.selected_indices.borrow_mut().clear();
+            let _ = app::handle_main(FileListWidgetEvent::SELECTION_CHANGED);
+        }
     }
 
     pub fn delete_selection(&mut self) {
@@ -899,7 +910,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                             }
                         }
                     }
-
                 }
             }
 
@@ -985,7 +995,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 settings_group_ref.borrow_mut().show();
                 scroll_ref.redraw();
                 wind_ref.redraw();
-            }            
+            }
         }
     });
 
@@ -1261,8 +1271,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let input_oci_image_2_y = input_oci_image.borrow().y();
                 let input_oci_image_2_h = input_oci_image.borrow().h();
                 input_oci_image_ref.borrow_mut().resize(xx, input_oci_image_2_y, ocw, input_oci_image_2_h);
-                let yyy = input_outputloc.borrow().y();
-                let hhh = input_outputloc.borrow().h();
+                let yyy = input_outputloc_ref.borrow().y();
+                let hhh = input_outputloc_ref.borrow().h();
                 input_outputloc_ref.borrow_mut().resize(xx, yyy, ocw, hhh);
 
                 let yyyy = pdf_viewer_list_ref.borrow().y();
@@ -1323,7 +1333,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     if !args.is_empty() {
         for arg in args.iter() {
-
             let input_path = PathBuf::from(&arg);
 
             if input_path.exists() {
@@ -1401,7 +1410,7 @@ pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> 
             }
             Err(ex) => Err(ex.into()),
         },
-        None => Err("Could not find open command in path".into()),
+        None => Err("Could not find 'open' command in PATH!".into()),
     }
 }
 

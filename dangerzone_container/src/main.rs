@@ -613,8 +613,8 @@ fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_rang
             let sh = (h * ZOOM_RATIO) as i32;
 
             let surface_png = ImageSurface::create(Format::Rgb24, sw, sh)?;
-
             let ctx = Context::new(&surface_png)?;
+
             ctx.set_source_rgb(1.0, 1.0, 1.0);
             ctx.scale(ZOOM_RATIO, ZOOM_RATIO);
             ctx.set_antialias(antialias_setting);

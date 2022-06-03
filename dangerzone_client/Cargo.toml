@@ -43,7 +43,3 @@ path = "src/main_cli.rs"
 [[bin]]
 name = "dangerzone-gui"
 path = "src/main_gui.rs"
-
-[profile.release]
-opt-level = 3
-strip = true

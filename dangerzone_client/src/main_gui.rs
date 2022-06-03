@@ -16,13 +16,14 @@ use std::sync::Arc;
 use std::thread;
 
 use fltk::{
-    app, browser, button, dialog, draw, enums, frame, group, input, misc, prelude::*, text, window
+    app, browser, button, dialog, draw, enums, frame, group, input, misc, prelude::*, text, window, image
 };
 
 mod common;
 mod container;
 
 const WIDGET_GAP: i32 = 20;
+const FRAME_ICON: &[u8] = include_bytes!("../../images/Dangerzone_icon.png");
 
 macro_rules! enum_str {
     (enum $name:ident {
@@ -437,8 +438,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut wind = window::Window::default()
         .with_size(680, 600)
         .center_screen()
-        .with_label(&wind_title);
+        .with_label(&wind_title);    
 
+    wind.set_xclass("dangerzone");
+    wind.set_icon(Some(image::PngImage::from_data(FRAME_ICON).unwrap()));
+    
     wind.make_resizable(true);
 
     let mut top_group = group::Pack::default()
@@ -987,7 +991,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     #[cfg(target_os = "macos")] {
-        use fltk::{image, menu};
+        use fltk::menu;
         app::raw_open_callback(Some(|s| {
             let input_path: String = {
                 let ret = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().to_string() };

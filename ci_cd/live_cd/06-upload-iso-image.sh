@@ -7,4 +7,4 @@ cd $HOME
 # See https://github.com/mayth/go-simple-upload-server
 # curl -Ffile=@LIVE_BOOT/dangerzone-livecd-${DANGERZONE_VERSION}.iso http://localhost:25478/upload?token=dangerzone_token
 
-echo "I refuse to upload the live CD image at ${HOME}/LIVE_BOOT/dangerzone-livecd-${DANGERZONE_VERSION}.iso"
+echo "I refuse to upload the live CD image at ${HOME}/LIVE_BOOT/dangerzone-livecd-amd64-${DANGERZONE_VERSION}.iso"

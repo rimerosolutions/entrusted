@@ -1,3 +1,4 @@
 mkdir -p /tmp/runtime
 export XDG_RUNTIME_DIR=/tmp/runtime
 export RUNLEVEL=3
+export PATH="${PATH}:/sbin"

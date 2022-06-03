@@ -72,4 +72,6 @@ systemctl enable systemd-networkd
 systemctl enable dangerzone-httpserver
 systemctl enable mygarbage
 
+echo "apm power_off=1" >> /etc/modules
+
 exit

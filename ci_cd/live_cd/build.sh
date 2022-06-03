@@ -6,8 +6,7 @@ SCRIPTDIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${SCRIPTDIR}/../..)"
 APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' ${PROJECTDIR}/dangerzone_client/Cargo.toml)
 
-
-DANGERZONE_VERSION=0.0.2
+DANGERZONE_VERSION="${APPVERSION}"
 
 if [ -n "$1" ]; then  
   DANGERZONE_VERSION=$1

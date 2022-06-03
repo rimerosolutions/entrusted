@@ -1242,8 +1242,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut convert_button_ref = convert_button.clone();
         let mut messages_frame_ref = messages_frame.clone();
         let mut filelist_widget_ref = filelist_widget.clone();
-
         let mut columns_frame_ref = columns_frame.clone();
+        let row_convert_button_ref = row_convert_button.clone();
+        let convert_frame_ref = convert_frame.clone();
 
         move |w, ev| match ev {
             enums::Event::Move => {
@@ -1262,7 +1263,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 tabsettings_button.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, 80, 30);
                 let new_y = top_group_ref.y() + top_group_ref.h() + WIDGET_GAP;
 
-                let scroller_height = ((w.h() - top_group_ref.h() + WIDGET_GAP) as f64 * 0.5) as i32;
+                let scroller_height = ((w.h() - top_group_ref.h() - convert_frame_ref.h() - row_convert_button_ref.h()) as f64 * 0.6) as i32;
 
                 convert_pack_rc_ref.borrow_mut().resize(
                     WIDGET_GAP,
@@ -1386,7 +1387,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     messages_frame_ref.x(),
                     messages_frame_ref.y(),
                     w.w() - (WIDGET_GAP * 4),
-                    80,
+                    messages_frame_ref.h(),
                 );
 
                 filelist_scroll_ref.redraw();

@@ -107,11 +107,12 @@ The tool will prompt you if it cannot find a container runtime.
 - [X] Additional release artifacts for convenience ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral14][spiral14 branch]] part 2)
   - [X] Add DMG installer for Mac OS, with app ability to still invoke external programs
   - [X] Add MSI installer for Windows via [[https://nsis.sourceforge.io/Main_Page][NSIS]] for now
-- [ ] Support application preferences (GUI and CLI support)
+- [ ] Support application preferences (GUI and CLI support)  
 - [ ] Support translations
 - [ ] Revisit notifications for SSE + HTTP2, browser restrictions    
 - [ ] Support Tails Linux
 - [ ] Create artwork and rename the GitHub project
+- [ ] Transition to Github actions potentially for CI/CD maybe as a wrapper over existing scripts
 - [ ] etc.  
     
 * What are the differences with Dangerzone?

@@ -110,10 +110,10 @@
         }
 
         if (noDataSelected) {
-          let submitButton = document.getElementById("submitButton");
-          submitButton.disabled = true;
-
           if (fileList.length == 0) {
+            let submitButton = document.getElementById("submitButton");
+            submitButton.disabled = true;
+
             let conversionContainerElement = document.getElementById("conversionContainer");
             conversionContainerElement.className = "invisible";
           }
@@ -246,7 +246,6 @@
       }
 
       function toggleSubmitButtonState() {
-        let suspiciousDocFiles = fileList;
         let submitButton = document.getElementById("submitButton");
         submitButton.disabled = (fileList.length == 0);
       }
@@ -646,8 +645,8 @@
       }
 
       .inprogress {
-        color: #CCCC00;
-        accent-color: #CCCC00;
+        color: orange;
+        accent-color: orange;
       }
 
       .invisible {
@@ -685,9 +684,7 @@
       }
 
       .actionButton {
-        //background-color: #000000;
         border: none;
-        //color: white;
         margin-left: 1%;
         padding: 15px 32px;
         text-align: center;

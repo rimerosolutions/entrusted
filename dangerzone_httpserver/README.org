@@ -10,9 +10,11 @@ This repository provides an online shared service for [[https://github.com/rimer
 
   [[./images/architecture.png]]
 
-* General considerations
+* General principles
 
 - Balance around minimalism and convenience, but focus on performance.
+- Stick to a general common look and feel, in contrast with the Desktop interface
+- Avoid large feature gaps with the Desktop interface, based on what is possible in the browser (among other considerations)
 - The server immediately deletes documents upon download (original document and its sanitized version)
 
 * Screenshot

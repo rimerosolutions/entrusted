@@ -308,7 +308,6 @@
           let fprocessingStatusElement = document.getElementById("processing-status-" + fileObjId);
 
           fprogressElement.value = 100;
-          fprogressElement.className = fileStatus.toLowerCase();
           transitionStatusElement(fprocessingStatusElement, fileStatus);
 
           let fprocessingMessageElement = document.getElementById("progress-message-" + fileObjId);
@@ -554,7 +553,7 @@
 
       progress {
         width:80%;
-        accent-color: blue;
+        accent-color: yellow;
       }
 
       .fileNameColumn {
@@ -576,7 +575,6 @@
       #dropFileZone {
         background-color: red;
         color: white;
-        font-weight: bold;
         border: #999 2px solid;
         border-radius: 1em;
         height: 1%;

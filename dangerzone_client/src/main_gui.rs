@@ -210,6 +210,28 @@ impl FileListWidget {
         }
     }
 
+    pub fn delete_all(&mut self) {
+        self.selected_indices.borrow_mut().clear();
+
+        while !self.rows.borrow().is_empty() {
+            if let Some(row) = self.rows.borrow_mut().pop() {
+                if let Some(row_parent) = row.checkbox.parent() {
+                    self.container.remove(&row_parent);
+                }
+            }
+        }
+
+        self.container.redraw();
+
+        if let Some(container_parent) = self.container.parent() {
+            let mut container_parent = container_parent;
+            container_parent.resize(container_parent.x(), container_parent.y(), container_parent.w(), container_parent.h());
+            container_parent.redraw();
+        }
+
+        let _ = app::handle_main(FileListWidgetEvent::SELECTION_CHANGED);
+    }
+
     pub fn delete_selection(&mut self) {
         self.selected_indices.borrow_mut().sort_by(|a, b| a.cmp(b));
 
@@ -273,7 +295,7 @@ impl FileListWidget {
         selectrow_checkbutton.set_tooltip(&path_tooltip);
 
         let check_buttonx2 = selectrow_checkbutton.clone();
-        let progressbar = misc::Progress::default().with_size(width_progressbar, 20).with_label("0%");
+        let progressbar = misc::Progress::default().with_size(width_progressbar, 20).with_label("0%");            
 
         let mut status_frame = frame::Frame::default()
             .with_size(width_status, 30)
@@ -632,7 +654,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let convert_pack_rc = Rc::new(RefCell::new(
         group::Pack::default()
             .with_pos(20, 20)
-            .with_size(600, 580)
+            .with_size(600, 680)
             .below_of(&top_group, WIDGET_GAP)
             .with_type(group::PackType::Vertical),
     ));
@@ -718,24 +740,57 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_size(200, 20)
         .with_label("Remove selected file(s)");
     delete_button.set_label_color(enums::Color::Black);
-    // convert_button.set_frame(enums::FrameType::ThinUpBox);
     delete_button.set_color(enums::Color::White);
     delete_button.deactivate();
 
     let mut convert_button = button::Button::default()
         .with_size(200, 20)
-        .with_label("Convert to trusted PDF(s)");
+        .with_label("Convert document(s)");
 
     convert_button.set_label_color(enums::Color::Black);
-    // convert_button.set_frame(enums::FrameType::ThinUpBox);
     convert_button.set_color(enums::Color::White);
     convert_button.deactivate();
 
     row_convert_button.end();
 
+    let mut columns_frame = frame::Frame::default().with_size(500, 40).with_pos(10, 10);
+    columns_frame.set_frame(enums::FrameType::NoBox);
+
     let filelist_scroll = group::Scroll::default().with_size(580, 200);
 
     let mut filelist_widget = FileListWidget::new();
+
+    columns_frame.draw({
+        let filelist_widget_ref = filelist_widget.clone();
+
+        move |wid| {
+            if filelist_widget_ref.children() != 0 {
+                let y = wid.y();
+                let (_, h) = draw::measure("Progress", true);
+                let column_names = vec!["Filename", "Progress(%)", "Status", "Message"];
+
+                let old_color = draw::get_color();
+                let old_font = draw::font();
+                let font_size = app::font_size();
+                
+                draw::set_font(enums::Font::HelveticaBold, font_size);
+                draw::set_draw_color(enums::Color::Black);
+
+                if let Some(first_child) = filelist_widget_ref.child(0) {
+                    if let Some(first_child_group) = first_child.as_group() {                
+                        for i in 0..first_child_group.children() {
+                            if let Some(child_wid) = first_child_group.child(i) {
+                                draw::draw_text(column_names[i as usize], std::cmp::max(wid.x(), child_wid.x()), y + h);
+                            }
+                        }
+                    }
+                }
+
+                draw::set_draw_color(old_color);
+                draw::set_font(old_font, font_size);
+            }
+        }
+    });
 
     delete_button.set_callback({
         let mut filelist_widget_ref = filelist_widget.clone();
@@ -796,6 +851,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             for current_row in filelist_widget_ref.rows.borrow_mut().iter() {
                 let mut active_row = current_row.clone();
                 active_row.reset_ui_state();
+                active_row.checkbox.deactivate();
             }
 
             let ocr_lang_setting = if ocrlang_checkbutton_ref.is_checked() {
@@ -899,7 +955,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                         }
                     }
 
-                    active_row.checkbox.activate();
                     active_row.status.set_label(row_status);
                     active_row.status.set_label_color(status_color);
                     active_row.progressbar.set_label("100%");
@@ -921,7 +976,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             }
 
-            b.activate();
             tabsettings_button_ref.activate();
             selectall_frame_rc_ref.borrow_mut().activate();
             deselectall_frame_rc_ref.borrow_mut().activate();
@@ -1061,7 +1115,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         let is_converting_ref = is_converting.clone();
         let selectall_frame_rc_ref = selectall_frame_rc.clone();
         let deselectall_frame_rc_ref = deselectall_frame_rc.clone();
-        let mut convert_button_ref = convert_button.clone();
+        let mut convert_button_ref = convert_button.clone();        
+        let mut columns_frame_ref = columns_frame.clone();
 
         move |_, ev| match ev {
             enums::Event::DndEnter => {
@@ -1080,16 +1135,15 @@ fn main() -> Result<(), Box<dyn Error>> {
                     let path  = path.replace("file://", "");
                     let paths = path.split("\n");
 
-                    if is_converting_ref.load(Ordering::Relaxed) {
-                        is_converting_ref.store(false, Ordering::Relaxed);
-                        filelist_widget_ref.select_all();
-                        filelist_widget_ref.delete_selection();
-                    }
-
                     let file_paths: Vec<PathBuf> = paths
                         .map(|p| PathBuf::from(p))
                         .filter(|p| p.exists())
                         .collect();
+                    
+                    if is_converting_ref.load(Ordering::Relaxed) && !file_paths.is_empty() {
+                        is_converting_ref.store(false, Ordering::Relaxed);
+                        filelist_widget_ref.delete_all();
+                    }
 
                     if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut filelist_scroll_ref) {
                         if !convert_button_ref.active() {
@@ -1107,6 +1161,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                             selection_pack_ref.set_damage(true);
                             selection_pack_ref.redraw();
+                            columns_frame_ref.redraw();
                         }
                     }
                 }
@@ -1125,10 +1180,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                     .filter(|p| p.exists())
                     .collect();
 
-                if is_converting_ref.load(Ordering::Relaxed) {
+                if is_converting_ref.load(Ordering::Relaxed) && !file_paths.is_empty() {
                     is_converting_ref.store(false, Ordering::Relaxed);
-                    filelist_widget_ref.select_all();
-                    filelist_widget_ref.delete_selection();
+                    filelist_widget_ref.delete_all();
                 }
 
                 if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut filelist_scroll_ref) {
@@ -1147,6 +1201,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                         selection_pack_ref.set_damage(true);
                         selection_pack_ref.redraw();
+                        columns_frame_ref.redraw();
                     }
                 }
                 true
@@ -1183,11 +1238,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         let select_all_frame_ref = selectall_frame_rc.clone();
         let deselect_all_frame_ref = deselectall_frame_rc.clone();
 
-
         let mut filelist_scroll_ref = filelist_scroll.clone();
         let mut convert_button_ref = convert_button.clone();
         let mut messages_frame_ref = messages_frame.clone();
         let mut filelist_widget_ref = filelist_widget.clone();
+
+        let mut columns_frame_ref = columns_frame.clone();
 
         move |w, ev| match ev {
             enums::Event::Move => {
@@ -1229,9 +1285,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 );
 
                 let wval = w.w() - (WIDGET_GAP * 3);
-
+                columns_frame_ref.resize(columns_frame_ref.x(), columns_frame_ref.y(), w.w() - (WIDGET_GAP * 2), columns_frame_ref.h());
                 filelist_widget_ref.resize(filelist_scroll_ref.x(), filelist_scroll_ref.y(), wval, 0);
-
+                
                 filelist_scroll_ref.redraw();
 
                 let xx = ocrlang_holdbrowser_rc_ref.borrow_mut().x();

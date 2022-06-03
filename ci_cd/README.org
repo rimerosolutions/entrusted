@@ -1,6 +1,6 @@
 # CI_CD
 
- Except for the the live CD, all the release artifacts are created within [[https://podman.io/][Podman]].
+ Except for the the live CD, all the release artifacts are created within [[https://podman.io/][Podman]]. In the future, maybe =GitHub actions=, =TravisCI= or other solutions will be used for further automation.
 
 * Overview
 

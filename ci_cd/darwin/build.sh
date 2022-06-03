@@ -99,8 +99,8 @@ perl -pi -e "s/_APPVERSION_/${APPBUNDLEVERSION}/g" ${APPBUNDLECONTENTS}/Info.pli
 
 mv ${APPBUNDLE} ${APPDMGDIR}/
 ln -s /Applications ${APPDMGDIR}/
-podman run --rm -v "${ARTIFACTSDIR}":/files sporsh/create-dmg "Dangerzone" /files/dmg/ /files/Dangerzone.dmg
+podman run --rm -v "${ARTIFACTSDIR}":/files sporsh/create-dmg "Dangerzone" /files/dmg/ /files/dangerzone-darwin-amd64-${APPVERSION}.dmg
 rm -rf ${APPDMGDIR}
-
+mv ${ARTIFACTSDIR}/*.dmg ${ARTIFACTSDIR}/../
 
 

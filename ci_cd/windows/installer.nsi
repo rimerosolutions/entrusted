@@ -3,7 +3,7 @@ Unicode True
 Var SMDir
 ; Reference https://gist.github.com/CoolOppo/5fb681682281b6adf6d8e2a5446f06ff
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "LICENSE"
+!insertmacro MUI_PAGE_LICENSE "LICENSE.txt"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_STARTMENU 0 $SMDir
@@ -42,7 +42,7 @@ Section "Install Dangerzone"
   File dangerzone-gui.exe
   File dangerzone-httpclient.exe
   File dangerzone-httpserver.exe
-  File LICENSE
+  File LICENSE.txt
 
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\YOURPROGRAM "Install_Dir" "$INSTDIR"
@@ -76,7 +76,7 @@ Section -Uninstall
   Delete $INSTDIR\dangerzone-gui.exe
   Delete $INSTDIR\dangerzone-httpclient.exe
   Delete $INSTDIR\dangerzone-httpserver.exe
-  Delete $INSTDIR\LICENSE
+  Delete $INSTDIR\LICENSE.txt
   Delete $INSTDIR\uninstaller.exe
 
   Delete "$SMPROGRAMS\Dangerzone\*.*"

@@ -8,7 +8,7 @@ APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2
 ARTIFACTSDIR="${PROJECTDIR}/artifacts/dangerzone-windows-amd64-${APPVERSION}"
 
 mkdir -p ${ARTIFACTSDIR}
-cp ${PROJECTDIR}/LICENSE ${ARTIFACTSDIR}/
+cp ${PROJECTDIR}/LICENSE ${ARTIFACTSDIR}/LICENSE.txt
 
 rm -rf ${PROJECTDIR}/dangerzone_container/target
 rm -rf ${PROJECTDIR}/dangerzone_client/target
@@ -51,3 +51,4 @@ cp ${SCRIPTDIR}/installer.nsi ${ARTIFACTSDIR}/
 perl -pi -e "s/_APPVERSION_/${APPVERSION}/g" ${ARTIFACTSDIR}/installer.nsi
 podman run -v "${ARTIFACTSDIR}":/build docker.io/binfalse/nsis installer.nsi
 rm ${ARTIFACTSDIR}/installer.nsi
+mv ${ARTIFACTSDIR/*-installer.exe ${ARTIFACTSDIR/../

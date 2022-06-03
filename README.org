@@ -10,7 +10,7 @@ This is work in progress and this NOT a mature project.
 - This is achieved by transforming documents inside a "lightweight sandbox" ([[https://www.ibm.com/cloud/learn/containerization][containerization]]): =containerization= itself does not provide absolute security guarantees...
 - Supported file formats include PDF, common image formats, Office documents ([[https://www.office.com/][Microsoft Office]] or [[https://www.libreoffice.org/discover/what-is-opendocument/][OpenDocument]]). For Office documents, supported is limited to text documents, spreadsheets and presentations.
 
-*NOTE*: Unless you download the live CD, you MUST install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior running this application.
+*NOTE*: Unless you use the live CD, you MUST install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior running the program.
 
 [[./images/ui-screenshot.png]]
 

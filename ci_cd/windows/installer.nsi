@@ -1,14 +1,14 @@
 !include "MUI2.nsh"
 Unicode True
-
+Var SMDir
 ; Reference https://gist.github.com/CoolOppo/5fb681682281b6adf6d8e2a5446f06ff
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "LICENSE"
+!insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_STARTMENU 0 $SMDir
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
-
 !insertmacro MUI_LANGUAGE "English"
 
 ; The name of the installer

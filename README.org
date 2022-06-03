@@ -104,10 +104,9 @@ The tool will prompt you if it cannot find a container runtime.
 - [X] Fix few obvious issues and then release new batch conversion feature ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral14][spiral14 branch]] part 1)
   - [X] Do not ship an unsigned app bundle for Mac OS as it doesn't behave/work anyway
   - [X] Mitigate some of the new Desktop and Web UI bugs as much as possible
-- [-] Additional release artifacts for convenience ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral14][spiral14 branch]] part 2)
-  - [X] Add DMG installer for Mac OS with proper app bundle settings
-  - [ ] Add MSI installer for Windows
-  - [ ] Create =rpm= and =deb= packages  
+- [X] Additional release artifacts for convenience ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral14][spiral14 branch]] part 2)
+  - [X] Add DMG installer for Mac OS, with app ability to still invoke external programs
+  - [X] Add MSI installer for Windows via [[https://nsis.sourceforge.io/Main_Page][NSIS]] for now
 - [ ] Support application preferences (GUI and CLI support)
 - [ ] Support translations
 - [ ] Revisit notifications for SSE + HTTP2, browser restrictions    

@@ -110,6 +110,31 @@ impl DerefMut for FileListWidget {
     }
 }
 
+fn clip_text<S: Into<String>>(txt_to_clip: S, max_width: i32) -> String {
+    let mut txt = txt_to_clip.into();
+
+    let (mut current_label_width, _) = draw::measure(&txt, true);
+    if current_label_width > max_width {
+        txt = txt
+            .chars()
+            .take(txt.len() - cmp::min(3, txt.len()))
+            .collect::<String>();
+
+        while current_label_width > max_width {
+            txt = txt
+                .chars()
+                .take(txt.len() - 1)
+                .collect::<String>();
+            let (label_width, _) = draw::measure(&txt, true);
+            current_label_width = label_width;
+        }
+
+        txt = txt + "...";
+    }
+
+    String::from(txt)
+}
+
 impl FileListWidget {
     pub fn new() -> Self {
         let mut container = group::Pack::default().with_type(group::PackType::Vertical).with_size(300, 300);
@@ -144,7 +169,8 @@ impl FileListWidget {
 
                 let mut pos_x = active_row.checkbox.x();
                 active_row.checkbox.resize(pos_x, active_row.checkbox.y(), width_checkbox, active_row.checkbox.h());
-                active_row.checkbox.set_label(&self.adjust_label(active_row.file, width_checkbox));
+                let path_name = format!("{}", active_row.file.file_name().and_then(|x| x.to_str()).unwrap());
+                active_row.checkbox.set_label(&clip_text(path_name, width_checkbox));
 
                 pos_x += width_checkbox + WIDGET_GAP;
                 active_row.progressbar.resize(pos_x, active_row.progressbar.y(), width_progressbar, active_row.progressbar.h());
@@ -253,30 +279,6 @@ impl FileListWidget {
         let _ = app::handle_main(FileListWidgetEvent::SELECTION_CHANGED);
     }
 
-    pub fn adjust_label(&self, path: PathBuf, w1: i32) -> String {
-        let mut path_name = format!("{}", path.file_name().and_then(|x| x.to_str()).unwrap());
-        let effective_w = w1 - WIDGET_GAP;
-
-        let (mut xx, _) = draw::measure(&path_name, true);
-        if xx > effective_w {
-            path_name = path_name
-                .chars()
-                .take(path_name.len() - cmp::min(3, path_name.len()))
-                .collect::<String>();
-            while xx > effective_w {
-                path_name = path_name
-                    .chars()
-                    .take(path_name.len() - 1)
-                    .collect::<String>();
-                let (xxx, _) = draw::measure(&path_name, true);
-                xx = xxx;
-            }
-            path_name = path_name + "...";
-        }
-
-        path_name
-    }
-
     pub fn add_file(&mut self, path: PathBuf) {
         let ww = self.container.w();
 
@@ -287,15 +289,15 @@ impl FileListWidget {
             .with_size(ww, 40);
 
         row.set_spacing(WIDGET_GAP);
-
+        let path_name = format!("{}", path.file_name().and_then(|x| x.to_str()).unwrap());
         let path_tooltip = format!("{}", path.display());
         let mut selectrow_checkbutton = button::CheckButton::default()
             .with_size(width_checkbox, 30)
-            .with_label(&self.adjust_label(path.clone(), width_checkbox));
+            .with_label(&clip_text(path_name, width_checkbox));
         selectrow_checkbutton.set_tooltip(&path_tooltip);
 
         let check_buttonx2 = selectrow_checkbutton.clone();
-        let progressbar = misc::Progress::default().with_size(width_progressbar, 20).with_label("0%");            
+        let progressbar = misc::Progress::default().with_size(width_progressbar, 20).with_label("0%");
 
         let mut status_frame = frame::Frame::default()
             .with_size(width_status, 30)
@@ -326,13 +328,13 @@ impl FileListWidget {
             let active_row = file_list_row.clone();
 
             move |_| {
-                if let Some(current_wind) = app::first_window() {
+                if let Some(top_level_wind) = app::first_window() {
                     let wind_w = 400;
                     let wind_h = 400;
                     let button_width = 50;
                     let button_height = 30;
-                    let wind_x = current_wind.x() + (current_wind.w() / 2) - (wind_w / 2);
-                    let wind_y = current_wind.y() + (current_wind.h() / 2) - (wind_h / 2);
+                    let wind_x = top_level_wind.x() + (top_level_wind.w() / 2) - (wind_w / 2);
+                    let wind_y = top_level_wind.y() + (top_level_wind.h() / 2) - (wind_h / 2);
 
                     let mut dialog = window::Window::default()
                         .with_size(wind_w, wind_h)
@@ -757,7 +759,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     columns_frame.set_frame(enums::FrameType::NoBox);
 
     let filelist_scroll = group::Scroll::default().with_size(580, 200);
-
     let mut filelist_widget = FileListWidget::new();
 
     columns_frame.draw({
@@ -772,12 +773,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let old_color = draw::get_color();
                 let old_font = draw::font();
                 let font_size = app::font_size();
-                
+
                 draw::set_font(enums::Font::HelveticaBold, font_size);
                 draw::set_draw_color(enums::Color::Black);
 
                 if let Some(first_child) = filelist_widget_ref.child(0) {
-                    if let Some(first_child_group) = first_child.as_group() {                
+                    if let Some(first_child_group) = first_child.as_group() {
                         for i in 0..first_child_group.children() {
                             if let Some(child_wid) = first_child_group.child(i) {
                                 draw::draw_text(column_names[i as usize], std::cmp::max(wid.x(), child_wid.x()), y + h);
@@ -821,6 +822,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let openwith_checkbutton_ref = openwith_checkbutton.clone();
         let selectall_frame_rc_ref = selectall_frame_rc.clone();
         let deselectall_frame_rc_ref = deselectall_frame_rc.clone();
+        let mut filelist_scroll_ref = filelist_scroll.clone();
 
         move |b| {
             tabsettings_button_ref.deactivate();
@@ -884,6 +886,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let active_ociimage_option = ociimage_option.clone();
                 let active_viewer_app_option = viewer_app_option.clone();
                 let active_file_suffix = file_suffix.clone();
+                filelist_scroll_ref.scroll_to(0, active_row.checkbox.y() - filelist_scroll_ref.y());
+
                 let (tx, rx) = mpsc::channel();
 
                 if let Ok(output_path) = common::default_output_path(input_path.clone(), active_file_suffix) {
@@ -916,7 +920,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                             let progress_text = format!("{} %", log_msg.percent_complete);
                             active_row.progressbar.set_label(&progress_text);
                             active_row.progressbar.set_value(log_msg.percent_complete as f64);
-                            messages_frame_ref.set_label(&log_msg.data);
+                            messages_frame_ref.set_label(&clip_text(&log_msg.data, messages_frame_ref.w()));
                             active_row.logs.borrow_mut().push(log_msg.data);
                             active_row.progressbar.parent().unwrap().redraw();
                         }
@@ -1115,7 +1119,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let is_converting_ref = is_converting.clone();
         let selectall_frame_rc_ref = selectall_frame_rc.clone();
         let deselectall_frame_rc_ref = deselectall_frame_rc.clone();
-        let mut convert_button_ref = convert_button.clone();        
+        let mut convert_button_ref = convert_button.clone();
         let mut columns_frame_ref = columns_frame.clone();
 
         move |_, ev| match ev {
@@ -1139,10 +1143,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                         .map(|p| PathBuf::from(p))
                         .filter(|p| p.exists())
                         .collect();
-                    
+
                     if is_converting_ref.load(Ordering::Relaxed) && !file_paths.is_empty() {
                         is_converting_ref.store(false, Ordering::Relaxed);
                         filelist_widget_ref.delete_all();
+                        filelist_scroll_ref.scroll_to(0, 0);
+                        filelist_scroll_ref.redraw();
                     }
 
                     if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut filelist_scroll_ref) {
@@ -1183,6 +1189,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if is_converting_ref.load(Ordering::Relaxed) && !file_paths.is_empty() {
                     is_converting_ref.store(false, Ordering::Relaxed);
                     filelist_widget_ref.delete_all();
+                    filelist_scroll_ref.scroll_to(0, 0);
+                    filelist_scroll_ref.redraw();
                 }
 
                 if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut filelist_scroll_ref) {
@@ -1263,7 +1271,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 tabsettings_button.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, 80, 30);
                 let new_y = top_group_ref.y() + top_group_ref.h() + WIDGET_GAP;
 
-                let scroller_height = ((w.h() - top_group_ref.h() - convert_frame_ref.h() - row_convert_button_ref.h()) as f64 * 0.6) as i32;
+                let scroller_height = ((w.h() - top_group_ref.h() - convert_frame_ref.h() - row_convert_button_ref.h()) as f64 * 0.5) as i32;
 
                 convert_pack_rc_ref.borrow_mut().resize(
                     WIDGET_GAP,
@@ -1288,7 +1296,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let wval = w.w() - (WIDGET_GAP * 3);
                 columns_frame_ref.resize(columns_frame_ref.x(), columns_frame_ref.y(), w.w() - (WIDGET_GAP * 2), columns_frame_ref.h());
                 filelist_widget_ref.resize(filelist_scroll_ref.x(), filelist_scroll_ref.y(), wval, 0);
-                
+
                 filelist_scroll_ref.redraw();
 
                 let xx = ocrlang_holdbrowser_rc_ref.borrow_mut().x();

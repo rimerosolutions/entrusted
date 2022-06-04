@@ -92,15 +92,16 @@ png2icns ${APPBUNDLEICON}/${APPNAME}.icns macosx/${APPNAME}_16_16.png macosx/${A
 rm macosx/${APPNAME}_16_16.png macosx/${APPNAME}_32_32.png macosx/${APPNAME}_128_128.png macosx/${APPNAME}_256_256.png macosx/${APPNAME}_512_512.png
 
 cp ${PROJECTDIR}/dangerzone_client/target/x86_64-apple-darwin/release/dangerzone-cli ${APPBUNDLEEXE}/
-cp  ${ARTIFACTSDIR}/dangerzone-gui ${APPBUNDLEEXE}/
+mv ${ARTIFACTSDIR}/dangerzone-gui ${APPBUNDLEEXE}/
 cp macosx/${APPNAME}  ${APPBUNDLEEXE}/
 perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ${APPBUNDLECONTENTS}/Info.plist
 perl -pi -e "s/_APPVERSION_/${APPBUNDLEVERSION}/g" ${APPBUNDLECONTENTS}/Info.plist
 
-mv ${APPBUNDLE} ${APPDMGDIR}/
+cp -r ${APPBUNDLE} ${APPDMGDIR}/
 ln -s /Applications ${APPDMGDIR}/
 podman run --rm -v "${ARTIFACTSDIR}":/files docker.io/sporsh/create-dmg "Dangerzone" /files/dmg/ /files/dangerzone-darwin-amd64-${APPVERSION}.dmg
 rm -rf ${APPDMGDIR}
 mv ${ARTIFACTSDIR}/*.dmg ${ARTIFACTSDIR}/../
 
+cp ${SCRIPTDIR}/release_README.txt ${ARTIFACTSDIR}/README.txt
 

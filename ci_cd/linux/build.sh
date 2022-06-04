@@ -56,3 +56,6 @@ if [ $retVal -ne 0 ]; then
 fi
 cp ${PROJECTDIR}/dangerzone_httpclient/target/x86_64-unknown-linux-musl/release/dangerzone-httpclient ${ARTIFACTSDIR}
 
+mv ${ARTIFACTSDIR}/*.AppImage ${ARTIFACTSDIR}/Dangerzone_GUI-x86_64.AppImage
+cp ${SCRIPTDIR}/release_README.txt ${ARTIFACTSDIR}/README.txt
+

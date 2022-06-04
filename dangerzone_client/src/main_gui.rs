@@ -23,34 +23,13 @@ mod common;
 mod container;
 
 const WIDGET_GAP: i32 = 20;
+
 const FRAME_ICON: &[u8] = include_bytes!("../../images/Dangerzone_icon.png");
 
-macro_rules! enum_str {
-    (enum $name:ident {
-        $($variant:ident = $val:expr),*,
-    }) => {
-        enum $name {
-            $($variant = $val),*
-        }
-
-        impl $name {
-            fn name(&self) -> &'static str {
-                match self {
-                    $($name::$variant => stringify!($variant)),*
-                }
-            }
-        }
-    };
-}
-
-enum_str! {
-    enum FileListRowStatus {
-        Pending    = 0x00,
-        InProgress = 0x01,
-        Succeeded  = 0x02,
-        Failed     = 0x03,
-    }
-}
+const FILELIST_ROW_STATUS_PENDING    :&str = "Pending";
+const FILELIST_ROW_STATUS_INPROGRESS :&str = "InProgress";
+const FILELIST_ROW_STATUS_SUCCEEDED  :&str = "Succeeded";
+const FILELIST_ROW_STATUS_FAILED     :&str = "Failed";
 
 struct FileListWidgetEvent;
 
@@ -58,7 +37,6 @@ impl FileListWidgetEvent {
     const SELECTION_CHANGED: i32 = 50;
     const ALL_SELECTED: i32      = 51;
     const ALL_DESELECTED: i32    = 52;
-
 }
 
 #[derive(Clone)]
@@ -73,7 +51,7 @@ struct FileListRow {
 
 impl FileListRow {
     pub fn reset_ui_state(&mut self) {
-        self.status.set_label(FileListRowStatus::Pending.name());
+        self.status.set_label(FILELIST_ROW_STATUS_PENDING);
         self.status.set_label_color(enums::Color::Magenta);
 
         self.progressbar.set_label("0%");
@@ -114,8 +92,8 @@ impl DerefMut for FileListWidget {
 fn clip_text<S: Into<String>>(txt_to_clip: S, max_w: i32) -> String {
     let max_width = max_w - WIDGET_GAP;
     let mut txt = txt_to_clip.into();
-
     let (mut current_label_width, _) = draw::measure(&txt, true);
+
     if current_label_width > max_width {
         txt = txt
             .chars()
@@ -303,7 +281,7 @@ impl FileListWidget {
 
         let mut status_frame = frame::Frame::default()
             .with_size(width_status, 30)
-            .with_label(FileListRowStatus::Pending.name())
+            .with_label(FILELIST_ROW_STATUS_PENDING)
             .with_align(enums::Align::Inside | enums::Align::Left);
         status_frame.set_label_color(enums::Color::Magenta);
 
@@ -777,9 +755,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 let old_color = draw::get_color();
                 let old_font = draw::font();
-                let font_size = app::font_size();
+                let old_font_size = app::font_size();
 
-                draw::set_font(enums::Font::HelveticaBold, font_size);
+                draw::set_font(enums::Font::HelveticaBold, old_font_size);
                 draw::set_draw_color(enums::Color::Black);
 
                 if let Some(first_child) = filelist_widget_ref.child(0) {
@@ -793,7 +771,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
 
                 draw::set_draw_color(old_color);
-                draw::set_font(old_font, font_size);
+                draw::set_font(old_font, old_font_size);
             }
         }
     });
@@ -898,7 +876,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if let Ok(output_path) = common::default_output_path(input_path.clone(), active_file_suffix) {
                     let current_input_path = input_path.clone();
                     let current_output_path = output_path.clone();
-                    active_row.status.set_label(FileListRowStatus::InProgress.name());
+                    active_row.status.set_label(FILELIST_ROW_STATUS_INPROGRESS);
                     active_row.checkbox.deactivate();
                     active_row.status.set_label_color(enums::Color::DarkYellow);
 
@@ -916,7 +894,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                         }
                     }));
 
-                    while let Ok(raw_msg) = rx.recv() {                        
+                    while let Ok(raw_msg) = rx.recv() {
                         app::wait();
 
                         let log_msg_ret: serde_json::Result<common::LogMessage> =
@@ -935,7 +913,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
 
                     let mut status_color = enums::Color::Red;
-                    let mut row_status = FileListRowStatus::Failed.name();
+                    let mut row_status = FILELIST_ROW_STATUS_FAILED;
 
                     match exec_handle.take().map(thread::JoinHandle::join) {
                         Some(exec_handle_result) => match exec_handle_result {
@@ -944,7 +922,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                                 active_row.progressbar.set_label("100%");
                                 active_row.progressbar.set_value(100.0);
                                 status_color = enums::Color::DarkGreen;
-                                row_status = FileListRowStatus::Succeeded.name();
+                                row_status = FILELIST_ROW_STATUS_SUCCEEDED;
                             }
                             Ok(err_string_opt) => {
                                 if let Some(err_text) = err_string_opt {
@@ -994,18 +972,16 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     #[cfg(target_os = "macos")] {
         use fltk::menu;
-        // Wait until official fltk-rs release
-        // Compilation errors with the current CI/CD pipeline with the Gitmaster branch of fltk-rs
-        // It's not worth mitigating it as fltk-rs is a very active project
-        /*
+        // TODO this requires temporary custom pre-bundled fltk-rs lib for macos
+        // The custom CFLTK_BUNDLE will be deleted once the relevant features is officially released
         app::raw_open_callback(Some(|s| {
-        let input_path: String = {
-        let ret = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().to_string() };
-        ret.to_owned()
-    };
-        let s = app::Sender::<String>::get();
-        s.send(input_path);
-    }));*/
+            let input_path: String = {
+                let ret = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().to_string() };
+                ret.to_owned()
+            };
+            let s = app::Sender::<String>::get();
+            s.send(input_path);
+        }));
 
         let logo_image_bytes = include_bytes!("../../images/Dangerzone.png");
 
@@ -1013,14 +989,15 @@ fn main() -> Result<(), Box<dyn Error>> {
             let current_wind = wind.clone();
 
             move || {
-                let ww = 350;
-                let wh = 150;
-                let wwx = current_wind.x() + (current_wind.w() / 2) - (ww / 2);
-                let wwy = current_wind.y() + (current_wind.h() / 2) - (wh / 2);
+                let dialog_width = 350;
+                let dialog_height = 150;
+                let dialog_xpos = current_wind.x() + (current_wind.w() / 2) - (dialog_width / 2);
+                let dialog_ypos = current_wind.y() + (current_wind.h() / 2) - (dialog_height / 2);
                 let win_title = format!("About {}", option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"));
+
                 let mut win = window::Window::default()
-                    .with_size(ww, wh)
-                    .with_pos(wwx, wwy)
+                    .with_size(dialog_width, dialog_height)
+                    .with_pos(dialog_xpos, dialog_ypos)
                     .with_label(&win_title);
 
                 let dialog_text = format!(
@@ -1032,7 +1009,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 let mut logo_frame = frame::Frame::default()
                     .with_size(200, 50)
-                    .with_pos(ww/2 - 100, WIDGET_GAP);
+                    .with_pos(dialog_width/2 - 100, WIDGET_GAP);
 
                 if let Ok(img) = image::PngImage::from_data(logo_image_bytes) {
                     let mut img = img;
@@ -1257,12 +1234,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         let deselect_all_frame_ref = deselectall_frame_rc.clone();
 
         let mut filelist_scroll_ref = filelist_scroll.clone();
-        let mut convert_button_ref = convert_button.clone();
-        let mut messages_frame_ref = messages_frame.clone();
         let mut filelist_widget_ref = filelist_widget.clone();
-        let mut columns_frame_ref = columns_frame.clone();
+
         let row_convert_button_ref = row_convert_button.clone();
         let convert_frame_ref = convert_frame.clone();
+        let mut convert_button_ref = convert_button.clone();
+        let mut columns_frame_ref = columns_frame.clone();
+
+        let mut messages_frame_ref = messages_frame.clone();
 
         move |w, ev| match ev {
             enums::Event::Move => {

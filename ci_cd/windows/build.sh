@@ -51,4 +51,4 @@ cp ${SCRIPTDIR}/installer.nsi ${ARTIFACTSDIR}/
 perl -pi -e "s/_APPVERSION_/${APPVERSION}/g" ${ARTIFACTSDIR}/installer.nsi
 podman run -v "${ARTIFACTSDIR}":/build docker.io/binfalse/nsis installer.nsi
 rm ${ARTIFACTSDIR}/installer.nsi
-mv ${ARTIFACTSDIR/*-installer.exe ${ARTIFACTSDIR}/../
+mv ${ARTIFACTSDIR}/*-installer.exe ${ARTIFACTSDIR}/../

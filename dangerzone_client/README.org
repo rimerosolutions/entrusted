@@ -35,6 +35,14 @@ The CLI can be convenient for "terminal warriors" or to supplement existing shel
 
 At the root of this project, open a command prompt and type =cargo build=.
 
+If using the =fltk-rs= master branch instead of a stable release, you'll need a custom pre-built cfltk library *under Mac OS*.
+
+#+begin_src sh
+  cd dangerzone_client
+  mkdir -p target/cfltk && tar zxf cfltk_lib_x64-macos.tar.gz -C target/cfltk/
+  CFLTK_BUNDLE_DIR="${PWD}"/target/cfltk cargo build
+#+end_src
+
 * How to run this?
 
 ** Desktop usage

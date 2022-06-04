@@ -135,21 +135,38 @@
         updateFileList(fileButtonElement.files);
       }
 
+      function findAncestorWithId(elemId, targetElement) {
+        while (targetElement.id != elemId) {
+          targetElement = targetElement.parentElement;
+        }
+
+        return targetElement;
+      }
+
       function fileExplorer(event) {
-        let fileButton = document.getElementById("fileButton");
-        fileButton.click();
+        let targetElement = findAncestorWithId("dropFileZone", event.target);
+
+        if (!targetElement.disabled) {
+          let fileButton = document.getElementById("fileButton");
+          fileButton.click();
+        }
       }
 
       function uploadFile(event) {
         event.preventDefault();
-        let currentFileList = event.dataTransfer.files;
 
-        if (isConverting) {
-          isConverting = false;
-          fileList.clear();
+        let targetElement = findAncestorWithId("dropFileZone", event.target);
+
+        if (!targetElement.disabled) {
+          let currentFileList = event.dataTransfer.files;
+
+          if (isConverting) {
+            isConverting = false;
+            fileList.clear();
+          }
+
+          updateFileList(currentFileList);
         }
-
-        updateFileList(currentFileList);
       }
 
       function resetFileListTable() {
@@ -342,6 +359,10 @@
             let checkboxElement = document.getElementById("chk-" + nextFileObj.id);
             checkboxElement.disabled = true;
             submitOneFile(nextFileObj, ocrSettings, uploadUrl);
+          } else {
+            let dropFileZoneElement = document.getElementById("dropFileZone");
+            dropFileZoneElement.className = "dropFileZoneEnabled";
+            dropFileZoneElement.disabled = false;
           }
         }
 
@@ -418,6 +439,8 @@
         isConverting = true;
         source.disabled = true;
 
+        let submitButtonElement = document.getElementById("submitButton");
+        let dropFileZoneElement = document.getElementById("dropFileZone");
         let ocrCheckbox = document.getElementById("ocrCheckbox");
         let ocrLangSelect = document.getElementById("ocrLangSelect");
         let uploadForm = document.getElementById("uploadForm");
@@ -428,6 +451,10 @@
         if (ocrCheckbox.checked) {
           ocrSettings.ocrlang = ocrLangSelect.value;
         }
+
+        dropFileZoneElement.className = "dropFileZoneDisabled";
+        dropFileZoneElement.disabled = true;
+        submitButtonElement.disabled = true;
 
         let fileObj = fileList.shift();
 
@@ -483,215 +510,228 @@
 
     <style>
       .modal {
-        display: none; /* Hidden by default */
-        position: fixed; /* Stay in place */
-        z-index: 1; /* Sit on top */
-        padding-top: 5%; /* Location of the box */
-        left: 0;
-        top: 0;
-        width: 100%; /* Full width */
-        height: 100%; /* Full height */
-        overflow: auto; /* Enable scroll if needed */
-        background-color: rgb(0,0,0); /* Fallback color */
-        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+          display: none; /* Hidden by default */
+          position: fixed; /* Stay in place */
+          z-index: 1; /* Sit on top */
+          padding-top: 5%; /* Location of the box */
+          left: 0;
+          top: 0;
+          width: 100%; /* Full width */
+          height: 100%; /* Full height */
+          overflow: auto; /* Enable scroll if needed */
+          background-color: rgb(0,0,0); /* Fallback color */
+          background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
       }
 
       /* Modal Content */
       .modal-content {
-        background-color: #fefefe;
-        text-align:center;
-        margin: auto;
-        padding: 5%;
-        border: 1px solid #888;
-        width: 80%;
-        height: 70%;
-        overflow:auto;
+          background-color: #fefefe;
+          text-align:center;
+          margin: auto;
+          padding: 5%;
+          border: 1px solid #888;
+          width: 80%;
+          height: 70%;
+          overflow:auto;
       }
 
       .modal-content li {
-        text-align:left;
+          text-align:left;
       }
 
       /* The Close Button */
       .close {
-        color: #aaaaaa;
-        float: right;
-        font-size: 2em;
-        font-weight: bold;
+          color: #aaaaaa;
+          float: right;
+          font-size: 2em;
+          font-weight: bold;
       }
 
       .close:hover,
       .close:focus {
-        color: #000;
-        text-decoration: none;
-        cursor: pointer;
+          color: #000;
+          text-decoration: none;
+          cursor: pointer;
       }
 
       .row:after {
-        float:left;
-        text-align: left;
-        content: "";
-        display: table;
-        clear: both;
+          float:left;
+          text-align: left;
+          content: "";
+          display: table;
+          clear: both;
       }
 
       .column {
-        display: table;
-        float: left;
-        text-align: left;
-        /* background: yellow; */
+          display: table;
+          float: left;
+          text-align: left;
+          /* background: yellow; */
       }
 
       body {
-        background-color: #C8C8C8;
+          background-color: #C8C8C8;
       }
 
       hr {
-        width: 50%;
+          width: 50%;
       }
 
       progress {
-        width:80%;
-        accent-color: yellow;
+          width:80%;
+          accent-color: yellow;
       }
 
       .fileNameColumn {
-        width: 30%;
+          width: 30%;
       }
 
       .progressStatusColumn {
-        width: 10%;
+          width: 10%;
       }
 
       .processingStatusColumn {
-        width: 10%;
+          width: 10%;
       }
 
       .progressMessageColumn {
-        width: 50%;
+          width: 50%;
       }
 
       #dropFileZone {
-        background-color: red;
-        color: white;
-        border: #999 2px solid;
-        border-radius: 1em;
-        height: 1%;
-        font-size: 1em;
+          color: white;
+          border: #999 2px solid;
+          border-radius: 1em;
+          height: 1%;
+          font-size: 1em;
+      }
+
+      .dropFileZoneEnabled {
+          background: red;
+      }
+
+      .dropFileZoneDisabled {
+          background: #ffcccc;
       }
 
       #dragUploadFile {
-        width: 50%;
-        margin: 0 auto;
+          width: 50%;
+          margin: 0 auto;
       }
 
       #dragUploadFile p {
-        text-align: center;
+          text-align: center;
       }
 
       #dragUploadFile #fileButton {
-        display: none;
+          display: none;
       }
 
       thead {
-        vertical-align: top;
-        border: 1px solid black;
+          vertical-align: top;
+          border: 1px solid black;
       }
 
       thead tr {
-        text-align: left;
-        /* background: yellow; */
-        border: 1px solid black;
+          text-align: left;
+          /* background: yellow; */
+          border: 1px solid black;
       }
 
       .title-text {
-        text-align: center;
-        color: maroon;
+          text-align: center;
+          color: maroon;
       }
 
       .deleteFileIcon {
       }
 
       .header {
-        margin-top: 0.5%;
-        background: #a69350;
-        /* color: yellow; */
-        border: 1px solid #a69350;
+          margin-top: 0.5%;
+          background: #a69350;
+          /* color: yellow; */
+          border: 1px solid #a69350;
       }
 
       #fileListTable {
-        margin-top: 1%;
-        overflow: auto;
-        width: 100%;
+          margin-top: 1%;
+          overflow: auto;
+          width: 100%;
       }
 
       .visitedLink {
-        text-decoration: line-through;
+          text-decoration: line-through;
       }
 
       .succeeded {
-        accent-color: green;
-        color: green;
+          accent-color: green;
+          color: green;
       }
 
       .pending {
-        color: magenta;
-        accent-color: magenta;
+          color: magenta;
+          accent-color: magenta;
       }
 
       .failed {
-        color: red;
-        accent-color: red;
+          color: red;
+          accent-color: red;
       }
 
       .inprogress {
-        color: #999900;
-        accent-color: #999900;
+          color: #999900;
+          accent-color: #999900;
       }
 
       .invisible {
-        display: none;
+          display: none;
       }
 
       .visible {
-        display: visible;
+          display: visible;
       }
 
       fieldset {
-        border: 2px solid blue;
+          border: 2px solid blue;
       }
 
       legend {
-        padding: 10px;
-        background: blue;
-        color: cyan;
+          padding: 10px;
+          background: blue;
+          color: cyan;
       }
 
       #eventList {
-        overflow: auto;
-        margin: 0;
-        padding: 10px 1px 1px 1px;
-        background: yellow;
-        border: 5px solid #977c27;
-        font-family: monospace;
+          overflow: auto;
+          margin: 0;
+          padding: 10px 1px 1px 1px;
+          background: yellow;
+          border: 5px solid #977c27;
+          font-family: monospace;
       }
 
       #eventList li {
-        list-style-type: none;
-        text-align: left;
-        margin: 0;
-        padding: 0;
+          list-style-type: none;
+          text-align: left;
+          margin: 0;
+          padding: 0;
+      }
+
+      .actionButton:disabled {
+          background: #dbdbdb;
       }
 
       .actionButton {
-        border: none;
-        margin-left: 1%;
-        padding: 15px 32px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        font-size: 16px;
+          border: none;
+          margin-left: 1%;
+          padding: 15px 32px;
+          text-align: center;
+          text-decoration: none;
+          background: white;
+          display: inline-block;
+          font-size: 16px;
       }
+
     </style>
   </head>
 
@@ -884,11 +924,11 @@
           </table>
         </fieldset>
         <br/>
-        <div id="dropFileZone" ondrop="uploadFile(event)" ondragover="return false">
+        <div id="dropFileZone" class="dropFileZoneEnabled" ondrop="uploadFile(event)" ondragover="return false" onclick="fileExplorer(event)">
           <div id="dragUploadFile">
             <p>Drop 'potentially suspicious' file(s) here</p>
             <p>or</p>
-            <p><input type="button" value="Click here to select file(s)" onclick="fileExplorer(event)"></p>
+            <p>Click here to select file(s)</p>
             <input type="file" name="fileButton" id="fileButton" onChange="fileSelectionChanged(event)" multiple>
           </div>
         </div>

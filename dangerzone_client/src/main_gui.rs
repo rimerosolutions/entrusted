@@ -147,21 +147,21 @@ impl FileListWidget {
             for row in rows.iter() {
                 let mut active_row = row.clone();
 
-                let mut pos_x = active_row.checkbox.x();
-                active_row.checkbox.resize(pos_x, active_row.checkbox.y(), width_checkbox, active_row.checkbox.h());
+                let mut xpos = active_row.checkbox.x();
+                active_row.checkbox.resize(xpos, active_row.checkbox.y(), width_checkbox, active_row.checkbox.h());
                 let path_name = format!("{}", active_row.file.file_name().and_then(|x| x.to_str()).unwrap());
                 active_row.checkbox.set_label(&clip_text(path_name, width_checkbox));
 
-                pos_x += width_checkbox + WIDGET_GAP;
-                active_row.progressbar.resize(pos_x, active_row.progressbar.y(), width_progressbar, active_row.progressbar.h());
+                xpos += width_checkbox + WIDGET_GAP;
+                active_row.progressbar.resize(xpos, active_row.progressbar.y(), width_progressbar, active_row.progressbar.h());
 
-                pos_x += width_progressbar + WIDGET_GAP;
+                xpos += width_progressbar + WIDGET_GAP;
 
-                active_row.status.resize(pos_x, active_row.status.y(), width_status, active_row.status.h());
+                active_row.status.resize(xpos, active_row.status.y(), width_status, active_row.status.h());
 
-                pos_x += width_status + WIDGET_GAP;
+                xpos += width_status + WIDGET_GAP;
 
-                active_row.log_link.resize(pos_x, active_row.log_link.y(), width_logs, active_row.log_link.h());
+                active_row.log_link.resize(xpos, active_row.log_link.y(), width_logs, active_row.log_link.h());
             }
         }
     }
@@ -794,6 +794,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     convert_button.set_callback({
         let wind_ref = wind.clone();
         let filelist_widget_ref = filelist_widget.clone();
+        let mut convert_frame_ref = convert_frame.clone();
         let mut messages_frame_ref = messages_frame.clone();
         let ocrlang_holdbrowser_rc_ref = ocrlang_holdbrowser_rc.clone();
         let mut tabsettings_button_ref =  tabsettings_button.clone();
@@ -811,6 +812,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             tabsettings_button_ref.deactivate();
             selectall_frame_rc_ref.borrow_mut().deactivate();
             deselectall_frame_rc_ref.borrow_mut().deactivate();
+            convert_frame_ref.deactivate();
 
             is_converting_ref.store(true, Ordering::Relaxed);
             let file_suffix = filesuffix_input_rc_ref.borrow().value();
@@ -967,6 +969,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             tabsettings_button_ref.activate();
             selectall_frame_rc_ref.borrow_mut().activate();
             deselectall_frame_rc_ref.borrow_mut().activate();
+            convert_frame_ref.activate();
         }
     });
 

@@ -111,7 +111,8 @@ impl DerefMut for FileListWidget {
     }
 }
 
-fn clip_text<S: Into<String>>(txt_to_clip: S, max_width: i32) -> String {
+fn clip_text<S: Into<String>>(txt_to_clip: S, max_w: i32) -> String {
+    let max_width = max_w - WIDGET_GAP;
     let mut txt = txt_to_clip.into();
 
     let (mut current_label_width, _) = draw::measure(&txt, true);
@@ -438,11 +439,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut wind = window::Window::default()
         .with_size(680, 600)
         .center_screen()
-        .with_label(&wind_title);    
+        .with_label(&wind_title);
 
     wind.set_xclass("dangerzone");
     wind.set_icon(Some(image::PngImage::from_data(FRAME_ICON).unwrap()));
-    
+
     wind.make_resizable(true);
 
     let mut top_group = group::Pack::default()
@@ -915,8 +916,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                         }
                     }));
 
-                    while let Ok(raw_msg) = rx.recv() {
+                    while let Ok(raw_msg) = rx.recv() {                        
                         app::wait();
+
                         let log_msg_ret: serde_json::Result<common::LogMessage> =
                             serde_json::from_slice(raw_msg.as_bytes());
 
@@ -992,14 +994,18 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     #[cfg(target_os = "macos")] {
         use fltk::menu;
+        // Wait until official fltk-rs release
+        // Compilation errors with the current CI/CD pipeline with the Gitmaster branch of fltk-rs
+        // It's not worth mitigating it as fltk-rs is a very active project
+        /*
         app::raw_open_callback(Some(|s| {
-            let input_path: String = {
-                let ret = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().to_string() };
-                ret.to_owned()
-            };
-            let s = app::Sender::<String>::get();
-            s.send(input_path);
-        }));
+        let input_path: String = {
+        let ret = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().to_string() };
+        ret.to_owned()
+    };
+        let s = app::Sender::<String>::get();
+        s.send(input_path);
+    }));*/
 
         let logo_image_bytes = include_bytes!("../../images/Dangerzone.png");
 
@@ -1275,7 +1281,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 tabsettings_button.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, 80, 30);
                 let new_y = top_group_ref.y() + top_group_ref.h() + WIDGET_GAP;
 
-                let scroller_height = ((w.h() - top_group_ref.h() - convert_frame_ref.h() - row_convert_button_ref.h()) as f64 * 0.5) as i32;
+                let scroller_height = w.h() - top_group_ref.h() - convert_frame_ref.h() - row_convert_button_ref.h() - (messages_frame_ref.h() * 3);
 
                 convert_pack_rc_ref.borrow_mut().resize(
                     WIDGET_GAP,

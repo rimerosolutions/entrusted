@@ -21,7 +21,9 @@ This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dang
 - On top of basic features, additional functionality include:
   - Support for batch conversions
   - Optional Web interface that can act as an "online service" (multi-tenancy)
+  - No concerns while processing small to larger files (timeouts or other issues)
   - Live CD user experience for both enhanced security and convenience (user specific issues while installing a [[https://xebia.com/blog/podman-the-free-container-engine-alternative-to-docker/][container solution]]). This leverages the "online service" and its Web interface
+  - [[https://www.docker.com/products/docker-desktop/][Docker]] dependency alternative on Mac OS, via [[https://github.com/lima-vm/lima][Lima]]
     
 * What is available?
 
@@ -30,7 +32,7 @@ This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dang
 There are 3 user interfaces ([[./dangerzone_client][Desktop and CLI]], [[./dangerzone_httpserver][Web]])
 - Most users will likely want the Desktop version
 - If you prefer the Web interface, please download the live CD ISO for an "out of the box non-involved user experience" (/unless you'd rather setup the Web server yourself/):
-  - You can run the live CD with tools such as [[https://www.qemu.org/][QEMU]], [[https://www.virtualbox.org/wiki/Downloads][VirtualBox]], [[https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v][Hyper-V]], etc.
+  - You can run the live CD with tools such as [[https://www.qemu.org/][QEMU]], [[https://www.virtualbox.org/wiki/Downloads][VirtualBox]], [[https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v][Hyper-V]], [[https://www.vmware.com/nl/products/workstation-player.html][VmWare]], [[https://www.parallels.com/][Parallels]], etc.
   - The Web UI is available at =http://localhost:13000=
   - Replace =localhost= by the IP address of your virtual machine in the above-mentioned link
 
@@ -109,10 +111,11 @@ The tool will prompt you if it cannot find a container runtime.
   - [X] Add MSI installer for Windows via [[https://nsis.sourceforge.io/Main_Page][NSIS]] for now
 - [ ] Support application preferences (GUI and CLI support)  
 - [ ] Support translations
-- [ ] Revisit notifications for SSE + HTTP2, browser restrictions    
-- [ ] Support Tails Linux
 - [ ] Create artwork and rename the GitHub project
-- [ ] Transition to Github actions potentially for CI/CD maybe as a wrapper over existing scripts
+- [ ] Revisit notifications SSE + HTTP2, for the "Online Service"
+- [ ] Investigate if specific support is required for Tails Linux
+- [ ] Support for password-protected PDF files and maybe other types of documents
+- [ ] Transition CI/CD scrips to Github actions or TravisCI or something else?
 - [ ] etc.  
     
 * What are the differences with Dangerzone?

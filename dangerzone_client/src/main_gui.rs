@@ -1208,6 +1208,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
+    wind.set_callback(|_| {
+        // Prevent default "escape key" behavior that closes the app
+        // Handle only explicit "window close button" click
+        if fltk::app::event() == enums::Event::Close {            
+            app::quit(); 
+        }
+    });
+    
     wind.handle({
         let mut top_group_ref = top_group.clone();
 
@@ -1247,6 +1255,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut messages_frame_ref = messages_frame.clone();
 
         move |w, ev| match ev {
+            enums::Event::Close => {
+                app::quit();
+                true
+            },
             enums::Event::Move => {
                 w.redraw();
                 true
@@ -1456,9 +1468,18 @@ fn main() -> Result<(), Box<dyn Error>> {
             let file_path = PathBuf::from(msg);
             let mut selection_pack_ref = selection_pack.clone();
             let select_all_frame_ref = selectall_frame_rc.clone();
+            let mut filelist_scroll_ref = filelist_scroll.clone();
             let deselect_all_frame_ref = deselectall_frame_rc.clone();
+            let is_converting_ref = is_converting.clone();
 
             if file_path.exists() {
+                if is_converting_ref.load(Ordering::Relaxed) {
+                    is_converting_ref.store(false, Ordering::Relaxed);
+                    filelist_widget_ref.delete_all();
+                    filelist_scroll_ref.scroll_to(0, 0);
+                    filelist_scroll_ref.redraw();
+                }
+                
                 if add_to_conversion_queue(vec![file_path], &mut filelist_widget_ref, &mut scroll_ref) {
                     if !convert_button.active() {
                         convert_button.activate();

@@ -59,3 +59,6 @@ cp ${PROJECTDIR}/dangerzone_httpclient/target/x86_64-unknown-linux-musl/release/
 mv ${ARTIFACTSDIR}/*.AppImage ${ARTIFACTSDIR}/Dangerzone_GUI-x86_64.AppImage
 cp ${SCRIPTDIR}/release_README.txt ${ARTIFACTSDIR}/README.txt
 
+cd ${ARTIFACTSDIR}/.. && tar cvf dangerzone-linux-amd64-${APPVERSION}.tar dangerzone-linux-amd64-${APPVERSION}
+
+cd ${SCRIPTDIR}

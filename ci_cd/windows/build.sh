@@ -8,6 +8,7 @@ APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2
 ARTIFACTSDIR="${PROJECTDIR}/artifacts/dangerzone-windows-amd64-${APPVERSION}"
 
 mkdir -p ${ARTIFACTSDIR}
+
 cp ${PROJECTDIR}/LICENSE ${ARTIFACTSDIR}/LICENSE.txt
 
 rm -rf ${PROJECTDIR}/dangerzone_container/target
@@ -54,3 +55,7 @@ rm ${ARTIFACTSDIR}/installer.nsi
 mv ${ARTIFACTSDIR}/*-installer.exe ${ARTIFACTSDIR}/../
 
 cp ${SCRIPTDIR}/release_README.txt ${ARTIFACTSDIR}/README.txt
+
+cd ${ARTIFACTSDIR}/.. && zip -r dangerzone-windows-amd64-${APPVERSION}.zip dangerzone-windows-amd64-${APPVERSION}
+
+cd ${SCRIPTDIR}

@@ -2,22 +2,31 @@
 
 * Overview
 
-The live CD aims to provide a relatively painless installation of =dangerzone-rust=.
-- It's not always that easy for many to install Docker or Podman (OS or Linux distro specific issues)
+The live CD ([[https://www.debian.org/][Debian]]-based)aims to provide a relatively painless installation of =dangerzone-rust=.
+- It's not always that easy for many to install [[https://docs.docker.com/get-docker/][Docker]] or [[https://podman.io/getting-started/installation][Podman]] (OS or Linux distro specific issues)
 - You may not want to run Docker or Podman directly on your main machine
+  
+** Recommended settings
+You need at least =1G= of RAM for the Live CD to run reasonably smoothly.
+
+The live CD allocates by default =75%= of the assigned RAM as free disk space.
+- The default boot parameters are appended to the grub settings =ramdisk-size=75% overlay-size=75%=.
+- The above mentioned values can be change at each boot when the boot loader menu is showing
 
 ** User journey
 
 - Download the live CD iso image from the Github releases page
-- Boot the live CD iso from the virtualization solution of your choice (QEMU, VirtualBox, etc.)
-- Convert your documents via the =dangerzone-rust= online service (Web Interface)
+- Boot the live CD iso from the virtualization solution of your choice ([[https://www.qemu.org/][QEMU]], [[https://www.virtualbox.org/wiki/Downloads][VirtualBox]], [[https://www.vmware.com/products/workstation-player.html][VmWare]], etc.)
+- Convert your documents via the =dangerzone-rust= online service (Web Interface): =http://ip_of_vm:13000=
   
 ** Build steps
 
 The steps below have been tested on Debian 11 (bullseye) and Ubuntu 22.04 (jammy).
-- Copy the contents of this folder to the build machine (=git clone=, =rsync=, etc.)
+- Clone the =dangerzone-rust= git repository from GitHub=rsync=, etc.)
 - Run the =build.sh= script in this directory: =chmod +x build.sh && ./build.sh=
-- The resulting ISO will be available at =$HOME/LIVE_BOOT/dangerzone-livecd-VERSION_NUMBER.iso=
+- The resulting ISO image will be available at =$HOME/LIVE_BOOT/dangerzone-livecd-VERSION_NUMBER.iso=
+
+  The Live CD ISO image size is roughly 1 GB.
   
 * Screenshot build process
 

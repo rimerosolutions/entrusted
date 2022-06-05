@@ -6,6 +6,13 @@ DANGERZONE_VERSION=$(cat /etc/dangerzone_release | head -1)
 echo "Setting up hostname"
 echo "dangerzone-livecd" > /etc/hostname
 
+# mkdir -p /etc/live
+# echo > /etc/live/boot.conf
+# echo "overlay-size=000 000 000" >> /etc/live/boot.conf
+# echo "ramdisk-size=000 000 000" >> /etc/live/boot.conf
+# echo "overlay-size=70%" >> /etc/live/boot.conf
+# echo "ramdisk-size=70%" >> /etc/live/boot.conf
+
 echo "Installing default packages"
 export DEBIAN_FRONTEND=noninteractive
 
@@ -38,9 +45,7 @@ echo "Setting up system files"
 cp /files/etc/iptables/rules.v4 /etc/iptables/
 cp /files/etc/doas.conf /etc/ && chmod 400 /etc/doas.conf
 cp /files/etc/systemd/system/dangerzone-httpserver.service /etc/systemd/system/
-cp /files/etc/systemd/system/mygarbage.service /etc/systemd/system/
 
-fallocate -l 4G /usr/local/bin/mygarbage
 
 echo "Creating dangerzone user"
 useradd -ms /bin/bash dangerzone
@@ -70,7 +75,6 @@ systemctl enable NetworkManager
 systemctl enable netfilter-persistent
 systemctl enable systemd-networkd
 systemctl enable dangerzone-httpserver
-systemctl enable mygarbage
 
 rm -rf /files
 

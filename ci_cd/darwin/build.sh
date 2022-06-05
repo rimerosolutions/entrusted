@@ -105,3 +105,6 @@ mv ${ARTIFACTSDIR}/*.dmg ${ARTIFACTSDIR}/../
 
 cp ${SCRIPTDIR}/release_README.txt ${ARTIFACTSDIR}/README.txt
 
+cd ${ARTIFACTSDIR}/.. && zip -r dangerzone-darwin-amd64-${APPVERSION}.zip dangerzone-darwin-amd64-${APPVERSION}
+
+cd ${SCRIPTDIR}

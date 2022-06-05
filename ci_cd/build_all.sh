@@ -28,4 +28,11 @@ if [ $retVal -ne 0 ]; then
   exit 1
 fi
 
+sh ${ROOT_SCRIPTDIR}/live_cd/build.sh
+retVal=$?
+if [ $retVal -ne 0 ]; then
+	echo "Live CD build failure"
+  exit 1
+fi
+
 cd ${PREVIOUSDIR}

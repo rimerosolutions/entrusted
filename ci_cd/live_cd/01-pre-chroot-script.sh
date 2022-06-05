@@ -2,7 +2,7 @@
 set -x
 
 DANGERZONE_VERSION=$1
-ROOT_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
+THIS_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
 echo "Cleanup previous build"
 sudo rm -rf $HOME/LIVE_BOOT
 
@@ -41,3 +41,15 @@ sudo debootstrap \
 echo "${DANGERZONE_VERSION}" > /tmp/dangerzone_release
 sudo cp /tmp/dangerzone_release $HOME/LIVE_BOOT/chroot/etc/dangerzone_release
 
+cp "${THIS_SCRIPTS_DIR}"/../../artifacts/dangerzone-linux*/dangerzone-cli /tmp/live-dangerzone-cli
+cp "${THIS_SCRIPTS_DIR}"/../../artifacts/dangerzone-linux*/dangerzone-httpserver /tmp/live-dangerzone-httpserver
+
+rm /tmp/live-dangerzone-container.tar
+podman build -f "${THIS_SCRIPTS_DIR}"/../../dangerzone_container/Dockerfile -t "docker.io/uycyjnzgntrn/dangerzone-converter:${DANGERZONE_VERSION}"
+podman save -o /tmp/live-dangerzone-container.tar "docker.io/uycyjnzgntrn/dangerzone-converter:${DANGERZONE_VERSION}"
+
+retVal=$?
+if [ $retVal -ne 0 ]; then
+	echo "Failed to build and save container image"
+  exit 1
+fi

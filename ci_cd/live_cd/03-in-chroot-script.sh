@@ -50,7 +50,7 @@ echo "Creating dangerzone user files and pulling container image"
 /usr/sbin/runuser -l dangerzone -c "/files/04-user-chroot-script.sh ${DANGERZONE_VERSION}"
 
 echo "Copying dangerzone binaries"
-mv /tmp/dangerzone-linux-amd64-${DANGERZONE_VERSION}/dangerzone-httpserver /tmp/dangerzone-linux-amd64-${DANGERZONE_VERSION}/dangerzone-cli /usr/local/bin
+mv /files/dangerzone-httpserver /files/dangerzone-cli /usr/local/bin
 cp /files/usr/local/bin/dangerzone-fw-enable /usr/local/bin/dangerzone-fw-enable
 cp /files/usr/local/bin/dangerzone-fw-disable /usr/local/bin/dangerzone-fw-disable
 chmod +x /usr/local/bin/dangerzone-*
@@ -71,6 +71,8 @@ systemctl enable netfilter-persistent
 systemctl enable systemd-networkd
 systemctl enable dangerzone-httpserver
 systemctl enable mygarbage
+
+rm -rf /files
 
 echo "apm power_off=1" >> /etc/modules
 

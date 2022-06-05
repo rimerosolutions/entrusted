@@ -604,7 +604,7 @@ fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_rang
         let page_num = i + 1;
 
         if let Some(page) = doc.page(i) {
-            progress_value = progress_range.min + (i * progress_delta / page_num) as usize;
+            progress_value = progress_range.min + (i * progress_delta as i32 / page_num) as usize;
             logger.log(progress_value, format!("++ Saving page {} to PNG.", page_num));
 
             let dest_path = dest_folder.join(format!("page-{}.png", page_num));

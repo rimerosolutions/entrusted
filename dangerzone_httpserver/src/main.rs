@@ -265,9 +265,12 @@ async fn serve(host: &str, port: &str, ci_image_name: String) -> std::io::Result
 }
 
 async fn index() -> impl Responder {
+    let app_version = option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown");
+    let html_data = SPA_INDEX_HTML.replace("_APPVERSION_", app_version);
+
     HttpResponse::Ok()
             .append_header((header::CONTENT_TYPE, "text/html"))
-            .body(SPA_INDEX_HTML)
+            .body(html_data)
 }
 
 async fn download(info: actix_web::web::Path<String>, req: HttpRequest) -> impl Responder {

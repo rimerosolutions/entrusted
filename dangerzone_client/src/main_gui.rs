@@ -1207,14 +1207,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             _ => false,
         }
     });
-
-    wind.set_callback(|_| {
-        // Prevent default "escape key" behavior that closes the app
-        // Handle only explicit "window close button" click
-        if fltk::app::event() == enums::Event::Close {            
-            app::quit(); 
-        }
-    });
     
     wind.handle({
         let mut top_group_ref = top_group.clone();
@@ -1254,11 +1246,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         let mut messages_frame_ref = messages_frame.clone();
 
-        move |w, ev| match ev {
-            enums::Event::Close => {
-                app::quit();
-                true
-            },
+        move |w, ev| match ev {            
             enums::Event::Move => {
                 w.redraw();
                 true
@@ -1431,6 +1419,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                     true
                 } else if ev.bits() == FileListWidgetEvent::ALL_DESELECTED {
                     filelist_widget_ref.deselect_all();
+                    true
+                } else if app::event_state().is_empty() && app::event_key() == enums::Key::Escape {
+                    // Do NOT close the main window with 'Escape' key
                     true
                 } else {
                     false

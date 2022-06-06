@@ -79,15 +79,15 @@ It's possible to produce standalone binaries on Linux, with no runtime dependenc
 
 Yes, the user interface (simple HTML page) interacts with the Web API of the =dangerzone-httpserver=.
 
-There are 3 key endpoints from an API client perspective.
+There are three key API endpoints from a developer perspective.
 
-|-------------------+-------------+----------------------------------|
-| Endpoint          | HTTP Method | Description                      |
-|-------------------+-------------+----------------------------------|
-| =/upload=         | POST        | Uploading a file to sanitize     |
-| =/events/{id}=    | GET         | Processing notifications via SSE |
-| =/downloads/{id}= | GET         | Download processed file          |
-|-------------------+-------------+----------------------------------|
+|-------------------+-------------+----------------------------------------|
+| Endpoint          | HTTP Method | Description                            |
+|-------------------+-------------+----------------------------------------|
+| =/upload=         | POST        | Uploading a file to sanitize           |
+| =/events/{id}=    | GET         | Processing notifications via SSE       |
+| =/downloads/{id}= | GET         | Download a successfully sanitized file |
+|-------------------+-------------+----------------------------------------|
 
 ** Uploading a file to sanitize
 
@@ -130,6 +130,9 @@ There's no need =blindly poll= indefintely the =downloads= endpoint with a hope 
 | =processing_success=  | text                | =success=, Indicates success, continue with download |
 | =processing_failure=  | text                | =failure=, Indicates a failure                       |
 |-----------------------+---------------------+------------------------------------------------------|
+
+*Note*: 
+The data field format should probably be all JSON going forward with processing_failure and =processing_success= with a =percent_complete= value of =100=.
 
 ** Downloading files
 

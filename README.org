@@ -70,7 +70,7 @@ For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-
 | =Linux=          | =dangerzone-linux-amd64-<version>.tar=   | Portable binaries            |
 |------------------+------------------------------------------+------------------------------|
 | =Mac OS=         | =dangerzone-darwin-amd64-<version>.dmg=  | Installer with the GUI       |
-|                  | =dangerzone-darwin-amd64-<version>.zip=  | All binaries                 |
+|                  | =dangerzone-darwin-amd64-<version>.zip=  | Portable binaries            |
 |------------------+------------------------------------------+------------------------------|
 | =MS Windows=     | =dangerzone-windows-amd64-<version>.exe= | Installer with all binaries  |
 |                  | =dangerzone-windows-amd64-<version>.zip= | Portable binaries            |

@@ -124,7 +124,7 @@ The =/events/{id}= endpoint informs clients about conversion progress via [[http
 There's no need =blindly poll= indefintely the =downloads= endpoint with a hope that processing was successful.
 
 |-----------------------+---------------------+------------------------------------------------------|
-| Custom Emitted Events | =data= field Format | Description                                          |
+| Custom Emitted Events | =data= field Format | =data= field Description                             |
 |-----------------------+---------------------+------------------------------------------------------|
 | =processing_update=   | JSON                | ={"data":"doing stuff", "percent_complete":65}=      |
 | =processing_success=  | text                | =success=, Indicates success, continue with download |

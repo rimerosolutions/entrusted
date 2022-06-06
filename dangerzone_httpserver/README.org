@@ -91,7 +91,7 @@ There are 3 key endpoints from an API client perspective.
 
 ** Uploading a file to sanitize
 
-If the upload was successful, the server returns a JSON payload with a reference =id= of the file being processed (HTTP 200 =OK= code for now, probably going to be changed to =ACCEPTED= later).
+The =/upload= endpoint receives files to process (=multipart/form-data=). As soon as the document is uploaded without errors, document sanitization process is kicked-off automatically and the API client can start consuming "processing updates".
 
 |------------+-----------+----------------------------------------------------------|
 | Parameters | Required? | Description                                              |
@@ -100,6 +100,8 @@ If the upload was successful, the server returns a JSON payload with a reference
 | =filename= | YES       | The file name for the uploaded file                      |
 | =ocrlang=  | NO        | A valid [[https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html][OCR Tesseract LangCode]] such as =eng= for English |
 |------------+-----------+----------------------------------------------------------|
+
+If the upload was successful, the server returns a JSON payload with a reference =id= of the file being processed (HTTP 200 =OK= code for now, probably going to be changed to =ACCEPTED= later).
 
 #+begin_src js
   {

@@ -10,13 +10,35 @@ This repository provides a command-line client for the =dangerzone-httpserver= c
 
 * How does it works?
 
-Notifications are received via [[https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events][SSE events]].
+The client invokes the =dangerzone-httpserver= Web API and processes notifications from [[https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events][SSE events]].
 
   [[./images/architecture.png]]
 
-* Screenshot
+* What does it look like?
 
 In the screenshot below, the client is running in an Ubuntu Linux VM and the server is running inside a Debian Linux VM.
 
 [[./images/screenshot-cli.png]]
+
+* How to build this?
+
+At the root of this project, open a command prompt and type =cargo build=.*
+
+* How to run this?
+
+The =dangerzone-httpclient= binary is similar to the =dangerzone-cli= except that it interacts with a Web API.
+
+** Basic usage
+
+#+begin_src sh
+  ./target/debug/dangerzone-httpclient --input-filename suspicious_file.pdf
+#+end_src
+
+** Advanced usage
+
+Please use the =help= flag for additional information (setting up the server host and port, the OCR language, etc.)
+
+#+begin_src sh
+  ./target/debug/dangerzone-httpclient --help
+#+end_src
 

@@ -63,14 +63,21 @@ Below is a high-level architecture overview, the solution relies on a container 
 * Where can I get it?
 
 For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-rust/releases][releases page]] (64 bit operating systems).
-- For Linux users, please download the file =dangerzone-linux-amd64-<version>.tar=
-- For Mac OS users:
-  - If you only care about the graphical Deskop interface, please download the file =dangerzone-darwin-amd64-<version>.dmg=
-  - If you want all the available binaries, please download the file =dangerzone-darwin-amd64-<version>.zip=
-- For Windows users:
-  - If you prefer a conventional installer, please download the file =dangerzone-windows-amd64-<version>.exe=
-  - For a portable distribution, please download the file =dangerzone-windows-amd64-<version>.zip=
-- If you prefer a live CD with a Web interface, please download the ISO image =dangerzone-livecd-amd64-<version>.iso=
+
+|------------------+------------------------------------------+------------------------------|
+| Operating System | Artifact                                 | Description                  |
+|------------------+------------------------------------------+------------------------------|
+| =Linux=          | =dangerzone-linux-amd64-<version>.tar=   | Portable binaries            |
+|------------------+------------------------------------------+------------------------------|
+| =Mac OS=         | =dangerzone-darwin-amd64-<version>.dmg=  | Installer with the GUI       |
+|                  | =dangerzone-darwin-amd64-<version>.zip=  | All binaries                 |
+|------------------+------------------------------------------+------------------------------|
+| =MS Windows=     | =dangerzone-windows-amd64-<version>.exe= | Installer with all binaries  |
+|                  | =dangerzone-windows-amd64-<version>.zip= | Portable binaries            |
+|------------------+------------------------------------------+------------------------------|
+| =Live CD=        | =dangerzone-livecd-amd64-<version>.iso=  | Web interface deployed in VM |
+|------------------+------------------------------------------+------------------------------|
+
 
 * What is required?
 

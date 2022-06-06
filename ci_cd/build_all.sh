@@ -36,6 +36,12 @@ if [ $retVal -ne 0 ]; then
   exit 1
 fi
 
-cp ${ROOT_SCRIPTDIR}/../artifacts/*.iso ${ROOT_SCRIPTDIR}/../artifacts/*.exe ${ROOT_SCRIPTDIR}/../artifacts/*.zip ${ROOT_SCRIPTDIR}/../artifacts/*.dmg ${ROOT_SCRIPTDIR}/../artifacts/*.tar ${ROOT_SCRIPTDIR}/../packages/
+echo "Moving release packages to final folder"
+cp ${ROOT_SCRIPTDIR}/../artifacts/*.iso \
+   ${ROOT_SCRIPTDIR}/../artifacts/*.exe \
+   ${ROOT_SCRIPTDIR}/../artifacts/*.zip \
+   ${ROOT_SCRIPTDIR}/../artifacts/*.dmg \
+   ${ROOT_SCRIPTDIR}/../artifacts/*.tar \
+   ${ROOT_SCRIPTDIR}/../packages/
 
 cd ${PREVIOUSDIR}

@@ -15,7 +15,7 @@ Var SMDir
 Name "Dangerzone"
 
 ; The setup filename
-OutFile "dangerzone-windows-amd64-_APPVERSION_-installer.exe"
+OutFile "dangerzone-windows-amd64-_APPVERSION_.exe"
 
 ; The default installation directory
 InstallDir $PROGRAMFILES\Dangerzone

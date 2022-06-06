@@ -63,10 +63,14 @@ Below is a high-level architecture overview, the solution relies on a container 
 * Where can I get it?
 
 For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-rust/releases][releases page]] (64 bit operating systems).
-- For Mac OS users, please download the file =dangerzone-darwin-amd64-<version>.zip=
 - For Linux users, please download the file =dangerzone-linux-amd64-<version>.tar=
-- For Windows users, please download the file =dangerzone-windows-amd64-<version>.zip=
-- If you prefer a live CD, please download the ISO image =dangerzone-livecd-amd64-<version>.iso=
+- For Mac OS users:
+  - If you only care about the graphical Deskop interface, please download the file =dangerzone-darwin-amd64-<version>.dmg=
+  - If you want all the available binaries, please download the file =dangerzone-darwin-amd64-<version>.zip=
+- For Windows users:
+  - If you prefer a conventional installer, please download the file =dangerzone-windows-amd64-<version>.exe=
+  - For a portable distribution, please download the file =dangerzone-windows-amd64-<version>.zip=
+- If you prefer a live CD with a Web interface, please download the ISO image =dangerzone-livecd-amd64-<version>.iso=
 
 * What is required?
 
@@ -111,7 +115,7 @@ The tool will prompt you if it cannot find a container runtime.
 - [X] Additional release artifacts for convenience ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral14][spiral14 branch]] part 2)
   - [X] Add DMG installer for Mac OS, with app ability to still invoke external programs
   - [X] Add MSI installer for Windows via [[https://nsis.sourceforge.io/Main_Page][NSIS]] for now
-- [ ] Support application preferences (GUI and CLI support)  
+- [X] Support application preferences ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral15][spiral15 branch]])
 - [ ] Support translations
 - [ ] Create artwork and rename the GitHub project
 - [ ] Revisit notifications SSE + HTTP2, for the "Online Service"

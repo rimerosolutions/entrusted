@@ -49,8 +49,10 @@ For "manual testing" purposes, the following dependencies are required under =Vo
 
 The command examples below apply to =podman=, the syntax is similar for =docker= or =lima=.
 
+For all the command below it is assumed that you're at the root of the =dangerzone_container= folder.
+
 #+begin_src sh
-  APPVERSION=12345
+  APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' Cargo.toml)
 
   podman login -u uycyjnzgntrn docker.io
 

@@ -163,13 +163,26 @@ impl Stream for Client {
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct CompletionMessage {    
+    pub percent_complete: usize,
+    pub data: String
+}
+
+impl CompletionMessage {
+    pub fn new(new_data: String) -> Self {
+        Self { data: new_data, percent_complete: 100 }
+    }
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct UploadResponse {
     pub id: String,
+    pub tracking_uri: String
 }
 
 impl UploadResponse {
-    pub fn new(id: String) -> Self {
-        Self { id }
+    pub fn new(id: String, tracking_uri: String) -> Self {
+        Self { id, tracking_uri }
     }
 }
 
@@ -366,7 +379,7 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
     };
 
     if err_msg.is_empty() {
-        HttpResponse::Ok().json(UploadResponse::new(request_id_clone))
+        HttpResponse::Accepted().json(UploadResponse::new(request_id_clone.clone(), format!("/events/{}", request_id_clone.clone())))
     } else {
         HttpResponse::InternalServerError().json(server_problem(
             err_msg,
@@ -497,7 +510,9 @@ async fn run_dangerzone(
     if let Ok(cmd_exit_status_opt) = cmd.try_wait() {
         if let Some(cmd_exit_status) = cmd_exit_status_opt {
             if cmd_exit_status.success() {
-                progress_made(refid.clone(), "processing_success", "success".to_string(), counter)?;
+                let msg = CompletionMessage::new(format!("/downloads/{}", refid.clone()));
+                let msg_json = serde_json::to_string(&msg).unwrap();
+                progress_made(refid.clone(), "processing_success", msg_json, counter)?;
                 let _ = std::fs::remove_file(input_path);
 
                 return Ok(());
@@ -505,7 +520,9 @@ async fn run_dangerzone(
         }
     }
 
-    progress_made(refid.clone(), "processing_failure", "failure".to_string(), counter)?;
+    let msg = CompletionMessage::new("failure".to_string());
+    let msg_json = serde_json::to_string(&msg).unwrap();
+    progress_made(refid.clone(), "processing_failure", msg_json, counter)?;
     let _ = std::fs::remove_file(input_path);
 
     Err("Processing failure".into())

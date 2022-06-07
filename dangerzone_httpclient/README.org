@@ -2,9 +2,12 @@
 
 * What is this?
 
-This repository provides a command-line client for the =dangerzone-httpserver= component. 
-- Web browsers are resources-heavy nowadays in comparison to 20+ years ago
-- Occasionally you may want to run automation scripts ([[https://unix.stackexchange.com/questions/12902/how-to-run-find-exec][find and exec]]).
+This repository provides a command-line client for the =dangerzone-httpserver= component. It also acts a concrete tutorial of the =dangerzone-httpserver= API usage.
+
+There are few reasons to run the =dangerzone-httpclient= binary:
+- You opted to install the =dangerzone-httpserver= instead of the default clients (GUI or CLI)
+- You do not want your Web browser to use more resources (Nowadays, most browsers require ~1GB of RAM just with few tabs open!)
+- Occasionally you want to run automation scripts ([[https://unix.stackexchange.com/questions/12902/how-to-run-find-exec][find and exec]]).
   - This can be use for recursive conversions
   - This can supplement existing workflows driven from shell scripts
 

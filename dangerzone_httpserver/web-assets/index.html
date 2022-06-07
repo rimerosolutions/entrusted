@@ -373,7 +373,7 @@
             if (response.ok) {
               response.json().then(data => {
                 let fileId = data.id
-                let statusUrl = "./events/" + fileId;
+                let statusUrl = "." + data.tracking_uri;
                 let sse = new EventSource(statusUrl);
 
                 function handleSseError() {
@@ -383,7 +383,8 @@
 
                 sse.addEventListener("processing_success", function(e) {
                   sse.close();
-                  let downloadLocation = "./downloads/" + fileId;
+                  let n = JSON.parse(e.data);
+                  let downloadLocation = "." + n.data;
                   onComplete(fileObjId, "Succeeded", downloadLocation);
                 });
 

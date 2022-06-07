@@ -17,6 +17,7 @@ use tokio_util::codec::{BytesCodec, FramedRead};
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct UploadResponse {
     pub id: String,
+    pub tracking_uri: String,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -166,10 +167,11 @@ async fn convert_file (
         .json::<UploadResponse>()
         .await?;
 
-    process_notifications(addr.clone(), resp.id.clone()).await?;
+    let tracking_url = format!("http://{}{}", addr.clone(), resp.tracking_uri);
+    let download_uri = process_notifications(tracking_url).await?;
 
     let download_data = client
-        .get(format!("http://{}/downloads/{}", addr.clone(), resp.id))
+        .get(format!("http://{}{}", addr.clone(), download_uri))
         .send()
         .await?
         .bytes()
@@ -181,9 +183,9 @@ async fn convert_file (
         let filename_noext_opt = input_path.file_stem().and_then(|i| i.to_str());
 
         if let Some(filename_noext) = filename_noext_opt {
-            output_dir.join([filename_noext.to_string(), "-safe.pdf".to_string()].concat())
+            output_dir.join([filename_noext.to_string(), "-dgz.pdf".to_string()].concat())
         } else {
-            return Err("Could not determine input file base name.".into());
+            return Err("Could not determine input file base name!".into());
         }
     };
     
@@ -193,11 +195,13 @@ async fn convert_file (
     Ok(())
 }
 
-async fn process_notifications(addr: String, request_id: String) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let mut es = EventSource::get(format!("http://{}/events/{}", addr, request_id));
+async fn process_notifications(tracking_url: String) -> Result<String, Box<dyn Error + Send + Sync>> {
+    let mut es = EventSource::get(format!("{}", tracking_url));
     let pb = ProgressBar::new(100);
     
-    let processing_status: Result<(), Box<dyn Error>> = {
+    let processing_status: Result<String, Box<dyn Error>> = {
+        let mut download_uri = String::new();
+
         while let Some(event) = es.next().await {
             match event {
                 Ok(Event::Open) => println!("Connection open!"),
@@ -211,9 +215,12 @@ async fn process_notifications(addr: String, request_id: String) -> Result<(), B
                         }
                     } else {
                         if msg.event == "processing_success" {
-                            println!("Conversion completed!");
+                            let log_msg_ret: LogMessage = serde_json::from_str(&msg.data).unwrap();                            
+                            download_uri = log_msg_ret.data.clone();
+                            println!("Conversion completed successfully!");                            
                             es.close();
-                            return Ok(());
+                            
+                            return Ok(download_uri);
                         } else if msg.event == "processing_failure" {
                             println!("Conversion failed!");
                             es.close();
@@ -227,13 +234,13 @@ async fn process_notifications(addr: String, request_id: String) -> Result<(), B
             }
         }
 
-        Ok(())
+        Ok(download_uri)
     };
 
     pb.finish();
 
     match processing_status {
-        Ok(_) => Ok(()),
+        Ok(download_uri) => Ok(download_uri),
         Err(ex) => Err(ex.to_string().into()),
     }
 }

@@ -105,11 +105,12 @@ If the upload was successful, the server returns a JSON payload with a reference
 
 #+begin_src js
   {
-    "id": "20943e8a-a68c-42bc-8747-7e30a467c1be"  
+    "id": "20943e8a-a68c-42bc-8747-7e30a467c1be"
+    "tracking_uri": "/events/20943e8a-a68c-42bc-8747-7e30a467c1be"
   }
 #+end_src
 
-The retrieved =id= must be used subsequently to receive processing notifications, as well as downloading the converted document once the uploaded file is successfully sanitized.
+The retrieved =id= used subsequently to receive processing notifications (=tracking_uri=), as well as downloading the converted document once the uploaded file is successfully sanitized.
 
 
 ** Consuming processing updates
@@ -123,13 +124,13 @@ The =/events/{id}= endpoint informs clients about conversion progress via [[http
 
 There's no need =blindly poll= indefintely the =downloads= endpoint with a hope that processing was successful.
 
-|-----------------------+---------------------+------------------------------------------------------|
-| Custom Emitted Events | =data= field Format | =data= field Description                             |
-|-----------------------+---------------------+------------------------------------------------------|
-| =processing_update=   | JSON                | ={"data":"doing stuff", "percent_complete":65}=      |
-| =processing_success=  | text                | =success=, Indicates success, continue with download |
-| =processing_failure=  | text                | =failure=, Indicates a failure                       |
-|-----------------------+---------------------+------------------------------------------------------|
+|-----------------------+---------------------+-------------------------------------------------------|
+| Custom Emitted Events | =data= field Format | =data= field Description                              |
+|-----------------------+---------------------+-------------------------------------------------------|
+| =processing_update=   | JSON                | ={"data":"doing stuff", "percent_complete":65}=       |
+| =processing_success=  | JSON                | ={"data":"/downloads/id123", "percent_complete":100}= |
+| =processing_failure=  | JSON                | ={"data":"doing stuff", "percent_complete":100}=      |
+|-----------------------+---------------------+-------------------------------------------------------|
 
 *Note*: 
 The data field format should probably be all JSON going forward with processing_failure and =processing_success= with a =percent_complete= value of =100=.

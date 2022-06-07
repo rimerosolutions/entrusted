@@ -16,7 +16,7 @@ You only need a container engine such as Docker or Podman or Lima. Please note t
 
 * How to build this?
 
-Please note that the container image of this project is published on [[https://hub.docker.com/r/uycyjnzgntrn/dangerzone-converter][Dockerhub]].
+Please note that the container image of this project is published on [[https://hub.docker.com/r/uycyjnzgntrn/dangerzone-converter][Docker Hub]].
 
 At the root of this project, accordingly your container engine, please invoke one of the commands below.
 
@@ -38,8 +38,32 @@ At the root of this project, accordingly your container engine, please invoke on
   lima nerdctl build -t localhost/dangerzone-converter .
 #+end_src
 
-For "manual testing" purposes, the following dependencies are required under =Void Linux=: =leptonica-devel=, =libclang=, =clang=, =tesseract-ocr-devel=, =poppler-glib-devel=.
+For "manual testing" purposes, the following dependencies are required under =Void Linux=:
+- =leptonica-devel=
+- =libclang=
+- =clang=
+- =tesseract-ocr-devel=
+- =poppler-glib-devel=
+
+* How to publish to Docker Hub?
+
+The command examples below apply to =podman=, the syntax is similar for =docker= or =lima=.
+
+#+begin_src sh
+  APPVERSION=12345
+
+  podman login -u uycyjnzgntrn docker.io
+
+  podman tag localhost/dangerzone-converter:latest docker.io/uycyjnzgntrn/dangerzone-converter:${APPVERSION}
+  podman push docker.io/uycyjnzgntrn/dangerzone-converter:${APPVERSION}
+
+  podman tag docker.io/uycyjnzgntrn/dangerzone-converter:${APPVERSION} docker.io/uycyjnzgntrn/dangerzone-converter:latest
+  podman push docker.io/uycyjnzgntrn/dangerzone-converter:latest
+
+  podman logout docker.io
+#+end_src
+
 
 * How to run this?
 
-This application is leveraged by the =dangerzone-client= CLI program (shell commands to =podman= or =docker= or =lima=) , it's not really meant to be used "directly" except for dev/testing purposes.
+This application is leveraged by the =dangerzone-client= program (shell commands to =podman= or =docker= or =lima=) , it's not really meant to be used "directly" except for dev/testing purposes.

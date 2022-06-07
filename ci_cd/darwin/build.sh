@@ -21,7 +21,7 @@ podman run --rm \
     --volume "${PROJECTDIR}":/root/src \
     --workdir /root/src \
     docker.io/joseluisq/rust-linux-darwin-builder:1.60.0 \
-    sh -c "export CC=/usr/local/osxcross/target/bin/o64-clang; export CXX=/usr/local/osxcross/target/bin/o64-clang++; cd /root/src/dangerzone_client && mkdir -p /root/src/dangerzone_client/target/cfltk_lib_macos && tar zxf /root/src/dangerzone_client/cfltk_lib_x64-macos.tar.gz -C /root/src/dangerzone_client/target/cfltk_lib_macos && CFLTK_BUNDLE_DIR=/root/src/dangerzone_client/target/cfltk_lib_macos RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-apple-darwin"
+    sh -c "export CC=/usr/local/osxcross/target/bin/o64-clang; export CXX=/usr/local/osxcross/target/bin/o64-clang++; cd /root/src/dangerzone_client && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-apple-darwin"
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Failure"

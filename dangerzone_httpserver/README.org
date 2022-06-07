@@ -101,7 +101,7 @@ The =/upload= endpoint receives files to process (=multipart/form-data=). As soo
 | =ocrlang=  | NO        | A valid [[https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html][OCR Tesseract LangCode]] such as =eng= for English |
 |------------+-----------+----------------------------------------------------------|
 
-If the upload was successful, the server returns a JSON payload with a reference =id= of the file being processed (HTTP 200 =OK= code for now, probably going to be changed to =ACCEPTED= later).
+If the upload was successful, the server returns a JSON payload with a reference =id= of the file being processed (HTTP 202 =ACCEPTED=. The returned =tracking_uri= helps processing notification updates.
 
 #+begin_src js
   {
@@ -131,9 +131,6 @@ There's no need =blindly poll= indefintely the =downloads= endpoint with a hope 
 | =processing_success=  | JSON                | ={"data":"/downloads/id123", "percent_complete":100}= |
 | =processing_failure=  | JSON                | ={"data":"doing stuff", "percent_complete":100}=      |
 |-----------------------+---------------------+-------------------------------------------------------|
-
-*Note*: 
-The data field format should probably be all JSON going forward with processing_failure and =processing_success= with a =percent_complete= value of =100=.
 
 ** Downloading files
 

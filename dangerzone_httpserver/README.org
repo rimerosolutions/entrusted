@@ -113,7 +113,7 @@ If the upload was successful, the server returns a JSON payload with a reference
 The retrieved =id= used subsequently to receive processing notifications (=tracking_uri=), as well as downloading the converted document once the uploaded file is successfully sanitized.
 
 
-** Consuming processing updates
+** Consuming processing notifications
 
 The =/events/{id}= endpoint informs clients about conversion progress via [[https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events][SSE events]] (=text/event-stream=).
 - The =id= path parameter to provide is the one obtained upon file upload submission (=/upload= endpoint).
@@ -134,6 +134,8 @@ There's no need =blindly poll= indefintely the =downloads= endpoint with a hope 
 
 ** Downloading files
 
- The =id= path parameter to provide is the one obtained upon file upload submission (=/upload= endpoint).
+The =/downloads/{id}= endpoints allows downloading successfully converted documents
+- The =id= path parameter to provide is the one obtained upon file upload submission (=/upload= endpoint)
+- Instead of hardcoding the URL, you should parse the data field of the =processing_success= field (from processing notifications).
 
  Please note that once downloaded, the file is immediately deleted from the server!

@@ -174,7 +174,7 @@ General steps:
   - You can then test the artifacts archives and executables under Linux, Mac OS and Windows
   - You can test the live CD image with a tool such as =QEMU=
 - Merge the current branch into the =main= branch, and push the changes
-- Tag the main branch with the new =release version= (.i.e =1.1.1=) and push the changes
+- Tag the main branch with the new =release version= (i.e. =1.1.1=) and push the changes
 - Push the container image to [[https://hub.docker.com/r/uycyjnzgntrn/dangerzone-converter][Docker Hub]] per [[./dangerzone_container/README.org][publishing instructions]]
 - Create a new release from the GitHub Web interface:
   - Add the release notes

@@ -8,9 +8,22 @@ use serde_json;
 use indicatif::ProgressBar;
 
 mod common;
+mod config;
 mod container;
 
+const LOG_FORMAT_PLAIN: &str = "plain";
+const LOG_FORMAT_JSON: &str  = "json";
+
 fn main() -> Result<(), Box<dyn Error>> {
+    let app_config_ret = config::load_config();
+    let app_config = app_config_ret.unwrap_or(config::AppConfig::default());
+
+    let default_container_image_name = if let Some(img_name) = app_config.container_image_name.clone() {
+        img_name
+    } else {
+        config::default_container_image_name()
+    };
+    
     let app = App::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
         .author(option_env!("CARGO_PKG_AUTHORS").unwrap_or("Unknown"))
@@ -37,21 +50,22 @@ fn main() -> Result<(), Box<dyn Error>> {
             Arg::with_name("container-image-name")
                 .long("container-image-name")
                 .help("Optional custom Docker or Podman image name")
+                .default_value(&default_container_image_name)
                 .required(false)
                 .takes_value(true)
         ).arg(
             Arg::with_name("log-format")
                 .long("log-format")
                 .help("Log format (json or plain")
-                .possible_values(&["json", "plain"])
-                .default_value("plain")
+                .possible_values(&[LOG_FORMAT_JSON, LOG_FORMAT_PLAIN])
+                .default_value(LOG_FORMAT_PLAIN)
                 .required(false)
                 .takes_value(true)
         ).arg(
             Arg::with_name("file-suffix")
                 .long("file-suffix")
                 .help("Default file suffix")                
-                .default_value(common::DEFAULT_FILE_SUFFIX)
+                .default_value(&app_config.file_suffix)
                 .required(false)
                 .takes_value(true)
         );
@@ -99,7 +113,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let file_suffix = if let Some(proposed_file_suffix) = &run_matches.value_of("file-suffix") {
         String::from(proposed_file_suffix.clone())
     } else {
-        String::from(common::DEFAULT_FILE_SUFFIX)
+        String::from(app_config.file_suffix.clone())
     };
     
     let abs_output_filename = common::default_output_path(src_path?, file_suffix)?;
@@ -109,8 +123,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let container_image_name = match &run_matches.value_of("container-image-name") {
-        Some(img) => Some(format!("{}", img)),
-        None => None
+        Some(img) => format!("{}", img),
+        None => if let Some(container_image_name_saved) = app_config.container_image_name {
+            container_image_name_saved.clone()
+        } else {
+            config::default_container_image_name()
+        }
     };
 
     let log_format = match &run_matches.value_of("log-format") {
@@ -121,14 +139,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let (tx, rx) = channel();
 
     let exec_handle = thread::spawn(move || {
-        match container::convert(src_path_copy, output_filename, container_image_name, String::from("json"), ocr_lang, tx) {
+        match container::convert(src_path_copy, output_filename, container_image_name, String::from(LOG_FORMAT_JSON), ocr_lang, tx) {
             Ok(_) => None,
             Err(ex) => Some(format!("{}", ex))
         }
     });
 
     // Rendering a progressbar in plain mode
-    if log_format == "plain".to_string() {
+    if log_format == LOG_FORMAT_PLAIN.to_string() {
         let pb = ProgressBar::new(100);
         for line in rx {
             let log_msg_ret: serde_json::Result<common::LogMessage> = serde_json::from_slice(line.as_bytes());

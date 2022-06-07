@@ -20,6 +20,7 @@ use fltk::{
 };
 
 mod common;
+mod config;
 mod container;
 
 const WIDGET_GAP: i32 = 20;
@@ -404,6 +405,9 @@ impl FileListWidget {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let appconfig_ret = config::load_config();
+    let appconfig = appconfig_ret.unwrap_or(config::AppConfig::default());
+
     let is_converting = Arc::new(AtomicBool::new(false));
     let app = app::App::default().with_scheme(app::Scheme::Gleam);
     let (_, r) = app::channel::<String>();
@@ -420,7 +424,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_label(&wind_title);
 
     wind.set_xclass("dangerzone");
-    wind.set_icon(Some(image::PngImage::from_data(FRAME_ICON).unwrap()));
+
+    if let Ok(frame_icon) = image::PngImage::from_data(FRAME_ICON) {
+        wind.set_icon(Some(frame_icon));
+    }
 
     wind.make_resizable(true);
 
@@ -460,11 +467,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_label("Custom file suffix");
     filesuffix_checkbutton
         .set_tooltip("The safe PDF will be named <input>-<suffix>.pdf by default.");
-    filesuffix_checkbutton.set_checked(false);
+
+    if &appconfig.file_suffix != config::DEFAULT_FILE_SUFFIX {
+        filesuffix_checkbutton.set_checked(true);
+    }
 
     let filesuffix_input_rc = Rc::new(RefCell::new(input::Input::default().with_size(290, 20)));
-    filesuffix_input_rc.borrow_mut().set_value(common::DEFAULT_FILE_SUFFIX);
-    filesuffix_input_rc.borrow_mut().deactivate();
+    filesuffix_input_rc.borrow_mut().set_value(&appconfig.file_suffix);
+
+    if &appconfig.file_suffix == config::DEFAULT_FILE_SUFFIX {
+        filesuffix_input_rc.borrow_mut().deactivate();
+    }
 
     filesuffix_checkbutton.set_callback({
         let filesuffix_input_rc_ref = filesuffix_input_rc.clone();
@@ -473,7 +486,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             if b.is_checked() {
                 filesuffix_input_rc_ref.borrow_mut().activate();
             } else {
-                filesuffix_input_rc_ref.borrow_mut().set_value(common::DEFAULT_FILE_SUFFIX);
+                filesuffix_input_rc_ref.borrow_mut().set_value(config::DEFAULT_FILE_SUFFIX);
                 filesuffix_input_rc_ref.borrow_mut().deactivate();
             }
         }
@@ -492,7 +505,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     ocrlang_checkbutton.set_tooltip(
         "OCR (Optical character recognition) will be applied.",
     );
-    ocrlang_checkbutton.set_checked(false);
+
+    if appconfig.ocr_lang.is_some() {
+        ocrlang_checkbutton.set_checked(true);
+    }
 
     let ocrlang_holdbrowser_rc = Rc::new(RefCell::new(
         browser::HoldBrowser::default().with_size(240, 60),
@@ -512,13 +528,27 @@ fn main() -> Result<(), Box<dyn Error>> {
         ocrlang_holdbrowser_rc.borrow_mut().add(v);
     }
 
-    if let Some(selected_ocr_language_idx) = ocr_languages.iter().position(|&r| r == "English") {
+    let selected_ocrlang = if let Some(cur_ocrlangcode) = appconfig.ocr_lang.clone() {
+        let cur_ocrlangcode_str = cur_ocrlangcode.as_str();
+        let ocr_languages_by_name_ref = common::ocr_lang_key_by_name();
+        if let Some(cur_ocrlangname) = ocr_languages_by_name_ref.get(cur_ocrlangcode_str) {
+            cur_ocrlangname.to_string()
+        } else {
+            String::from("English")
+        }
+    } else {
+        String::from("English")
+    };
+
+    if let Some(selected_ocr_language_idx) = ocr_languages.iter().position(|&r| r == &selected_ocrlang) {
         ocrlang_holdbrowser_rc
             .borrow_mut()
             .select((selected_ocr_language_idx + 1) as i32);
     }
 
-    ocrlang_holdbrowser_rc.borrow_mut().deactivate();
+    if appconfig.ocr_lang.is_none() {
+        ocrlang_holdbrowser_rc.borrow_mut().deactivate();
+    }
 
     ocrlang_checkbutton.set_callback({
         let ocrlang_holdbrowser_rc_ref = ocrlang_holdbrowser_rc.clone();
@@ -550,21 +580,39 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     pdf_viewer_app_names.sort();
 
-    for k in pdf_viewer_app_names {
+    for k in pdf_viewer_app_names.iter() {
         openwith_inputchoice_rc.borrow_mut().add(k);
     }
 
     openwith_inputchoice_rc.borrow_mut().set_tooltip("You can also paste the path to a PDF viewer");
 
     if pdf_apps_by_name.len() != 0 {
-        openwith_inputchoice_rc.borrow_mut().set_value_index(0);
+        let idx = if let Some(viewer_appname) = appconfig.openwith_appname.clone() {
+            if let Some(pos) = pdf_viewer_app_names.iter().position(|r| r == &viewer_appname) {
+                pos
+            } else {
+                0
+            }
+        } else {
+            0
+        };
+        openwith_inputchoice_rc.borrow_mut().set_value_index(idx as i32);
     }
 
-    openwith_inputchoice_rc.borrow_mut().deactivate();
+    if appconfig.openwith_appname.is_none() {
+        openwith_inputchoice_rc.borrow_mut().deactivate();
+    }
 
     let openwith_button_rc = Rc::new(RefCell::new(button::Button::default().with_size(35, 20).with_label("..")));
     openwith_button_rc.borrow_mut().set_tooltip("Browse for PDF viewer program");
+
     openwith_button_rc.borrow_mut().deactivate();
+
+    if appconfig.openwith_appname.is_none() {
+        openwith_checkbutton.deactivate();
+    } else {
+        openwith_checkbutton.set_checked(true);
+    }
 
     openwith_checkbutton.set_callback({
         let pdf_viewer_list_ref = openwith_inputchoice_rc.clone();
@@ -614,11 +662,26 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_align(enums::Align::Inside | enums::Align::Left);
     ociimage_checkbutton.set_label("Custom container image");
     ociimage_checkbutton.set_tooltip("Expert option for sandbox solution");
-    ociimage_checkbutton.set_checked(false);
+
+    let ociimage_text = if let Some(custom_container_image_name) = appconfig.container_image_name.clone() {
+        custom_container_image_name
+    } else {
+        config::default_container_image_name()
+    };
+
+    if ociimage_text != config::default_container_image_name() {
+        ociimage_checkbutton.set_checked(true);
+    }
 
     let ociimage_input_rc = Rc::new(RefCell::new(input::Input::default().with_size(440, 20)));
-    ociimage_input_rc.borrow_mut().set_value(&common::container_image_name());
-    ociimage_input_rc.borrow_mut().deactivate();
+    ociimage_input_rc.borrow_mut().set_value(&ociimage_text);
+
+    if appconfig.container_image_name.is_none() {
+        ociimage_input_rc.borrow_mut().deactivate();
+    } else if ociimage_text == config::default_container_image_name() {
+        ociimage_input_rc.borrow_mut().deactivate();
+    }
+
     ociimage_pack.end();
 
     ociimage_checkbutton.set_callback({
@@ -627,12 +690,78 @@ fn main() -> Result<(), Box<dyn Error>> {
         move|b| {
             if !b.is_checked() {
                 ociimage_input_rc_ref.borrow_mut().deactivate();
-                ociimage_input_rc_ref.borrow_mut().set_value(&common::container_image_name());
+                ociimage_input_rc_ref.borrow_mut().set_value(&config::default_container_image_name());
             } else {
                 ociimage_input_rc_ref.borrow_mut().activate();
             }
         }
     });
+
+
+    let savesettings_pack = group::Pack::default()
+        .with_size(150, 30)
+        .below_of(&ociimage_pack, WIDGET_GAP);
+    ociimage_pack.set_type(group::PackType::Horizontal);
+    ociimage_pack.set_spacing(WIDGET_GAP);
+
+    let mut savesettings_button = button::Button::default()
+        .with_size(100, 20)
+        .with_label("Save current settings as defaults")
+        .with_align(enums::Align::Inside | enums::Align::Center);
+
+    savesettings_button.set_callback({
+        let ocrlang_checkbutton_ref = ocrlang_checkbutton.clone();
+        let ocrlang_holdbrowser_rc_ref = ocrlang_holdbrowser_rc.clone();
+        let filesuffix_input_rc_ref = filesuffix_input_rc.clone();
+        let filesuffix_checkbutton_ref = filesuffix_checkbutton.clone();
+        let openwith_checkbutton_ref = openwith_checkbutton.clone();
+        let openwith_inputchoice_rc_ref = openwith_inputchoice_rc.clone();
+        let ociimage_checkbutton_ref = ociimage_checkbutton.clone();
+        let ociimage_input_rc_ref = ociimage_input_rc.clone();
+        let ocr_languages_by_lang_ref = ocr_languages_by_lang.clone();
+        let wind_ref = wind.clone();
+
+        move|_| {
+            let mut new_appconfig = config::AppConfig::default();
+
+            if ocrlang_checkbutton_ref.is_checked() {
+                if let Some(language_name) = ocrlang_holdbrowser_rc_ref.borrow().selected_text() {
+                    let language_str = language_name.as_str();
+                    if let Some(langcode) = ocr_languages_by_lang_ref.get(&language_str) {
+                        new_appconfig.ocr_lang = Some(langcode.to_string());
+                    }
+                }
+            }
+
+            if ociimage_checkbutton_ref.is_checked() {
+                let mut ociimage_text = ociimage_input_rc_ref.borrow().value();
+                ociimage_text = ociimage_text.trim().to_string();
+                if !ociimage_text.is_empty() && ociimage_text != config::default_container_image_name() {
+                    new_appconfig.container_image_name = Some(ociimage_text.trim().to_string());
+                }
+            }
+
+            if filesuffix_checkbutton_ref.is_checked() {
+                let selected_filesuffix = filesuffix_input_rc_ref.borrow().value();
+
+                if selected_filesuffix != String::from(config::DEFAULT_FILE_SUFFIX) {
+                    new_appconfig.file_suffix = selected_filesuffix;
+                }
+            }
+
+            if openwith_checkbutton_ref.is_checked() {
+                new_appconfig.openwith_appname = openwith_inputchoice_rc_ref.borrow().value();
+            }
+
+            if let Err(ex) = config::save_config(new_appconfig) {
+                let err_text = ex.to_string();
+                dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, &err_text);
+            }
+        }
+    });
+
+    savesettings_pack.end();
+
 
     settings_pack_rc.borrow_mut().end();
 
@@ -808,6 +937,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         let deselectall_frame_rc_ref = deselectall_frame_rc.clone();
         let mut filelist_scroll_ref = filelist_scroll.clone();
 
+        let app_config_ref = appconfig.clone();
+
         move |b| {
             tabsettings_button_ref.deactivate();
             selectall_frame_rc_ref.borrow_mut().deactivate();
@@ -819,7 +950,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             let mut file_suffix = String::from(file_suffix.clone().trim());
 
             if file_suffix.is_empty() {
-                file_suffix = String::from(common::DEFAULT_FILE_SUFFIX);
+                file_suffix = String::from(&app_config_ref.file_suffix);
             }
 
             let viewer_app_name = pdf_viewer_list_ref.borrow_mut().input().value();
@@ -843,8 +974,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             let ocr_lang_setting = if ocrlang_checkbutton_ref.is_checked() {
                 if let Some(selected_lang) = ocrlang_holdbrowser_rc_ref.borrow().selected_text() {
+                    let selected_lang_str = selected_lang.as_str();
                     ocr_languages_by_lang
-                        .get(selected_lang.as_str())
+                        .get(&selected_lang_str)
                         .map(|i| format!("{}", i))
                 } else {
                     None
@@ -856,9 +988,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             let oci_image_text = ociimage_input_rc_ref.borrow().value();
 
             let ociimage_option  = if oci_image_text.trim().is_empty() {
-                None
+                config::default_container_image_name()
             } else {
-                Some(String::from(oci_image_text.trim()))
+                String::from(oci_image_text.trim())
             };
 
             let viewer_app_option = viewer_app_exec.clone();
@@ -1207,7 +1339,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             _ => false,
         }
     });
-    
+
     wind.handle({
         let mut top_group_ref = top_group.clone();
 
@@ -1246,7 +1378,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         let mut messages_frame_ref = messages_frame.clone();
 
-        move |w, ev| match ev {            
+        move |w, ev| match ev {
             enums::Event::Move => {
                 w.redraw();
                 true
@@ -1470,7 +1602,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     filelist_scroll_ref.scroll_to(0, 0);
                     filelist_scroll_ref.redraw();
                 }
-                
+
                 if add_to_conversion_queue(vec![file_path], &mut filelist_widget_ref, &mut scroll_ref) {
                     if !convert_button.active() {
                         convert_button.activate();

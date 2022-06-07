@@ -99,7 +99,7 @@ impl LogPrinter for JsonLogPrinter {
     }
 }
 
-pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String>, log_format: String, ocr_lang: Option<String>, tx: Sender<String>) -> Result<bool, Box<dyn Error>> {
+pub fn convert(input_path: PathBuf, output_path: PathBuf, container_image_name: String, log_format: String, ocr_lang: Option<String>, tx: Sender<String>) -> Result<bool, Box<dyn Error>> {
     if !input_path.exists() {
         return Err(format!("The selected file {} does not exits!", input_path.display()).into());
     }
@@ -124,15 +124,6 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, ci_name: Option<String
         Some(ocr_lang_val) => ocr_lang_val,
         None => "".to_string()
     };
-
-    let mut container_image_name = match ci_name {
-        Some(image_name) => image_name,
-        None => common::container_image_name()
-    };
-
-    if container_image_name.trim().is_empty() {
-        container_image_name = common::container_image_name();
-    }
 
     fn mkdirp(p: PathBuf) -> Result<(), Box<dyn Error>> {
         if !p.exists() {

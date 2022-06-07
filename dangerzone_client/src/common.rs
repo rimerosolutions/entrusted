@@ -5,12 +5,6 @@ use which;
 use serde::{Deserialize, Serialize};
 
 pub const CONTAINER_IMAGE_EXE: &str = "/usr/local/bin/dangerzone-container";
-pub const DEFAULT_FILE_SUFFIX: &str = "dgz";
-pub fn container_image_name() -> String {
-    let app_version = option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown");
-
-    format!("{}:{}", "docker.io/uycyjnzgntrn/dangerzone-converter", app_version)
-}
 
 pub fn ocr_lang_key_by_name() -> HashMap<&'static str, &'static str> {
     [

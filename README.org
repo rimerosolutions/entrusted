@@ -22,8 +22,8 @@ This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dang
   - Support for batch conversions
   - Optional Web interface that can act as an "online service" (multi-tenancy)
   - Transparent support for large files (timeouts or other issues)
-  - Live CD user experience for both enhanced security and convenience (=http://machine_ip:13000=):
-    - Extra isolation while running inside a virtual machine
+  - Live CD user experience for both enhanced security and convenience (=http://ip_address:13000=):
+    - Extra isolation layer with a virtual machine
     - Pre-installed [[https://xebia.com/blog/podman-the-free-container-engine-alternative-to-docker/][container solution]] with no required user configuration ([[./dangerzone_httpserver][dangerzone_httpserver]])
   - [[https://www.docker.com/products/docker-desktop/][Docker]] dependency alternative on Mac OS, via [[https://github.com/lima-vm/lima][Lima]]
     
@@ -89,12 +89,13 @@ For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-
   - For Windows, Docker is recommended
   - For Mac OS, /please/ use either Docker or Lima
 
-The tool will prompt you if it cannot find a container runtime.
-  - It doesn't attempt to install the container runtime itself
-  - It doesn't attempt to start/stop/monitor the container runtime itself
+Conversions will fail if the container solution running or available in your [[https://www.java.com/en/download/help/path.html]["PATH settings"]]:
+  - The tool doesn't attempt to modify software on your machine (install Docker or other programs)
+  - The tool doesn't manage other software running on your machine (start/stop services)
 
 * What is planned?
 
+High-level TODOs:
 - [X] Replicate CLI functions of the original tool, not necessarily the exact behavior ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral01][spiral01 branch]])
 - [X] "Misc." bulk fixes & changes ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral02][spiral02 branch]])
   - [X] Eliminate CLI calls inside the container, most of the job can likely be done with libraries
@@ -123,7 +124,7 @@ The tool will prompt you if it cannot find a container runtime.
   - [X] Add DMG installer for Mac OS, with app ability to still invoke external programs
   - [X] Add MSI installer for Windows via [[https://nsis.sourceforge.io/Main_Page][NSIS]] for now
 - [X] Support application preferences ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral15][spiral15 branch]])
-- [ ] Support translations
+- [ ] Support translations with [[https://github.com/projectfluent/fluent-rs][fluent-rs]]?
 - [ ] Create artwork and rename the GitHub project
 - [ ] Revisit notifications SSE + HTTP2, for the "Online Service"
 - [ ] Investigate if specific support is required for Tails Linux

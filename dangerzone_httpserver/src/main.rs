@@ -24,33 +24,20 @@ use actix_web::{http::header, web, App, HttpRequest, HttpResponse, HttpServer, R
 use std::sync::Arc;
 use uuid::Uuid;
 
-use serde::{Deserialize, Serialize};
-
 use actix_multipart::Multipart;
 use actix_web::http::Uri;
 use futures::TryStreamExt;
 use http_api_problem::{HttpApiProblem, StatusCode};
 use tokio::io::AsyncWriteExt;
 
+mod model;
+mod config;
+
 const SPA_INDEX_HTML: &str = include_str!("../web-assets/index.html");
-const TMP_DIR_FOLDER_NAME: &str = "dangerzone-httpserver";
 
-static NOTIFICATIONS_PER_REFID: Lazy<Mutex<HashMap<String, Arc<Mutex<Vec<Notification>>>>>> = Lazy::new(|| {
-    Mutex::new(HashMap::<String, Arc<Mutex<Vec<Notification>>>>::new())
+static NOTIFICATIONS_PER_REFID: Lazy<Mutex<HashMap<String, Arc<Mutex<Vec<model::Notification>>>>>> = Lazy::new(|| {
+    Mutex::new(HashMap::<String, Arc<Mutex<Vec<model::Notification>>>>::new())
 });
-
-#[derive(Debug, Clone)]
-pub struct Notification {
-    pub event: String,
-    pub id: String,
-    pub data: String,
-}
-
-impl Notification {
-    pub fn new(event: String, id: String, data: String) -> Self {
-        Self { event, id, data }
-    }
-}
 
 struct Broadcaster {
     clients: Vec<Sender<Bytes>>,
@@ -162,30 +149,6 @@ impl Stream for Client {
     }
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug)]
-pub struct CompletionMessage {    
-    pub percent_complete: usize,
-    pub data: String
-}
-
-impl CompletionMessage {
-    pub fn new(new_data: String) -> Self {
-        Self { data: new_data, percent_complete: 100 }
-    }
-}
-
-#[derive(Deserialize, Serialize, Clone, Debug)]
-pub struct UploadResponse {
-    pub id: String,
-    pub tracking_uri: String
-}
-
-impl UploadResponse {
-    pub fn new(id: String, tracking_uri: String) -> Self {
-        Self { id, tracking_uri }
-    }
-}
-
 async fn notfound() -> impl Responder {
     HttpResponse::NotFound().body("File not found")
 }
@@ -198,8 +161,10 @@ fn server_problem(reason: String, uri: &Uri) -> HttpApiProblem {
 
 #[actix_web::main]
 pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let appconfig: config::AppConfig = config::load_config()?;
+    let port_number_text = format!("{}", appconfig.port);
     let app_version = option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown");
-    let default_ci_image_name = format!("{}:{}", "docker.io/uycyjnzgntrn/dangerzone-converter", app_version);
+
     let app = clap::App::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(app_version)
         .author(option_env!("CARGO_PKG_AUTHORS").unwrap_or("Unknown"))
@@ -209,7 +174,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .long("host")
                 .help("Server host")
                 .required(true)
-                .default_value("0.0.0.0")
+                .default_value(&appconfig.host)
                 .takes_value(true),
         )
         .arg(
@@ -217,7 +182,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .long("port")
                 .help("Server port")
                 .required(true)
-                .default_value("13000")
+                .default_value(&port_number_text)
                 .takes_value(true),
         )
         .arg(
@@ -225,17 +190,21 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .long("container-image-name")
                 .help("Container image name")
                 .required(true)
-                .default_value(default_ci_image_name.as_str())
+                .default_value(&appconfig.container_image_name)
                 .takes_value(true));
 
     let run_matches = app.to_owned().get_matches();
 
     let ci_image_name = match run_matches.value_of("container-image-name") {
         Some(img_name) => img_name.to_string(),
-        _ => default_ci_image_name.clone()
+        _ => appconfig.container_image_name.clone()
     };
 
     if let (Some(host), Some(port)) = (run_matches.value_of("host"), run_matches.value_of("port")) {
+        if let Err(ex) = port.parse::<u16>() {
+            return Err(format!("Invalid port number: {}. {}", port, ex.to_string()).into());
+        }
+        
         match serve(host, port, ci_image_name).await {
             Ok(_) => Ok(()),
             Err(ex) => Err(ex.into()),
@@ -291,7 +260,7 @@ async fn download(info: actix_web::web::Path<String>, req: HttpRequest) -> impl 
 
     let file_id = info.into_inner();
     let filename = [&file_id, "-safe.pdf"].concat();
-    let filepath = env::temp_dir().join(TMP_DIR_FOLDER_NAME).join(filename.clone());
+    let filepath = env::temp_dir().join(config::PROGRAM_GROUP).join(filename.clone());
     let filepath_buf = PathBuf::from(filepath);
 
     if !filepath_buf.exists() {
@@ -343,7 +312,7 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
 
     println!("Starting file upload with refid: {}.", &request_id);
 
-    let tmpdir = env::temp_dir().join(TMP_DIR_FOLDER_NAME);    
+    let tmpdir = env::temp_dir().join(config::PROGRAM_GROUP);    
     let input_path_status = save_file(request_id.clone(), payload, tmpdir.clone()).await;
     let mut err_msg = String::new();
     let mut upload_info = (String::new(), String::new(), String::new());
@@ -358,7 +327,7 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
     }
 
     if err_msg.is_empty() {
-        NOTIFICATIONS_PER_REFID.lock().unwrap().insert(request_id.clone(), Arc::new(Mutex::new(Vec::<Notification>::new())));
+        NOTIFICATIONS_PER_REFID.lock().unwrap().insert(request_id.clone(), Arc::new(Mutex::new(Vec::<model::Notification>::new())));
         let new_upload_info = upload_info.clone();
 
         actix_web::rt::spawn(async move {
@@ -369,7 +338,7 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
             };
             let input_path = PathBuf::from(new_upload_info.2);
             let output_path =
-                PathBuf::from(tmpdir).join([request_id.clone(), "-safe.pdf".to_string()].concat());
+                PathBuf::from(tmpdir).join([request_id.clone(), "-".to_string(), config::DEFAULT_FILE_SUFFIX.to_string()].concat());
 
             let container_image_name = ci_image_name.lock().unwrap().to_string();
             if let Err(ex) = run_dangerzone(request_id, container_image_name, input_path, output_path, ocr_lang_opt).await {
@@ -379,7 +348,7 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
     };
 
     if err_msg.is_empty() {
-        HttpResponse::Accepted().json(UploadResponse::new(request_id_clone.clone(), format!("/events/{}", request_id_clone.clone())))
+        HttpResponse::Accepted().json(model::UploadResponse::new(request_id_clone.clone(), format!("/events/{}", request_id_clone.clone())))
     } else {
         HttpResponse::BadRequest().json(server_problem(
             err_msg,
@@ -450,7 +419,7 @@ pub async fn save_file(
 fn progress_made(refid: String, event: &str, data: String, counter: i32) -> Result<(), Box<dyn std::error::Error>> {
     let nevent = event.to_string();
     let nid = format!("{}", counter);
-    let n = Notification::new(nevent, nid, data);
+    let n = model::Notification::new(nevent, nid, data);
 
     if let Ok(bc) = NOTIFICATIONS_PER_REFID.lock() {
         if let Some(v) = bc.get(&refid) {
@@ -510,7 +479,7 @@ async fn run_dangerzone(
     if let Ok(cmd_exit_status_opt) = cmd.try_wait() {
         if let Some(cmd_exit_status) = cmd_exit_status_opt {
             if cmd_exit_status.success() {
-                let msg = CompletionMessage::new(format!("/downloads/{}", refid.clone()));
+                let msg = model::CompletionMessage::new(format!("/downloads/{}", refid.clone()));
                 let msg_json = serde_json::to_string(&msg).unwrap();
                 progress_made(refid.clone(), "processing_success", msg_json, counter)?;
                 let _ = std::fs::remove_file(input_path);
@@ -520,7 +489,7 @@ async fn run_dangerzone(
         }
     }
 
-    let msg = CompletionMessage::new("failure".to_string());
+    let msg = model::CompletionMessage::new("failure".to_string());
     let msg_json = serde_json::to_string(&msg).unwrap();
     progress_made(refid.clone(), "processing_failure", msg_json, counter)?;
     let _ = std::fs::remove_file(input_path);

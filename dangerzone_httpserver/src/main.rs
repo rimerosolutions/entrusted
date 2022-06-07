@@ -381,7 +381,7 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
     if err_msg.is_empty() {
         HttpResponse::Accepted().json(UploadResponse::new(request_id_clone.clone(), format!("/events/{}", request_id_clone.clone())))
     } else {
-        HttpResponse::InternalServerError().json(server_problem(
+        HttpResponse::BadRequest().json(server_problem(
             err_msg,
             req.uri(),
         ))

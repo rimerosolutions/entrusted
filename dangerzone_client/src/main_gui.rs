@@ -16,7 +16,7 @@ use std::sync::Arc;
 use std::thread;
 
 use fltk::{
-    app, browser, button, dialog, draw, enums, frame, group, input, misc, prelude::*, text, window, image
+    app, browser, button, dialog, draw, enums, frame, group, input, misc, prelude::*, text, window, image, menu
 };
 
 mod common;
@@ -1105,10 +1105,74 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
+    fn show_about(current_wind: &window::Window) {
+        let logo_image_bytes = include_bytes!("../../images/Dangerzone.png");
+        let dialog_width = 350;
+        let dialog_height = 150;
+        let dialog_xpos = current_wind.x() + (current_wind.w() / 2) - (dialog_width / 2);
+        let dialog_ypos = current_wind.y() + (current_wind.h() / 2) - (dialog_height / 2);
+        let win_title = format!("About {}", option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"));
+
+        let mut win = window::Window::default()
+            .with_size(dialog_width, dialog_height)
+            .with_pos(dialog_xpos, dialog_ypos)
+            .with_label(&win_title);
+
+        let dialog_text = format!(
+            "{}\nVersion {}\n{}",
+            option_env!("CARGO_PKG_DESCRIPTION").unwrap_or("Unknown"),
+            option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"),
+            "Copyright Rimero Solutions, 2022-present"
+        );
+
+        let mut logo_frame = frame::Frame::default()
+            .with_size(200, 50)
+            .with_pos(dialog_width/2 - 100, WIDGET_GAP);
+
+        if let Ok(img) = image::PngImage::from_data(logo_image_bytes) {
+            let mut img = img;
+            img.scale(50, 50, true, true);
+            logo_frame.set_image(Some(img));
+        }
+
+        frame::Frame::default()
+            .with_size(200, 60)
+            .below_of(&logo_frame, WIDGET_GAP)
+            .with_label(&dialog_text)
+            .with_align(enums::Align::Center | enums::Align::Inside);
+
+        win.end();
+        win.make_modal(true);
+        win.show();
+
+        while win.shown() {
+            app::wait();
+        }
+    }
+
+    #[cfg(not(any(target_os = "macos")))] {
+        let mut menubar = menu::SysMenuBar::new(0, 0, 150, 30, None);
+        menubar.add_choice("File/Quit");
+        menubar.add_choice("Help/About");
+
+        // handle all callbacks in the menubar callback
+        menubar.set_callback({
+            let current_wind = wind.clone();
+
+            move |m| {
+                if let Some(choice) = m.choice() {
+                    match choice.as_str() {
+                        "Quit" => app::quit(),
+                        "About" => {
+                            show_about(&current_wind);
+                        },
+                        _ => (),
+                    }
+                }
+            }});
+    }
+
     #[cfg(target_os = "macos")] {
-        use fltk::menu;
-        // TODO this requires temporary custom pre-bundled fltk-rs lib for macos
-        // The custom CFLTK_BUNDLE will be deleted once the relevant features is officially released
         app::raw_open_callback(Some(|s| {
             let input_path: String = {
                 let ret = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().to_string() };
@@ -1118,53 +1182,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             s.send(input_path);
         }));
 
-        let logo_image_bytes = include_bytes!("../../images/Dangerzone.png");
-
         menu::mac_set_about({
             let current_wind = wind.clone();
 
             move || {
-                let dialog_width = 350;
-                let dialog_height = 150;
-                let dialog_xpos = current_wind.x() + (current_wind.w() / 2) - (dialog_width / 2);
-                let dialog_ypos = current_wind.y() + (current_wind.h() / 2) - (dialog_height / 2);
-                let win_title = format!("About {}", option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"));
-
-                let mut win = window::Window::default()
-                    .with_size(dialog_width, dialog_height)
-                    .with_pos(dialog_xpos, dialog_ypos)
-                    .with_label(&win_title);
-
-                let dialog_text = format!(
-                    "{}\nVersion {}\n{}",
-                    option_env!("CARGO_PKG_DESCRIPTION").unwrap_or("Unknown"),
-                    option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"),
-                    "Copyright Rimero Solutions, 2022-present"
-                );
-
-                let mut logo_frame = frame::Frame::default()
-                    .with_size(200, 50)
-                    .with_pos(dialog_width/2 - 100, WIDGET_GAP);
-
-                if let Ok(img) = image::PngImage::from_data(logo_image_bytes) {
-                    let mut img = img;
-                    img.scale(50, 50, true, true);
-                    logo_frame.set_image(Some(img));
-                }
-
-                frame::Frame::default()
-                    .with_size(200, 60)
-                    .below_of(&logo_frame, WIDGET_GAP)
-                    .with_label(&dialog_text)
-                    .with_align(enums::Align::Center | enums::Align::Inside);
-
-                win.end();
-                win.make_modal(true);
-                win.show();
-
-                while win.shown() {
-                    app::wait();
-                }
+                show_about(&current_wind);
             }
         });
     }

@@ -14,6 +14,65 @@ use std::{
 use tokio::{fs::File, io::AsyncWriteExt};
 use tokio_util::codec::{BytesCodec, FramedRead};
 
+use serde::de::DeserializeOwned;
+
+use std::fs;
+use std::io::Read;
+use dirs;
+
+const PROGRAM_GROUP: &str = "dangerzone-httpclient";
+const CFG_FILENAME: &str = "config.toml";
+
+#[derive(Deserialize, Serialize, Clone)]
+#[serde(default)]
+pub struct AppConfig {
+    #[serde(rename(serialize = "ocr-lang", deserialize = "ocr-lang"))]
+    pub ocr_lang: Option<String>,
+    pub host: String,
+    pub port: u16,
+}
+
+impl Default for AppConfig {
+    fn default() -> Self {
+        Self {
+            ocr_lang: None,
+            host: String::from("localhost"),
+            port: 13000,
+        }
+    }
+}
+
+fn load_config <T> () -> Result<T, Box<dyn Error>>
+where T: Default + DeserializeOwned {
+    let config_dir_opt = dirs::config_dir();
+
+    if let Some(config_dir) = config_dir_opt {
+        let config_dir_dgz = config_dir.join(PROGRAM_GROUP);
+
+        if config_dir_dgz.exists() {
+            let config_path = config_dir_dgz.join(CFG_FILENAME);
+
+            if config_path.exists() {
+                let mut f = fs::File::open(config_path.clone())?;
+                let mut config_data = Vec::new();
+
+                let ret = {
+                    f.read_to_end(&mut config_data)?;
+                    toml::from_slice(&config_data)
+                };
+
+                if let Ok(data) = ret {
+                    return Ok(data);
+                } else {
+                    return Ok(T::default());
+                }
+            }
+        }
+    }
+
+    Ok(T::default())
+}
+
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct UploadResponse {
     pub id: String,
@@ -34,6 +93,10 @@ pub struct LogMessage {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
+    let appconfig_ret = load_config();
+    let appconfig = appconfig_ret.unwrap_or(AppConfig::default());
+    let port_number_text = format!("{}", appconfig.port);
+    
     let app = App::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
         .author(option_env!("CARGO_PKG_AUTHORS").unwrap_or("Unknown"))
@@ -43,7 +106,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 .long("host")
                 .help("Server host")
                 .required(true)
-                .default_value("localhost")
+                .default_value(&appconfig.host)
                 .takes_value(true),
         )
         .arg(
@@ -58,7 +121,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 .long("port")
                 .help("Server port")
                 .required(true)
-                .default_value("13000")
+                .default_value(&port_number_text)
                 .takes_value(true),
         )
         .arg(
@@ -78,14 +141,17 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
 
     let run_matches = app.to_owned().get_matches();
 
-    let mut ocr_lang_opt = None;
+    let ocr_lang_opt = if let Some(proposed_ocr_lang) = run_matches.value_of("ocr-lang") {
+        Some(String::from(proposed_ocr_lang))
+    } else {
+        appconfig.ocr_lang
+    };
 
-    if let Some(proposed_ocr_lang) = run_matches.value_of("ocr-lang") {
+    if let Some(proposed_ocr_lang) = &ocr_lang_opt {
         let supported_ocr_languages = ocr_lang_key_by_name();
-
-        if supported_ocr_languages.contains_key(proposed_ocr_lang) {
-            ocr_lang_opt = Some(proposed_ocr_lang.to_string());
-        } else {
+        let proposed_ocr_lang_str = proposed_ocr_lang.as_str();
+        
+        if !supported_ocr_languages.contains_key(&proposed_ocr_lang_str) {
             let mut ocr_lang_err = "".to_string();
             ocr_lang_err.push_str(&format!("Unsupported language code for the ocr-lang parameter: {}. Hint: Try 'eng' for English. => ", proposed_ocr_lang));
             let mut prev = false;
@@ -115,6 +181,10 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         run_matches.value_of("input-filename"),
     ) {
         let p = PathBuf::from(file);
+
+        if let Err(e) = port.parse::<u16>() {
+            return Err(format!("Invalid port number: {}! {}.", port, e.to_string()).into());
+        }
 
         if !p.exists() {
             return Err("The input file doesn't exists!".into());

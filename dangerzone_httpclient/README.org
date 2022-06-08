@@ -25,7 +25,7 @@ In the screenshot below, the client is running in an Ubuntu Linux VM and the ser
 
 * How to build this?
 
-At the root of this project, open a command prompt and type =cargo build=.*
+At the root of this project, open a command prompt and type =cargo build=.
 
 * How to run this?
 
@@ -44,4 +44,40 @@ Please use the =help= flag for additional information (setting up the server hos
 #+begin_src sh
   ./target/debug/dangerzone-httpclient --help
 #+end_src
+
+* Is there a configuration file?
+
+Yes, the configuration file (=config.toml=) is optional and its location is operating system dependent.
+
+** Configuration file location
+
+|------------------+-----------------------------------------------------------------------|
+| Operating System | Configuration File Location                                           |
+|------------------+-----------------------------------------------------------------------|
+| Linux & Others   | =XDG_CONFIG_HOME/dangerzone-httpclient/config.toml=                   |
+| Mac OS           | =$HOME/Library/Application Support/dangerzone-httpclient/config.toml= |
+| Windows          | =%APPDATA%\dangerzone-httpclient\config.toml=                         |
+|------------------+-----------------------------------------------------------------------|
+
+** Configuration format
+
+The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to [[https://en.wikipedia.org/wiki/INI_file][INI]] files syntax.
+
+*** Example
+
+#+begin_src conf-toml
+  ocr-lang = "eng"
+  host = "localhost"    
+  port = 13000
+#+end_src
+
+*** Overview
+
+|-----------+----------------------------------------------|
+| Parameter | Description                                  |
+|-----------+----------------------------------------------|
+| ocr-lang  | The tesseract OCR langcode is OCR is desired |
+| host      | The server hostname or IP address            |
+| port      | The server port number                       |
+|-----------+----------------------------------------------|
 

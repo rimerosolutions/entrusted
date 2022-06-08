@@ -71,3 +71,53 @@ There's no explicit command-line support for batch conversion, because in a UNIX
        -name "*.pdf" \
        -exec dangerzone-cli --input-filename {} \;
 #+end_src
+
+* Is there a configuration file?
+
+Yes, the configuration file (=config.toml=) is optional and its location is operating system dependent.
+
+** Configuration file location
+
+|------------------+-----------------------------------------------------------------------|
+| Operating System | Configuration File Location                                           |
+|------------------+-----------------------------------------------------------------------|
+| Linux & Others   | =XDG_CONFIG_HOME/dangerzone-client/config.toml=                       |
+| Mac OS           | =$HOME/Library/Application Support/dangerzone-client/config.toml=     |
+| Windows          | =%APPDATA%\dangerzone-client\config.toml=                             |
+|------------------+-----------------------------------------------------------------------|
+
+** Configuration format
+
+The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to [[https://en.wikipedia.org/wiki/INI_file][INI]] files syntax.
+
+*** Example
+
+#+begin_src conf-toml
+  # This must be a valid tesseract lang code
+  # See also https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html
+  ocr-lang = "eng"
+
+  # The converted name will be named as follow original-name-sanitized.pdf
+  file-suffix = "sanitized"
+
+  # This is meant mostly for advanced usage (self-hosting, development, etc.)
+  # container-image-name= docker.io/MY_USERNAME_HERE/dangerzone-converter:1.2.3
+
+  # Only if the conversion is successful each document will be opened automatically
+  # "AcruBOT_ReadAZ" is the name of the PDF viewer as "identified" in the GUI client
+  # That name isn't just random: the name, spacing and case all matter...
+  # preview-result-appname=AcruBOT_ReadAZ
+#+end_src
+
+*** Overview
+
+|--------------------------+-------------------------------------------------------------------|
+| Parameter                | Description                                                       |
+|--------------------------+-------------------------------------------------------------------|
+| =ocr-lang=               | The tesseract OCR langcode is OCR is desired (slower conversions) |
+| =file-suffix=            | Custom file suffix for converted files (defaults to =dgz=)        |
+| =container-image-name=   | A custom container image for conversions (advanced option)        |
+| =preview-result-appname= | The PDF viewer as identified by the GUI to open converted files   |
+|--------------------------+-------------------------------------------------------------------|
+
+In CLI mode (=dangerzone-cli=), there's never any attempt to consider the =preview-result-appname= parameter. It's only intended for Desktop usage ("Save current settings as defaults" in the GUI client).

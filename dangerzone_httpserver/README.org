@@ -139,3 +139,53 @@ The =/downloads/{id}= endpoints allows downloading successfully converted docume
 - Instead of hardcoding the URL, you should parse the data field of the =processing_success= field (from processing notifications).
 
  Please note that once downloaded, the file is immediately deleted from the server!
+
+* Is there a configuration file for the server?
+
+Yes, the configuration file (=config.toml=) is optional and its location is operating system dependent.
+
+** Configuration file location
+
+|------------------+-----------------------------------------------------------------------|
+| Operating System | Configuration File Location                                           |
+|------------------+-----------------------------------------------------------------------|
+| Linux & Others   | =XDG_CONFIG_HOME/dangerzone-httpserver/config.toml=                   |
+| Mac OS           | =$HOME/Library/Application Support/dangerzone-httpserver/config.toml= |
+| Windows          | =%APPDATA%\dangerzone-httpserver\config.toml=                         |
+|------------------+-----------------------------------------------------------------------|
+
+** Configuration format
+
+The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to [[https://en.wikipedia.org/wiki/INI_file][INI]] files syntax.
+
+*** Example
+
+#+begin_src conf-toml
+  # This must be a valid tesseract lang code
+  # See also https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html
+  ocr-lang = "eng"
+
+  # The server hostname or IP address to bind 
+  host = "localhost"
+
+  # The server port
+  port = 13000
+
+  # This is meant mostly for advanced usage (self-hosting, development, etc.)
+  # This always defaults to the current version of the application for the tag
+  # Unless you know what you're doing, there's no need to set this
+  # container-image-name= docker.io/MY_USERNAME_HERE/dangerzone-converter:1.2.3
+#+end_src
+
+*** Overview
+
+|------------------------+------------------------------------------------------------|
+| Parameter              | Description                                                |
+|------------------------+------------------------------------------------------------|
+| =ocr-lang=             | The tesseract OCR langcode is OCR is desired               |
+| =host=                 | The server hostname or IP address                          |
+| =port=                 | The server port number                                     |
+| =container-image-name= | A custom container image for conversions (advanced option) |
+|------------------------+------------------------------------------------------------|
+
+ 

@@ -4,6 +4,7 @@ RUN apk -U upgrade && \
     apk add \
     binutils \
     leptonica-dev \
+    icu-data-full \
     tesseract-ocr-dev \
     poppler-dev \
     cairo-dev \
@@ -25,6 +26,7 @@ FROM docker.io/alpine:latest
 RUN apk -U upgrade && \
     apk add \
     leptonica-dev \
+    icu-data-full \
     libreoffice \
     tesseract-ocr-dev \
     poppler-dev \

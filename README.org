@@ -121,10 +121,10 @@ High-level TODOs:
   - [X] Do not ship an unsigned app bundle for Mac OS as it doesn't behave/work anyway
   - [X] Mitigate some of the new Desktop and Web UI bugs as much as possible
 - [X] Additional release artifacts for convenience ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral14][spiral14 branch]] part 2)
-  - [X] Add DMG installer for Mac OS, with app ability to still invoke external programs
-  - [X] Add MSI installer for Windows via [[https://nsis.sourceforge.io/Main_Page][NSIS]] for now
+  - [X] Add DMG image for Mac OS, with the ability to still invoke external programs
+  - [X] Add software installer for Windows via [[https://nsis.sourceforge.io/Main_Page][NSIS]] for now
 - [X] Support application preferences ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral15][spiral15 branch]])
-- [ ] Support translations with [[https://github.com/projectfluent/fluent-rs][fluent-rs]]?
+- [ ] Add infrastructure for message translations: errors, UI widgets ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral15][spiral16 branch]])
 - [ ] Create artwork and rename the GitHub project
 - [ ] Revisit notifications SSE + HTTP2, for the "Online Service"
 - [ ] Investigate if specific support is required for Tails Linux

@@ -1151,7 +1151,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     #[cfg(not(any(target_os = "macos")))] {
-        let mut menubar = menu::SysMenuBar::new(0, 0, 150, 30, None);
+        let mut menubar = menu::MenuBar::new(0, 0, 150, 30, None);
         menubar.add_choice("File/Quit");
         menubar.add_choice("Help/About");
 

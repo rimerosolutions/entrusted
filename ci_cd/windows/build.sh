@@ -19,7 +19,7 @@ rm -rf ${PROJECTDIR}/dangerzone_httpserver/target
 cd ${PROJECTDIR}
 
 echo "Building dangerzone_client"
-podman run --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:1.60.0 sh -c "cd /src/dangerzone_client && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --manifest-path Cargo.x86_64-pc-windows-gnu.toml"
+podman run --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:1.60.0 sh -c "cd /src/dangerzone_client && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu"
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Failure"

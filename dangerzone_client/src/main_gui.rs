@@ -608,9 +608,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     openwith_button_rc.borrow_mut().deactivate();
 
-    if appconfig.openwith_appname.is_none() {
-        openwith_checkbutton.deactivate();
-    } else {
+    if appconfig.openwith_appname.is_some() {
         openwith_checkbutton.set_checked(true);
     }
 

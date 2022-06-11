@@ -19,6 +19,7 @@ use fltk::{
     app, browser, button, dialog, draw, enums, frame, group, input, misc, prelude::*, text, window, image
 };
 
+mod l10n;
 mod common;
 mod config;
 mod container;
@@ -74,6 +75,7 @@ struct FileListWidget {
     container: group::Pack,
     selected_indices: Rc<RefCell<Vec<usize>>>,
     rows: Rc<RefCell<Vec<FileListRow>>>,
+    translations: Rc<RefCell<HashMap<String, String>>>,
 }
 
 impl Deref for FileListWidget {
@@ -84,7 +86,7 @@ impl Deref for FileListWidget {
     }
 }
 
-impl DerefMut for FileListWidget {
+impl  DerefMut for FileListWidget {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.container
     }
@@ -116,8 +118,8 @@ fn clip_text<S: Into<String>>(txt_to_clip: S, max_w: i32) -> String {
     String::from(txt)
 }
 
-impl FileListWidget {
-    pub fn new() -> Self {
+impl <'a> FileListWidget {
+    pub fn new(translations: Rc<RefCell<HashMap<String, String>>>) -> Self {
         let mut container = group::Pack::default().with_type(group::PackType::Vertical).with_size(300, 300);
         container.set_spacing(WIDGET_GAP);
         container.end();
@@ -125,6 +127,7 @@ impl FileListWidget {
 
         Self {
             container,
+            translations,
             selected_indices: Rc::new(RefCell::new(vec![])),
             rows: Rc::new(RefCell::new(vec![])),
         }
@@ -305,6 +308,17 @@ impl FileListWidget {
             file: path.clone(),
         };
 
+        let new_translations = self.translations.borrow().clone();
+        let dialog_title = match new_translations.get("window-logs-title") {
+            Some(vv) => vv.to_owned(),
+            None => String::from("window-logs-title")
+        };
+
+        let close_button_label = match new_translations.get("window-logs-log-close-button") {
+            Some(vv) => vv.to_owned(),
+            None => String::from("window-logs-log-close-button")
+        };        
+
         logs_button.set_callback({
             let active_row = file_list_row.clone();
 
@@ -320,7 +334,7 @@ impl FileListWidget {
                     let mut dialog = window::Window::default()
                         .with_size(wind_w, wind_h)
                         .with_pos(wind_x, wind_y)
-                        .with_label("Logs");
+                        .with_label(&dialog_title);
 
                     dialog.begin();
 
@@ -333,7 +347,7 @@ impl FileListWidget {
                     let mut log_close_button = button::Button::default()
                         .with_pos((wind_w / 2) - (button_width / 2), 400 - button_height - (WIDGET_GAP / 2))
                         .with_size(button_width, button_height)
-                        .with_label("Close");
+                        .with_label(&close_button_label);
 
 
                     log_close_button.set_callback({
@@ -405,6 +419,14 @@ impl FileListWidget {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let locale = match env::var(l10n::ENV_VAR_DANGERZONE_LANGID) {
+        Ok(selected_locale) => selected_locale,
+        Err(_) => sys_locale::get_locale().unwrap_or_else(|| String::from(l10n::DEFAULT_LANGID))
+    };
+    let l10n = l10n::Messages::new(locale);
+    let l10n_ref = l10n.clone();
+
+    let selectfiles_dialog_title = l10n.get_message("filedialog-selectfiles-title").clone();
     let appconfig_ret = config::load_config();
     let appconfig = appconfig_ret.unwrap_or(config::AppConfig::default());
 
@@ -419,7 +441,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     );
 
     let mut wind = window::Window::default()
-        .with_size(680, 600)
+        .with_size(739, 630)
         .center_screen()
         .with_label(&wind_title);
 
@@ -441,11 +463,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut tabsettings_button = button::Button::default()
         .with_size(80, 20)
-        .with_label("Settings");
+        .with_label(&l10n.get_message("window-main-tabsettings-button-label"));
 
     let mut tabconvert_button = button::Button::default()
         .with_size(80, 20)
-        .with_label("Convert");
+        .with_label(&l10n.get_message("window-main-tabconvert-button-label"));
     top_group.end();
 
     let settings_pack_rc = Rc::new(RefCell::new(
@@ -464,9 +486,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     filesuffix_pack.set_spacing(WIDGET_GAP);
     let mut filesuffix_checkbutton = button::CheckButton::default()
         .with_size(160, 20)
-        .with_label("Custom file suffix");
+        .with_label(&l10n.get_message("window-main-filesuffix-checkbutton-label"));
     filesuffix_checkbutton
-        .set_tooltip("The safe PDF will be named <input>-<suffix>.pdf by default.");
+        .set_tooltip(&l10n.get_message("window-main-filesuffix-checkbutton-tooltip"));
 
     if &appconfig.file_suffix != config::DEFAULT_FILE_SUFFIX {
         filesuffix_checkbutton.set_checked(true);
@@ -501,9 +523,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     ocrlang_pack.set_spacing(WIDGET_GAP);
     let mut ocrlang_checkbutton = button::CheckButton::default()
         .with_size(300, 20)
-        .with_label("Make PDF Searchable? Yes, with language:");
+        .with_label(&l10n.get_message("window-main-ocrlang-checkbutton-label"));
     ocrlang_checkbutton.set_tooltip(
-        "OCR (Optical character recognition) will be applied.",
+        &l10n.get_message("window-main-ocrlang-checkbutton-tooltip"),
     );
 
     if appconfig.ocr_lang.is_some() {
@@ -513,13 +535,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let ocrlang_holdbrowser_rc = Rc::new(RefCell::new(
         browser::HoldBrowser::default().with_size(240, 60),
     ));
-    let ocr_languages_by_name = common::ocr_lang_key_by_name();
+    let ocr_languages_by_name = common::ocr_lang_key_by_name(l10n_ref.clone());
     let mut ocr_languages_by_lang = HashMap::with_capacity(ocr_languages_by_name.len());
-    let mut ocr_languages: Vec<&str> = Vec::with_capacity(ocr_languages_by_name.len());
+    let mut ocr_languages: Vec<String> = Vec::with_capacity(ocr_languages_by_name.len());
 
     for (k, v) in ocr_languages_by_name {
-        ocr_languages_by_lang.insert(v, k);
-        ocr_languages.push(v);
+        ocr_languages_by_lang.insert(v.clone(), k);
+        ocr_languages.push(v.clone());
     }
 
     ocr_languages.sort();
@@ -530,17 +552,17 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let selected_ocrlang = if let Some(cur_ocrlangcode) = appconfig.ocr_lang.clone() {
         let cur_ocrlangcode_str = cur_ocrlangcode.as_str();
-        let ocr_languages_by_name_ref = common::ocr_lang_key_by_name();
+        let ocr_languages_by_name_ref = common::ocr_lang_key_by_name(l10n.clone());
         if let Some(cur_ocrlangname) = ocr_languages_by_name_ref.get(cur_ocrlangcode_str) {
             cur_ocrlangname.to_string()
         } else {
-            String::from("English")
+            String::from(&l10n.get_message("default-language-name"))
         }
     } else {
-        String::from("English")
+        String::from(&l10n.get_message("default-language-name"))
     };
 
-    if let Some(selected_ocr_language_idx) = ocr_languages.iter().position(|&r| r == &selected_ocrlang) {
+    if let Some(selected_ocr_language_idx) = ocr_languages.iter().position(|r| r == &selected_ocrlang) {
         ocrlang_holdbrowser_rc
             .borrow_mut()
             .select((selected_ocr_language_idx + 1) as i32);
@@ -567,8 +589,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_size(570, 40)
         .with_type(group::PackType::Horizontal);
     openwith_pack.set_spacing(WIDGET_GAP);
-    let mut openwith_checkbutton = button::CheckButton::default().with_size(295, 20).with_label("Open document after conversion, using");
-    openwith_checkbutton.set_tooltip("Automatically open resulting PDFs with a given program.");
+    let mut openwith_checkbutton = button::CheckButton::default().with_size(295, 20).with_label(&l10n.get_message("window-main-openwith-checkbutton-label"));
+    openwith_checkbutton.set_tooltip(&l10n.get_message("window-main-openwith-checkbutton-tooltip"));
 
     let pdf_apps_by_name = list_apps_for_pdfs();
     let openwith_inputchoice_rc = Rc::new(RefCell::new(misc::InputChoice::default().with_size(240, 20)));
@@ -584,7 +606,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         openwith_inputchoice_rc.borrow_mut().add(k);
     }
 
-    openwith_inputchoice_rc.borrow_mut().set_tooltip("You can also paste the path to a PDF viewer");
+    openwith_inputchoice_rc.borrow_mut().set_tooltip(&l10n.get_message("window-main-openwith-inputchoice-rc-tooltip"));
 
     if pdf_apps_by_name.len() != 0 {
         let idx = if let Some(viewer_appname) = appconfig.openwith_appname.clone() {
@@ -604,7 +626,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let openwith_button_rc = Rc::new(RefCell::new(button::Button::default().with_size(35, 20).with_label("..")));
-    openwith_button_rc.borrow_mut().set_tooltip("Browse for PDF viewer program");
+    openwith_button_rc.borrow_mut().set_tooltip(&l10n.get_message("window-main-openwith-button-rc-tooltip"));
 
     openwith_button_rc.borrow_mut().deactivate();
 
@@ -634,14 +656,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         let pdf_viewer_list_ref = openwith_inputchoice_rc.clone();
 
         move |_| {
-            let mut dlg = dialog::FileDialog::new(dialog::FileDialogType::BrowseFile);
-            dlg.set_title("Select PDF viewer program");
-            dlg.show();
+            let mut selectpdfviewer_dialog = dialog::FileDialog::new(dialog::FileDialogType::BrowseFile);
+            selectpdfviewer_dialog.set_title("filedialog-selectpdfviewer-title");
+            selectpdfviewer_dialog.show();
 
-            let selected_filename = dlg.filename();
+            let selected_filename = selectpdfviewer_dialog.filename();
 
             if !selected_filename.as_os_str().is_empty() {
-                let path_name = format!("{}", dlg.filename().display());
+                let path_name = format!("{}", selectpdfviewer_dialog.filename().display());
                 pdf_viewer_list_ref.borrow_mut().set_value(&path_name);
             }
         }
@@ -658,8 +680,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_size(100, 20)
         .with_pos(0, 0)
         .with_align(enums::Align::Inside | enums::Align::Left);
-    ociimage_checkbutton.set_label("Custom container image");
-    ociimage_checkbutton.set_tooltip("Expert option for sandbox solution");
+    ociimage_checkbutton.set_label(&l10n.get_message("window-main-ociimage-checkbutton-label"));
+    ociimage_checkbutton.set_tooltip(&l10n.get_message("window-main-ociimage-checkbutton-tooltip"));
 
     let ociimage_text = if let Some(custom_container_image_name) = appconfig.container_image_name.clone() {
         custom_container_image_name
@@ -704,7 +726,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut savesettings_button = button::Button::default()
         .with_size(100, 20)
-        .with_label("Save current settings as defaults")
+        .with_label(&l10n.get_message("window-main-savesettings-button-label"))
         .with_align(enums::Align::Inside | enums::Align::Center);
 
     savesettings_button.set_callback({
@@ -724,8 +746,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             if ocrlang_checkbutton_ref.is_checked() {
                 if let Some(language_name) = ocrlang_holdbrowser_rc_ref.borrow().selected_text() {
-                    let language_str = language_name.as_str();
-                    if let Some(langcode) = ocr_languages_by_lang_ref.get(&language_str) {
+                    if let Some(langcode) = ocr_languages_by_lang_ref.get(&language_name) {
                         new_appconfig.ocr_lang = Some(langcode.to_string());
                     }
                 }
@@ -775,24 +796,28 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut convert_frame = frame::Frame::default().with_size(500, 80).with_pos(10, 10);
     convert_frame.set_frame(enums::FrameType::RFlatBox);
     convert_frame.set_label_color(enums::Color::White);
-    convert_frame.set_label("Drop 'potentially suspicious' file(s) here\nor\nClick here to select file(s)");
+    convert_frame.set_label(&format!("{}\n{}\n{}",
+                                     l10n.get_message("window-main-convert-frame-label-line1"),
+                                     l10n.get_message("window-main-convert-frame-label-line2"),
+                                     l10n.get_message("window-main-convert-frame-label-line3")));
     convert_frame.set_color(enums::Color::Red);
 
     let mut row_convert_button = group::Pack::default()
-        .with_size(500, 40)
+        .with_size(600, 40)
         .below_of(&convert_frame, 30);
     row_convert_button.set_type(group::PackType::Horizontal);
     row_convert_button.set_spacing(WIDGET_GAP);
 
     let mut selection_pack = group::Pack::default()
-        .with_size(150, 20)
+        .with_size(150, 40)
         .with_type(group::PackType::Vertical)
         .below_of(&convert_frame, 30);
+    selection_pack.set_spacing(5);
 
     let selectall_frame_rc = Rc::new(RefCell::new(
         frame::Frame::default()
-            .with_size(130, 10)
-            .with_label("Select all")
+            .with_size(150, 10)
+            .with_label(&l10n.get_message("window-main-selectall-frame-rc-label"))
             .with_align(enums::Align::Inside | enums::Align::Left),
     ));
     selectall_frame_rc
@@ -800,14 +825,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         .set_label_color(enums::Color::Blue);
     let deselectall_frame_rc = Rc::new(RefCell::new(
         frame::Frame::default()
-            .with_size(130, 10)
-            .with_label("Deselect all")
+            .with_size(150, 10)
+            .with_label(&l10n.get_message("window-main-deselectall-frame-rc-label"))
             .with_align(enums::Align::Inside | enums::Align::Left),
     ));
     deselectall_frame_rc
         .borrow_mut()
         .set_label_color(enums::Color::Blue);
-    selection_pack.set_spacing(WIDGET_GAP / 2);
+    
 
     selectall_frame_rc.borrow_mut().draw({
         move |w| {
@@ -849,15 +874,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     selection_pack.end();
 
     let mut delete_button = button::Button::default()
-        .with_size(200, 20)
-        .with_label("Remove selected file(s)");
+        .with_size(250, 20)
+        .with_label(&l10n.get_message("window-main-delete-button-label"));
     delete_button.set_label_color(enums::Color::Black);
     delete_button.set_color(enums::Color::White);
     delete_button.deactivate();
 
     let mut convert_button = button::Button::default()
-        .with_size(200, 20)
-        .with_label("Convert document(s)");
+        .with_size(250, 20)
+        .with_label(&l10n.get_message("window-main-convert-button-label"));
 
     convert_button.set_label_color(enums::Color::Black);
     convert_button.set_color(enums::Color::White);
@@ -869,16 +894,30 @@ fn main() -> Result<(), Box<dyn Error>> {
     columns_frame.set_frame(enums::FrameType::NoBox);
 
     let filelist_scroll = group::Scroll::default().with_size(580, 200);
-    let mut filelist_widget = FileListWidget::new();
+    let mut translations = HashMap::with_capacity(2);
+    let label_log_window_close = l10n.get_message("window-logs-log-close-button");
+    let label_log_window_title = l10n.get_message("window-logs-title");
+    translations.insert(String::from("window-logs-title"), label_log_window_title);
+    translations.insert(String::from("window-logs-log-close-button"), label_log_window_close);
+    let mut filelist_widget = FileListWidget::new(Rc::new(RefCell::new(translations.clone())));
+
+    let col_label_filename = l10n.get_message("window-main-filelist-widget-column-filename");
+    let col_label_progress = l10n.get_message("window-main-filelist-widget-column-progress");
+    let col_label_status   = l10n.get_message("window-main-filelist-widget-column-status");
+    let col_label_message  = l10n.get_message("window-main-filelist-widget-column-message");
 
     columns_frame.draw({
         let filelist_widget_ref = filelist_widget.clone();
+        let col_label_filename_ref = col_label_filename.to_owned();
+        let col_label_progress_ref = col_label_progress.to_owned();
+        let col_label_status_ref = col_label_status.to_owned();
+        let col_label_message_ref = col_label_message.to_owned();
 
         move |wid| {
             if filelist_widget_ref.children() != 0 {
                 let y = wid.y();
-                let (_, h) = draw::measure("Progress", true);
-                let column_names = vec!["Filename", "Progress(%)", "Status", "Message"];
+                let column_names = vec![col_label_filename_ref.clone(), col_label_progress_ref.clone(), col_label_status_ref.clone(), col_label_message_ref.clone()];
+                let (_, h) = draw::measure(&column_names[0], true);
 
                 let old_color = draw::get_color();
                 let old_font = draw::font();
@@ -891,7 +930,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     if let Some(first_child_group) = first_child.as_group() {
                         for i in 0..first_child_group.children() {
                             if let Some(child_wid) = first_child_group.child(i) {
-                                draw::draw_text(column_names[i as usize], std::cmp::max(wid.x(), child_wid.x()), y + h);
+                                draw::draw_text(&column_names[i as usize], std::cmp::max(wid.x(), child_wid.x()), y + h);
                             }
                         }
                     }
@@ -934,7 +973,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let selectall_frame_rc_ref = selectall_frame_rc.clone();
         let deselectall_frame_rc_ref = deselectall_frame_rc.clone();
         let mut filelist_scroll_ref = filelist_scroll.clone();
-
+        let l10n_ref:l10n::Messages = l10n_ref.clone();
         let app_config_ref = appconfig.clone();
 
         move |b| {
@@ -972,9 +1011,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             let ocr_lang_setting = if ocrlang_checkbutton_ref.is_checked() {
                 if let Some(selected_lang) = ocrlang_holdbrowser_rc_ref.borrow().selected_text() {
-                    let selected_lang_str = selected_lang.as_str();
                     ocr_languages_by_lang
-                        .get(&selected_lang_str)
+                        .get(&selected_lang)
                         .map(|i| format!("{}", i))
                 } else {
                     None
@@ -992,6 +1030,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             };
 
             let viewer_app_option = viewer_app_exec.clone();
+            let failure_message = &l10n_ref.get_message("window-main-conversion-message-failed");
+            let logs_title_button_label = &l10n_ref.get_message("window-logs-title");
 
             for current_row in filelist_widget_ref.rows.borrow_mut().iter() {
                 let result = Arc::new(AtomicBool::new(false));
@@ -1011,6 +1051,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     active_row.status.set_label(FILELIST_ROW_STATUS_INPROGRESS);
                     active_row.checkbox.deactivate();
                     active_row.status.set_label_color(enums::Color::DarkYellow);
+                    let l10n_ref = l10n_ref.clone();
 
                     let mut exec_handle = Some(thread::spawn(move || {
                         match container::convert(
@@ -1020,6 +1061,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                             String::from("json"),
                             active_ocrlang_option,
                             tx,
+                            l10n_ref
                         ) {
                             Ok(_) => None,
                             Err(ex) => Some(format!("{}", ex)),
@@ -1069,7 +1111,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                             }
                         },
                         None => {
-                            let label_text = "Conversion failed";
+                            let label_text = failure_message;
                             active_row.log_link.set_label(label_text);
                             active_row.logs.borrow_mut().push(String::from(label_text));
                         }
@@ -1079,7 +1121,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     active_row.status.set_label_color(status_color);
                     active_row.progressbar.set_label("100%");
                     active_row.progressbar.set_value(100.0);
-                    active_row.log_link.set_label("Logs");
+                    active_row.log_link.set_label(logs_title_button_label);
                     active_row.log_link.set_frame(enums::FrameType::ThinUpBox);
                     active_row.log_link.set_down_frame(enums::FrameType::ThinDownBox);
                     active_row.log_link.activate();
@@ -1088,7 +1130,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     if result.load(Ordering::Relaxed) && active_viewer_app_option.is_some() {
                         if let Some(viewer_exe) = active_viewer_app_option {
                             if let Err(exe) = pdf_open_with(viewer_exe, current_output_path.clone()) {
-                                let err_text = format!("Could not open PDF result\n.{}.", exe.to_string());
+                                let err_text = format!("{}\n.{}.", "error.cannot_open_pdfresult", exe.to_string());
                                 dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, &err_text);
                             }
                         }
@@ -1117,6 +1159,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         menu::mac_set_about({
             let current_wind = wind.clone();
+            let l10n_ref = l10n_ref.clone();
 
             move || {
                 let logo_image_bytes = include_bytes!("../../images/Dangerzone.png");
@@ -1124,7 +1167,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let dialog_height = 150;
                 let dialog_xpos = current_wind.x() + (current_wind.w() / 2) - (dialog_width / 2);
                 let dialog_ypos = current_wind.y() + (current_wind.h() / 2) - (dialog_height / 2);
-                let win_title = format!("About {}", option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"));
+                let win_title = format!("{} {}", &l10n_ref.get_message("window-macabout-aboutlabel"),
+                                        option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"));
 
                 let mut win = window::Window::default()
                     .with_size(dialog_width, dialog_height)
@@ -1132,8 +1176,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                     .with_label(&win_title);
 
                 let dialog_text = format!(
-                    "{}\nVersion {}\n{}",
+                    "{}\n{} {}\n{}",
                     option_env!("CARGO_PKG_DESCRIPTION").unwrap_or("Unknown"),
+                    &l10n_ref.get_message("window-macabout-versionlabel"),
                     option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"),
                     "Copyright Rimero Solutions, 2022-present"
                 );
@@ -1226,8 +1271,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
 
         added
-    }
-
+    }    
+    
     convert_frame.handle({
         let mut dnd = false;
         let mut released = false;
@@ -1239,6 +1284,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let deselectall_frame_rc_ref = deselectall_frame_rc.clone();
         let mut convert_button_ref = convert_button.clone();
         let mut columns_frame_ref = columns_frame.clone();
+        let dialog_title = selectfiles_dialog_title.clone();
 
         move |_, ev| match ev {
             enums::Event::DndEnter => {
@@ -1293,11 +1339,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                 true
             }
             enums::Event::Push => {
-                let mut dlg = dialog::FileDialog::new(dialog::FileDialogType::BrowseMultiFile);
-                dlg.set_title("Select 'potentially suspicious' file(s)");
-                dlg.show();
+                let mut selectfiles_filedialog = dialog::FileDialog::new(dialog::FileDialogType::BrowseMultiFile);      
+                selectfiles_filedialog.set_title(&dialog_title);
+                selectfiles_filedialog.show();
 
-                let file_paths: Vec<PathBuf> = dlg
+                let file_paths: Vec<PathBuf> = selectfiles_filedialog
                     .filenames()
                     .iter()
                     .map(|p| p.clone())
@@ -1549,7 +1595,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                     filelist_widget_ref.deselect_all();
                     true
                 } else if app::event_state().is_empty() && app::event_key() == enums::Key::Escape {
-                    // Do NOT close the main window with 'Escape' key
                     true
                 } else {
                     false
@@ -1574,7 +1619,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     wind.end();
     wind.show();
-    wind.resize(wind.x(), wind.y(), 680, 600);
+    wind.resize(wind.x(), wind.y(), 739, 630);
 
     if autoconvert {
         convert_button.do_callback();
@@ -1609,7 +1654,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                         selection_pack_ref.resize(
                             selection_pack_ref.x(),
                             selection_pack_ref.y(),
-                            150,
+                            selection_pack_ref.w(),
                             40,
                         );
 
@@ -1637,16 +1682,17 @@ pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> 
     match common::executable_find("open") {
         Some(open_cmd) => match Command::new(open_cmd).arg("-a").arg(cmd).arg(input).spawn() {
             Ok(mut child_proc) => {
-                if let Ok(exit_status) = child_proc.wait() {
-                    if exit_status.success() {
-                        Ok(())
-                    } else {
-                        Err("Could not open PDF file!".into())
-                    }
-                } else {
-                    Err("Could not run PDF viewer!".into())
+                match child_proc.wait() {
+                    Ok(exit_status) => {
+                        if exit_status.success() {
+                            Ok(())
+                        } else {
+                            Err("Could not open PDF file!".into())
+                        }
+                    },
+                    Err(ex) => Err(ex.into())
                 }
-            }
+            },
             Err(ex) => Err(ex.into()),
         },
         None => Err("Could not find 'open' command in PATH!".into()),

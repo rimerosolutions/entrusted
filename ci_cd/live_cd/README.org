@@ -2,26 +2,29 @@
 
 * Overview
 
-The live CD ([[https://www.debian.org/][Debian]]-based)aims to provide a relatively painless installation of =dangerzone-rust=.
-- It's not always that easy for many to install [[https://docs.docker.com/get-docker/][Docker]] or [[https://podman.io/getting-started/installation][Podman]] (OS or Linux distro specific issues)
-- You may not want to run Docker or Podman directly on your main machine
+The live CD is based on [[https://www.debian.org/][Debian]] GNU Linux and aims to provide a relatively painless installation of =dangerzone-rust=.
+- It's not always that easy for many to install [[https://docs.docker.com/get-docker/][Docker]] or [[https://podman.io/getting-started/installation][Podman]] (Operating System or User specific issues)
+- You may not want to run Docker or Podman directly on your main machine: That translates into running the software inside a virtual machine
   
 ** Recommended settings
-You need at least =1G= of RAM for the Live CD to run reasonably smoothly.
 
-The live CD allocates by default =75%= of the assigned RAM as free disk space.
+You need at least =1G= of RAM for the Live CD to run correctly:
+- There's a correlation between allocated memory and free disk space
+- At least ~700MB of free space need to be available for temporary storage between conversions ("conversion sandbox" creation)
+
+By default, the live CD allocates =75%= of the assigned RAM as free disk space.
 - The default boot parameters are appended to the grub settings =ramdisk-size=75% overlay-size=75%=.
-- The above mentioned values can be change at each boot when the boot loader menu is showing
+- The above mentioned values can be changed on startup, when the boot loader menu is showing (=TAB= key)
 
 ** User journey
 
-- Download the live CD iso image from the Github releases page
+- Download the live CD iso image from the [[https://github.com/rimerosolutions/dangerzone-rust/releases][GitHub releases page]]
 - Boot the live CD iso from the virtualization solution of your choice ([[https://www.qemu.org/][QEMU]], [[https://www.virtualbox.org/wiki/Downloads][VirtualBox]], [[https://www.vmware.com/products/workstation-player.html][VmWare]], etc.)
 - Convert your documents via the =dangerzone-rust= online service (Web Interface): =http://ip_of_vm:13000=
   
 ** Build steps
 
-The steps below have been tested on Debian 11 (bullseye) and Ubuntu 22.04 (jammy).
+The steps below have been tested on [[https://www.debian.org/][Debian]] 11 (/bullseye/) and [[https://ubuntu.com/][Ubuntu]] 22.04 (/jammy/).
 - Clone the =dangerzone-rust= git repository from GitHub=rsync=, etc.)
 - Run the =build.sh= script in this directory: =chmod +x build.sh && ./build.sh=
 - The resulting ISO image will be available at =$HOME/LIVE_BOOT/dangerzone-livecd-VERSION_NUMBER.iso=
@@ -49,10 +52,9 @@ Excerpt of the build process from a Debian VM.
 
 [[./images/live_postlogin.png]]
 
-
 * Dangerzone Web UI access
 
-By default, the /Dangerzone Online Service/ is running on port =13000= and binds to all interfaces (=0.0.0.0=).
+By default, the /Dangerzone Online Service/ is running on port =13000= and binds to all network interfaces (=0.0.0.0=).
 
 You can access it from your machine =http://IP_ADDRESS_OF_VIRTUAL_MACHINE:13000=
 

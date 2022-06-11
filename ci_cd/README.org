@@ -1,10 +1,12 @@
-# CI_CD
+#+TITLE: CI_CD README
 
- Except for the the live CD, all the release artifacts are created within [[https://podman.io/][Podman]]. In the future, maybe =GitHub actions=, =TravisCI= or other solutions will be used for further automation.
+ Except for the the live CD, all the release artifacts are created within [[https://podman.io/][Podman]].
+ - In the future, maybe =GitHub actions=, =TravisCI= or other solutions will be used for further automation.
+ - Pull requests are welcome for any improvements!
 
 * Overview
 
-A bunch of script help build automatically release artifacts for few operating systems (Linux, MacOS or Windows). /There's ongoing work to automate the creation of a [[./live_cd][live CD]]./
+A bunch of shell scripts create all release artifacts for few operating systems (Linux, Mac OS or Windows), including [[./live_cd][live CD]] ISO image.
 
 The current build server is a virtual machine running [[https://ubuntu.com/][Ubuntu Linux]] with the following software installed (among other applications).
 
@@ -12,29 +14,27 @@ The current build server is a virtual machine running [[https://ubuntu.com/][Ubu
 | Tool      | Purpose                                                           |
 |-----------+-------------------------------------------------------------------|
 | [[https://podman.io/][podman]]    | Container solution: used to build all artifacts inside containers |
-| [[https://imagemagick.org/script/convert.php][convert]]   | [[https://imagemagick.org/][ImageMagick]] program for scaling images during MacOS packaging     |
-| [[https://dentrassi.de/2014/02/25/creating-mac-os-x-icons-icns-on-linux/][icnsutils]] | Convert PNG icons to icns format, during MacOS packaging          |
+| [[https://imagemagick.org/script/convert.php][convert]]   | [[https://imagemagick.org/][ImageMagick]] program for scaling images during =Mac OS= packaging  |
+| [[https://dentrassi.de/2014/02/25/creating-mac-os-x-icons-icns-on-linux/][icnsutils]] | Convert PNG icons to icns format, during =Mac OS= packaging       |
 |-----------+-------------------------------------------------------------------|
 
 * About Installers and Packages
 
-While it could be preferrable on Linux to have a native package instead of an =AppImage= and other binaries, it's time consuming (build, test, maintain/support):
+While it could be preferrable on Linux to have a native packages, it's time consuming (build, test, maintain/support):
   - How many distros do you target?
   - How much testing is required and for which versions of a particular Linux distribution?
   - When you have a service, do you provide associated files for any possible [[https://en.wikipedia.org/wiki/Init][init system]]?
-- Under Windows, there are also additional questions:
-  - Which software installer to use? Is NSIS still popular, viable and around?
-  - How do you deal with "services" in "non-involved ways", i.e. =dangerzone-httpserver=?
+  - What about =Flatpak= vs =Snap= vs =AppImage=? Easy, I chose =AppImage= because it's very straightforward and painless.
 
-The binaries are not signed yet (Windows & MacOS), if possible this should be done inside a container too, without having to switch between different machines...
+The binaries are not signed yet (Windows & MacOS), if possible this should be done inside a container too, without having to switch between different machines.
 
 * Targeted Operating Systems
 
 * Linux 
 
-The GUI is built on a Centos 7 container image to achieve maximal binary compatibility across Linux distributions
+The GUI is built on a Centos 7 container image to achieve maximal [[https://stackoverflow.com/questions/1771366/binary-compatibility-between-linux-distributions][binary compatibility across Linux distributions]]
 - The GUI binary cannot be statically linked
-- The libc versions (GLibc and alternatives) vary significantly across distributions, preventing the apps to run
+- The libc versions ([[https://www.etalabs.net/compare_libcs.html][GLibc and alternatives]]) vary significantly across distributions, preventing the apps to run
 
   [[https://github.com/linuxdeploy/linuxdeploy][LinuxDeploy]] is the solution adopted for creating an [[https://docs.appimage.org/][AppImage]] for the GUI. The AppImage requires [[https://wiki.archlinux.org/title/FUSE][Fuse]] tools to run.
   
@@ -42,6 +42,11 @@ The GUI is built on a Centos 7 container image to achieve maximal binary compati
 
 The performance, binaries and other details hasn't been assessed, but this seems to be running just fine.
 
-* MacOS
+* Mac OS
 
 The performance, binaries and other details hasn't been assessed, but this seems to be running just fine.
+
+For the "app bundle", there might be better ways to run external programs (i.e. not by wrapping the app binary within a shell script)
+- https://developer.apple.com/documentation/xcode/embedding-a-helper-tool-in-a-sandboxed-app
+- https://stackoverflow.com/questions/27505022/open-another-mac-app
+  

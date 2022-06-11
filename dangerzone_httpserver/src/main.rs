@@ -259,7 +259,7 @@ async fn download(info: actix_web::web::Path<String>, req: HttpRequest) -> impl 
     println!("Download from: {}", req.uri());
 
     let file_id = info.into_inner();
-    let filename = [&file_id, "-safe.pdf"].concat();
+    let filename = [&file_id, "-dgz.pdf"].concat();
     let filepath = env::temp_dir().join(config::PROGRAM_GROUP).join(filename.clone());
     let filepath_buf = PathBuf::from(filepath);
 

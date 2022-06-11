@@ -86,7 +86,6 @@ where T: Default + Serialize {
         }
 
         let config_path = config_dir_dgz.join(CFG_FILENAME);
-        println!("Creating file {}", config_path.display());
         let mut f = fs::OpenOptions::new().create(true).write(true).truncate(true).open(config_path.clone())?;
         let toml: String = toml::to_string(&config_instance)?;
 

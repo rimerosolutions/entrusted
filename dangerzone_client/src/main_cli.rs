@@ -1,4 +1,5 @@
 use clap::{App, Arg};
+use std::env;
 use std::error::Error;
 use std::path::PathBuf;
 use std::sync::mpsc::channel;
@@ -6,7 +7,9 @@ use std::fs;
 use std::thread;
 use serde_json;
 use indicatif::ProgressBar;
+use sys_locale;
 
+mod l10n;
 mod common;
 mod config;
 mod container;
@@ -15,6 +18,12 @@ const LOG_FORMAT_PLAIN: &str = "plain";
 const LOG_FORMAT_JSON: &str  = "json";
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let locale = match env::var(l10n::ENV_VAR_DANGERZONE_LANGID) {
+        Ok(selected_locale) => selected_locale,
+        Err(_) => sys_locale::get_locale().unwrap_or_else(|| String::from(l10n::DEFAULT_LANGID))
+    };
+    let l10n = l10n::Messages::new(locale);
+
     let app_config_ret = config::load_config();
     let app_config = app_config_ret.unwrap_or(config::AppConfig::default());
 
@@ -23,6 +32,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     } else {
         config::default_container_image_name()
     };
+
+    let help_output_filename = l10n.get_message("cmdline-help-output-filename");
+    let help_ocr_lang = l10n.get_message("cmdline-help-ocr-lang");
+    let help_input_filename = l10n.get_message("cmdline-help-input-filename");
+    let help_container_image_name = l10n.get_message("cmdline-help-container-image-name");
+    let help_log_format = l10n.get_message("cmdline-help-log-format");
+    let help_file_suffix = l10n.get_message("cmdline-help-container-image-name");
     
     let app = App::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
@@ -31,32 +47,32 @@ fn main() -> Result<(), Box<dyn Error>> {
         .arg(
             Arg::with_name("output-filename")
                 .long("output-filename")
-                .help("Optional output filename defaulting to <filename>-dgz.pdf.")
+                .help(&help_output_filename)
                 .required(false)
                 .takes_value(true)
         ).arg(
             Arg::with_name("ocr-lang")
                 .long("ocr-lang")
-                .help("Optional language for OCR")
+                .help(&help_ocr_lang)
                 .required(false)
                 .takes_value(true)
         ).arg(
             Arg::with_name("input-filename")
                 .long("input-filename")
-                .help("Input filename")
+                .help(&help_input_filename)
                 .takes_value(true)
                 .required(true)
         ).arg(
             Arg::with_name("container-image-name")
                 .long("container-image-name")
-                .help("Optional custom Docker or Podman image name")
+                .help(&help_container_image_name)
                 .default_value(&default_container_image_name)
                 .required(false)
                 .takes_value(true)
         ).arg(
             Arg::with_name("log-format")
                 .long("log-format")
-                .help("Log format (json or plain")
+                .help(&help_log_format)
                 .possible_values(&[LOG_FORMAT_JSON, LOG_FORMAT_PLAIN])
                 .default_value(LOG_FORMAT_PLAIN)
                 .required(false)
@@ -64,7 +80,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         ).arg(
             Arg::with_name("file-suffix")
                 .long("file-suffix")
-                .help("Default file suffix")                
+                .help(&help_file_suffix)
                 .default_value(&app_config.file_suffix)
                 .required(false)
                 .takes_value(true)
@@ -83,16 +99,21 @@ fn main() -> Result<(), Box<dyn Error>> {
         output_filename = PathBuf::from(proposed_output_filename);
     }
 
+    if !PathBuf::from(input_filename).exists() {
+        return Err(format!("{}: {}", l10n.get_message("container-msg-file-does-not-exists"), input_filename).into());
+    }
+
     let mut ocr_lang = None;
 
     if let Some(proposed_ocr_lang) = &run_matches.value_of("ocr-lang") {
-        let supported_ocr_languages = common::ocr_lang_key_by_name();
+        let supported_ocr_languages = common::ocr_lang_key_by_name(l10n.clone());
 
         if supported_ocr_languages.contains_key(proposed_ocr_lang) {
             ocr_lang = Some(format!("{}", proposed_ocr_lang));
         } else {
             let mut ocr_lang_err = "".to_string();
-            ocr_lang_err.push_str(&format!("Unsupported language code for the ocr-lang parameter: {}. Hint: Try 'eng' for English. => ", proposed_ocr_lang));
+            ocr_lang_err.push_str(&format!("{} {}. {}",
+                                           l10n.get_message("cli-msg-ocrlang-msg-unsupported"), proposed_ocr_lang, l10n.get_message("cli-msg-ocrlang-msg-hint")));
             let mut prev = false;
 
             for (lang_code, language) in supported_ocr_languages {
@@ -133,13 +154,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let log_format = match &run_matches.value_of("log-format") {
         Some(fmt) => fmt.to_string(),
-        None => "plain".to_string()
+        None => LOG_FORMAT_PLAIN.to_string()
     };
 
     let (tx, rx) = channel();
 
     let exec_handle = thread::spawn(move || {
-        match container::convert(src_path_copy, output_filename, container_image_name, String::from(LOG_FORMAT_JSON), ocr_lang, tx) {
+        match container::convert(src_path_copy, output_filename, container_image_name, String::from(LOG_FORMAT_JSON), ocr_lang, tx, l10n.clone()) {
             Ok(_) => None,
             Err(ex) => Some(format!("{}", ex))
         }

@@ -1,0 +1,673 @@
+# POT Template for the dangerzone_client module.
+# Copyright (C) 2020 Rimero Solutions Inc.
+# This file is distributed under the same GPL-3.0 License, same as Dangerzone.
+# Yves Zoundi <yves_zoundi@hotmail.com>, 2022
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: dangerzone-client\n"
+"Report-Msgid-Bugs-To: andrea@nonymous.net\n"
+"POT-Creation-Date: 2016-01-25 18:51+0100\n"
+"PO-Revision-Date: 2022-06-11 14:07-0400\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "window-macabout-aboutlabel"
+msgstr "A propos de"
+
+msgid "window-macabout-versionlabel"
+msgstr "Version"
+
+msgid "window-logs-title"
+msgstr "Journal"
+
+msgid "window-logs-log-close-button"
+msgstr "Fermer"
+
+msgid "window-main-tabsettings-button-label"
+msgstr "Paramètres"
+
+msgid "window-main-tabconvert-button-label"
+msgstr "Conversion"
+
+msgid "window-main-filesuffix-checkbutton-label"
+msgstr "Suffixe de fichier personnalisé"
+
+msgid "window-main-filesuffix-checkbutton-tooltip"
+msgstr "Le fichier adhère au format suivant: fichier-<suffixe>.pdf"
+
+msgid "window-main-ocrlang-checkbutton-label"
+msgstr "Rendre le PDF consultable? Oui, avec la langue"
+
+msgid "window-main-ocrlang-checkbutton-tooltip"
+msgstr "La ROC (reconnaissance optique de caractères) sera appliquée"
+
+msgid "window-main-openwith-checkbutton-label"
+msgstr "Ouvrir le document après la conversion, avec"
+
+msgid "window-main-openwith-checkbutton-tooltip"
+msgstr "Ouvrir automatiquement le résultat de conversion avec"
+
+msgid "window-main-openwith-inputchoice-rc-tooltip"
+msgstr "Vous pouvez aussi copier le chemin d’un programme"
+
+msgid "window-main-openwith-button-rc-tooltip"
+msgstr "Sélectionner le lecteur PDF"
+
+msgid "window-main-ociimage-checkbutton-label"
+msgstr "Image de conteneur personnalisée"
+
+msgid "window-main-ociimage-checkbutton-tooltip"
+msgstr "Option avancée de conteneur d'isolation"
+
+msgid "window-main-savesettings-button-label"
+msgstr "Sauvegarder la configuration actuelle comme réglage par défaut"
+
+msgid "window-main-convert-frame-label-line1"
+msgstr "Déposer les fichiers suspicieux ici"
+
+msgid "window-main-convert-frame-label-line2"
+msgstr "ou"
+
+msgid "window-main-convert-frame-label-line3"
+msgstr "Cliquez ici pour sélectionner le(s) fichier(s)"
+
+msgid "window-main-selectall-frame-rc-label"
+msgstr "Tout sélectionner"
+
+msgid "window-main-deselectall-frame-rc-label"
+msgstr "Désélectionner tout"
+
+msgid "window-main-delete-button-label"
+msgstr "Supprimer le(s) fichier(s) sélectionné(s)"
+
+msgid "window-main-convert-button-label"
+msgstr "Convertir le(s) document(s)"
+
+msgid "window-main-conversion-message-failed"
+msgstr "Erreur de conversion"
+
+msgid "window-main-filelist-widget-column-filename"
+msgstr "Nom de fichier"
+
+msgid "window-main-filelist-widget-column-progress"
+msgstr "Progrès(%)"
+
+msgid "window-main-filelist-widget-column-status"
+msgstr "Statut"
+
+msgid "window-main-filelist-widget-column-message"
+msgstr "Message"
+
+msgid "filedialog-selectpdfviewer-title"
+msgstr "Sélectionner le lecteur PDF"
+
+msgid "filedialog-selectfiles-title"
+msgstr "Sélectionner les fichiers"
+
+msgid "error-cannot-open-pdfresult"
+msgstr "Impossible d’ouvrir le résultat"
+
+msgid "error-cannot-run-pdfviewer"
+msgstr "Impossible d’exécuter l’editeur PDF"
+
+msgid "error-could-not-find-open-in-path"
+msgstr "La commande ‘open’ n’a pas été trouvée"
+
+msgid "default-language-name"
+msgstr "Anglais"
+
+msgid "cmdline-help-output-filename"
+msgstr "Fichier de sortie"
+
+msgid "cmdline-help-ocr-lang"
+msgstr "Language pour OCR (‘eng’ pour Anglais)"
+
+msgid "cmdline-help-input-filename"
+msgstr "Fichier d’entrée"
+
+msgid "cmdline-help-container-image-name"
+msgstr "Image de conteneur personalisée"
+
+msgid "cmdline-help-log-format"
+msgstr "Format du journal (json ou plain)"
+
+msgid "cmdline-help-file-suffix"
+msgstr "Suffixe de fichier (dgz)"
+
+msgid "container-msg-file-does-not-exists"
+msgstr "Le fichier sélectionné n'existe pas"
+
+msgid "container-msg-converting"
+msgstr "Conversion"
+
+msgid "container-msg-cannot-create-dir"
+msgstr "Impossible de créer un répertoire"
+
+msgid "container-msg-image-check-exists"
+msgstr "Vérification de l'image du conteneur"
+
+msgid "container-msg-image-missing"
+msgstr "L'image du conteneur est introuvable."
+
+msgid "container-msg-image-download-wait"
+msgstr "Veuillez patienter, téléchargement de l'image (environ 600 Mo)."
+
+msgid "container-msg-image-download-failed"
+msgstr "Impossible de télécharger l'image du conteneur!"
+
+msgid "container-msg-image-download-completed"
+msgstr "Téléchargement de l'image du conteneur terminé..."
+
+msgid "container-msg-failed-to-cleanup-folder"
+msgstr "Échec du nettoyage du dossier temporaire!"
+
+msgid "container-msg-outputcapture-failed"
+msgstr "Échec de la capture de la sortie de la commande!"
+
+msgid "container-msg-command-failed"
+msgstr "La commande a échoué!"
+
+msgid "container-msg-conversion-failed"
+msgstr "La conversion a échoué!"
+
+msgid "container-msg-prompt-install-for-windows"
+msgstr "Veuillez installer Docker."
+
+msgid "container-msg-prompt-install-for-macos"
+msgstr "Veuillez installer Docker ou Lima."
+
+msgid "container-msg-prompt-install-for-linux"
+msgstr "Veuillez installer Podman."
+
+msgid "cli-msg-ocrlang-msg-unsupported"
+msgstr "Code de langue inconnu pour le paramètre ocr-lang: "
+
+msgid "cli-msg-ocrlang-msg-hint"
+msgstr "Astuce: Essayez 'eng' pour l'anglais. => "
+
+msgid "ocrlang-afrikaans"
+msgstr "Afrikaans"
+
+msgid "ocrlang-albanian"
+msgstr "Albanais"
+
+msgid "ocrlang-amharic"
+msgstr "Amharique"
+
+msgid "ocrlang-arabic"
+msgstr "Arabe"
+
+msgid "ocrlang-arabic-script"
+msgstr "Écriture arabe"
+
+msgid "ocrlang-armenian"
+msgstr "Arménien"
+
+msgid "ocrlang-armenian-script"
+msgstr "Écriture arménienne"
+
+msgid "ocrlang-assamese"
+msgstr "Assamais"
+
+msgid "ocrlang-azerbaijani"
+msgstr "Azerbaïdjanais"
+
+msgid "ocrlang-azerbaijani-cyrillic"
+msgstr "Azerbaïdjanais (cyrillique)"
+
+msgid "ocrlang-basque"
+msgstr "Basque"
+
+msgid "ocrlang-belarusian"
+msgstr "Biélorusse"
+
+msgid "ocrlang-bengali"
+msgstr "Bengali"
+
+msgid "ocrlang-bengali-script"
+msgstr "Écriture bengali"
+
+msgid "ocrlang-bosnian"
+msgstr "Bosniaque"
+
+msgid "ocrlang-breton"
+msgstr "Breton"
+
+msgid "ocrlang-bulgarian"
+msgstr "Bulgare"
+
+msgid "ocrlang-burmese"
+msgstr "Birman"
+
+msgid "ocrlang-canadian-aboriginal-script"
+msgstr "Écriture autochtone canadienne"
+
+msgid "ocrlang-catalan"
+msgstr "Catalan"
+
+msgid "ocrlang-cebuano"
+msgstr "Cebuano"
+
+msgid "ocrlang-cherokee"
+msgstr "Cherokee"
+
+msgid "ocrlang-cherokee-script"
+msgstr "Écriture Cherokee"
+
+msgid "ocrlang-chinese-simplified"
+msgstr "Chinois simplifié"
+
+msgid "ocrlang-chinese-simplified-vertical"
+msgstr "Chinois simplifié (vertical)"
+
+msgid "ocrlang-chinese-traditional"
+msgstr "Chinois traditionnel"
+
+msgid "ocrlang-chinese-traditional-vertical"
+msgstr "Chinois traditionnel (vertical)"
+
+msgid "ocrlang-corsican"
+msgstr "Corse"
+
+msgid "ocrlang-croatian"
+msgstr "Croate"
+
+msgid "ocrlang-cyrillic-script"
+msgstr "Écriture cyrillique"
+
+msgid "ocrlang-czech"
+msgstr "Tchèque"
+
+msgid "ocrlang-danish"
+msgstr "Danois"
+
+msgid "ocrlang-devanagari-script"
+msgstr "Script de Devanagari"
+
+msgid "ocrlang-divehi"
+msgstr "Divehi"
+
+msgid "ocrlang-dutch"
+msgstr "Néerlandais"
+
+msgid "ocrlang-dzongkha"
+msgstr "Dzongkha"
+
+msgid "ocrlang-english"
+msgstr "Anglais"
+
+msgid "ocrlang-english-middle-1100-1500"
+msgstr "Anglais, Moyen (1100-1500)"
+
+msgid "ocrlang-esperanto"
+msgstr "Espéranto"
+
+msgid "ocrlang-estonian"
+msgstr "Estonien"
+
+msgid "ocrlang-ethiopic-script"
+msgstr "Écriture éthiopienne"
+
+msgid "ocrlang-faroese"
+msgstr "Féroïen"
+
+msgid "ocrlang-filipino"
+msgstr "Philippin"
+
+msgid "ocrlang-finnish"
+msgstr "Finlandais"
+
+msgid "ocrlang-fraktur-script"
+msgstr "Script de Fraktur"
+
+msgid "ocrlang-frankish"
+msgstr "Franque"
+
+msgid "ocrlang-french"
+msgstr "Français"
+
+msgid "ocrlang-french-middle-ca-1400-1600"
+msgstr "Français, moyen (env.1400-1600)"
+
+msgid "ocrlang-frisian-western"
+msgstr "Frison (Occidental)"
+
+msgid "ocrlang-gaelic-scots"
+msgstr "Gaélique (Écossais)"
+
+msgid "ocrlang-galician"
+msgstr "Galicien"
+
+msgid "ocrlang-georgian"
+msgstr "Géorgien"
+
+msgid "ocrlang-georgian-script"
+msgstr "Écriture géorgienne"
+
+msgid "ocrlang-german"
+msgstr "Allemand"
+
+msgid "ocrlang-greek"
+msgstr "Grec"
+
+msgid "ocrlang-greek-script"
+msgstr "Écriture grecque"
+
+msgid "ocrlang-gujarati"
+msgstr "Gujarati"
+
+msgid "ocrlang-gujarati-script"
+msgstr "Écriture gujarati"
+
+msgid "ocrlang-gurmukhi-script"
+msgstr "Écriture de Gurmukhi"
+
+msgid "ocrlang-hangul-script"
+msgstr "Écriture de Hangul"
+
+msgid "ocrlang-hangul-vertical-script"
+msgstr "Écriture de Hangul (vertical)"
+
+msgid "ocrlang-han-simplified-script"
+msgstr "Écriture de Han simplifié"
+
+msgid "ocrlang-han-simplified-vertical-script"
+msgstr "Écriture de Han simplifié (vertical)"
+
+msgid "ocrlang-han-traditional-script"
+msgstr "Écriture de Han traditionnelle"
+
+msgid "ocrlang-han-traditional-vertical-script"
+msgstr "Écriture de Han traditionnelle (vertical)"
+
+msgid "ocrlang-hatian"
+msgstr "Hatien"
+
+msgid "ocrlang-hebrew"
+msgstr "Hébreu"
+
+msgid "ocrlang-hebrew-script"
+msgstr "Écriture hébraïque"
+
+msgid "ocrlang-hindi"
+msgstr "Hindi"
+
+msgid "ocrlang-hungarian"
+msgstr "Hongrois"
+
+msgid "ocrlang-icelandic"
+msgstr "Islandais"
+
+msgid "ocrlang-indonesian"
+msgstr "Indonésien"
+
+msgid "ocrlang-inuktitut"
+msgstr "Inuktitut"
+
+msgid "ocrlang-irish"
+msgstr "Irlandais"
+
+msgid "ocrlang-italian"
+msgstr "Italien"
+
+msgid "ocrlang-italian-old"
+msgstr "Italien-Vieux"
+
+msgid "ocrlang-japanese"
+msgstr "Japonais"
+
+msgid "ocrlang-japanese-script"
+msgstr "Écriture japonaise"
+
+msgid "ocrlang-japanese-vertical"
+msgstr "Japonais (vertical)"
+
+msgid "ocrlang-japanese-vertical-script"
+msgstr "Écriture japonaise (verticale)"
+
+msgid "ocrlang-javanese"
+msgstr "Javanais"
+
+msgid "ocrlang-kannada"
+msgstr "Kannada"
+
+msgid "ocrlang-kannada-script"
+msgstr "Écriture de Kannada"
+
+msgid "ocrlang-kazakh"
+msgstr "Kazakh"
+
+msgid "ocrlang-khmer"
+msgstr "Khmer"
+
+msgid "ocrlang-khmer-script"
+msgstr "Écriture de Khmer"
+
+msgid "ocrlang-korean"
+msgstr "Coréen"
+
+msgid "ocrlang-korean-vertical"
+msgstr "Coréen (vertical)"
+
+msgid "ocrlang-kurdish-arabic"
+msgstr "Kurde (Arabe)"
+
+msgid "ocrlang-kyrgyz"
+msgstr "Kirghize"
+
+msgid "ocrlang-lao"
+msgstr "Lao"
+
+msgid "ocrlang-lao-script"
+msgstr "Écriture de Lao"
+
+msgid "ocrlang-latin"
+msgstr "Latin"
+
+msgid "ocrlang-latin-script"
+msgstr "Écriture de Latin"
+
+msgid "ocrlang-latvian"
+msgstr "Letton"
+
+msgid "ocrlang-lithuanian"
+msgstr "Lituanien"
+
+msgid "ocrlang-luxembourgish"
+msgstr "Luxembourgeois"
+
+msgid "ocrlang-macedonian"
+msgstr "Macédonien"
+
+msgid "ocrlang-malayalam"
+msgstr "Malayâlam"
+
+msgid "ocrlang-malayalam-script"
+msgstr "Écriture malayalam"
+
+msgid "ocrlang-malay"
+msgstr "Malais"
+
+msgid "ocrlang-maltese"
+msgstr "Maltais"
+
+msgid "ocrlang-maori"
+msgstr "Maori"
+
+msgid "ocrlang-marathi"
+msgstr "Marathi"
+
+msgid "ocrlang-mongolian"
+msgstr "Mongol"
+
+msgid "ocrlang-myanmar-script"
+msgstr "Écriture du Myanmar"
+
+msgid "ocrlang-nepali"
+msgstr "Népalais"
+
+msgid "ocrlang-norwegian"
+msgstr "Norvégien"
+
+msgid "ocrlang-occitan-post-1500"
+msgstr "Occitan (après 1500)"
+
+msgid "ocrlang-old-georgian"
+msgstr "Vieux Géorgien"
+
+msgid "ocrlang-oriya-odia-script"
+msgstr "Écriture d'Oriya (Odia)"
+
+msgid "ocrlang-oriya"
+msgstr "Oriya"
+
+msgid "ocrlang-pashto"
+msgstr "Pachto"
+
+msgid "ocrlang-persian"
+msgstr "Perse"
+
+msgid "ocrlang-polish"
+msgstr "Polonais"
+
+msgid "ocrlang-portuguese"
+msgstr "Portugais"
+
+msgid "ocrlang-punjabi"
+msgstr "Punjabi"
+
+msgid "ocrlang-quechua"
+msgstr "Quechua"
+
+msgid "ocrlang-romanian"
+msgstr "Roumain"
+
+msgid "ocrlang-russian"
+msgstr "Russe"
+
+msgid "ocrlang-sanskrit"
+msgstr "Sanskrit"
+
+msgid "ocrlang-script-and-orientation"
+msgstr "Écriture et orientation"
+
+msgid "ocrlang-serbian-latin"
+msgstr "Serbe (latin)"
+
+msgid "ocrlang-serbian"
+msgstr "Serbe"
+
+msgid "ocrlang-sindhi"
+msgstr "Sindhi"
+
+msgid "ocrlang-sinhala-script"
+msgstr "Écriture cinghalais"
+
+msgid "ocrlang-sinhala"
+msgstr "Cinghalais"
+
+msgid "ocrlang-slovakian"
+msgstr "Slovaque"
+
+msgid "ocrlang-slovenian"
+msgstr "Slovène"
+
+msgid "ocrlang-spanish-castilian-old"
+msgstr "Espagnol, Castillan-Vieux"
+
+msgid "ocrlang-spanish"
+msgstr "Espagnol"
+
+msgid "ocrlang-sundanese"
+msgstr "Sundanais"
+
+msgid "ocrlang-swahili"
+msgstr "Swahili"
+
+msgid "ocrlang-swedish"
+msgstr "Suédois"
+
+msgid "ocrlang-syriac-script"
+msgstr "Écriture syriaque"
+
+msgid "ocrlang-syriac"
+msgstr "Syriaque"
+
+msgid "ocrlang-tajik"
+msgstr "Tadjik"
+
+msgid "ocrlang-tamil-script"
+msgstr "Écriture tamoule"
+
+msgid "ocrlang-tamil"
+msgstr "Tamil"
+
+msgid "ocrlang-tatar"
+msgstr "Tatars"
+
+msgid "ocrlang-telugu-script"
+msgstr "Écriture telugu"
+
+msgid "ocrlang-telugu"
+msgstr "Telugu"
+
+msgid "ocrlang-thaana-script"
+msgstr "Écriture Thaana"
+
+msgid "ocrlang-thai-script"
+msgstr "Écriture thaïlandaise"
+
+msgid "ocrlang-thai"
+msgstr "Thaïlandais"
+
+msgid "ocrlang-tibetan-script"
+msgstr "Écriture tibétaine"
+
+msgid "ocrlang-tibetan-standard"
+msgstr "Tibétain standard"
+
+msgid "ocrlang-tigrinya"
+msgstr "Tigrinya"
+
+msgid "ocrlang-tonga"
+msgstr "Tonga"
+
+msgid "ocrlang-turkish"
+msgstr "Turc"
+
+msgid "ocrlang-ukrainian"
+msgstr "Ukrainien"
+
+msgid "ocrlang-urdu"
+msgstr "Ourdou"
+
+msgid "ocrlang-uyghur"
+msgstr "Ouïghoure"
+
+msgid "ocrlang-uzbek-cyrillic"
+msgstr "Ouzbek (cyrillique)"
+
+msgid "ocrlang-uzbek"
+msgstr "Ouzbek"
+
+msgid "ocrlang-vietnamese-script"
+msgstr "Écriture vietnamienne"
+
+msgid "ocrlang-vietnamese"
+msgstr "Vietnamien"
+
+msgid "ocrlang-welsh"
+msgstr "Gallois"
+
+msgid "ocrlang-yiddish"
+msgstr "Yiddish"
+
+msgid "ocrlang-yoruba"
+msgstr "Yoruba"
+

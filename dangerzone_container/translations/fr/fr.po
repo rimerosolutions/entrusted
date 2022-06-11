@@ -1,0 +1,111 @@
+# POT Template for the dangerzone_client module.
+# Copyright (C) 2020 Rimero Solutions Inc.
+# This file is distributed under the same GPL-3.0 License, same as Dangerzone.
+# Yves Zoundi <yves_zoundi@hotmail.com>, 2022
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: dangerzone-client\n"
+"Report-Msgid-Bugs-To: andrea@nonymous.net\n"
+"POT-Creation-Date: 2016-01-25 18:51+0100\n"
+"PO-Revision-Date: 2022-06-11 14:07-0400\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "msg-info-copy-process-summary"
+msgstr "Copie de fichier PDF vers"
+
+msgid "msg-info-convert-process-summary"
+msgstr "Conversion de l'image d'entrée en PDF"
+
+msgid "msg-info-officepdf-process-summary"
+msgstr "Conversion en PDF à l'aide de LibreOffice avec filtre"
+
+msgid "msg-info-conversion-status-succeeded"
+msgstr "La conversion a réussi!"
+
+msgid "msg-info-conversion-time-elapsed"
+msgstr "Temps écoulé"
+
+msgid "msg-info-img-to-pdf-summary-start"
+msgstr "Sauvegarde de "
+
+msgid "msg-info-img-to-pdf-summary-end"
+msgstr "Images PNG en PDF."
+
+msgid "msg-info-img-to-pdf-item-start"
+msgstr "Enregistrer de l'image PNG"
+
+msgid "msg-info-img-to-pdf-item-end"
+msgstr "en PDF."
+
+msgid "msg-info-ocr-img-to-pdf-summary-start"
+msgstr "OCR au format PDF sur"
+
+msgid "msg-info-ocr-img-to-pdf-summary-end"
+msgstr "images."
+
+msgid "msg-info-ocr-img-to-pdf-item"
+msgstr "OCR sur la page"
+
+msgid "msg-error-mkdir"
+msgstr "Impossible de créer le répertoire!"
+
+msgid "msg-error-input-parent-directory"
+msgstr "Impossible de trouver le répertoire parent d'entrée!"
+
+msgid "msg-error-unsupported-mimetype"
+msgstr "Type mime non pris en charge"
+
+msgid "msg-error-guess-mimetype"
+msgstr "Erreur de type Mime! L'entrée a - t-elle une extension de fichier connue?"
+
+msgid "msg-error-office-pdf-result-notfound"
+msgstr "Impossible de trouver le résultat PDF du document office!"
+
+msgid "msg-error-officepdf-process-failed"
+msgstr "Échec de l'exécution du processus 'libreoffice'!"
+
+msgid "msg-error-conversion-status-failed"
+msgstr "La conversion a échoué!"
+
+msgid "msg-error-filenotfound"
+msgstr "Impossible de trouver le fichier sur"
+
+msgid "msg-combine-pdf-summary-start"
+msgstr "Assemblement de "
+
+msgid "msg-combine-pdf-summary-end"
+msgstr "document(s) PDF."
+
+msgid "msg-combine-pdf-collecting-documents"
+msgstr "Collecte de documents à fusionner."
+
+msgid "msg-combine-pdf-update-bookmarks"
+msgstr "Mise à jour des signets et de la numérotation des documents."
+
+msgid "msg-combine-pdf-processobjects"
+msgstr "Traitement de la structure PDF"
+
+msgid "msg-combine-pdf-nopagesfound"
+msgstr "Aucune page trouvée lors de la fusion de pages PDF!"
+
+msgid "msg-combine-pdf-updatepdf-dictionary"
+msgstr "Mise à jour du dictionnaire PDF"
+
+msgid "msg-combine-pdf-catalog-root-notfound"
+msgstr "Catalogue racine introuvable."
+
+msgid "msg-combine-pdf-merging"
+msgstr "Fusion d'objets."
+
+msgid "msg-combine-pdf-compressing"
+msgstr "Compression de PDF."
+
+msgid "msg-combine-pdf-saving"
+msgstr "Sauveragde PDF."

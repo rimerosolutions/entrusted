@@ -17,6 +17,8 @@ use std::path::PathBuf;
 use std::time::Instant;
 use zip;
 
+mod l10n;
+
 const SIG_LEGACY_OFFICE: [u8; 8] = [ 208, 207, 17, 224, 161, 177, 26, 225 ];
 
 const IMAGE_DPI: f64   = 150.0;
@@ -37,13 +39,13 @@ struct TessSettings<'a> {
 
 const TESS_DATA_DIR: &str = "/usr/share/tessdata";
 
-fn mkdirp(p: PathBuf) -> Result<(), Box<dyn Error>> {
+fn mkdirp(p: PathBuf, error_message: String) -> Result<(), Box<dyn Error>> {
     if !p.exists() {
         let dir_created = fs::create_dir(&p);
 
         match dir_created {
             Err(ex) => {
-                Err(format!("Cannot create directory: {:?}! {}", p, ex.to_string()).into())
+                Err(format!("{}: {:?}! {}", error_message, p, ex.to_string()).into())
             },
             _ => Ok(())
         }
@@ -54,6 +56,12 @@ fn mkdirp(p: PathBuf) -> Result<(), Box<dyn Error>> {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let timer = Instant::now();
+
+    let locale = match env::var(l10n::ENV_VAR_DANGERZONE_LANGID) {
+        Ok(selected_locale) => selected_locale,
+        Err(_) => sys_locale::get_locale().unwrap_or_else(|| String::from(l10n::DEFAULT_LANGID))
+    };
+    let l10n = l10n::Messages::new(locale);
 
     let skip_ocr = match env::var("OCR") {
         Ok(ocr_set_value) => {
@@ -101,7 +109,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         progress_range = ProgressRange::new(45, 90);
 
         if skip_ocr {
-            imgs_to_pdf(&logger, progress_range, page_count, &output_dir_path, &output_dir_path)?;
+            imgs_to_pdf(&logger, progress_range, page_count, &output_dir_path, &output_dir_path, &l10n)?;
         } else {
             let ocr_lang = env::var("OCR_LANGUAGE")?;
 
@@ -110,7 +118,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 data_dir: TESS_DATA_DIR,
             };
 
-            ocr_imgs_to_pdf(&logger, progress_range, page_count, tess_settings, &output_dir_path, &output_dir_path)?;
+            ocr_imgs_to_pdf(&logger, progress_range, page_count, tess_settings, &output_dir_path, &output_dir_path, &l10n)?;
         }
 
         // step 4 (60%)
@@ -128,15 +136,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
     
     let msg: String = if let Err(ex) = ret {
-        format!("Conversion failed! {}", ex.to_string())
+        format!("{} {}", l10n.get_message("msg-error-conversion-status-failed"), ex.to_string())
     } else {
-        format!("Conversion succeeded!")
+        format!("{}", l10n.get_message("msg-info-conversion-status-succeeded"))
     };
 
     logger.log(99, msg);
 
     let millis = timer.elapsed().as_millis();
-    logger.log(100, format!("Elapsed time: {}.", elapsed_time_string(millis)));
+    logger.log(100, format!("{}: {}.", l10n.get_message("msg-info-conversion-time-elapsed"), elapsed_time_string(millis)));
     
     std::process::exit(exit_code);
 }
@@ -204,7 +212,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
         .collect();
 
     if !raw_input_path.exists() {
-        return Err(format!("The file {} doesn't exists!", raw_input_path.display()).into());
+        return Err(format!("{}: {}", l10n.get_message("msg-error-filenotfound"), raw_input_path.display()).into());
     }
 
     let kind = infer::get_from_path(&raw_input_path)?;
@@ -330,15 +338,15 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
                     mime_type = probe_mimetype_ole(&buffer);
                 }
             } else {
-                return Err(format!("Cannot find input file at '{}'.", raw_input_path.display()).into());
+                return Err(format!("{} '{}'.", l10n.get_message("msg-error-filenotfound"), raw_input_path.display()).into());
             }
         }
     } else {
-        return Err("Cannot determine input mime-type! Does the input have a known file extension?".into());
+        return Err(l10n.get_message("msg-error-guess-mimetype").into());
     }
 
     if !conversion_by_mimetype.contains_key(mime_type) {
-        return Err(format!("Unsupported mime type: {}.", mime_type).into());
+        return Err(format!("{}: {}.", l10n.get_message("msg-error-unsupported-mimetype"), mime_type).into());
     }
 
     let filename_pdf: String;
@@ -380,7 +388,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
                     let new_input_path = PathBuf::from(format!("/tmp/input.{}", fileext));
                     fs::copy(&raw_input_path, &new_input_path)?;
                     let output_dir_libreoffice = "/tmp/libreoffice";
-                    mkdirp(PathBuf::from(output_dir_libreoffice))?;
+                    mkdirp(PathBuf::from(output_dir_libreoffice), l10n.get_message("msg-error-mkdir"))?;
 
                     if let Some(raw_input_path_dir) = raw_input_path.parent() {
                         let exec_status = Command::new("libreoffice")
@@ -396,7 +404,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
                             .status()?;
 
                         if !exec_status.success() {
-                            return Err("Failed to execute 'libreoffice' process!".into());
+                            return Err(l10n.get_message("msg-error-officepdf-process-failed").into());
                         }
                     }
 
@@ -414,15 +422,15 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
                     }
 
                     if !pdf_file_moved {
-                        return Err("Could not find office document PDF result!".into());
+                        return Err(l10n.get_message("msg-error-office-pdf-result-notfound").into());
                     }
                 }
             }
         } else {
-            return Err("Cannot find input parent directory!".into());
+            return Err(l10n.get_message("msg-error-input-parent-directory").into());
         }
     } else {
-        return Err(format!("Unsupported mime type: {}.", mime_type).into());
+        return Err(format!("{}: {}.", l10n.get_message("msg-error-unsupported-mimetype"), mime_type).into());
     }
 
     Ok(PathBuf::from(format!("file://{}", filename_pdf)))
@@ -450,17 +458,21 @@ fn ocr_imgs_to_pdf(
     tess_settings: TessSettings,
     input_path: &PathBuf,
     output_path: &PathBuf,
+    &l10n: l10n::Messages
 ) -> Result<(), Box<dyn Error>> {
     let progress_delta = progress_range.delta();
     let mut progress_value: usize = progress_range.min;
-    logger.log(progress_value, format!("+ Performing OCR to PDF on {} images.", page_count));
+    logger.log(progress_value, format!("+ {} {} {}",
+                                       l10n.get_message("msg-ocr-img-to-pdf-summary-start")
+                                       page_count,
+                                       l10n.get_message("msg-ocr-img-to-pdf-summary-end")));
 
     let api = tesseract_init(tess_settings.lang, tess_settings.data_dir);
 
     for i in 0..page_count {
         let page_num = i + 1;
         progress_value = progress_range.min + (page_num * progress_delta / page_count);
-        logger.log(progress_value, format!("++ Performing OCR on page {}.", page_num));
+        logger.log(progress_value, format!("++ {} {}.", l10n.get_message("msg-ocr-img-to-pdf-item"), page_num));
         let src = input_path.join(format!("page-{}.png", page_num));
         let dest = output_path.join(format!("page-{}", page_num));
         ocr_img_to_pdf(api, src, dest)?;
@@ -629,8 +641,11 @@ fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_rang
     Ok(())
 }
 
-fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, input_dir_path: &PathBuf, output_path: &PathBuf) -> Result<(), Box<dyn Error>> {
-    logger.log(progress_range.min, format!("+ Combining {} PDF document(s).", page_count));
+fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, input_dir_path: &PathBuf, output_path: &PathBuf, l10n: &l10n::Messages) -> Result<(), Box<dyn Error>> {
+    logger.log(progress_range.min, format!("+ {} {} {}.",
+                                           l10n.get_message("msg-combine-pdf-summary-start"),
+                                           page_count,
+                                           l10n.get_message("msg-combine-pdf-summary-end")));
 
     let mut documents: Vec<lopdf::Document> = Vec::with_capacity(page_count);
     let step_count = 7;
@@ -640,7 +655,7 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: Progress
 
     // step 1/7
     let mut progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
-    logger.log(progress_value, format!("++ Collecting documents to merge."));
+    logger.log(progress_value, format!("++ {}", "msg-combine-pdf-collecting-documents"));
     for i in 0..page_count {
         let src_path = input_dir_path.join(format!("page-{}.pdf", i + 1));
         let document: lopdf::Document = lopdf::Document::load(src_path)?;
@@ -659,7 +674,7 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: Progress
     // step 2/7
     step_num += 1;
     progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
-    logger.log(progress_value, format!("++ Updating documents bookmarks and numbering."));
+    logger.log(progress_value, format!("++ {}", l10n.get_message("msg-combine-pdf-update-bookmarks")));
 
     for mut doc in documents {
         let mut first = false;
@@ -692,7 +707,7 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: Progress
     // step 3/7 Process all objects except "Page" type
     step_num += 1;
     progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
-    logger.log(progress_value, format!("++ Process objects."));
+    logger.log(progress_value, format!("++ {}", l10n.get_message("msg-combine-pdf-processobjects")));
 
     for (object_id, object) in documents_objects.iter() {
         // We have to ignore "Page" (as are processed later), "Outlines" and "Outline" objects
@@ -730,13 +745,13 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: Progress
 
     // If no "Pages" found abort
     if pages_object.is_none() {
-        return Err("No pages found!".into());
+        return Err(format!("{}", l10n.get_message("msg-combine-pdf-nopagesfound")).into());
     }
 
     // step 4/7 Iter over all "Page" and collect with the parent "Pages" created before
     step_num += 1;
     progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
-    logger.log(progress_value, format!("++ Update dictionary."));
+    logger.log(progress_value, format!("++ {}", l10n.get_message("msg-combine-pdf-updatepdf-dictionary")));
 
     for (object_id, object) in documents_pages.iter() {
         if let Ok(dictionary) = object.as_dict() {
@@ -752,13 +767,13 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: Progress
 
     // If no "Catalog" found abort
     if catalog_object.is_none() {
-        return Err("Catalog root not found!".into());
+        return Err(l10n.get_message("msg-combine-pdf-catalog-root-notfound").into());
     }
 
     // step 5/7 Merge objects
     step_num += 1;
     progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
-    logger.log(progress_value, format!("++ Merging objects"));
+    logger.log(progress_value, format!("++ {}", l10n.get_message("msg-combine-pdf-merging")));
 
     if let (Some(catalog_object), Some(pages_object)) = (catalog_object, pages_object) {
         // Build a new "Pages" with updated fields
@@ -813,28 +828,34 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: Progress
     // step 6/7 Compress the document
     step_num += 1;
     progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
-    logger.log(progress_value, format!("++ Compressing PDF."));
+    logger.log(progress_value, format!("++ {}", l10n.get_message("msg-combine-pdf-compressing")));
     document.compress();
 
     // step 7/7 Save the merged PDF
     step_num += 1;
     progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
-    logger.log(progress_value, format!("++ Saving PDF."));
+    logger.log(progress_value, format!("++ {}", l10n.get_message("msg-combine-pdf-saving")));
     document.save(output_path)?;
 
     Ok(())
 }
 
-fn imgs_to_pdf(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, input_path: &PathBuf, output_path: &PathBuf) -> Result<(), Box<dyn Error>> {
+fn imgs_to_pdf(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, input_path: &PathBuf, output_path: &PathBuf, l10n: &l10n::Messages) -> Result<(), Box<dyn Error>> {
     let progress_delta = progress_range.delta();
     let mut progress_value: usize = progress_range.min;
 
-    logger.log(progress_value, format!("+ Saving {} PNG images to PDFs.", page_count));
+    logger.log(progress_value, format!("+ {} {} {}",
+                                       l10n.get_message("msg--info-img-to-pdf-summary-start")
+                                       page_count,
+                                       l10n.get_message("msg-info-img-to-pdf-summary-end")));
 
     for i in 0..page_count {
         let idx = i + 1;
         progress_value = progress_range.min + (i * progress_delta / page_count) as usize;
-        logger.log(progress_value, format!("++ Saving PNG image {} to PDF.", idx));
+        logger.log(progress_value, format!("++ {} {} {}.",
+                                           l10n.get_message("msg-info-img-to-pdf-item-start"),
+                                           idx,
+                                           l10n.get_message("msg-info-img-to-pdf-item-end")));
         let src = input_path.join(format!("page-{}.png", idx));
         let dest = output_path.join(format!("page-{}.pdf", idx));
         img_to_pdf(image::ImageFormat::Png, &src, &dest)?;

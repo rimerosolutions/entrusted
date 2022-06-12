@@ -317,7 +317,7 @@ impl <'a> FileListWidget {
         let close_button_label = match new_translations.get("window-logs-log-close-button") {
             Some(vv) => vv.to_owned(),
             None => String::from("window-logs-log-close-button")
-        };        
+        };
 
         logs_button.set_callback({
             let active_row = file_list_row.clone();
@@ -832,7 +832,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     deselectall_frame_rc
         .borrow_mut()
         .set_label_color(enums::Color::Blue);
-    
+
 
     selectall_frame_rc.borrow_mut().draw({
         move |w| {
@@ -1147,7 +1147,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     #[cfg(target_os = "macos")] {
         use fltk::menu;
-        
+
         app::raw_open_callback(Some(|s| {
             let input_path: String = {
                 let ret = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().to_string() };
@@ -1271,8 +1271,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
 
         added
-    }    
-    
+    }
+
     convert_frame.handle({
         let mut dnd = false;
         let mut released = false;
@@ -1339,7 +1339,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 true
             }
             enums::Event::Push => {
-                let mut selectfiles_filedialog = dialog::FileDialog::new(dialog::FileDialogType::BrowseMultiFile);      
+                let mut selectfiles_filedialog = dialog::FileDialog::new(dialog::FileDialogType::BrowseMultiFile);
                 selectfiles_filedialog.set_title(&dialog_title);
                 selectfiles_filedialog.show();
 

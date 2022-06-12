@@ -46,15 +46,16 @@ fn get_translation_catalog() -> HashMap::<String, Catalog> {
 
 #[derive(Clone)]
 pub struct Messages {
+    locale: String,
     catalog: Catalog,
 }
 
 impl Messages {
-    pub fn new(locale: String) -> Self {
+    pub fn new(requested_locale: String) -> Self {
         let catalog_per_langid = CATALOG_PER_LOCALE.lock().unwrap();
         let keys: Vec<String> = catalog_per_langid.keys().cloned().collect();
 
-        let requested = convert_vec_str_to_langids_lossy(&[locale]);
+        let requested = convert_vec_str_to_langids_lossy(&[requested_locale]);
         let available = convert_vec_str_to_langids_lossy(&keys);
         let default: LanguageIdentifier = DEFAULT_LANGID.parse().expect("Parsing default language failed!");
 
@@ -65,10 +66,14 @@ impl Messages {
             NegotiationStrategy::Matching
         );
 
-        let langid = supported[0].to_string();
-        let catalog = catalog_per_langid[&langid].clone();
+        let locale = supported[0].to_string();
+        let catalog = catalog_per_langid[&locale].clone();
 
-        Self { catalog }
+        Self { locale, catalog }
+    }
+
+    pub fn langid(&self) -> String {
+        self.locale.clone()
     }
 
     pub fn get_message(&self, key: &str) -> String {

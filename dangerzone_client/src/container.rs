@@ -213,6 +213,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, container_image_name: 
         let safedir_volume = &format!("{}:/safezone:z", dz_tmp_safe.display());
         let ocr_env = &format!("OCR={}", ocr);
         let ocr_language_env = &format!("OCR_LANGUAGE={}", ocr_language);
+        let locale_language_env = &format!("{}={}", l10n::ENV_VAR_DANGERZONE_LANGID, l10n.langid());
 
         let logformat_env = &format!("LOG_FORMAT={}", log_format);
 
@@ -227,6 +228,8 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, container_image_name: 
             logformat_env,
             "-e",
             ocr_language_env,
+            "-e",
+            locale_language_env,
             &container_image_name,
             common::CONTAINER_IMAGE_EXE
         ]);

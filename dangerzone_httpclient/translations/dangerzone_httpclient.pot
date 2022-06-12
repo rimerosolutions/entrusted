@@ -1,0 +1,562 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#~ # SOME DESCRIPTIVE TITLE.
+#~ # Copyright (C) YEAR Free Software Foundation, Inc.
+#~ # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#~ #
+#~ #, fuzzy
+#~ msgid ""
+#~ msgstr ""
+#~ "Project-Id-Version: dangerzone-httpclient \n"
+#~ "Report-Msgid-Bugs-To: yves_zoundi@hotmail.com\n"
+#~ "POT-Creation-Date: 2022-06-11 11:15-0500\n"
+#~ "POT-Revision-Date: 2022-06-11 11:15-0500\n"
+#~ "Last-Translator: Yves Zoundi <yves_zoundi@hotmail.com>\n"
+#~ "Language-Team: Yves Zoundi <yves_zoundi@hotmail.com>\n"
+#~ "Language:\n"
+#~ "MIME-Version: 1.0\n"
+#~ "Content-Type: text/plain; charset=UTF-8"
+
+msgid "cmdline-help-host"
+msgstr ""
+
+msgid "cmdline-help-port"
+msgstr ""
+
+msgid "cmdline-help-input-filename"
+msgstr ""
+
+msgid "cmdline-help-output-filename"
+msgstr ""
+
+msgid "cmdline-help-container-image-name"
+msgstr ""
+
+msgid "msg-ocrlang-msg-unsupported"
+msgstr ""
+
+msgid "msg-ocrlang-msg-hint"
+msgstr ""
+
+msgid "msg-invalid-port-number"
+msgstr ""
+
+msgid "msg-input-file-doesnt-exists"
+msgstr ""
+
+msgid "msg-couldnt-determine-input-directory"
+msgstr ""
+
+msgid "msg-missing-parameters"
+msgstr ""
+
+msgid "msg-converting-file"
+msgstr ""
+
+msgid "cli-msg-connecting-to"
+msgstr ""
+
+msgid "msg-couldnt-find-input-basename"
+msgstr ""
+
+msgid "msg-notif-connection-open"
+msgstr ""
+
+msgid "msg-notif-processing-success"
+msgstr ""
+
+msgid "msg-notif-processing-failure"
+msgstr ""
+
+msgid "ocrlang-afrikaans"
+msgstr ""
+
+msgid "ocrlang-albanian"
+msgstr ""
+
+msgid "ocrlang-amharic"
+msgstr ""
+
+msgid "ocrlang-arabic"
+msgstr ""
+
+msgid "ocrlang-arabic-script"
+msgstr ""
+
+msgid "ocrlang-armenian"
+msgstr ""
+
+msgid "ocrlang-armenian-script"
+msgstr ""
+
+msgid "ocrlang-assamese"
+msgstr ""
+
+msgid "ocrlang-azerbaijani"
+msgstr ""
+
+msgid "ocrlang-azerbaijani-cyrillic"
+msgstr ""
+
+msgid "ocrlang-basque"
+msgstr ""
+
+msgid "ocrlang-belarusian"
+msgstr ""
+
+msgid "ocrlang-bengali"
+msgstr ""
+
+msgid "ocrlang-bengali-script"
+msgstr ""
+
+msgid "ocrlang-bosnian"
+msgstr ""
+
+msgid "ocrlang-breton"
+msgstr ""
+
+msgid "ocrlang-bulgarian"
+msgstr ""
+
+msgid "ocrlang-burmese"
+msgstr ""
+
+msgid "ocrlang-canadian-aboriginal-script"
+msgstr ""
+
+msgid "ocrlang-catalan"
+msgstr ""
+
+msgid "ocrlang-cebuano"
+msgstr ""
+
+msgid "ocrlang-cherokee"
+msgstr ""
+
+msgid "ocrlang-cherokee-script"
+msgstr ""
+
+msgid "ocrlang-chinese-simplified"
+msgstr ""
+
+msgid "ocrlang-chinese-simplified-vertical"
+msgstr ""
+
+msgid "ocrlang-chinese-traditional"
+msgstr ""
+
+msgid "ocrlang-chinese-traditional-vertical"
+msgstr ""
+
+msgid "ocrlang-corsican"
+msgstr ""
+
+msgid "ocrlang-croatian"
+msgstr ""
+
+msgid "ocrlang-cyrillic-script"
+msgstr ""
+
+msgid "ocrlang-czech"
+msgstr ""
+
+msgid "ocrlang-danish"
+msgstr ""
+
+msgid "ocrlang-devanagari-script"
+msgstr ""
+
+msgid "ocrlang-divehi"
+msgstr ""
+
+msgid "ocrlang-dutch"
+msgstr ""
+
+msgid "ocrlang-dzongkha"
+msgstr ""
+
+msgid "ocrlang-english"
+msgstr ""
+
+msgid "ocrlang-english-middle-1100-1500"
+msgstr ""
+
+msgid "ocrlang-esperanto"
+msgstr ""
+
+msgid "ocrlang-estonian"
+msgstr ""
+
+msgid "ocrlang-ethiopic-script"
+msgstr ""
+
+msgid "ocrlang-faroese"
+msgstr ""
+
+msgid "ocrlang-filipino"
+msgstr ""
+
+msgid "ocrlang-finnish"
+msgstr ""
+
+msgid "ocrlang-fraktur-script"
+msgstr ""
+
+msgid "ocrlang-frankish"
+msgstr ""
+
+msgid "ocrlang-french"
+msgstr ""
+
+msgid "ocrlang-french-middle-ca-1400-1600"
+msgstr ""
+
+msgid "ocrlang-frisian-western"
+msgstr ""
+
+msgid "ocrlang-gaelic-scots"
+msgstr ""
+
+msgid "ocrlang-galician"
+msgstr ""
+
+msgid "ocrlang-georgian"
+msgstr ""
+
+msgid "ocrlang-georgian-script"
+msgstr ""
+
+msgid "ocrlang-german"
+msgstr ""
+
+msgid "ocrlang-greek"
+msgstr ""
+
+msgid "ocrlang-greek-script"
+msgstr ""
+
+msgid "ocrlang-gujarati"
+msgstr ""
+
+msgid "ocrlang-gujarati-script"
+msgstr ""
+
+msgid "ocrlang-gurmukhi-script"
+msgstr ""
+
+msgid "ocrlang-hangul-script"
+msgstr ""
+
+msgid "ocrlang-hangul-vertical-script"
+msgstr ""
+
+msgid "ocrlang-han-simplified-script"
+msgstr ""
+
+msgid "ocrlang-han-simplified-vertical-script"
+msgstr ""
+
+msgid "ocrlang-han-traditional-script"
+msgstr ""
+
+msgid "ocrlang-han-traditional-vertical-script"
+msgstr ""
+
+msgid "ocrlang-hatian"
+msgstr ""
+
+msgid "ocrlang-hebrew"
+msgstr ""
+
+msgid "ocrlang-hebrew-script"
+msgstr ""
+
+msgid "ocrlang-hindi"
+msgstr ""
+
+msgid "ocrlang-hungarian"
+msgstr ""
+
+msgid "ocrlang-icelandic"
+msgstr ""
+
+msgid "ocrlang-indonesian"
+msgstr ""
+
+msgid "ocrlang-inuktitut"
+msgstr ""
+
+msgid "ocrlang-irish"
+msgstr ""
+
+msgid "ocrlang-italian"
+msgstr ""
+
+msgid "ocrlang-italian-old"
+msgstr ""
+
+msgid "ocrlang-japanese"
+msgstr ""
+
+msgid "ocrlang-japanese-script"
+msgstr ""
+
+msgid "ocrlang-japanese-vertical"
+msgstr ""
+
+msgid "ocrlang-japanese-vertical-script"
+msgstr ""
+
+msgid "ocrlang-javanese"
+msgstr ""
+
+msgid "ocrlang-kannada"
+msgstr ""
+
+msgid "ocrlang-kannada-script"
+msgstr ""
+
+msgid "ocrlang-kazakh"
+msgstr ""
+
+msgid "ocrlang-khmer"
+msgstr ""
+
+msgid "ocrlang-khmer-script"
+msgstr ""
+
+msgid "ocrlang-korean"
+msgstr ""
+
+msgid "ocrlang-korean-vertical"
+msgstr ""
+
+msgid "ocrlang-kurdish-arabic"
+msgstr ""
+
+msgid "ocrlang-kyrgyz"
+msgstr ""
+
+msgid "ocrlang-lao"
+msgstr ""
+
+msgid "ocrlang-lao-script"
+msgstr ""
+
+msgid "ocrlang-latin"
+msgstr ""
+
+msgid "ocrlang-latin-script"
+msgstr ""
+
+msgid "ocrlang-latvian"
+msgstr ""
+
+msgid "ocrlang-lithuanian"
+msgstr ""
+
+msgid "ocrlang-luxembourgish"
+msgstr ""
+
+msgid "ocrlang-macedonian"
+msgstr ""
+
+msgid "ocrlang-malayalam"
+msgstr ""
+
+msgid "ocrlang-malayalam-script"
+msgstr ""
+
+msgid "ocrlang-malay"
+msgstr ""
+
+msgid "ocrlang-maltese"
+msgstr ""
+
+msgid "ocrlang-maori"
+msgstr ""
+
+msgid "ocrlang-marathi"
+msgstr ""
+
+msgid "ocrlang-mongolian"
+msgstr ""
+
+msgid "ocrlang-myanmar-script"
+msgstr ""
+
+msgid "ocrlang-nepali"
+msgstr ""
+
+msgid "ocrlang-norwegian"
+msgstr ""
+
+msgid "ocrlang-occitan-post-1500"
+msgstr ""
+
+msgid "ocrlang-old-georgian"
+msgstr ""
+
+msgid "ocrlang-oriya-odia-script"
+msgstr ""
+
+msgid "ocrlang-oriya"
+msgstr ""
+
+msgid "ocrlang-pashto"
+msgstr ""
+
+msgid "ocrlang-persian"
+msgstr ""
+
+msgid "ocrlang-polish"
+msgstr ""
+
+msgid "ocrlang-portuguese"
+msgstr ""
+
+msgid "ocrlang-punjabi"
+msgstr ""
+
+msgid "ocrlang-quechua"
+msgstr ""
+
+msgid "ocrlang-romanian"
+msgstr ""
+
+msgid "ocrlang-russian"
+msgstr ""
+
+msgid "ocrlang-sanskrit"
+msgstr ""
+
+msgid "ocrlang-script-and-orientation"
+msgstr ""
+
+msgid "ocrlang-serbian-latin"
+msgstr ""
+
+msgid "ocrlang-serbian"
+msgstr ""
+
+msgid "ocrlang-sindhi"
+msgstr ""
+
+msgid "ocrlang-sinhala-script"
+msgstr ""
+
+msgid "ocrlang-sinhala"
+msgstr ""
+
+msgid "ocrlang-slovakian"
+msgstr ""
+
+msgid "ocrlang-slovenian"
+msgstr ""
+
+msgid "ocrlang-spanish-castilian-old"
+msgstr ""
+
+msgid "ocrlang-spanish"
+msgstr ""
+
+msgid "ocrlang-sundanese"
+msgstr ""
+
+msgid "ocrlang-swahili"
+msgstr ""
+
+msgid "ocrlang-swedish"
+msgstr ""
+
+msgid "ocrlang-syriac-script"
+msgstr ""
+
+msgid "ocrlang-syriac"
+msgstr ""
+
+msgid "ocrlang-tajik"
+msgstr ""
+
+msgid "ocrlang-tamil-script"
+msgstr ""
+
+msgid "ocrlang-tamil"
+msgstr ""
+
+msgid "ocrlang-tatar"
+msgstr ""
+
+msgid "ocrlang-telugu-script"
+msgstr ""
+
+msgid "ocrlang-telugu"
+msgstr ""
+
+msgid "ocrlang-thaana-script"
+msgstr ""
+
+msgid "ocrlang-thai-script"
+msgstr ""
+
+msgid "ocrlang-thai"
+msgstr ""
+
+msgid "ocrlang-tibetan-script"
+msgstr ""
+
+msgid "ocrlang-tibetan-standard"
+msgstr ""
+
+msgid "ocrlang-tigrinya"
+msgstr ""
+
+msgid "ocrlang-tonga"
+msgstr ""
+
+msgid "ocrlang-turkish"
+msgstr ""
+
+msgid "ocrlang-ukrainian"
+msgstr ""
+
+msgid "ocrlang-urdu"
+msgstr ""
+
+msgid "ocrlang-uyghur"
+msgstr ""
+
+msgid "ocrlang-uzbek-cyrillic"
+msgstr ""
+
+msgid "ocrlang-uzbek"
+msgstr ""
+
+msgid "ocrlang-vietnamese-script"
+msgstr ""
+
+msgid "ocrlang-vietnamese"
+msgstr ""
+
+msgid "ocrlang-welsh"
+msgstr ""
+
+msgid "ocrlang-yiddish"
+msgstr ""
+
+msgid "ocrlang-yoruba"
+msgstr ""

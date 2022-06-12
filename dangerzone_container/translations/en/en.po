@@ -9,14 +9,14 @@ msgstr ""
 "Project-Id-Version: dangerzone-container\n"
 "Report-Msgid-Bugs-To: yves_zoundi@hotmail.com\n"
 "POT-Creation-Date: 2022-06-115 11:51-0400\n"
-"PO-Revision-Date: 2022-06-11 11:51-0400\n"
+"PO-Revision-Date: 2022-06-11 19:22-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 msgid "msg-info-copy-process-summary"
 msgstr "Copying PDF input to"
@@ -37,19 +37,19 @@ msgid "msg-info-img-to-pdf-summary-start"
 msgstr "Saving "
 
 msgid "msg-info-img-to-pdf-summary-end"
-msgstr "PNG images to PDFs."
+msgstr "PNG image(s) to PDF"
 
 msgid "msg-info-img-to-pdf-item-start"
 msgstr "Saving PNG image"
 
 msgid "msg-info-img-to-pdf-item-end"
-msgstr "to PDF."
+msgstr "to PDF"
 
 msgid "msg-info-ocr-img-to-pdf-summary-start"
 msgstr "Performing OCR to PDF on"
 
 msgid "msg-info-ocr-img-to-pdf-summary-end"
-msgstr "images."
+msgstr "images"
 
 msgid "msg-info-ocr-img-to-pdf-item"
 msgstr "Performing OCR on page"
@@ -79,35 +79,67 @@ msgid "msg-error-filenotfound"
 msgstr "Cannot find file at"
 
 msgid "msg-combine-pdf-summary-start"
-msgstr "Combining "
+msgstr "Combinding"
 
 msgid "msg-combine-pdf-summary-end"
-msgstr "PDF documents(s)."
+msgstr "PDF document(s)"
 
 msgid "msg-combine-pdf-collecting-documents"
-msgstr "Collecting documents to merge."
+msgstr "Collecting PDF documents to combine."
 
 msgid "msg-combine-pdf-update-bookmarks"
-msgstr "Updating documents bookmarks and numbering."
+msgstr "Updating bookmarks and page numbering"
 
 msgid "msg-combine-pdf-processobjects"
 msgstr "Processing PDF structure"
 
 msgid "msg-combine-pdf-nopagesfound"
-msgstr "No pages found while merging PDF pages!"
+msgstr "No page found while combinding PDF pages!"
 
 msgid "msg-combine-pdf-updatepdf-dictionary"
-msgstr "Updating PDF dictionary"
+msgstr "Updating PDF dictionnary"
 
 msgid "msg-combine-pdf-catalog-root-notfound"
-msgstr "Root catalog not found."
+msgstr "Root catalog was not found"
 
 msgid "msg-combine-pdf-merging"
-msgstr "Merging objects."
+msgstr "Combinding PDF objects"
 
 msgid "msg-combine-pdf-compressing"
-msgstr "Compressing PDF."
+msgstr "Compressing PDF"
 
 msgid "msg-combine-pdf-saving"
-msgstr "Saving PDF."
+msgstr "Saving PDF"
 
+msgid "msg-split-pdf-summary-start"
+msgstr "Extract PDF file into "
+
+msgid "msg-split-pdf-summary-end"
+msgstr "PNG images"
+
+msgid "msg-split-pdf-item-start"
+msgstr "Extracting page"
+
+msgid "msg-split-pdf-item-end"
+msgstr "into PNG image"
+
+msgid "msg-error-filebasename"
+msgstr "Could not determine file basename"
+
+msgid "msg-elapsed-time-hour"
+msgstr "hour"
+
+msgid "msg-elapsed-time-minute"
+msgstr "minute"
+
+msgid "msg-elapsed-time-second"
+msgstr "second"
+
+msgid "msg-elapsed-time-hours"
+msgstr "hours"
+
+msgid "msg-elapsed-time-minutes"
+msgstr "minutes"
+
+msgid "msg-elapsed-time-seconds"
+msgstr "seconds"

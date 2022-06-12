@@ -95,7 +95,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         // step 1 0%
         let mut progress_range = ProgressRange::new(0, 20);
-        let input_file_path = input_as_pdf_to_pathbuf_uri(&logger, progress_range, raw_input_path)?;
+        let input_file_path = input_as_pdf_to_pathbuf_uri(&logger, progress_range, raw_input_path, &l10n)?;
 
         let input_file_param = format!("{}", input_file_path.display());
         let doc = Document::from_file(&input_file_param, None)?;
@@ -103,7 +103,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         // step 2 (20%)
         progress_range = ProgressRange::new(15, 45);
-        split_pdf_pages_into_images(&logger, progress_range, doc, &output_dir_path)?;
+        split_pdf_pages_into_images(&logger, progress_range, doc, &output_dir_path, &l10n)?;
 
         // step 3 (40%)
         progress_range = ProgressRange::new(45, 90);
@@ -123,7 +123,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         // step 4 (60%)
         progress_range = ProgressRange::new(90, 98);
-        pdf_combine_pdfs(&logger, progress_range, page_count, &output_dir_path, &output_file_path)?;
+        pdf_combine_pdfs(&logger, progress_range, page_count, &output_dir_path, &output_file_path, &l10n)?;
 
         // step 5 (80%)
         move_file_to_dir(&output_file_path, &safe_dir_path)
@@ -144,7 +144,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     logger.log(99, msg);
 
     let millis = timer.elapsed().as_millis();
-    logger.log(100, format!("{}: {}.", l10n.get_message("msg-info-conversion-time-elapsed"), elapsed_time_string(millis)));
+    logger.log(100, format!("{}: {}.", l10n.get_message("msg-info-conversion-time-elapsed"), elapsed_time_string(millis, &l10n)));
     
     std::process::exit(exit_code);
 }
@@ -156,7 +156,7 @@ fn move_file_to_dir(src_file_path: &PathBuf, dest_dir_path: &PathBuf) -> Result<
     Ok(())
 }
 
-fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRange, raw_input_path: PathBuf) -> Result<PathBuf, Box<dyn Error>> {    
+fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRange, raw_input_path: PathBuf, l10n: &l10n::Messages) -> Result<PathBuf, Box<dyn Error>> {    
     let conversion_by_mimetype: HashMap<&str, ConversionType> = [
         ("application/pdf", ConversionType::None),
         (
@@ -358,20 +358,20 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
                     let input_name = format!("{}_input.pdf", basename);
                     filename_pdf = format!("{}", parent_dir.join(input_name.as_str()).display());
                 } else {
-                    return Err(format!("Cannot determine input basename for file {}!", raw_input_path.display()).into());
+                    return Err(format!("{}: {}!", l10n.get_message("msg-error-filebasename"), raw_input_path.display()).into());
                 }
             } else {
-                return Err(format!("Cannot determine input basename for file {}!", raw_input_path.display()).into());
+                return Err(format!("{}: {}!", l10n.get_message("msg-error-filebasename"), raw_input_path.display()).into());
             }
 
             match conversion_type {
                 ConversionType::None => {
-                    logger.log(5, format!("+ Copying PDF input to {}.", filename_pdf));
+                    logger.log(5, format!("+ {} {}", l10n.get_message("msg-info-copy-process-summary"), filename_pdf));
 
                     fs::copy(&raw_input_path, PathBuf::from(&filename_pdf))?;
                 }
                 ConversionType::Convert => {
-                    logger.log(5, format!("+ Converting input image to PDF"));
+                    logger.log(5, format!("+ {}", l10n.get_message("msg-info-convert-process-summary")));
 
                     let img_format = match mime_type {
                         "image/png"    => Ok(image::ImageFormat::Png),
@@ -384,7 +384,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
                     img_to_pdf(img_format, &raw_input_path, &PathBuf::from(&filename_pdf))?;
                 }
                 ConversionType::LibreOffice(output_filter, fileext) => {
-                    logger.log(5, format!("Converting to PDF using LibreOffice with filter: {}", output_filter));
+                    logger.log(5, format!("{}: {}", l10n.get_message("msg-info-officepdf-process-summary"), output_filter));
                     let new_input_path = PathBuf::from(format!("/tmp/input.{}", fileext));
                     fs::copy(&raw_input_path, &new_input_path)?;
                     let output_dir_libreoffice = "/tmp/libreoffice";
@@ -437,7 +437,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
 }
 
 #[inline]
-fn elapsed_time_string(millis: u128) -> String {
+fn elapsed_time_string(millis: u128, l10n: &l10n::Messages) -> String {
     let mut diff = millis;
     let secs_in_millis = 1000;
     let mins_in_millis = secs_in_millis * 60;
@@ -448,7 +448,21 @@ fn elapsed_time_string(millis: u128) -> String {
     diff = diff % mins_in_millis;
     let seconds = diff / secs_in_millis;
 
-    format!("{} hour(s) {} minute(s) {} seconds(s)", hours, minutes, seconds)
+    let keys = vec!["msg-elapsed-time-hour", "msg-elapsed-time-minute", "msg-elapsed-time-second"];
+    let values = vec![hours, minutes, seconds];
+    let mut ret = String::new();
+
+    for i in 0..values.len() {
+        if values[i] != 0 {
+            let mut k = keys[i].to_string();
+            if values[i] > 1 {
+                k = k + "s";
+            }
+            ret.push_str(&format!("{} {}", values[i], l10n.get_message(&k)));
+        }
+    }
+    
+    ret
 }
 
 fn ocr_imgs_to_pdf(
@@ -458,12 +472,12 @@ fn ocr_imgs_to_pdf(
     tess_settings: TessSettings,
     input_path: &PathBuf,
     output_path: &PathBuf,
-    &l10n: l10n::Messages
+    l10n: &l10n::Messages
 ) -> Result<(), Box<dyn Error>> {
     let progress_delta = progress_range.delta();
     let mut progress_value: usize = progress_range.min;
     logger.log(progress_value, format!("+ {} {} {}",
-                                       l10n.get_message("msg-ocr-img-to-pdf-summary-start")
+                                       l10n.get_message("msg-ocr-img-to-pdf-summary-start"),
                                        page_count,
                                        l10n.get_message("msg-ocr-img-to-pdf-summary-end")));
 
@@ -598,11 +612,13 @@ impl ProgressRange {
     }
 }
 
-fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, doc: Document, dest_folder: &PathBuf) -> Result<(), Box<dyn Error>> {
+fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, doc: Document, dest_folder: &PathBuf, l10n: &l10n::Messages) -> Result<(), Box<dyn Error>> {
     let page_num = doc.n_pages();
     let mut progress_value: usize = progress_range.min;
 
-    logger.log(progress_value, format!("+ Saving PDF to {} PNG images.", page_num));
+    logger.log(progress_value, format!("+ {} {} {}", l10n.get_message("msg-split-pdf-summary-start"),
+                                       page_num,
+                                       l10n.get_message("msg-split-pdf-summary-end")));
 
     let antialias_setting = cairo::Antialias::Fast;
     let mut font_options = cairo::FontOptions::new()?;
@@ -617,7 +633,11 @@ fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_rang
 
         if let Some(page) = doc.page(i) {
             progress_value = progress_range.min + (i * progress_delta as i32 / page_num) as usize;
-            logger.log(progress_value, format!("++ Saving page {} to PNG.", page_num));
+            logger.log(progress_value, format!("++ {} {} {}",
+                                               l10n.get_message("msg-split-pdf-item-start"),
+                                               page_num,
+                                               l10n.get_message("msg-split-pdf-item-end")
+            ));
 
             let dest_path = dest_folder.join(format!("page-{}.png", page_num));
             let (w, h) = page.size();
@@ -655,7 +675,7 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: Progress
 
     // step 1/7
     let mut progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
-    logger.log(progress_value, format!("++ {}", "msg-combine-pdf-collecting-documents"));
+    logger.log(progress_value, format!("++ {}", l10n.get_message("msg-combine-pdf-collecting-documents")));
     for i in 0..page_count {
         let src_path = input_dir_path.join(format!("page-{}.pdf", i + 1));
         let document: lopdf::Document = lopdf::Document::load(src_path)?;
@@ -845,14 +865,14 @@ fn imgs_to_pdf(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange
     let mut progress_value: usize = progress_range.min;
 
     logger.log(progress_value, format!("+ {} {} {}",
-                                       l10n.get_message("msg--info-img-to-pdf-summary-start")
+                                       l10n.get_message("msg-info-img-to-pdf-summary-start"),
                                        page_count,
                                        l10n.get_message("msg-info-img-to-pdf-summary-end")));
 
     for i in 0..page_count {
         let idx = i + 1;
         progress_value = progress_range.min + (i * progress_delta / page_count) as usize;
-        logger.log(progress_value, format!("++ {} {} {}.",
+        logger.log(progress_value, format!("++ {} {} {}",
                                            l10n.get_message("msg-info-img-to-pdf-item-start"),
                                            idx,
                                            l10n.get_message("msg-info-img-to-pdf-item-end")));

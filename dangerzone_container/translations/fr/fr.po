@@ -16,6 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 msgid "msg-info-copy-process-summary"
 msgstr "Copie de fichier PDF vers"
@@ -36,19 +37,19 @@ msgid "msg-info-img-to-pdf-summary-start"
 msgstr "Sauvegarde de "
 
 msgid "msg-info-img-to-pdf-summary-end"
-msgstr "Images PNG en PDF."
+msgstr "Images PNG en PDF"
 
 msgid "msg-info-img-to-pdf-item-start"
 msgstr "Enregistrer de l'image PNG"
 
 msgid "msg-info-img-to-pdf-item-end"
-msgstr "en PDF."
+msgstr "en PDF"
 
 msgid "msg-info-ocr-img-to-pdf-summary-start"
 msgstr "OCR au format PDF sur"
 
 msgid "msg-info-ocr-img-to-pdf-summary-end"
-msgstr "images."
+msgstr "images"
 
 msgid "msg-info-ocr-img-to-pdf-item"
 msgstr "OCR sur la page"
@@ -63,7 +64,7 @@ msgid "msg-error-unsupported-mimetype"
 msgstr "Type mime non pris en charge"
 
 msgid "msg-error-guess-mimetype"
-msgstr "Erreur de type Mime! L'entrée a - t-elle une extension de fichier connue?"
+msgstr "Erreur de type Mime! L'entrée a t-elle une extension de fichier connue?"
 
 msgid "msg-error-office-pdf-result-notfound"
 msgstr "Impossible de trouver le résultat PDF du document office!"
@@ -78,16 +79,16 @@ msgid "msg-error-filenotfound"
 msgstr "Impossible de trouver le fichier sur"
 
 msgid "msg-combine-pdf-summary-start"
-msgstr "Assemblement de "
+msgstr "Assemblement de"
 
 msgid "msg-combine-pdf-summary-end"
-msgstr "document(s) PDF."
+msgstr "document(s) PDF"
 
 msgid "msg-combine-pdf-collecting-documents"
-msgstr "Collecte de documents à fusionner."
+msgstr "Collecte de documents à fusionner"
 
 msgid "msg-combine-pdf-update-bookmarks"
-msgstr "Mise à jour des signets et de la numérotation des documents."
+msgstr "Mise à jour des signets et de la numérotation des documents"
 
 msgid "msg-combine-pdf-processobjects"
 msgstr "Traitement de la structure PDF"
@@ -99,13 +100,46 @@ msgid "msg-combine-pdf-updatepdf-dictionary"
 msgstr "Mise à jour du dictionnaire PDF"
 
 msgid "msg-combine-pdf-catalog-root-notfound"
-msgstr "Catalogue racine introuvable."
+msgstr "Catalogue racine introuvable"
 
 msgid "msg-combine-pdf-merging"
-msgstr "Fusion d'objets."
+msgstr "Fusion d'objets PDF"
 
 msgid "msg-combine-pdf-compressing"
-msgstr "Compression de PDF."
+msgstr "Compression de PDF"
 
 msgid "msg-combine-pdf-saving"
-msgstr "Sauveragde PDF."
+msgstr "Sauvegarde du document PDF"
+
+msgid "msg-split-pdf-summary-start"
+msgstr "Extraction du fichier PDF en "
+
+msgid "msg-split-pdf-summary-end"
+msgstr "images au format PNG"
+
+msgid "msg-split-pdf-item-start"
+msgstr "Extraction de la page"
+
+msgid "msg-split-pdf-item-end"
+msgstr "au format PNG"
+
+msgid "msg-error-filebasename"
+msgstr "Erreur d'identification de base de nom de fichier"
+
+msgid "msg-elapsed-time-hour"
+msgstr "heure"
+
+msgid "msg-elapsed-time-minute"
+msgstr "minute"
+
+msgid "msg-elapsed-time-second"
+msgstr "seconde"
+
+msgid "msg-elapsed-time-hours"
+msgstr "heures"
+
+msgid "msg-elapsed-time-minutes"
+msgstr "minutes"
+
+msgid "msg-elapsed-time-seconds"
+msgstr "secondes"

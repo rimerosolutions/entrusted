@@ -96,43 +96,8 @@ Conversions will fail if the container solution running or available in your [[h
 
 * What is planned?
 
-High-level TODOs:
-- [X] Replicate CLI functions of the original tool, not necessarily the exact behavior ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral01][spiral01 branch]])
-- [X] "Misc." bulk fixes & changes ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral02][spiral02 branch]])
-  - [X] Eliminate CLI calls inside the container, most of the job can likely be done with libraries
-  - [X] Minimal Desktop user interface via the [[https://github.com/fltk-rs/fltk-rs][FLTK]] lightweight toolkit
-  - [X] Temporarily drop support for Office documents (OpenDocument, MS Office), more research for [[https://github.com/rimerosolutions/rust-calls-java][Java native libraries integration]] (few runtime errors with [[https://www.oracle.com/java/graalvm/][GraalVM]])
-- [X] UI and other improvements, including tech debt and other issues ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral03][spiral03 branch]])
-- [X] Bring back Office document support via LibreOffice ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral04][spiral04 branch]])
-  - [X] Add workarounds for mime-type detection library (OpenDocument, OOXML, Legacy office format)
-  - [X] Update processing logic to use libreOffice for initial PDF conversion, prior further processing
-- [X] Documentation updates and compilation error fix ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral05][spiral05 branch]])
-- [X] Usability improvements and slightly better MS Windows support ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral06][spiral06 branch]])
-- [X] Online service with Web interface and remote CLI client ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral07][spiral07 branch]])  
-- [X] Look at releases for Linux, Mac OS and Windows ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral08][spiral08 branch]])
-- [X] Documentation updates ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral09][spiral09 branch]])  
-- [X] Implement conversion progress information ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral10][spiral10 branch]])
-- [X] Minimal CI/CD pipeline ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral11][spiral11 branch]])
-- [X] Provide live CD ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral12][spiral12 branch]])
-- [X] Initial support for batch conversions ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral13][spiral13 branch]])
-  - [X] In the Web user interface
-  - [X] In the graphical desktop interface    
-  - [X] Document a simple =find-exec= workflow for the command-line client
-- [X] Fix few obvious issues and then release new batch conversion feature ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral14][spiral14 branch]] part 1)
-  - [X] Do not ship an unsigned app bundle for Mac OS as it doesn't behave/work anyway
-  - [X] Mitigate some of the new Desktop and Web UI bugs as much as possible
-- [X] Additional release artifacts for convenience ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral14][spiral14 branch]] part 2)
-  - [X] Add DMG image for Mac OS, with the ability to still invoke external programs
-  - [X] Add software installer for Windows via [[https://nsis.sourceforge.io/Main_Page][NSIS]] for now
-- [X] Support application preferences ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral15][spiral15 branch]])
-- [ ] Add infrastructure for message translations: errors, UI widgets ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral15][spiral16 branch]])
-- [ ] Create artwork and rename the GitHub project
-- [ ] Revisit notifications SSE + HTTP2, for the "Online Service"
-- [ ] Investigate if specific support is required for Tails Linux
-- [ ] Support for password-protected PDF files and maybe other types of documents
-- [ ] Transition CI/CD scrips to Github actions or TravisCI or something else?
-- [ ] etc.  
-    
+See [[./ROADMAP.org][the high-level roadmap]].
+
 * What are the differences with Dangerzone?
 
 This project is more of a hobby at this point: it lacks testing, maturity and several features.
@@ -166,20 +131,4 @@ All the bugs reports, questions or suggestions are welcome and appreciated. Plea
 
 * How to prepare a release?
 
-Please try to follow closely semantic versioning guidelines.
-
-General steps:    
-- Bump the =version= field in all the projects (=Cargo.toml= files)
-  - The container image tag is inferred from the release version to standardize as much as possible
-- On a recent Ubuntu Linux installation, build all the release artifacts =ci_cd/build_all.sh=
-  - This generates all the release artifacts under a new folder called =packages=
-  - You can then test the artifacts archives and executables under Linux, Mac OS and Windows
-  - You can test the live CD ISO image with a tool such as [[https://www.qemu.org/][QEMU]]
-- Merge the current branch into the =main= branch, and push the changes
-- Tag the main branch with the new =release version= (i.e. =1.1.1=) and push the changes
-- Push the container image to [[https://hub.docker.com/r/uycyjnzgntrn/dangerzone-converter][Docker Hub]] per [[./dangerzone_container/README.org][publishing instructions]]
-- Create a new release from the GitHub Web interface:
-  - Add the release notes
-  - Upload all release artifacts (=exe=, =dmg=, =zip=, =tar= and =iso= files)
-  - Publish the release
- 
+See the [[./RELEASING.org][release instructions]].

@@ -340,9 +340,21 @@ async fn events(info: actix_web::web::Path<String>, broadcaster: Data<Mutex<Broa
 }
 
 async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<String>>, l10n: Data<Mutex<l10n::Messages>>) -> impl Responder {
+    let l10n_ref = l10n.lock().unwrap();
+    
+    let langid = if let Some(req_language) = req.headers().get("Accept-Language") {
+        if let Ok(req_language_str) = req_language.to_str() {
+            String::from(req_language_str)
+        } else {
+            l10n_ref.langid()
+        }
+    } else {
+        l10n_ref.langid()
+    };
+    
     let request_id = Uuid::new_v4().to_string();
     let request_id_clone = request_id.clone();
-    let l10n_ref = l10n.lock().unwrap();
+    
     println!("{}: {}.", l10n_ref.get_message("msg-start-upload-with-refid"), &request_id);
 
     let tmpdir = env::temp_dir().join(config::PROGRAM_GROUP);
@@ -363,6 +375,7 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
         NOTIFICATIONS_PER_REFID.lock().unwrap().insert(request_id.clone(), Arc::new(Mutex::new(Vec::<model::Notification>::new())));
         let new_upload_info = upload_info.clone();
         let l10n_async_ref = l10n_ref.clone();
+        let langid_ref = langid.clone();
 
         actix_web::rt::spawn(async move {
             let ocr_lang_opt = if new_upload_info.0.is_empty() {
@@ -375,7 +388,7 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
                 PathBuf::from(tmpdir).join([request_id.clone(), "-".to_string(), config::DEFAULT_FILE_SUFFIX.to_string()].concat());
 
             let container_image_name = ci_image_name.lock().unwrap().to_string();
-            if let Err(ex) = run_dangerzone(request_id, container_image_name, input_path, output_path, ocr_lang_opt, l10n_async_ref.clone()).await {
+            if let Err(ex) = run_dangerzone(request_id, container_image_name, input_path, output_path, ocr_lang_opt, l10n_async_ref.clone(), langid_ref).await {
                 eprintln!("{}. {}", l10n_async_ref.get_message("msg-processing-failure"), ex.to_string());
             }
         });
@@ -474,7 +487,8 @@ async fn run_dangerzone(
     input_path: PathBuf,
     output_path: PathBuf,
     opt_ocr_lang: Option<String>,
-    l10n: l10n::Messages
+    l10n: l10n::Messages,
+    langid: String
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut cmdline = vec![
         "dangerzone-cli".to_string(),
@@ -498,7 +512,7 @@ async fn run_dangerzone(
     let err_notif_handle = l10n.get_message("msg-could-not-acquire-notifications-handle");
 
     let mut cmd = Command::new("sh")
-        .env(l10n::ENV_VAR_DANGERZONE_LANGID, l10n::DEFAULT_LANGID)
+        .env(l10n::ENV_VAR_DANGERZONE_LANGID, langid)
         .arg("-c")
         .arg(cmdline.join(" "))
         .stdout(std::process::Stdio::piped())

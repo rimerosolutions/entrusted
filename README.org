@@ -49,7 +49,7 @@ Most users will open a document with the =dangerzone-client=:
 |-----------------------+---------------------------------------------|
 | Component             | Purpose                                     |
 |-----------------------+---------------------------------------------|
-| [[./dangerzone_container][dangerzone_container]]  | Document processing "sandbox"                |
+| [[./dangerzone_container][dangerzone_container]]  | Document processing "sandbox"               |
 | [[./dangerzone_client][dangerzone_client]]     | Command-line and graphical user interfaces  |
 | [[./dangerzone_httpserver][dangerzone_httpserver]] | Online service feature with a Web interface |
 | [[./dangerzone_httpclient][dangerzone_httpclient]] | Command-line client for the online service  |

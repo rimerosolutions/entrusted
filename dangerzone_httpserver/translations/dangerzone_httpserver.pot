@@ -1,0 +1,73 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#~ # SOME DESCRIPTIVE TITLE.
+#~ # Copyright (C) YEAR Free Software Foundation, Inc.
+#~ # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#~ #
+#~ #, fuzzy
+#~ msgid ""
+#~ msgstr ""
+#~ "Project-Id-Version: dangerzone-httpserver \n"
+#~ "Report-Msgid-Bugs-To: yves_zoundi@hotmail.com\n"
+#~ "POT-Creation-Date: 2022-06-11 11:15-0500\n"
+#~ "POT-Revision-Date: 2022-06-11 11:15-0500\n"
+#~ "Last-Translator: Yves Zoundi <yves_zoundi@hotmail.com>\n"
+#~ "Language-Team: Yves Zoundi <yves_zoundi@hotmail.com>\n"
+#~ "Language:\n"
+#~ "MIME-Version: 1.0\n"
+#~ "Content-Type: text/plain; charset=UTF-8"
+
+msgid "cmdline-help-host"
+msgstr ""
+
+msgid "cmdline-help-port"
+msgstr ""
+
+msgid "cmdline-help-container-image-name"
+msgstr ""
+
+msgid "msg-download-from"
+msgstr ""
+
+msgid "msg-could-not-find-notification-group-for"
+msgstr ""
+
+msgid "msg-could-not-acquire-notifications-handle"
+msgstr ""
+
+msgid "msg-running-command"
+msgstr ""
+
+msgid "msg-httperror-notfound"
+msgstr ""
+
+msgid "msg-httperror-internalerror"
+msgstr ""
+
+msgid "msg-could-not-read-input-file"
+msgstr ""
+
+msgid "msg-could-not-delete-file"
+msgstr ""
+
+msgid "msg-processing-failure"
+msgstr ""
+
+msgid "msg-missing-parameter-file"
+msgstr ""
+
+msgid "msg-missing-parameter-filename"
+msgstr ""

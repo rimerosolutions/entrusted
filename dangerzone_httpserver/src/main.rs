@@ -30,6 +30,7 @@ use futures::TryStreamExt;
 use http_api_problem::{HttpApiProblem, StatusCode};
 use tokio::io::AsyncWriteExt;
 
+mod l10n;
 mod model;
 mod config;
 
@@ -360,7 +361,7 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
 pub async fn save_file(
     request_id: String,
     mut payload: Multipart,
-    tmpdir: PathBuf,
+    tmpdir: PathBuf
 ) -> Result<(String, String, String), Box<dyn std::error::Error>> {
     let mut buf = Vec::<u8>::new();
     let mut filename = String::new();
@@ -460,6 +461,7 @@ async fn run_dangerzone(
     println!("Running command: {}", cmdline.join(" "));
 
     let mut cmd = Command::new("sh")
+        .env(l10n::ENV_VAR_DANGERZONE_LANGID, l10n::DEFAULT_LANGID)
         .arg("-c")
         .arg(cmdline.join(" "))
         .stdout(std::process::Stdio::piped())
@@ -468,7 +470,6 @@ async fn run_dangerzone(
 
     let mut counter = 1;
     let stream = cmd.stdout.take().unwrap();
-
     let mut reader = BufReader::new(stream).lines();
 
     while let Some(ndata) = reader.next_line().await? {

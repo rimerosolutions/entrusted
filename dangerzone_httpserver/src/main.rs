@@ -95,7 +95,7 @@ impl Broadcaster {
         tx.try_send(Bytes::from("data: connected\n\n")).unwrap();
 
         self.clients.push(tx);
-        
+
         let done = false;
         let idx = 0;
 
@@ -173,7 +173,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let help_host = l10n.get_message("cmdline-help-host");
     let help_port = l10n.get_message("cmdline-help-port");
     let help_container_image_name = l10n.get_message("cmdline-help-container-image-name");
-    
+
     let appconfig: config::AppConfig = config::load_config()?;
     let port_number_text = format!("{}", appconfig.port);
     let app_version = option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown");
@@ -217,7 +217,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         if let Err(ex) = port.parse::<u16>() {
             return Err(format!("{}: {}. {}", l10n.get_message("msg-invalid-port-number"), port, ex.to_string()).into());
         }
-        
+
         match serve(host, port, ci_image_name, l10n.clone()).await {
             Ok(_) => Ok(()),
             Err(ex) => Err(ex.into()),
@@ -234,14 +234,14 @@ async fn serve(host: &str, port: &str, ci_image_name: String, l10n: l10n::Messag
     let img = ci_image_name.clone();
     let ci_image_data = Data::new(Mutex::new(img));
     let l10n_data = Data::new(Mutex::new(l10n));
-    
+
     HttpServer::new(move|| {
         let cors = Cors::permissive()
             .supports_credentials()
             .allowed_methods(vec!["GET", "POST", "OPTIONS", "HEAD"])
             .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT, header::CONTENT_TYPE, ]);
-        
-        let data = Broadcaster::create();        
+
+        let data = Broadcaster::create();
 
         App::new()
             .wrap(cors)
@@ -250,7 +250,8 @@ async fn serve(host: &str, port: &str, ci_image_name: String, l10n: l10n::Messag
             .app_data(ci_image_data.clone())
             .service(web::resource("/").route(web::get().to(index)))
             .route("/upload", web::post().to(upload))
-            .route("/events/{id}", web::get().to(events))            
+            .route("/events/{id}", web::get().to(events))
+            .route("/uitranslations", web::get().to(uitranslations))
             .route("/downloads/{id}", web::get().to(download))
             .default_service(web::get().to(notfound))
     })
@@ -259,13 +260,31 @@ async fn serve(host: &str, port: &str, ci_image_name: String, l10n: l10n::Messag
         .await
 }
 
+async fn uitranslations(req: HttpRequest) -> impl Responder {
+    let langid = if let Some(req_language) = req.headers().get("Accept-Language") {
+        if let Ok(req_language_str) = req_language.to_str() {
+            String::from(req_language_str)
+        } else {
+            String::from(l10n::DEFAULT_LANGID)
+        }
+    } else {
+        String::from(l10n::DEFAULT_LANGID)
+    };
+
+    let json_data = l10n::ui_translation_for(langid);
+
+    HttpResponse::Ok()
+        .append_header((header::CONTENT_TYPE, "text/json"))
+        .body(json_data)
+}
+
 async fn index() -> impl Responder {
     let app_version = option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown");
     let html_data = SPA_INDEX_HTML.replace("_APPVERSION_", app_version);
 
     HttpResponse::Ok()
-            .append_header((header::CONTENT_TYPE, "text/html"))
-            .body(html_data)
+        .append_header((header::CONTENT_TYPE, "text/html"))
+        .body(html_data)
 }
 
 async fn download(info: actix_web::web::Path<String>, req: HttpRequest, l10n: Data<Mutex<l10n::Messages>>) -> impl Responder {
@@ -306,13 +325,13 @@ async fn download(info: actix_web::web::Path<String>, req: HttpRequest, l10n: Da
 }
 
 async fn events(info: actix_web::web::Path<String>, broadcaster: Data<Mutex<Broadcaster>>, l10n: Data<Mutex<l10n::Messages>>) -> impl Responder {
-    let ref_id = format!("{}", info.into_inner());    
+    let ref_id = format!("{}", info.into_inner());
     let notifications_per_refid = NOTIFICATIONS_PER_REFID.lock().unwrap();
 
     if !notifications_per_refid.contains_key(&ref_id.clone()) {
         return HttpResponse::NotFound().body(l10n.lock().unwrap().get_message("msg-httperror-notfound"));
     }
-    
+
     let rx = broadcaster.lock().unwrap().new_client(ref_id);
 
     HttpResponse::Ok()
@@ -326,7 +345,7 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
     let l10n_ref = l10n.lock().unwrap();
     println!("{}: {}.", l10n_ref.get_message("msg-start-upload-with-refid"), &request_id);
 
-    let tmpdir = env::temp_dir().join(config::PROGRAM_GROUP);    
+    let tmpdir = env::temp_dir().join(config::PROGRAM_GROUP);
     let input_path_status = save_file(request_id.clone(), payload, tmpdir.clone(), l10n_ref.clone()).await;
     let mut err_msg = String::new();
     let mut upload_info = (String::new(), String::new(), String::new());
@@ -398,7 +417,7 @@ pub async fn save_file(
             while let Some(chunk) = field.next().await {
                 let data = &String::from_utf8(chunk?.to_vec())?;
 
-                if !data.trim().is_empty() {                    
+                if !data.trim().is_empty() {
                     ocr_lang.push_str(data);
                 }
             }
@@ -420,7 +439,7 @@ pub async fn save_file(
     } else {
         return Err(format!("{}: {}", l10n.get_message("msg-error-guess-mimetype"), filename).into());
     }
-    
+
     if !tmpdir.exists() {
         fs::create_dir(&tmpdir)?;
     }
@@ -463,7 +482,7 @@ async fn run_dangerzone(
         "json".to_string(),
         "--container-image-name".to_string(),
         ci_image_name,
-        "--output-filename".to_string(),       
+        "--output-filename".to_string(),
         format!("{}", output_path.display()),
         "--input-filename".to_string(),
         format!("{}", input_path.display()),

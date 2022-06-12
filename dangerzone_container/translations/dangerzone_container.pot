@@ -155,3 +155,6 @@ msgstr ""
 
 msgid "msg-elapsed-time-seconds"
 msgstr ""
+
+msgid "msg-elapsed-time-instant"
+msgstr ""

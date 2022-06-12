@@ -461,6 +461,10 @@ fn elapsed_time_string(millis: u128, l10n: &l10n::Messages) -> String {
             ret.push_str(&format!("{} {}", values[i], l10n.get_message(&k)));
         }
     }
+
+    if ret.trim().is_empty() {
+        ret = l10n.get_message("msg-elapsed-time-instant");
+    }
     
     ret
 }
@@ -477,16 +481,16 @@ fn ocr_imgs_to_pdf(
     let progress_delta = progress_range.delta();
     let mut progress_value: usize = progress_range.min;
     logger.log(progress_value, format!("+ {} {} {}",
-                                       l10n.get_message("msg-ocr-img-to-pdf-summary-start"),
+                                       l10n.get_message("msg-info-ocr-img-to-pdf-summary-start"),
                                        page_count,
-                                       l10n.get_message("msg-ocr-img-to-pdf-summary-end")));
+                                       l10n.get_message("msg-info-ocr-img-to-pdf-summary-end")));
 
     let api = tesseract_init(tess_settings.lang, tess_settings.data_dir);
 
     for i in 0..page_count {
         let page_num = i + 1;
         progress_value = progress_range.min + (page_num * progress_delta / page_count);
-        logger.log(progress_value, format!("++ {} {}.", l10n.get_message("msg-ocr-img-to-pdf-item"), page_num));
+        logger.log(progress_value, format!("++ {} {}.", l10n.get_message("msg-info-ocr-img-to-pdf-item"), page_num));
         let src = input_path.join(format!("page-{}.png", page_num));
         let dest = output_path.join(format!("page-{}", page_num));
         ocr_img_to_pdf(api, src, dest)?;

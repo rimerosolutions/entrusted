@@ -143,3 +143,6 @@ msgstr "minutes"
 
 msgid "msg-elapsed-time-seconds"
 msgstr "secondes"
+
+msgid "msg-elapsed-time-instant"
+msgstr "Instantané"

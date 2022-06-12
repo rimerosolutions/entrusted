@@ -101,8 +101,8 @@ RUN apk -U upgrade && \
 COPY --from=builder /root/.cargo/bin/dangerzone-container /usr/local/bin/
 
 # Add the unprivileged user
-RUN adduser -h /home/user -s /bin/sh -D user
-USER user
+RUN adduser -h /home/dangerzone -s /bin/sh -D dangerzone
+USER dangerzone
 
 # /tmp/input_file is where the first convert expects the input file to be, and
 # /tmp where it will write the pixel files

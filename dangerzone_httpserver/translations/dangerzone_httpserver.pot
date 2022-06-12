@@ -71,3 +71,15 @@ msgstr ""
 
 msgid "msg-missing-parameter-filename"
 msgstr ""
+
+msgid "msg-invalid-port-number"
+msgstr ""
+
+msgid "msg-missing-parameters"
+msgstr ""
+
+msgid "msg-error-guess-mimetype"
+msgstr ""
+
+msgid "msg-start-upload-with-refid"
+msgstr ""

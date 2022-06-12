@@ -19,43 +19,55 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 msgid "cmdline-help-host"
-msgstr ""
+msgstr "Server host"
 
 msgid "cmdline-help-port"
-msgstr ""
+msgstr "Server port"
 
 msgid "cmdline-help-container-image-name"
-msgstr ""
+msgstr "Container image name"
 
 msgid "msg-download-from"
-msgstr ""
+msgstr "Download from"
 
 msgid "msg-could-not-find-notification-group-for"
-msgstr ""
+msgstr "Could not find notification for"
 
 msgid "msg-could-not-acquire-notifications-handle"
-msgstr ""
+msgstr "Could not read notifications data"
 
 msgid "msg-running-command"
-msgstr ""
+msgstr "Running command"
 
 msgid "msg-httperror-notfound"
-msgstr ""
+msgstr "Resource not found"
 
 msgid "msg-httperror-internalerror"
-msgstr ""
+msgstr "Internal error"
 
 msgid "msg-could-not-read-input-file"
-msgstr ""
+msgstr "Could not read input file"
 
 msgid "msg-could-not-delete-file"
-msgstr ""
+msgstr "Could not delete file"
 
 msgid "msg-processing-failure"
-msgstr ""
+msgstr "Processing failure"
 
 msgid "msg-missing-parameter-file"
-msgstr ""
+msgstr "Missing 'file' in form data"
 
 msgid "msg-missing-parameter-filename"
-msgstr ""
+msgstr "Missing 'filename' in form data"
+
+msgid "msg-invalid-port-number"
+msgstr "Invalid port number"
+
+msgid "msg-missing-parameters"
+msgstr "Runtime error, missing parameters!"
+
+msgid "msg-error-guess-mimetype"
+msgstr "Mime type error! Does the input have a 'known' file extension?"
+
+msgid "msg-start-upload-with-refid"
+msgstr "Starting file upload with reference ID"

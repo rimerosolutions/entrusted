@@ -19,43 +19,55 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 msgid "cmdline-help-host"
-msgstr ""
+msgstr "Hôte du serveur"
 
 msgid "cmdline-help-port"
-msgstr ""
+msgstr "Port du serveur"
 
 msgid "cmdline-help-container-image-name"
-msgstr ""
+msgstr "Nom de l'image du conteneur"
 
 msgid "msg-download-from"
-msgstr ""
+msgstr "Télécharger à partir de"
 
 msgid "msg-could-not-find-notification-group-for"
-msgstr ""
+msgstr "Impossible de trouver la notification pour"
 
 msgid "msg-could-not-acquire-notifications-handle"
-msgstr ""
+msgstr "Impossible de lire les notifications"
 
 msgid "msg-running-command"
-msgstr ""
+msgstr "Execution de la commande"
 
 msgid "msg-httperror-notfound"
-msgstr ""
+msgstr "Resource introuvable"
 
 msgid "msg-httperror-internalerror"
-msgstr ""
+msgstr "Erreur interne"
 
 msgid "msg-could-not-read-input-file"
-msgstr ""
+msgstr "Impossible de lire le fichier d'entrée"
 
 msgid "msg-could-not-delete-file"
-msgstr ""
+msgstr "Impossible de supprimer le fichier"
 
 msgid "msg-processing-failure"
-msgstr ""
+msgstr "Échec du traitement"
 
 msgid "msg-missing-parameter-file"
-msgstr ""
+msgstr "Paramètre de fichier binaire manquant"
 
 msgid "msg-missing-parameter-filename"
-msgstr ""
+msgstr "Paramètre de nom de fichier source manquant"
+
+msgid "msg-invalid-port-number"
+msgstr "Numéro de port non valide"
+
+msgid "msg-missing-parameters"
+msgstr "Erreur d'exécution, paramètres manquants!"
+
+msgid "msg-error-guess-mimetype"
+msgstr "Erreur de type Mime! L'entrée a t-elle une extension de fichier connue?"
+
+msgid "msg-start-upload-with-refid"
+msgstr "Démarrage du téléchargement du fichier avec l'ID de référence"

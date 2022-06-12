@@ -30,6 +30,8 @@ use futures::TryStreamExt;
 use http_api_problem::{HttpApiProblem, StatusCode};
 use tokio::io::AsyncWriteExt;
 
+use sys_locale;
+
 mod l10n;
 mod model;
 mod config;
@@ -150,8 +152,8 @@ impl Stream for Client {
     }
 }
 
-async fn notfound() -> impl Responder {
-    HttpResponse::NotFound().body("File not found")
+async fn notfound(l10n: Data<Mutex<l10n::Messages>>) -> impl Responder {
+    HttpResponse::NotFound().body(l10n.lock().unwrap().get_message("msg-httperror-notfound"))
 }
 
 fn server_problem(reason: String, uri: &Uri) -> HttpApiProblem {
@@ -162,6 +164,16 @@ fn server_problem(reason: String, uri: &Uri) -> HttpApiProblem {
 
 #[actix_web::main]
 pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let locale = match env::var(l10n::ENV_VAR_DANGERZONE_LANGID) {
+        Ok(selected_locale) => selected_locale,
+        Err(_) => sys_locale::get_locale().unwrap_or_else(|| String::from(l10n::DEFAULT_LANGID))
+    };
+    let l10n = l10n::Messages::new(locale);
+
+    let help_host = l10n.get_message("cmdline-help-host");
+    let help_port = l10n.get_message("cmdline-help-port");
+    let help_container_image_name = l10n.get_message("cmdline-help-container-image-name");
+    
     let appconfig: config::AppConfig = config::load_config()?;
     let port_number_text = format!("{}", appconfig.port);
     let app_version = option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown");
@@ -173,7 +185,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .arg(
             clap::Arg::with_name("host")
                 .long("host")
-                .help("Server host")
+                .help(&help_host)
                 .required(true)
                 .default_value(&appconfig.host)
                 .takes_value(true),
@@ -181,7 +193,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .arg(
             clap::Arg::with_name("port")
                 .long("port")
-                .help("Server port")
+                .help(&help_port)
                 .required(true)
                 .default_value(&port_number_text)
                 .takes_value(true),
@@ -189,7 +201,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .arg(
             clap::Arg::with_name("container-image-name")
                 .long("container-image-name")
-                .help("Container image name")
+                .help(&help_container_image_name)
                 .required(true)
                 .default_value(&appconfig.container_image_name)
                 .takes_value(true));
@@ -203,26 +215,25 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     if let (Some(host), Some(port)) = (run_matches.value_of("host"), run_matches.value_of("port")) {
         if let Err(ex) = port.parse::<u16>() {
-            return Err(format!("Invalid port number: {}. {}", port, ex.to_string()).into());
+            return Err(format!("{}: {}. {}", l10n.get_message("msg-invalid-port-number"), port, ex.to_string()).into());
         }
         
-        match serve(host, port, ci_image_name).await {
+        match serve(host, port, ci_image_name, l10n.clone()).await {
             Ok(_) => Ok(()),
             Err(ex) => Err(ex.into()),
         }
     } else {
-        Err("Server configuration error: missing parameters?".into())
+        Err(l10n.get_message("msg-missing-parameters").into())
     }
 }
 
-async fn serve(host: &str, port: &str, ci_image_name: String) -> std::io::Result<()> {
+async fn serve(host: &str, port: &str, ci_image_name: String, l10n: l10n::Messages) -> std::io::Result<()> {
     let addr = format!("{}:{}", host, port);
     println!("Starting server at {}", &addr);
 
     let img = ci_image_name.clone();
-    let ci_image_data = {
-        Data::new(Mutex::new(img))
-    };
+    let ci_image_data = Data::new(Mutex::new(img));
+    let l10n_data = Data::new(Mutex::new(l10n));
     
     HttpServer::new(move|| {
         let cors = Cors::permissive()
@@ -234,6 +245,7 @@ async fn serve(host: &str, port: &str, ci_image_name: String) -> std::io::Result
 
         App::new()
             .wrap(cors)
+            .app_data(l10n_data.clone())
             .app_data(data.clone())
             .app_data(ci_image_data.clone())
             .service(web::resource("/").route(web::get().to(index)))
@@ -256,8 +268,9 @@ async fn index() -> impl Responder {
             .body(html_data)
 }
 
-async fn download(info: actix_web::web::Path<String>, req: HttpRequest) -> impl Responder {
-    println!("Download from: {}", req.uri());
+async fn download(info: actix_web::web::Path<String>, req: HttpRequest, l10n: Data<Mutex<l10n::Messages>>) -> impl Responder {
+    let l10n_ref = l10n.lock().unwrap();
+    println!("{}: {}", l10n_ref.get_message("msg-download-from"), req.uri());
 
     let file_id = info.into_inner();
     let filename = [&file_id, "-dgz.pdf"].concat();
@@ -266,7 +279,7 @@ async fn download(info: actix_web::web::Path<String>, req: HttpRequest) -> impl 
 
     if !filepath_buf.exists() {
         NOTIFICATIONS_PER_REFID.lock().unwrap().remove(&file_id.to_string());
-        HttpResponse::NotFound().body("File not found")
+        HttpResponse::NotFound().body(l10n_ref.get_message("msg-httperror-notfound"))
     } else {
         match fs::read(filepath_buf.clone()) {
             Ok(data) => {
@@ -279,25 +292,25 @@ async fn download(info: actix_web::web::Path<String>, req: HttpRequest) -> impl 
                     .body(data)
             }
             Err(ex) => {
-                eprintln!("Could not read input file! {}.", ex.to_string());
+                eprintln!("{} {}.", l10n_ref.get_message("msg-could-not-read-input-file"), ex.to_string());
 
                 if let Err(ioe) = std::fs::remove_file(&filepath_buf) {
-                    eprintln!("Warning: Could not delete file {}. {}.", &filepath_buf.display(), ioe.to_string());
+                    eprintln!("{} {}. {}.", l10n_ref.get_message("msg-could-not-delete-file"), &filepath_buf.display(), ioe.to_string());
                 }
 
                 NOTIFICATIONS_PER_REFID.lock().unwrap().remove(&file_id.to_string());
-                HttpResponse::InternalServerError().body("Internal error")
+                HttpResponse::InternalServerError().body(l10n_ref.get_message("msg-httperror-internalerror"))
             }
         }
     }
 }
 
-async fn events(info: actix_web::web::Path<String>, broadcaster: Data<Mutex<Broadcaster>>) -> impl Responder {
+async fn events(info: actix_web::web::Path<String>, broadcaster: Data<Mutex<Broadcaster>>, l10n: Data<Mutex<l10n::Messages>>) -> impl Responder {
     let ref_id = format!("{}", info.into_inner());    
     let notifications_per_refid = NOTIFICATIONS_PER_REFID.lock().unwrap();
 
     if !notifications_per_refid.contains_key(&ref_id.clone()) {
-        return HttpResponse::NotFound().body("Not found");
+        return HttpResponse::NotFound().body(l10n.lock().unwrap().get_message("msg-httperror-notfound"));
     }
     
     let rx = broadcaster.lock().unwrap().new_client(ref_id);
@@ -307,14 +320,14 @@ async fn events(info: actix_web::web::Path<String>, broadcaster: Data<Mutex<Broa
         .streaming(rx)
 }
 
-async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<String>>) -> impl Responder {
+async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<String>>, l10n: Data<Mutex<l10n::Messages>>) -> impl Responder {
     let request_id = Uuid::new_v4().to_string();
     let request_id_clone = request_id.clone();
-
-    println!("Starting file upload with refid: {}.", &request_id);
+    let l10n_ref = l10n.lock().unwrap();
+    println!("{}: {}.", l10n_ref.get_message("msg-start-upload-with-refid"), &request_id);
 
     let tmpdir = env::temp_dir().join(config::PROGRAM_GROUP);    
-    let input_path_status = save_file(request_id.clone(), payload, tmpdir.clone()).await;
+    let input_path_status = save_file(request_id.clone(), payload, tmpdir.clone(), l10n_ref.clone()).await;
     let mut err_msg = String::new();
     let mut upload_info = (String::new(), String::new(), String::new());
 
@@ -330,6 +343,7 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
     if err_msg.is_empty() {
         NOTIFICATIONS_PER_REFID.lock().unwrap().insert(request_id.clone(), Arc::new(Mutex::new(Vec::<model::Notification>::new())));
         let new_upload_info = upload_info.clone();
+        let l10n_async_ref = l10n_ref.clone();
 
         actix_web::rt::spawn(async move {
             let ocr_lang_opt = if new_upload_info.0.is_empty() {
@@ -342,8 +356,8 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
                 PathBuf::from(tmpdir).join([request_id.clone(), "-".to_string(), config::DEFAULT_FILE_SUFFIX.to_string()].concat());
 
             let container_image_name = ci_image_name.lock().unwrap().to_string();
-            if let Err(ex) = run_dangerzone(request_id, container_image_name, input_path, output_path, ocr_lang_opt).await {
-                eprintln!("Conversion failed. {}", ex.to_string());
+            if let Err(ex) = run_dangerzone(request_id, container_image_name, input_path, output_path, ocr_lang_opt, l10n_async_ref.clone()).await {
+                eprintln!("{}. {}", l10n_async_ref.get_message("msg-processing-failure"), ex.to_string());
             }
         });
     };
@@ -361,7 +375,8 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
 pub async fn save_file(
     request_id: String,
     mut payload: Multipart,
-    tmpdir: PathBuf
+    tmpdir: PathBuf,
+    l10n: l10n::Messages
 ) -> Result<(String, String, String), Box<dyn std::error::Error>> {
     let mut buf = Vec::<u8>::new();
     let mut filename = String::new();
@@ -391,11 +406,11 @@ pub async fn save_file(
     }
 
     if filename.is_empty() {
-        return Err("Missing required 'filename' parameter.".into());
+        return Err(l10n.get_message("msg-missing-parameter-filename").into());
     }
 
     if buf.is_empty() {
-        return Err("Missing required 'file' parameter for the document binary data.".into());
+        return Err(l10n.get_message("msg-missing-parameter-file").into());
     }
 
     let p = std::path::Path::new(&filename);
@@ -403,7 +418,7 @@ pub async fn save_file(
     if let Some(fext) = p.extension().map(|i| i.to_str()).and_then(|i| i) {
         fileext.push_str(fext);
     } else {
-        return Err(format!("Is the document type supported? Could not determine file extension for filename: {}", filename).into());
+        return Err(format!("{}: {}", l10n.get_message("msg-error-guess-mimetype"), filename).into());
     }
     
     if !tmpdir.exists() {
@@ -417,7 +432,7 @@ pub async fn save_file(
     Ok((ocr_lang, fileext, format!("{}", filepath.display())))
 }
 
-fn progress_made(refid: String, event: &str, data: String, counter: i32) -> Result<(), Box<dyn std::error::Error>> {
+fn progress_made(refid: String, event: &str, data: String, counter: i32, err_find_notif: String, err_notif_handle: String) -> Result<(), Box<dyn std::error::Error>> {
     let nevent = event.to_string();
     let nid = format!("{}", counter);
     let n = model::Notification::new(nevent, nid, data);
@@ -427,10 +442,10 @@ fn progress_made(refid: String, event: &str, data: String, counter: i32) -> Resu
             v.lock().unwrap().push(n);
             Ok(())
         } else {
-            Err(format!("Could not find notification group for : {}.", refid).into())
+            Err(format!("{} : {}.", err_find_notif, refid).into())
         }
     } else {
-        Err("Could not acquire notifications handle.".into())
+        Err(err_notif_handle.into())
     }
 }
 
@@ -440,6 +455,7 @@ async fn run_dangerzone(
     input_path: PathBuf,
     output_path: PathBuf,
     opt_ocr_lang: Option<String>,
+    l10n: l10n::Messages
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut cmdline = vec![
         "dangerzone-cli".to_string(),
@@ -458,7 +474,9 @@ async fn run_dangerzone(
         cmdline.push(ocr_lang);
     }
 
-    println!("Running command: {}", cmdline.join(" "));
+    println!("{}: {}", l10n.get_message("msg-running-command"), cmdline.join(" "));
+    let err_find_notif = l10n.get_message("msg-could-not-find-notification-group-for");
+    let err_notif_handle = l10n.get_message("msg-could-not-acquire-notifications-handle");
 
     let mut cmd = Command::new("sh")
         .env(l10n::ENV_VAR_DANGERZONE_LANGID, l10n::DEFAULT_LANGID)
@@ -473,7 +491,7 @@ async fn run_dangerzone(
     let mut reader = BufReader::new(stream).lines();
 
     while let Some(ndata) = reader.next_line().await? {
-        progress_made(refid.clone(), "processing_update", ndata, counter)?;
+        progress_made(refid.clone(), "processing_update", ndata, counter, err_find_notif.clone(), err_notif_handle.clone())?;
         counter += 1;
     }
 
@@ -482,7 +500,7 @@ async fn run_dangerzone(
             if cmd_exit_status.success() {
                 let msg = model::CompletionMessage::new(format!("/downloads/{}", refid.clone()));
                 let msg_json = serde_json::to_string(&msg).unwrap();
-                progress_made(refid.clone(), "processing_success", msg_json, counter)?;
+                progress_made(refid.clone(), "processing_success", msg_json, counter, err_find_notif, err_notif_handle)?;
                 let _ = std::fs::remove_file(input_path);
 
                 return Ok(());
@@ -492,8 +510,8 @@ async fn run_dangerzone(
 
     let msg = model::CompletionMessage::new("failure".to_string());
     let msg_json = serde_json::to_string(&msg).unwrap();
-    progress_made(refid.clone(), "processing_failure", msg_json, counter)?;
+    progress_made(refid.clone(), "processing_failure", msg_json, counter, err_find_notif, err_notif_handle)?;
     let _ = std::fs::remove_file(input_path);
 
-    Err("Processing failure".into())
+    Err(l10n.get_message("msg-processing-failure").into())
 }

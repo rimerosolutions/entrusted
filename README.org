@@ -18,15 +18,14 @@ This is work in progress and this NOT a mature project.
 
 This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation purposes (/not an exact port/).
 - Similarly to the original Dangerzone tool, documents or images are converted inside a "sandbox"
-- On top of basic features, additional functionality include:
-  - Translated content whenever possible (for English and French so far)
-  - Support for batch conversions
-  - Optional Web interface that can act as an "online service" (multi-tenancy)
-  - Transparent support for large files (timeouts or other issues)
-  - Live CD user experience for both enhanced security and convenience (=http://ip_address:13000=):
-    - Extra isolation layer with a virtual machine
-    - Pre-installed [[https://xebia.com/blog/podman-the-free-container-engine-alternative-to-docker/][container solution]] with no required user configuration ([[./dangerzone_httpserver][dangerzone_httpserver]])
-  - [[https://www.docker.com/products/docker-desktop/][Docker]] dependency alternative on Mac OS, via [[https://github.com/lima-vm/lima][Lima]]
+- Translated content whenever possible (for English and French so far)
+- Support for batch conversions (sequential conversions for now)
+- Optional Web interface that can act as an "online service" (multi-tenancy)
+- Transparent support for large files (avoid timeouts or other user-visible issues)
+- Live CD user experience for both enhanced security and convenience (=http://ip_address:13000=):
+  - Extra isolation layer with a virtual machine
+  - Pre-installed [[https://xebia.com/blog/podman-the-free-container-engine-alternative-to-docker/][container solution]] with no required user configuration ([[./dangerzone_httpserver][dangerzone_httpserver]])
+- [[https://www.docker.com/products/docker-desktop/][Docker]] dependency alternative on Mac OS, via [[https://github.com/lima-vm/lima][Lima]]
     
 * What is available?
 
@@ -43,7 +42,9 @@ There are 3 user interfaces ([[./dangerzone_client][Desktop and CLI]], [[./dange
 
 ** Key components
 
-Most users will open a document with the =dangerzone-client=, this will automatically install the =dangerzone-container= (on demand) and generate a PDF.
+Most users will open a document with the =dangerzone-client=:
+- This doesn't install a container runtime, but will display "useful" error messages when possible
+- This will automatically install the =dangerzone-container= (on demand) and generate a PDF
 
 |-----------------------+---------------------------------------------|
 | Component             | Purpose                                     |

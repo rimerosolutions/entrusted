@@ -42,7 +42,7 @@ msgid "window-main-filesuffix-checkbutton-tooltip"
 msgstr "The safe PDF will be named <input>-<suffix>.pdf by default."
 
 msgid "window-main-ocrlang-checkbutton-label"
-msgstr "Make PDF Searchable? Yes, with language:"
+msgstr "Enable full-text search? Yes, with language:"
 
 msgid "window-main-ocrlang-checkbutton-tooltip"
 msgstr "OCR (Optical character recognition) will be applied."

@@ -7,7 +7,7 @@
     "l10n-download-pdf-title": "Once downloaded, the PDF will be permanently deleted from the server.",
     "l10n-logs": "Logs",
     "l10n-app-name": "Dangerzone Web",
-    "l10n-searchable-pdf-label": "Make PDF searchable?",
+    "l10n-searchable-pdf-label": "Enable full-text search?",
     "l10n-ocrlang-select-label": "Yes, with language:",
     "l10n-drop-files-line1": "Drop 'potentially suspicious' file(s) here",
     "l10n-drop-files-line2": "or",

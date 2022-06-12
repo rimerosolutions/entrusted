@@ -1,3 +1,4 @@
+use actix_web::http::header::HeaderValue;
 use once_cell::sync::Lazy;
 
 use actix_cors::Cors;
@@ -227,6 +228,20 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 }
 
+fn parse_accept_language(req_language: &HeaderValue, fallback_lang: String) -> String {
+    if let Ok(req_language_str) = req_language.to_str() {
+        let language_list = req_language_str.split(",").collect::<Vec<&str>>();
+        if !language_list.is_empty() {
+            let first_language = language_list[0].split(";").collect::<Vec<&str>>();
+            String::from(first_language[0])
+        } else {
+            fallback_lang
+        }
+    } else {
+        fallback_lang
+    }
+}
+
 async fn serve(host: &str, port: &str, ci_image_name: String, l10n: l10n::Messages) -> std::io::Result<()> {
     let addr = format!("{}:{}", host, port);
     println!("Starting server at {}", &addr);
@@ -262,11 +277,7 @@ async fn serve(host: &str, port: &str, ci_image_name: String, l10n: l10n::Messag
 
 async fn uitranslations(req: HttpRequest) -> impl Responder {
     let langid = if let Some(req_language) = req.headers().get("Accept-Language") {
-        if let Ok(req_language_str) = req_language.to_str() {
-            String::from(req_language_str)
-        } else {
-            String::from(l10n::DEFAULT_LANGID)
-        }
+        parse_accept_language(req_language, l10n::DEFAULT_LANGID.to_string())
     } else {
         String::from(l10n::DEFAULT_LANGID)
     };
@@ -278,7 +289,7 @@ async fn uitranslations(req: HttpRequest) -> impl Responder {
         .body(json_data)
 }
 
-async fn index() -> impl Responder {
+async fn index() -> impl Responder {    
     let app_version = option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown");
     let html_data = SPA_INDEX_HTML.replace("_APPVERSION_", app_version);
 
@@ -343,11 +354,7 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
     let l10n_ref = l10n.lock().unwrap();
     
     let langid = if let Some(req_language) = req.headers().get("Accept-Language") {
-        if let Ok(req_language_str) = req_language.to_str() {
-            String::from(req_language_str)
-        } else {
-            l10n_ref.langid()
-        }
+        parse_accept_language(req_language, l10n_ref.langid())
     } else {
         l10n_ref.langid()
     };

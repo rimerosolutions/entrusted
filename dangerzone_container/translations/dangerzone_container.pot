@@ -5,93 +5,153 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: dangerzone-client \n"
-"Report-Msgid-Bugs-To: yves_zoundi@hotmail.com\n"
-"POT-Creation-Date: 2022-06-11 11:15-0500\n"
-"POT-Revision-Date: 2022-06-11 11:15-0500\n"
-"Last-Translator: Yves Zoundi <yves_zoundi@hotmail.com>\n"
-"Language-Team: Yves Zoundi <yves_zoundi@hotmail.com>\n"
-"Language:\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
 
-msgid "window-macabout-versionlabel"
+#~ # SOME DESCRIPTIVE TITLE.
+#~ # Copyright (C) YEAR Free Software Foundation, Inc.
+#~ # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#~ #
+#~ #, fuzzy
+#~ msgid ""
+#~ msgstr ""
+#~ "Project-Id-Version: dangerzone-container \n"
+#~ "Report-Msgid-Bugs-To: yves_zoundi@hotmail.com\n"
+#~ "POT-Creation-Date: 2022-06-11 11:15-0500\n"
+#~ "POT-Revision-Date: 2022-06-11 11:15-0500\n"
+#~ "Last-Translator: Yves Zoundi <yves_zoundi@hotmail.com>\n"
+#~ "Language-Team: Yves Zoundi <yves_zoundi@hotmail.com>\n"
+#~ "Language:\n"
+#~ "MIME-Version: 1.0\n"
+#~ "Content-Type: text/plain; charset=UTF-8"
+
+msgid "msg-info-copy-process-summary"
 msgstr ""
-msgid "window-logs-title"
+
+msgid "msg-info-convert-process-summary"
 msgstr ""
-msgid "window-logs-log-close-button"
+
+msgid "msg-info-officepdf-process-summary"
 msgstr ""
-msgid "window-main-tabsettings-button-label"
+
+msgid "msg-info-conversion-status-succeeded"
 msgstr ""
-msgid "window-main-tabconvert-button-label"
+
+msgid "msg-info-conversion-time-elapsed"
 msgstr ""
-msgid "window-main-filesuffix-checkbutton-label"
+
+msgid "msg-info-img-to-pdf-summary-start"
 msgstr ""
-msgid "window-main-filesuffix-checkbutton-tooltip"
+
+msgid "msg-info-img-to-pdf-summary-end"
 msgstr ""
-msgid "window-main-ocrlang-checkbutton-label"
+
+msgid "msg-info-img-to-pdf-item-start"
 msgstr ""
-msgid "window-main-ocrlang-checkbutton-tooltip"
+
+msgid "msg-info-img-to-pdf-item-end"
 msgstr ""
-msgid "window-main-openwith-checkbutton-label"
+
+msgid "msg-info-ocr-img-to-pdf-summary-start"
 msgstr ""
-msgid "window-main-openwith-checkbutton-tooltip"
+
+msgid "msg-info-ocr-img-to-pdf-summary-end"
 msgstr ""
-msgid "window-main-openwith-inputchoice-rc-tooltip"
+
+msgid "msg-info-ocr-img-to-pdf-item"
 msgstr ""
-msgid "window-main-openwith-button-rc-tooltip"
+
+msgid "msg-error-mkdir"
 msgstr ""
-msgid "window-main-ociimage-checkbutton-label"
+
+msgid "msg-error-input-parent-directory"
 msgstr ""
-msgid "window-main-ociimage-checkbutton-tooltip"
+
+msgid "msg-error-unsupported-mimetype"
 msgstr ""
-msgid "window-main-savesettings-button-label"
+
+msgid "msg-error-guess-mimetype"
 msgstr ""
-msgid "window-main-convert-frame-label-line1"
+
+msgid "msg-error-office-pdf-result-notfound"
 msgstr ""
-msgid "window-main-convert-frame-label-line2"
+
+msgid "msg-error-officepdf-process-failed"
 msgstr ""
-msgid "window-main-convert-frame-label-line3"
+
+msgid "msg-error-conversion-status-failed"
 msgstr ""
-msgid "window-main-selectall-frame-rc-label"
+
+msgid "msg-error-filenotfound"
 msgstr ""
-msgid "window-main-deselectall-frame-rc-label"
+
+msgid "msg-combine-pdf-summary-start"
 msgstr ""
-msgid "window-main-delete-button-label"
+
+msgid "msg-combine-pdf-summary-end"
 msgstr ""
-msgid "window-main-convert-button-label"
+
+msgid "msg-combine-pdf-collecting-documents"
 msgstr ""
-msgid "window-main-conversion-message-failed"
+
+msgid "msg-combine-pdf-update-bookmarks"
 msgstr ""
-msgid "window-main-filelist-widget-column-filename"
+
+msgid "msg-combine-pdf-processobjects"
 msgstr ""
-msgid "window-main-filelist-widget-column-progress"
+
+msgid "msg-combine-pdf-nopagesfound"
 msgstr ""
-msgid "window-main-filelist-widget-column-status"
+
+msgid "msg-combine-pdf-updatepdf-dictionary"
 msgstr ""
-msgid "window-main-filelist-widget-column-message"
+
+msgid "msg-combine-pdf-catalog-root-notfound"
 msgstr ""
-msgid "filedialog-selectpdfviewer-title"
+
+msgid "msg-combine-pdf-merging"
 msgstr ""
-msgid "filedialog-selectfiles-title"
+
+msgid "msg-combine-pdf-compressing"
 msgstr ""
-msgid "error-cannot-open-pdfresult"
+
+msgid "msg-combine-pdf-saving"
 msgstr ""
-msgid "error-cannot-run-pdfviewer"
+
+msgid "msg-split-pdf-summary-start"
 msgstr ""
-msgid "error-could-not-find-open-in-path"
+
+msgid "msg-split-pdf-summary-end"
 msgstr ""
-msgid "default-language-name"
+
+msgid "msg-split-pdf-item-start"
 msgstr ""
-msgid "cmdline-help-output-filename"
+
+msgid "msg-split-pdf-item-end"
 msgstr ""
-msgid "cmdline-help-ocr-lang"
+
+msgid "msg-error-filebasename"
 msgstr ""
-msgid "cmdline-help-input-filename"
+
+msgid "msg-elapsed-time-hour"
 msgstr ""
-msgid "cmdline-help-container-image-name"
+
+msgid "msg-elapsed-time-minute"
 msgstr ""
-msgid "cmdline-help-log-format"
+
+msgid "msg-elapsed-time-second"
 msgstr ""
-msgid "cmdline-help-file-suffix"
+
+msgid "msg-elapsed-time-hours"
+msgstr ""
+
+msgid "msg-elapsed-time-minutes"
+msgstr ""
+
+msgid "msg-elapsed-time-seconds"
 msgstr ""

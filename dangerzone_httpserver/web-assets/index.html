@@ -670,7 +670,7 @@
       function applyTranslationsOnPageLoad() {
         let requestedLocale = (navigator.language || navigator.userLanguage || "en");
         let requestedLocaleSimple = requestedLocale.split("-")[0];
-        let translationsUri = "./uitranslations/" + requestedLocale;
+        let translationsUri = "./uitranslations";
 
         if (requestedLocaleSimple != translations["locale"]) {
           fetch(translationsUri, {

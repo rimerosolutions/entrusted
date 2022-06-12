@@ -38,7 +38,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let help_input_filename = l10n.get_message("cmdline-help-input-filename");
     let help_container_image_name = l10n.get_message("cmdline-help-container-image-name");
     let help_log_format = l10n.get_message("cmdline-help-log-format");
-    let help_file_suffix = l10n.get_message("cmdline-help-container-image-name");
+    let help_file_suffix = l10n.get_message("cmdline-help-file-suffix");
     
     let app = App::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))

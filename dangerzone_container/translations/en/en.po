@@ -49,7 +49,7 @@ msgid "msg-info-ocr-img-to-pdf-summary-start"
 msgstr "Performing OCR to PDF on"
 
 msgid "msg-info-ocr-img-to-pdf-summary-end"
-msgstr "images"
+msgstr "image(s)"
 
 msgid "msg-info-ocr-img-to-pdf-item"
 msgstr "Performing OCR on page"
@@ -115,7 +115,7 @@ msgid "msg-split-pdf-summary-start"
 msgstr "Extract PDF file into "
 
 msgid "msg-split-pdf-summary-end"
-msgstr "PNG images"
+msgstr "PNG image(s)"
 
 msgid "msg-split-pdf-item-start"
 msgstr "Extracting page"

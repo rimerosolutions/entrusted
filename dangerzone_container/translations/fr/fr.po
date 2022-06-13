@@ -37,7 +37,7 @@ msgid "msg-info-img-to-pdf-summary-start"
 msgstr "Sauvegarde de "
 
 msgid "msg-info-img-to-pdf-summary-end"
-msgstr "Images PNG en PDF"
+msgstr "image(s) PNG en PDF"
 
 msgid "msg-info-img-to-pdf-item-start"
 msgstr "Enregistrer de l'image PNG"
@@ -49,7 +49,7 @@ msgid "msg-info-ocr-img-to-pdf-summary-start"
 msgstr "OCR au format PDF sur"
 
 msgid "msg-info-ocr-img-to-pdf-summary-end"
-msgstr "images"
+msgstr "image(s)"
 
 msgid "msg-info-ocr-img-to-pdf-item"
 msgstr "OCR sur la page"

@@ -32,8 +32,8 @@
 - [X] Support application preferences ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral15][spiral15 branch]])
 - [X] Add infrastructure for message translations: English and French for now ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral15][spiral16 branch]])  
 - [ ] Create artwork and rename the GitHub project
-- Cancellable conversions for those that haven't started yet
-- Custom output location for individual documents in the conversion queue
+- [ ] Cancellable conversions for those that haven't started yet
+- [ ] Custom output location for individual documents in the conversion queue
 - [ ] Support for password-protected PDF files
   - Switch to [[https://manpages.ubuntu.com/manpages/bionic/man1/doc2odt.1.html][unoconv]] instead of the plain Libreoffice executable
   - Review again alternatives in either Java and/or Rust (Java-Rust-Integration)

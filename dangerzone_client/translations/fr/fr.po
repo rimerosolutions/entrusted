@@ -671,3 +671,5 @@ msgstr "Yiddish"
 msgid "ocrlang-yoruba"
 msgstr "Yoruba"
 
+msgid "container-msg-no-container-executable-found"
+msgstr "Aucun exécutable d'exécution de conteneur trouvé!"

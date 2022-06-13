@@ -87,7 +87,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Err(_) => Box::new(PlainConversionLogger)
     };
 
-    let ret = {
+    let ret = || -> Result<(), Box<dyn Error>> {
         let raw_input_path = PathBuf::from("/tmp/input_file");
         let output_file_path = PathBuf::from("/tmp/safe-output-compressed.pdf");
         let output_dir_path = PathBuf::from("/tmp/");
@@ -129,13 +129,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         move_file_to_dir(&output_file_path, &safe_dir_path)
     };
 
-    let exit_code = if ret.is_ok() {
-        0
-    } else {
-        1
-    };
+    let mut exit_code = 0;
     
-    let msg: String = if let Err(ex) = ret {
+    let msg: String = if let Err(ex) = ret() {
+        exit_code = 1;
         format!("{} {}", l10n.get_message("msg-error-conversion-status-failed"), ex.to_string())
     } else {
         format!("{}", l10n.get_message("msg-info-conversion-status-succeeded"))
@@ -346,7 +343,9 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
     }
 
     if !conversion_by_mimetype.contains_key(mime_type) {
-        return Err(format!("{}: {}.", l10n.get_message("msg-error-unsupported-mimetype"), mime_type).into());
+        let err_msg = format!("{}: {}.", l10n.get_message("msg-error-unsupported-mimetype"), mime_type);
+        logger.log(5, err_msg);
+        return Err(err_msg.into());
     }
 
     let filename_pdf: String;

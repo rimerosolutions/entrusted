@@ -71,3 +71,6 @@ msgstr "Erreur de type Mime! L'entrée a t-elle une extension de fichier connue?
 
 msgid "msg-start-upload-with-refid"
 msgstr "Démarrage du téléchargement du fichier avec l'ID de référence"
+
+msgid "msg-starting-server-at"
+msgstr "Démarrage du serveur à l'adresse"

@@ -71,3 +71,6 @@ msgstr "Mime type error! Does the input have a 'known' file extension?"
 
 msgid "msg-start-upload-with-refid"
 msgstr "Starting file upload with reference ID"
+
+msgid "msg-starting-server-at"
+msgstr "Starting server at address"

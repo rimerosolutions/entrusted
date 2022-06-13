@@ -242,7 +242,7 @@ fn parse_accept_language(req_language: &HeaderValue, fallback_lang: String) -> S
 
 async fn serve(host: &str, port: &str, ci_image_name: String, l10n: l10n::Messages) -> std::io::Result<()> {
     let addr = format!("{}:{}", host, port);
-    println!("Starting server at {}", &addr);
+    println!("{}: {}", l10n.get_message("msg-starting-server-at"), &addr);
 
     let img = ci_image_name.clone();
     let ci_image_data = Data::new(Mutex::new(img));

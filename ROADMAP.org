@@ -30,7 +30,7 @@ High-level TODOs:
   - [X] Add DMG image for Mac OS, with the ability to still invoke external programs
   - [X] Add software installer for Windows via [[https://nsis.sourceforge.io/Main_Page][NSIS]] for now
 - [X] Support application preferences ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral15][spiral15 branch]])
-- [ ] Add infrastructure for message translations: errors, UI widgets ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral15][spiral16 branch]])
+- [X] Add infrastructure for message translations: English and French for now ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral15][spiral16 branch]])
 - [ ] Create artwork and rename the GitHub project
 - [ ] Revisit notifications SSE + HTTP2, for the "Online Service"
 - [ ] Investigate if specific support is required for Tails Linux

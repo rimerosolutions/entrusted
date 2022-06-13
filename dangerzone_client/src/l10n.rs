@@ -21,7 +21,7 @@ macro_rules! incl_profiles {
         {
             let mut profs = Vec::new();
             $(
-                let data = include_bytes!(concat!("../translations/", $x, "/", $x, ".mo")).as_slice();
+                let data = include_bytes!(concat!("../translations/", $x, "/LC_MESSAGES/messages.mo")).as_slice();
                 profs.push(($x, data));
             )*
 

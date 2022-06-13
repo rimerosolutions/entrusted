@@ -25,7 +25,7 @@ macro_rules! incl_ui_json_files {
         {
             let mut profs = Vec::new();
             $(
-                let data = include_bytes!(concat!("../translations/", $x, "/", $x, ".json")).as_slice();
+                let data = include_bytes!(concat!("../translations/", $x, "/messages.json")).as_slice();
                 profs.push(($x, data));
             )*
 
@@ -39,7 +39,7 @@ macro_rules! incl_gettext_files {
         {
             let mut profs = Vec::new();
             $(
-                let data = include_bytes!(concat!("../translations/", $x, "/", $x, ".mo")).as_slice();
+                let data = include_bytes!(concat!("../translations/", $x, "/LC_MESSAGES/messages.mo")).as_slice();
                 profs.push(($x, data));
             )*
 

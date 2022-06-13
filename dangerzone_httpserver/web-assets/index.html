@@ -27,7 +27,7 @@
           "l10n-download-pdf-title": "Once downloaded, the PDF will be permanently deleted from the server.",
           "l10n-logs": "Logs",
           "l10n-app-name": "Dangerzone Web",
-          "l10n-searchable-pdf-label": "Make PDF searchable?",
+          "l10n-searchable-pdf-label": "Enable full-text search?",
           "l10n-ocrlang-select-label": "Yes, with language:",
           "l10n-drop-files-line1": "Drop 'potentially suspicious' file(s) here",
           "l10n-drop-files-line2": "or",
@@ -674,7 +674,7 @@
         }
 
         translations = data;
-        
+
         let l10Elements = document.querySelectorAll('[data-l10n]');
 
         if (l10Elements) {
@@ -725,10 +725,10 @@
           }).then (function(data) {
             updateUiControls(data);
           }).catch(function(e) {
-            document.body.className = "visible";
+            updateUiControls(translations);
           });
         } else {
-          document.body.className = "visible";
+          updateUiControls(translations);
         }
       }
 
@@ -769,217 +769,217 @@
 
     <style>
       .modal {
-          display: none; /* Hidden by default */
-          position: fixed; /* Stay in place */
-          z-index: 1; /* Sit on top */
-          padding-top: 5%; /* Location of the box */
-          left: 0;
-          top: 0;
-          width: 100%; /* Full width */
-          height: 100%; /* Full height */
-          overflow: auto; /* Enable scroll if needed */
-          background-color: rgb(0,0,0); /* Fallback color */
-          background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 5%; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
       }
 
       /* Modal Content */
       .modal-content {
-          background-color: #fefefe;
-          text-align:center;
-          margin: auto;
-          padding: 5%;
-          border: 1px solid #888;
-          width: 80%;
-          height: 70%;
-          overflow:auto;
+        background-color: #fefefe;
+        text-align:center;
+        margin: auto;
+        padding: 5%;
+        border: 1px solid #888;
+        width: 80%;
+        height: 70%;
+        overflow:auto;
       }
 
       .modal-content li {
-          text-align:left;
+        text-align:left;
       }
 
       /* The Close Button */
       .close {
-          color: #aaaaaa;
-          float: right;
-          font-size: 2em;
-          font-weight: bold;
+        color: #aaaaaa;
+        float: right;
+        font-size: 2em;
+        font-weight: bold;
       }
 
       .close:hover,
       .close:focus {
-          color: #000;
-          text-decoration: none;
-          cursor: pointer;
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
       }
 
       .row:after {
-          float:left;
-          text-align: left;
-          content: "";
-          display: table;
-          clear: both;
+        float:left;
+        text-align: left;
+        content: "";
+        display: table;
+        clear: both;
       }
 
       .column {
-          display: table;
-          float: left;
-          text-align: left;
+        display: table;
+        float: left;
+        text-align: left;
       }
 
       body {
-          background-color: #C8C8C8;
+        background-color: #C8C8C8;
       }
 
       hr {
-          width: 50%;
+        width: 50%;
       }
 
       progress {
-          width:80%;
-          accent-color: yellow;
+        width:80%;
+        accent-color: yellow;
       }
 
       .fileNameColumn {
-          width: 30%;
+        width: 30%;
       }
 
       .progressStatusColumn {
-          width: 10%;
+        width: 10%;
       }
 
       .processingStatusColumn {
-          width: 10%;
+        width: 10%;
       }
 
       .progressMessageColumn {
-          width: 50%;
+        width: 50%;
       }
 
       #dropFileZone {
-          color: white;
-          border: #999 2px solid;
-          border-radius: 1em;
-          height: 1%;
-          font-size: 1em;
+        color: white;
+        border: #999 2px solid;
+        border-radius: 1em;
+        height: 1%;
+        font-size: 1em;
       }
 
       .dropFileZoneEnabled {
-          background: red;
+        background: red;
       }
 
       .dropFileZoneDisabled {
-          background: #ffcccc;
+        background: #ffcccc;
       }
 
       #dragUploadFile {
-          width: 50%;
-          margin: 0 auto;
+        width: 50%;
+        margin: 0 auto;
       }
 
       #dragUploadFile p {
-          text-align: center;
+        text-align: center;
       }
 
       #dragUploadFile #fileButton {
-          display: none;
+        display: none;
       }
 
       thead {
-          vertical-align: top;
-          border: 1px solid black;
+        vertical-align: top;
+        border: 1px solid black;
       }
 
       thead tr {
-          text-align: left;
-          border: 1px solid black;
+        text-align: left;
+        border: 1px solid black;
       }
 
       .title-text {
-          text-align: center;
-          color: maroon;
+        text-align: center;
+        color: maroon;
       }
 
       .deleteFileIcon {
       }
 
       #fileListTable {
-          margin-top: 1%;
-          overflow: auto;
-          width: 100%;
+        margin-top: 1%;
+        overflow: auto;
+        width: 100%;
       }
 
       .visitedLink {
-          text-decoration: line-through;
+        text-decoration: line-through;
       }
 
       .succeeded {
-          accent-color: green;
-          color: green;
+        accent-color: green;
+        color: green;
       }
 
       .pending {
-          color: magenta;
-          accent-color: magenta;
+        color: magenta;
+        accent-color: magenta;
       }
 
       .failed {
-          color: red;
-          accent-color: red;
+        color: red;
+        accent-color: red;
       }
 
       .inprogress {
-          color: #999900;
-          accent-color: #999900;
+        color: #999900;
+        accent-color: #999900;
       }
 
       .invisible {
-          display: none;
+        display: none;
       }
 
       .visible {
-          display: visible;
+        display: visible;
       }
 
       fieldset {
-          border: 2px solid blue;
+        border: 2px solid blue;
       }
 
       legend {
-          padding: 10px;
-          background: blue;
-          color: cyan;
+        padding: 10px;
+        background: blue;
+        color: cyan;
       }
 
       #eventList {
-          overflow: auto;
-          margin: 0;
-          padding: 10px 1px 1px 1px;
-          background: yellow;
-          border: 5px solid #977c27;
-          font-family: monospace;
+        overflow: auto;
+        margin: 0;
+        padding: 10px 1px 1px 1px;
+        background: yellow;
+        border: 5px solid #977c27;
+        font-family: monospace;
       }
 
       #eventList li {
-          list-style-type: none;
-          text-align: left;
-          margin: 0;
-          padding: 0;
+        list-style-type: none;
+        text-align: left;
+        margin: 0;
+        padding: 0;
       }
 
       .actionButton:disabled {
-          background: #dbdbdb;
+        background: #dbdbdb;
       }
 
       .actionButton {
-          border: none;
-          margin-left: 1%;
-          padding: 15px 32px;
-          text-align: center;
-          text-decoration: none;
-          background: white;
-          display: inline-block;
-          font-size: 16px;
+        border: none;
+        margin-left: 1%;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        background: white;
+        display: inline-block;
+        font-size: 16px;
       }
 
     </style>

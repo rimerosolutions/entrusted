@@ -117,9 +117,9 @@ This project is more of a hobby at this point: it lacks testing, maturity and se
 | *Likely less secure than the dangerzone* | 1 step conversion process, instead of 2 steps             |
 | *This is mostly an experiment*           | Not heavily tested, even if I use =dangerzone-rust= daily |
 | *Not the best code*                      | I barely /know/ =Rust=, in comparison to let's say =Java= |
-| *Incomplete*                             | UI &code polishing, probably several "obvious things"     |
+| *Incomplete*                             | UI and code polishing, probably several "obvious things"  |
 |------------------------------------------+-----------------------------------------------------------|
 
 * How to contribute?
 
-All the bugs reports, questions or suggestions are welcome and appreciated. Please note that the best way to contribute is via pull requests: this is a hobby project more than anything else at this time...
+All the bugs reports, questions or suggestions are welcome and appreciated. Please note that the best way to contribute is via pull requests: this is more of a hobby project than anything else at this time.

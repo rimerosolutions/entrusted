@@ -115,7 +115,7 @@ msgid "msg-split-pdf-summary-start"
 msgstr "Extraction du fichier PDF en "
 
 msgid "msg-split-pdf-summary-end"
-msgstr "images au format PNG"
+msgstr "image(s) au format PNG"
 
 msgid "msg-split-pdf-item-start"
 msgstr "Extraction de la page"

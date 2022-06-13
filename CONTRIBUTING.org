@@ -1,0 +1,53 @@
+#+TITLE: CONTRIBUTING
+
+All the bugs reports, questions or suggestions are welcome and appreciated:
+- Please note that the best way to contribute is via pull requests
+- This is more of a hobby project than anything else at this time.
+
+  There are plenty of ways to help.  
+
+* Bug reports and comments
+  
+* Research & Development
+
+There are couple of areas to explore at multiple levels (CI/CD, security, libraries, etc.).
+I'm reasonably capable in some areas, but I'm also aware of my limitations
+I think that while not impossible, it's difficult to be both creative and achieve a lot when you're not an expert in a domain:
+- There are important considerations that you'll miss, sometimes those details matter either in the short or long run
+
+  
+* Coding
+I'm 'exploring' Rust and I'm probably never reach the same level of comfort with it as in Java.
+I have 20+ years of experience with Java, I'm not a programming god, but I know the Java ecosystem very well
+
+Using a programming language that you don't really know means
+- You work slower at least at the beginning
+- There are libraries that you're used too that sometimes don't exist in a given programming language
+  
+* Artwork
+Both the UI and the logos/images have been created
+- This my second user interface in Rust and I think that I experimented briefly with FLTK a very long time ago.
+  - I can do fancy things in Java including custom themes
+  - My equivalent Rust or FLTK knowledge is quiet limited in comparison to Java
+  
+* Documentation
+Clear and concise communication is always a goal
+- Maybe some of the content should be moved to Wiki pages
+- Maybe GitHub shouldn't be used at all for any user facing documentation
+- Maybe all the documentation should be rewritten from a technical writer perspective
+
+* Testing
+
+There will always be software bugs and annoyances, but "we try our best" (time, required effort & skills compromise):
+- There are no tests, and yes you got it right (unit or integration tests). It's not lots of code to deal with either...
+- It's also time consuming to test all the programs and futures for all supported Operating systems and environments
+
+* Translations
+
+I can manage English and French translations reasonably well, even though my French is fading a little bit.
+
+For other languages, I can only ressort to online translation tools:
+- The meaning and context isn't always great
+- I would prefer automation but most of the tools are not free
+  - Maybe in the future LibreTranslate can be self-hosted to accelerate/facilitate automated translations
+  - Then with the LibreTranslate API and shell scripts, maybe the only thing to do is just review and just few messages?

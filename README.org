@@ -120,6 +120,3 @@ This project is more of a hobby at this point: it lacks testing, maturity and se
 | *Incomplete*                             | UI and code polishing, probably several "obvious things"  |
 |------------------------------------------+-----------------------------------------------------------|
 
-* How to contribute?
-
-All the bugs reports, questions or suggestions are welcome and appreciated. Please note that the best way to contribute is via pull requests: this is more of a hobby project than anything else at this time.

@@ -301,7 +301,7 @@ async fn download(info: actix_web::web::Path<String>, req: HttpRequest, l10n: Da
     println!("{}: {}", l10n_ref.get_message("msg-download-from"), req.uri());
 
     let file_id = info.into_inner();
-    let filename = [&file_id, "-", config::DEFAULT_FILE_SUFFIX, ".pdf"].concat();
+    let filename = output_filename_for(file_id.clone());
     let filepath = env::temp_dir().join(config::PROGRAM_GROUP).join(filename.clone());
     let filepath_buf = PathBuf::from(filepath);
 
@@ -348,6 +348,10 @@ async fn events(info: actix_web::web::Path<String>, broadcaster: Data<Mutex<Broa
         .streaming(rx)
 }
 
+fn output_filename_for(request_id: String) -> String {
+    [request_id, "-".to_string(), config::DEFAULT_FILE_SUFFIX.to_string(), ".pdf".to_string()].concat()
+}
+
 async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<String>>, l10n: Data<Mutex<l10n::Messages>>) -> impl Responder {
     let l10n_ref = l10n.lock().unwrap();
     
@@ -390,7 +394,7 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
             };
             let input_path = PathBuf::from(new_upload_info.2);
             let output_path =
-                PathBuf::from(tmpdir).join([request_id.clone(), "-".to_string(), config::DEFAULT_FILE_SUFFIX.to_string(), ".pdf".to_string()].concat());
+                PathBuf::from(tmpdir).join(output_filename_for(request_id.clone()));
 
             let container_image_name = ci_image_name.lock().unwrap().to_string();
             if let Err(ex) = run_dangerzone(request_id, container_image_name, input_path, output_path, ocr_lang_opt, l10n_async_ref.clone(), langid_ref).await {

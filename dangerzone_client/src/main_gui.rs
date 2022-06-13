@@ -1619,7 +1619,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     wind.end();
     wind.show();
-    wind.resize(wind.x(), wind.y(), 739, 630);
+    wind.resize(wind.x(), wind.y(), wind.w(), wind.h());
 
     if autoconvert {
         convert_button.do_callback();

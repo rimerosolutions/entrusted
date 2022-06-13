@@ -338,7 +338,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
                     mime_type = probe_mimetype_ole(&buffer);
                 }
             } else {
-                return Err(format!("{} '{}'.", l10n.get_message("msg-error-filenotfound"), raw_input_path.display()).into());
+                return Err(format!("{} '{}'", l10n.get_message("msg-error-filenotfound"), raw_input_path.display()).into());
             }
         }
     } else {
@@ -490,7 +490,7 @@ fn ocr_imgs_to_pdf(
     for i in 0..page_count {
         let page_num = i + 1;
         progress_value = progress_range.min + (page_num * progress_delta / page_count);
-        logger.log(progress_value, format!("++ {} {}.", l10n.get_message("msg-info-ocr-img-to-pdf-item"), page_num));
+        logger.log(progress_value, format!("++ {} {}", l10n.get_message("msg-info-ocr-img-to-pdf-item"), page_num));
         let src = input_path.join(format!("page-{}.png", page_num));
         let dest = output_path.join(format!("page-{}", page_num));
         ocr_img_to_pdf(api, src, dest)?;
@@ -666,7 +666,7 @@ fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_rang
 }
 
 fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, input_dir_path: &PathBuf, output_path: &PathBuf, l10n: &l10n::Messages) -> Result<(), Box<dyn Error>> {
-    logger.log(progress_range.min, format!("+ {} {} {}.",
+    logger.log(progress_range.min, format!("+ {} {} {}",
                                            l10n.get_message("msg-combine-pdf-summary-start"),
                                            page_count,
                                            l10n.get_message("msg-combine-pdf-summary-end")));

@@ -85,7 +85,7 @@ msgid "msg-combine-pdf-summary-end"
 msgstr "PDF document(s)"
 
 msgid "msg-combine-pdf-collecting-documents"
-msgstr "Collecting PDF documents to combine."
+msgstr "Collecting PDF documents to combine"
 
 msgid "msg-combine-pdf-update-bookmarks"
 msgstr "Updating bookmarks and page numbering"

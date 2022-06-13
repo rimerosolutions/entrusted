@@ -343,9 +343,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
     }
 
     if !conversion_by_mimetype.contains_key(mime_type) {
-        let err_msg = format!("{}: {}.", l10n.get_message("msg-error-unsupported-mimetype"), mime_type);
-        logger.log(5, err_msg);
-        return Err(err_msg.into());
+        return Err(format!("{}: {}.", l10n.get_message("msg-error-unsupported-mimetype"), mime_type).into());
     }
 
     let filename_pdf: String;

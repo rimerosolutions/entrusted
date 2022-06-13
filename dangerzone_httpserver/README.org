@@ -140,7 +140,7 @@ The =/downloads/{id}= endpoints allows downloading successfully converted docume
 
  Please note that once downloaded, the file is immediately deleted from the server!
 
-* Is there a configuration file for the server?
+* Is there a configuration file?
 
 Yes, the configuration file (=config.toml=) is optional and its location is operating system dependent.
 

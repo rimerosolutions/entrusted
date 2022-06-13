@@ -7,6 +7,7 @@ use unic_langid::LanguageIdentifier;
 use gettext::Catalog;
 use std::collections::HashMap;
 use std::sync::Mutex;
+use locale_config;
 
 pub const DEFAULT_LANGID: &str = "en";
 pub const ENV_VAR_DANGERZONE_LANGID: &str = "DANGERZONE_LANGID";
@@ -28,6 +29,17 @@ macro_rules! incl_profiles {
         }
     };
 }
+
+pub fn sys_locale() -> String {
+    let l = locale_config::Locale::user_default();
+
+    if let Some(ll) = l.tags().next() {
+        ll.1.to_string()
+    } else {
+        String::from(DEFAULT_LANGID)
+    }
+}
+
 
 fn get_translation_catalog() -> HashMap::<String, Catalog> {
     let mut ret = HashMap::new();

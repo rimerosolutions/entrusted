@@ -1,6 +1,6 @@
 #+TITLE: README
 
-This is work in progress and this NOT a mature project.
+This is not a mature project and there are [[./ROADMAP.org][couple of pending TODOs]].
 
 * What is this?
 
@@ -92,11 +92,7 @@ For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-
 
 Conversions will fail if the container solution running or available in your [[https://www.java.com/en/download/help/path.html]["PATH settings"]]:
   - The tool doesn't attempt to modify software on your machine (install Docker or other programs)
-  - The tool doesn't manage other software running on your machine (start/stop services)
-
-* What is planned?
-
-See [[./ROADMAP.org][the high-level roadmap]].
+  - The tool doesn't manage other software running on your machine (start or stop services)
 
 * What are the differences with Dangerzone?
 
@@ -120,15 +116,10 @@ This project is more of a hobby at this point: it lacks testing, maturity and se
 |------------------------------------------+-----------------------------------------------------------|
 | *Likely less secure than the dangerzone* | 1 step conversion process, instead of 2 steps             |
 | *This is mostly an experiment*           | Not heavily tested, even if I use =dangerzone-rust= daily |
-| *Not the best code*                      | I barely /know/ =Rust=, in comparison to =Java=           |
-| *No support for translations yet*        | I have done a minimal POC for the approach                |
+| *Not the best code*                      | I barely /know/ =Rust=, in comparison to let's say =Java= |
 | *Incomplete*                             | UI &code polishing, probably several "obvious things"     |
 |------------------------------------------+-----------------------------------------------------------|
 
 * How to contribute?
 
 All the bugs reports, questions or suggestions are welcome and appreciated. Please note that the best way to contribute is via pull requests: this is a hobby project more than anything else at this time...
-
-* How to prepare a release?
-
-See the [[./RELEASING.org][release instructions]].

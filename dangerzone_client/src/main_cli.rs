@@ -7,7 +7,6 @@ use std::fs;
 use std::thread;
 use serde_json;
 use indicatif::ProgressBar;
-use sys_locale;
 
 mod l10n;
 mod common;
@@ -20,7 +19,7 @@ const LOG_FORMAT_JSON: &str  = "json";
 fn main() -> Result<(), Box<dyn Error>> {
     let locale = match env::var(l10n::ENV_VAR_DANGERZONE_LANGID) {
         Ok(selected_locale) => selected_locale,
-        Err(_) => sys_locale::get_locale().unwrap_or_else(|| String::from(l10n::DEFAULT_LANGID))
+        Err(_) => l10n::sys_locale()
     };
     let l10n = l10n::Messages::new(locale);
 

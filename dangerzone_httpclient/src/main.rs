@@ -34,6 +34,7 @@ pub struct AppConfig {
     pub ocr_lang: Option<String>,
     pub host: String,
     pub port: u16,
+    #[serde(rename(serialize = "file-suffix", deserialize = "file-suffix"))]
     pub file_suffix: String,
 }
 
@@ -251,7 +252,7 @@ async fn convert_file (
     println!("{}: {}", l10n.get_message("msg-converting-file"), input_path.display());
 
     let addr = format!("{}:{}", host, port.parse::<u16>()?);
-    println!("{}: {}", l10n.get_message("msg-connecting-to"), addr.clone());
+    println!("{}: {}", l10n.get_message("cli-msg-connecting-to"), addr.clone());
 
     let file = File::open(input_path.clone()).await?;
     let stream = FramedRead::new(file, BytesCodec::new());

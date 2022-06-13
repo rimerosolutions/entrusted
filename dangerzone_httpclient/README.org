@@ -69,6 +69,7 @@ The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to
   ocr-lang = "eng"
   host = "localhost"    
   port = 13000
+  file-suffix = "dgz"
 #+end_src
 
 *** Overview

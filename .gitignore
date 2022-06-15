@@ -4,6 +4,8 @@ packages
 artifacts
 .DirIcon
 
+*.mo
+
 ### Emacs ###
 # -*- mode: gitignore; -*-
 *~

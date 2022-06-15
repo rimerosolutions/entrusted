@@ -22,10 +22,25 @@ use std::fs;
 use std::io::Read;
 use dirs;
 
-mod l10n;
+use dangerzone_l10n as l10n;
 
 const PROGRAM_GROUP: &str = "dangerzone-httpclient";
 const CFG_FILENAME: &str = "config.toml";
+
+macro_rules! incl_gettext_files {
+    ( $( $x:expr ),* ) => {
+        {
+            let mut ret = HashMap::new();
+            $(
+                let data = include_bytes!(concat!("../translations/", $x, "/LC_MESSAGES/messages.mo")).as_slice();
+                ret.insert($x, data);
+
+            )*
+
+                ret
+        }
+    };
+}
 
 #[derive(Deserialize, Serialize, Clone)]
 #[serde(default)]
@@ -99,23 +114,25 @@ pub struct LogMessage {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
+async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {    
+    l10n::load_translations(incl_gettext_files!("en", "fr"));
+
     let locale = match env::var(l10n::ENV_VAR_DANGERZONE_LANGID) {
         Ok(selected_locale) => selected_locale,
         Err(_) => l10n::sys_locale()
     };
-    let l10n = l10n::Messages::new(locale);
+    let trans = l10n::new_translations(locale);
 
     let appconfig_ret = load_config();
     let appconfig = appconfig_ret.unwrap_or(AppConfig::default());
     let port_number_text = format!("{}", appconfig.port);
     
-    let help_host = l10n.get_message("cmdline-help-host");
-    let help_port = l10n.get_message("cmdline-help-port");
-    let help_output_filename = l10n.get_message("cmdline-help-output-filename");
-    let help_input_filename = l10n.get_message("cmdline-help-input-filename");
-    let help_ocr_lang = l10n.get_message("cmdline-help-ocr-lang");
-    let help_file_suffix = l10n.get_message("cmdline-help-file-suffix");
+    let help_host = trans.gettext("Server host or IP address");
+    let help_port = trans.gettext("Server port number");
+    let help_output_filename = trans.gettext("Output filename");
+    let help_input_filename = trans.gettext("Input filename");
+    let help_ocr_lang = trans.gettext("Optional language for OCR (i.e. 'eng' for English)");
+    let help_file_suffix = trans.gettext("Default file suffix (dgz)");
     
     let app = App::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
@@ -175,16 +192,14 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     };
 
     if let Some(proposed_ocr_lang) = &ocr_lang_opt {
-        let supported_ocr_languages = ocr_lang_key_by_name(&l10n);
+        let supported_ocr_languages = ocr_lang_key_by_name(trans.clone_box());
         let proposed_ocr_lang_str = proposed_ocr_lang.as_str();
         
         if !supported_ocr_languages.contains_key(&proposed_ocr_lang_str) {
-            let mut ocr_lang_err = "".to_string();
-             ocr_lang_err.push_str(&format!("{} {}. {}",
-                                            l10n.get_message("msg-ocrlang-msg-unsupported"),
-                                            proposed_ocr_lang,
-                                            l10n.get_message("msg-ocrlang-msg-hint")));
-            
+            let mut ocr_lang_err = String::new();
+            ocr_lang_err.push_str(&trans.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![proposed_ocr_lang]));
+
+            ocr_lang_err.push_str(" => ");            
             let mut prev = false;
 
             for (lang_code, language) in supported_ocr_languages {
@@ -220,21 +235,21 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         let p = PathBuf::from(file);
 
         if let Err(e) = port.parse::<u16>() {
-            return Err(format!("{}: {}! {}.", l10n.get_message("msg-invalid-port-number"), port, e.to_string()).into());
+            return Err(format!("{}: {}! {}.", trans.gettext("Invalid port number"), port, e.to_string()).into());
         }
 
         if !p.exists() {
-            return Err(l10n.get_message("msg-input-file-doesnt-exists").into());
+            return Err(trans.gettext("The input file doesn't exists!").into());
         }
 
         if let Some(output_dir) = p.parent() {
             let filename = p.file_name().unwrap().to_str().unwrap();
-            convert_file(host, port, ocr_lang_opt, output_dir.to_path_buf(), p.clone(), filename.to_string(), output_path_opt, file_suffix, &l10n).await
+            convert_file(host, port, ocr_lang_opt, output_dir.to_path_buf(), p.clone(), filename.to_string(), output_path_opt, file_suffix, trans.clone_box()).await
         } else {
-            Err(l10n.get_message("msg-couldnt-determine-input-directory").into())
+            Err(trans.gettext("Could not determine input directory!").into())
         }
     } else {
-        Err(l10n.get_message("msg-missing-parameters").into())
+        Err(trans.gettext("Runtime error, missing parameters!").into())
     }
 }
 
@@ -247,12 +262,12 @@ async fn convert_file (
     filename: String,
     output_path_opt: Option<PathBuf>,
     file_suffix: String,
-    l10n: &l10n::Messages
+    l10n: Box<dyn l10n::Translations>
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    println!("{}: {}", l10n.get_message("msg-converting-file"), input_path.display());
+    println!("{}: {}", l10n.gettext("Converting file"), input_path.display());
 
     let addr = format!("{}:{}", host, port.parse::<u16>()?);
-    println!("{}: {}", l10n.get_message("cli-msg-connecting-to"), addr.clone());
+    println!("{}: {}", l10n.gettext("Connecting to server at"), addr.clone());
 
     let file = File::open(input_path.clone()).await?;
     let stream = FramedRead::new(file, BytesCodec::new());
@@ -278,7 +293,7 @@ async fn convert_file (
         .await?;
 
     let tracking_url = format!("http://{}{}", addr.clone(), resp.tracking_uri);
-    let download_uri = process_notifications(tracking_url, l10n).await?;
+    let download_uri = process_notifications(tracking_url, &l10n).await?;
 
     let download_data = client
         .get(format!("http://{}{}", addr.clone(), download_uri))
@@ -295,7 +310,7 @@ async fn convert_file (
         if let Some(filename_noext) = filename_noext_opt {
             output_dir.join([filename_noext.to_string(), "-".to_string(), file_suffix, ".pdf".to_string()].concat())
         } else {
-            return Err(l10n.get_message("msg-couldnt-find-input-basename").into());
+            return Err(l10n.gettext("Could not determine input file base name!").into());
         }
     };
     
@@ -306,7 +321,7 @@ async fn convert_file (
 }
 
 async fn process_notifications(tracking_url: String,
-    l10n: &l10n::Messages) -> Result<String, Box<dyn Error + Send + Sync>> {
+    l10n: &Box<dyn l10n::Translations>) -> Result<String, Box<dyn Error + Send + Sync>> {
     let mut es = EventSource::get(format!("{}", tracking_url));
     let pb = ProgressBar::new(100);
     
@@ -315,7 +330,7 @@ async fn process_notifications(tracking_url: String,
 
         while let Some(event) = es.next().await {
             match event {
-                Ok(Event::Open) => println!("{}", l10n.get_message("msg-notif-connection-open")),
+                Ok(Event::Open) => println!("{}", l10n.gettext("Connection open!")),
                 Ok(Event::Message(msg)) => {
                     if msg.event == "processing_update" {
                         let log_msg_ret: serde_json::Result<LogMessage> = serde_json::from_str(&msg.data);
@@ -328,12 +343,12 @@ async fn process_notifications(tracking_url: String,
                         if msg.event == "processing_success" {
                             let log_msg_ret: LogMessage = serde_json::from_str(&msg.data).unwrap();                            
                             download_uri = log_msg_ret.data.clone();
-                            println!("{}", l10n.get_message("msg-notif-processing-success"));
+                            println!("{}", l10n.gettext("Conversion completed successfully!"));
                             es.close();
                             
                             return Ok(download_uri);
                         } else if msg.event == "processing_failure" {
-                            println!("{}", l10n.get_message("msg-notif-processing-failure"));
+                            println!("{}", l10n.gettext("Conversion failed!"));
                             es.close();
                             return Err(msg.data.into());
                         }
@@ -356,171 +371,169 @@ async fn process_notifications(tracking_url: String,
     }
 }
 
-pub fn ocr_lang_key_by_name(l10n: &l10n::Messages) -> HashMap<&'static str, String> {
+pub fn ocr_lang_key_by_name(trans: Box<dyn l10n::Translations>) -> HashMap<&'static str, String> {
     [
-        ("ocrlang-afrikaans", "ar"),
-        ("ocrlang-albanian", "sqi"),
-        ("ocrlang-amharic", "amh"),
-        ("ocrlang-arabic", "ara"),
-        ("ocrlang-arabic-script", "Arabic"),
-        ("ocrlang-armenian", "hye"),
-        ("ocrlang-armenian-script", "Armenian"),
-        ("ocrlang-assamese", "asm"),
-        ("ocrlang-azerbaijani", "aze"),
-        ("ocrlang-azerbaijani-cyrillic", "aze_cyrl"),
-        ("ocrlang-basque", "eus"),
-        ("ocrlang-belarusian", "bel"),
-        ("ocrlang-bengali", "ben"),
-        ("ocrlang-bengali-script", "Bengali"),
-        ("ocrlang-bosnian", "bos"),
-        ("ocrlang-breton", "bre"),
-        ("ocrlang-bulgarian", "bul"),
-        ("ocrlang-burmese", "mya"),
-        ("ocrlang-canadian-aboriginal-script", "Canadian_Aboriginal"),
-        ("ocrlang-catalan", "cat"),
-        ("ocrlang-cebuano", "ceb"),
-        ("ocrlang-cherokee", "chr"),
-        ("ocrlang-cherokee-script", "Cherokee"),
-        ("ocrlang-chinese-simplified", "chi_sim"),
-        ("ocrlang-chinese-simplified-vertical", "chi_sim_vert"),
-        ("ocrlang-chinese-traditional", "chi_tra"),
-        ("ocrlang-chinese-traditional-vertical", "chi_tra_vert"),
-        ("ocrlang-corsican", "cos"),
-        ("ocrlang-croatian", "hrv"),
-        ("ocrlang-cyrillic-script", "Cyrillic"),
-        ("ocrlang-czech", "ces"),
-        ("ocrlang-danish", "dan"),
-        ("ocrlang-devanagari-script", "Devanagari"),
-        ("ocrlang-divehi", "div"),
-        ("ocrlang-dutch", "nld"),
-        ("ocrlang-dzongkha", "dzo"),
-        ("ocrlang-english", "eng"),
-        ("ocrlang-english-middle-1100-1500", "enm"),
-        ("ocrlang-esperanto", "epo"),
-        ("ocrlang-estonian", "est"),
-        ("ocrlang-ethiopic-script", "Ethiopic"),
-        ("ocrlang-faroese", "fao"),
-        ("ocrlang-filipino", "fil"),
-        ("ocrlang-finnish", "fin"),
-        ("ocrlang-fraktur-script", "Fraktur"),
-        ("ocrlang-frankish", "frk"),
-        ("ocrlang-french", "fra"),
-        ("ocrlang-french-middle-ca-1400-1600", "frm"),
-        ("ocrlang-frisian-western", "fry"),
-        ("ocrlang-gaelic-scots", "gla"),
-        ("ocrlang-galician", "glg"),
-        ("ocrlang-georgian", "kat"),
-        ("ocrlang-georgian-script", "Georgian"),
-        ("ocrlang-german", "deu"),
-        ("ocrlang-greek", "ell"),
-        ("ocrlang-greek-script", "Greek"),
-        ("ocrlang-gujarati", "guj"),
-        ("ocrlang-gujarati-script", "Gujarati"),
-        ("ocrlang-gurmukhi-script", "Gurmukhi"),
-        ("ocrlang-hangul-script", "Hangul"),
-        ("ocrlang-hangul-vertical-script", "Hangul_vert"),
-        ("ocrlang-han-simplified-script", "HanS"),
-        ("ocrlang-han-simplified-vertical-script", "HanS_vert"),
-        ("ocrlang-han-traditional-script", "HanT"),
-        ("ocrlang-han-traditional-vertical-script", "HanT_vert"),
-        ("ocrlang-hatian", "hat"),
-        ("ocrlang-hebrew", "heb"),
-        ("ocrlang-hebrew-script", "Hebrew"),
-        ("ocrlang-hindi", "hin"),
-        ("ocrlang-hungarian", "hun"),
-        ("ocrlang-icelandic", "isl"),
-        ("ocrlang-indonesian", "ind"),
-        ("ocrlang-inuktitut", "iku"),
-        ("ocrlang-irish", "gle"),
-        ("ocrlang-italian", "ita"),
-        ("ocrlang-italian-old", "ita_old"),
-        ("ocrlang-japanese", "jpn"),
-        ("ocrlang-japanese-script", "Japanese"),
-        ("ocrlang-japanese-vertical", "jpn_vert"),
-        ("ocrlang-japanese-vertical-script", "Japanese_vert"),
-        ("ocrlang-javanese", "jav"),
-        ("ocrlang-kannada", "kan"),
-        ("ocrlang-kannada-script", "Kannada"),
-        ("ocrlang-kazakh", "kaz"),
-        ("ocrlang-khmer", "khm"),
-        ("ocrlang-khmer-script", "Khmer"),
-        ("ocrlang-korean", "kor"),
-        ("ocrlang-korean-vertical", "kor_vert"),
-        ("ocrlang-kurdish-arabic", "kur_ara"),
-        ("ocrlang-kyrgyz", "kir"),
-        ("ocrlang-lao", "lao"),
-        ("ocrlang-lao-script", "Lao"),
-        ("ocrlang-latin", "lat"),
-        ("ocrlang-latin-script", "Latin"),
-        ("ocrlang-latvian", "lav"),
-        ("ocrlang-lithuanian", "lit"),
-        ("ocrlang-luxembourgish", "ltz"),
-        ("ocrlang-macedonian", "mkd"),
-        ("ocrlang-malayalam", "mal"),
-        ("ocrlang-malayalam-script", "Malayalam"),
-        ("ocrlang-malay", "msa"),
-        ("ocrlang-maltese", "mlt"),
-        ("ocrlang-maori", "mri"),
-        ("ocrlang-marathi", "mar"),
-        ("ocrlang-mongolian", "mon"),
-        ("ocrlang-myanmar-script", "Myanmar"),
-        ("ocrlang-nepali", "nep"),
-        ("ocrlang-norwegian", "nor"),
-        ("ocrlang-occitan-post-1500", "oci"),
-        ("ocrlang-old-georgian", "kat_old"),
-        ("ocrlang-oriya-odia-script", "Oriya"),
-        ("ocrlang-oriya", "ori"),
-        ("ocrlang-pashto", "pus"),
-        ("ocrlang-persian", "fas"),
-        ("ocrlang-polish", "pol"),
-        ("ocrlang-portuguese", "por"),
-        ("ocrlang-punjabi", "pan"),
-        ("ocrlang-quechua", "que"),
-        ("ocrlang-romanian", "ron"),
-        ("ocrlang-russian", "rus"),
-        ("ocrlang-sanskrit", "san"),
-        ("ocrlang-script-and-orientation", "osd"),
-        ("ocrlang-serbian-latin", "srp_latn"),
-        ("ocrlang-serbian", "srp"),
-        ("ocrlang-sindhi", "snd"),
-        ("ocrlang-sinhala-script", "Sinhala"),
-        ("ocrlang-sinhala", "sin"),
-        ("ocrlang-slovakian", "slk"),
-        ("ocrlang-slovenian", "slv"),
-        ("ocrlang-spanish-castilian-old", "spa_old"),
-        ("ocrlang-spanish", "spa"),
-        ("ocrlang-sundanese", "sun"),
-        ("ocrlang-swahili", "swa"),
-        ("ocrlang-swedish", "swe"),
-        ("ocrlang-syriac-script", "Syriac"),
-        ("ocrlang-syriac", "syr"),
-        ("ocrlang-tajik", "tgk"),
-        ("ocrlang-tamil-script", "Tamil"),
-        ("ocrlang-tamil", "tam"),
-        ("ocrlang-tatar", "tat"),
-        ("ocrlang-telugu-script", "Telugu"),
-        ("ocrlang-telugu", "tel"),
-        ("ocrlang-thaana-script", "Thaana"),
-        ("ocrlang-thai-script", "Thai"),
-        ("ocrlang-thai", "tha"),
-        ("ocrlang-tibetan-script", "Tibetan"),
-        ("ocrlang-tibetan-standard", "bod"),
-        ("ocrlang-tigrinya", "tir"),
-        ("ocrlang-tonga", "ton"),
-        ("ocrlang-turkish", "tur"),
-        ("ocrlang-ukrainian", "ukr"),
-        ("ocrlang-urdu", "urd"),
-        ("ocrlang-uyghur", "uig"),
-        ("ocrlang-uzbek-cyrillic", "uzb_cyrl"),
-        ("ocrlang-uzbek", "uzb"),
-        ("ocrlang-vietnamese-script", "Vietnamese"),
-        ("ocrlang-vietnamese", "vie"),
-        ("ocrlang-welsh", "cym"),
-        ("ocrlang-yiddish", "yid"),
-        ("ocrlang-yoruba", "yor"),
-    ].map( |(k, v)| {
-        let msg = l10n.get_message(k).to_owned();
-        (v, msg)
-    }).iter().cloned().collect()
+        ("Afrikaans", "ar"),
+        ("Albanian", "sqi"),
+        ("Amharic", "amh"),
+        ("Arabic", "ara"),
+        ("Arabic script", "Arabic"),
+        ("Armenian", "hye"),
+        ("Armenian script", "Armenian"),
+        ("Assamese", "asm"),
+        ("Azerbaijani", "aze"),
+        ("Azerbaijani (Cyrillic)", "aze_cyrl"),
+        ("Basque", "eus"),
+        ("Belarusian", "bel"),
+        ("Bengali", "ben"),
+        ("Bengali script", "Bengali"),
+        ("Bosnian", "bos"),
+        ("Breton", "bre"),
+        ("Bulgarian", "bul"),
+        ("Burmese", "mya"),
+        ("Canadian Aboriginal script", "Canadian_Aboriginal"),
+        ("Catalan", "cat"),
+        ("Cebuano", "ceb"),
+        ("Cherokee", "chr"),
+        ("Cherokee script", "Cherokee"),
+        ("Chinese - Simplified", "chi_sim"),
+        ("Chinese - Simplified (vertical)", "chi_sim_vert"),
+        ("Chinese - Traditional", "chi_tra"),
+        ("Chinese - Traditional (vertical)", "chi_tra_vert"),
+        ("Corsican", "cos"),
+        ("Croatian", "hrv"),
+        ("Cyrillic script", "Cyrillic"),
+        ("Czech", "ces"),
+        ("Danish", "dan"),
+        ("Devanagari script", "Devanagari"),
+        ("Divehi", "div"),
+        ("Dutch", "nld"),
+        ("Dzongkha", "dzo"),
+        ("English", "eng"),
+        ("English, Middle (1100-1500)", "enm"),
+        ("Esperanto", "epo"),
+        ("Estonian", "est"),
+        ("Ethiopic script", "Ethiopic"),
+        ("Faroese", "fao"),
+        ("Filipino", "fil"),
+        ("Finnish", "fin"),
+        ("Fraktur script", "Fraktur"),
+        ("Frankish", "frk"),
+        ("French", "fra"),
+        ("French, Middle (ca.1400-1600)", "frm"),
+        ("Frisian (Western)", "fry"),
+        ("Gaelic (Scots)", "gla"),
+        ("Galician", "glg"),
+        ("Georgian", "kat"),
+        ("Georgian script", "Georgian"),
+        ("German", "deu"),
+        ("Greek", "ell"),
+        ("Greek script", "Greek"),
+        ("Gujarati", "guj"),
+        ("Gujarati script", "Gujarati"),
+        ("Gurmukhi script", "Gurmukhi"),
+        ("Hangul script", "Hangul"),
+        ("Hangul (vertical) script", "Hangul_vert"),
+        ("Han - Simplified script", "HanS"),
+        ("Han - Simplified (vertical) script", "HanS_vert"),
+        ("Han - Traditional script", "HanT"),
+        ("Han - Traditional (vertical) script", "HanT_vert"),
+        ("Hatian", "hat"),
+        ("Hebrew", "heb"),
+        ("Hebrew script", "Hebrew"),
+        ("Hindi", "hin"),
+        ("Hungarian", "hun"),
+        ("Icelandic", "isl"),
+        ("Indonesian", "ind"),
+        ("Inuktitut", "iku"),
+        ("Irish", "gle"),
+        ("Italian", "ita"),
+        ("Italian - Old", "ita_old"),
+        ("Japanese", "jpn"),
+        ("Japanese script", "Japanese"),
+        ("Japanese (vertical)", "jpn_vert"),
+        ("Japanese (vertical) script", "Japanese_vert"),
+        ("Javanese", "jav"),
+        ("Kannada", "kan"),
+        ("Kannada script", "Kannada"),
+        ("Kazakh", "kaz"),
+        ("Khmer", "khm"),
+        ("Khmer script", "Khmer"),
+        ("Korean", "kor"),
+        ("Korean (vertical)", "kor_vert"),
+        ("Kurdish (Arabic)", "kur_ara"),
+        ("Kyrgyz", "kir"),
+        ("Lao", "lao"),
+        ("Lao script", "Lao"),
+        ("Latin", "lat"),
+        ("Latin script", "Latin"),
+        ("Latvian", "lav"),
+        ("Lithuanian", "lit"),
+        ("Luxembourgish", "ltz"),
+        ("Macedonian", "mkd"),
+        ("Malayalam", "mal"),
+        ("Malayalam script", "Malayalam"),
+        ("Malay", "msa"),
+        ("Maltese", "mlt"),
+        ("Maori", "mri"),
+        ("Marathi", "mar"),
+        ("Mongolian", "mon"),
+        ("Myanmar script", "Myanmar"),
+        ("Nepali", "nep"),
+        ("Norwegian", "nor"),
+        ("Occitan (post 1500)", "oci"),
+        ("Old Georgian", "kat_old"),
+        ("Oriya (Odia) script", "Oriya"),
+        ("Oriya", "ori"),
+        ("Pashto", "pus"),
+        ("Persian", "fas"),
+        ("Polish", "pol"),
+        ("Portuguese", "por"),
+        ("Punjabi", "pan"),
+        ("Quechua", "que"),
+        ("Romanian", "ron"),
+        ("Russian", "rus"),
+        ("Sanskrit", "san"),
+        ("script and orientation", "osd"),
+        ("Serbian (Latin)", "srp_latn"),
+        ("Serbian", "srp"),
+        ("Sindhi", "snd"),
+        ("Sinhala script", "Sinhala"),
+        ("Sinhala", "sin"),
+        ("Slovakian", "slk"),
+        ("Slovenian", "slv"),
+        ("Spanish, Castilian - Old", "spa_old"),
+        ("Spanish", "spa"),
+        ("Sundanese", "sun"),
+        ("Swahili", "swa"),
+        ("Swedish", "swe"),
+        ("Syriac script", "Syriac"),
+        ("Syriac", "syr"),
+        ("Tajik", "tgk"),
+        ("Tamil script", "Tamil"),
+        ("Tamil", "tam"),
+        ("Tatar", "tat"),
+        ("Telugu script", "Telugu"),
+        ("Telugu", "tel"),
+        ("Thaana script", "Thaana"),
+        ("Thai script", "Thai"),
+        ("Thai", "tha"),
+        ("Tibetan script", "Tibetan"),
+        ("Tibetan Standard", "bod"),
+        ("Tigrinya", "tir"),
+        ("Tonga", "ton"),
+        ("Turkish", "tur"),
+        ("Ukrainian", "ukr"),
+        ("Urdu", "urd"),
+        ("Uyghur", "uig"),
+        ("Uzbek (Cyrillic)", "uzb_cyrl"),
+        ("Uzbek", "uzb"),
+        ("Vietnamese script", "Vietnamese"),
+        ("Vietnamese", "vie"),
+        ("Welsh", "cym"),
+        ("Yiddish", "yid"),
+        ("Yoruba", "yor"),
+    ]
+        .map( |(k, v)| (v, trans.gettext(k).to_owned()))
+        .iter().cloned().collect()
 }
-

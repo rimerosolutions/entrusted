@@ -30,533 +30,533 @@ msgstr ""
 #~ "MIME-Version: 1.0\n"
 #~ "Content-Type: text/plain; charset=UTF-8"
 
-msgid "cmdline-help-host"
+msgid "Server host or IP address"
 msgstr ""
 
-msgid "cmdline-help-port"
+msgid "Server port number"
 msgstr ""
 
-msgid "cmdline-help-input-filename"
+msgid "Input filename"
 msgstr ""
 
-msgid "cmdline-help-output-filename"
+msgid "Output filename"
 msgstr ""
 
-msgid "cmdline-help-container-image-name"
+msgid "Optional language for OCR (i.e. 'eng' for English)"
 msgstr ""
 
-msgid "msg-ocrlang-msg-unsupported"
+msgid "Default file suffix (dgz)"
 msgstr ""
 
-msgid "msg-ocrlang-msg-hint"
+msgid "Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English."
 msgstr ""
 
-msgid "msg-invalid-port-number"
+msgid "Invalid port number"
 msgstr ""
 
-msgid "msg-input-file-doesnt-exists"
+msgid "The input file doesn't exists!"
 msgstr ""
 
-msgid "msg-couldnt-determine-input-directory"
+msgid "Could not determine input directory!"
 msgstr ""
 
-msgid "msg-missing-parameters"
+msgid "Runtime error, missing parameters!"
 msgstr ""
 
-msgid "msg-converting-file"
+msgid "Converting file"
 msgstr ""
 
-msgid "cli-msg-connecting-to"
+msgid "Connecting to server at"
 msgstr ""
 
-msgid "msg-couldnt-find-input-basename"
+msgid "Could not determine input file base name!"
 msgstr ""
 
-msgid "msg-notif-connection-open"
+msgid "Connection open!"
 msgstr ""
 
-msgid "msg-notif-processing-success"
+msgid "Conversion completed successfully!"
 msgstr ""
 
-msgid "msg-notif-processing-failure"
+msgid "Conversion failed!"
 msgstr ""
 
-msgid "ocrlang-afrikaans"
+msgid "Afrikaans"
 msgstr ""
 
-msgid "ocrlang-albanian"
+msgid "Albanian"
 msgstr ""
 
-msgid "ocrlang-amharic"
+msgid "Amharic"
 msgstr ""
 
-msgid "ocrlang-arabic"
+msgid "Arabic"
 msgstr ""
 
-msgid "ocrlang-arabic-script"
+msgid "Arabic script"
 msgstr ""
 
-msgid "ocrlang-armenian"
+msgid "Armenian"
 msgstr ""
 
-msgid "ocrlang-armenian-script"
+msgid "Armenian script"
 msgstr ""
 
-msgid "ocrlang-assamese"
+msgid "Assamese"
 msgstr ""
 
-msgid "ocrlang-azerbaijani"
+msgid "Azerbaijani"
 msgstr ""
 
-msgid "ocrlang-azerbaijani-cyrillic"
+msgid "Azerbaijani (Cyrillic)"
 msgstr ""
 
-msgid "ocrlang-basque"
+msgid "Basque"
 msgstr ""
 
-msgid "ocrlang-belarusian"
+msgid "Belarusian"
 msgstr ""
 
-msgid "ocrlang-bengali"
+msgid "Bengali"
 msgstr ""
 
-msgid "ocrlang-bengali-script"
+msgid "Bengali script"
 msgstr ""
 
-msgid "ocrlang-bosnian"
+msgid "Bosnian"
 msgstr ""
 
-msgid "ocrlang-breton"
+msgid "Breton"
 msgstr ""
 
-msgid "ocrlang-bulgarian"
+msgid "Bulgarian"
 msgstr ""
 
-msgid "ocrlang-burmese"
+msgid "Burmese"
 msgstr ""
 
-msgid "ocrlang-canadian-aboriginal-script"
+msgid "Canadian Aboriginal script"
 msgstr ""
 
-msgid "ocrlang-catalan"
+msgid "Catalan"
 msgstr ""
 
-msgid "ocrlang-cebuano"
+msgid "Cebuano"
 msgstr ""
 
-msgid "ocrlang-cherokee"
+msgid "Cherokee"
 msgstr ""
 
-msgid "ocrlang-cherokee-script"
+msgid "Cherokee script"
 msgstr ""
 
-msgid "ocrlang-chinese-simplified"
+msgid "Chinese - Simplified"
 msgstr ""
 
-msgid "ocrlang-chinese-simplified-vertical"
+msgid "Chinese - Simplified (vertical)"
 msgstr ""
 
-msgid "ocrlang-chinese-traditional"
+msgid "Chinese - Traditional"
 msgstr ""
 
-msgid "ocrlang-chinese-traditional-vertical"
+msgid "Chinese - Traditional (vertical)"
 msgstr ""
 
-msgid "ocrlang-corsican"
+msgid "Corsican"
 msgstr ""
 
-msgid "ocrlang-croatian"
+msgid "Croatian"
 msgstr ""
 
-msgid "ocrlang-cyrillic-script"
+msgid "Cyrillic script"
 msgstr ""
 
-msgid "ocrlang-czech"
+msgid "Czech"
 msgstr ""
 
-msgid "ocrlang-danish"
+msgid "Danish"
 msgstr ""
 
-msgid "ocrlang-devanagari-script"
+msgid "Devanagari script"
 msgstr ""
 
-msgid "ocrlang-divehi"
+msgid "Divehi"
 msgstr ""
 
-msgid "ocrlang-dutch"
+msgid "Dutch"
 msgstr ""
 
-msgid "ocrlang-dzongkha"
+msgid "Dzongkha"
 msgstr ""
 
-msgid "ocrlang-english"
+msgid "English"
 msgstr ""
 
-msgid "ocrlang-english-middle-1100-1500"
+msgid "English, Middle (1100-1500)"
 msgstr ""
 
-msgid "ocrlang-esperanto"
+msgid "Esperanto"
 msgstr ""
 
-msgid "ocrlang-estonian"
+msgid "Estonian"
 msgstr ""
 
-msgid "ocrlang-ethiopic-script"
+msgid "Ethiopic script"
 msgstr ""
 
-msgid "ocrlang-faroese"
+msgid "Faroese"
 msgstr ""
 
-msgid "ocrlang-filipino"
+msgid "Filipino"
 msgstr ""
 
-msgid "ocrlang-finnish"
+msgid "Finnish"
 msgstr ""
 
-msgid "ocrlang-fraktur-script"
+msgid "Fraktur script"
 msgstr ""
 
-msgid "ocrlang-frankish"
+msgid "Frankish"
 msgstr ""
 
-msgid "ocrlang-french"
+msgid "French"
 msgstr ""
 
-msgid "ocrlang-french-middle-ca-1400-1600"
+msgid "French, Middle (ca.1400-1600)"
 msgstr ""
 
-msgid "ocrlang-frisian-western"
+msgid "Frisian (Western)"
 msgstr ""
 
-msgid "ocrlang-gaelic-scots"
+msgid "Gaelic (Scots)"
 msgstr ""
 
-msgid "ocrlang-galician"
+msgid "Galician"
 msgstr ""
 
-msgid "ocrlang-georgian"
+msgid "Georgian"
 msgstr ""
 
-msgid "ocrlang-georgian-script"
+msgid "Georgian script"
 msgstr ""
 
-msgid "ocrlang-german"
+msgid "German"
 msgstr ""
 
-msgid "ocrlang-greek"
+msgid "Greek"
 msgstr ""
 
-msgid "ocrlang-greek-script"
+msgid "Greek script"
 msgstr ""
 
-msgid "ocrlang-gujarati"
+msgid "Gujarati"
 msgstr ""
 
-msgid "ocrlang-gujarati-script"
+msgid "Gujarati script"
 msgstr ""
 
-msgid "ocrlang-gurmukhi-script"
+msgid "Gurmukhi script"
 msgstr ""
 
-msgid "ocrlang-hangul-script"
+msgid "Hangul script"
 msgstr ""
 
-msgid "ocrlang-hangul-vertical-script"
+msgid "Hangul (vertical) script"
 msgstr ""
 
-msgid "ocrlang-han-simplified-script"
+msgid "Han - Simplified script"
 msgstr ""
 
-msgid "ocrlang-han-simplified-vertical-script"
+msgid "Han - Simplified (vertical) script"
 msgstr ""
 
-msgid "ocrlang-han-traditional-script"
+msgid "Han - Traditional script"
 msgstr ""
 
-msgid "ocrlang-han-traditional-vertical-script"
+msgid "Han - Traditional (vertical) script"
 msgstr ""
 
-msgid "ocrlang-hatian"
+msgid "Hatian"
 msgstr ""
 
-msgid "ocrlang-hebrew"
+msgid "Hebrew"
 msgstr ""
 
-msgid "ocrlang-hebrew-script"
+msgid "Hebrew script"
 msgstr ""
 
-msgid "ocrlang-hindi"
+msgid "Hindi"
 msgstr ""
 
-msgid "ocrlang-hungarian"
+msgid "Hungarian"
 msgstr ""
 
-msgid "ocrlang-icelandic"
+msgid "Icelandic"
 msgstr ""
 
-msgid "ocrlang-indonesian"
+msgid "Indonesian"
 msgstr ""
 
-msgid "ocrlang-inuktitut"
+msgid "Inuktitut"
 msgstr ""
 
-msgid "ocrlang-irish"
+msgid "Irish"
 msgstr ""
 
-msgid "ocrlang-italian"
+msgid "Italian"
 msgstr ""
 
-msgid "ocrlang-italian-old"
+msgid "Italian - Old"
 msgstr ""
 
-msgid "ocrlang-japanese"
+msgid "Japanese"
 msgstr ""
 
-msgid "ocrlang-japanese-script"
+msgid "Japanese script"
 msgstr ""
 
-msgid "ocrlang-japanese-vertical"
+msgid "Japanese (vertical)"
 msgstr ""
 
-msgid "ocrlang-japanese-vertical-script"
+msgid "Japanese (vertical) script"
 msgstr ""
 
-msgid "ocrlang-javanese"
+msgid "Javanese"
 msgstr ""
 
-msgid "ocrlang-kannada"
+msgid "Kannada"
 msgstr ""
 
-msgid "ocrlang-kannada-script"
+msgid "Kannada script"
 msgstr ""
 
-msgid "ocrlang-kazakh"
+msgid "Kazakh"
 msgstr ""
 
-msgid "ocrlang-khmer"
+msgid "Khmer"
 msgstr ""
 
-msgid "ocrlang-khmer-script"
+msgid "Khmer script"
 msgstr ""
 
-msgid "ocrlang-korean"
+msgid "Korean"
 msgstr ""
 
-msgid "ocrlang-korean-vertical"
+msgid "Korean (vertical)"
 msgstr ""
 
-msgid "ocrlang-kurdish-arabic"
+msgid "Kurdish (Arabic)"
 msgstr ""
 
-msgid "ocrlang-kyrgyz"
+msgid "Kyrgyz"
 msgstr ""
 
-msgid "ocrlang-lao"
+msgid "Lao"
 msgstr ""
 
-msgid "ocrlang-lao-script"
+msgid "Lao script"
 msgstr ""
 
-msgid "ocrlang-latin"
+msgid "Latin"
 msgstr ""
 
-msgid "ocrlang-latin-script"
+msgid "Latin script"
 msgstr ""
 
-msgid "ocrlang-latvian"
+msgid "Latvian"
 msgstr ""
 
-msgid "ocrlang-lithuanian"
+msgid "Lithuanian"
 msgstr ""
 
-msgid "ocrlang-luxembourgish"
+msgid "Luxembourgish"
 msgstr ""
 
-msgid "ocrlang-macedonian"
+msgid "Macedonian"
 msgstr ""
 
-msgid "ocrlang-malayalam"
+msgid "Malayalam"
 msgstr ""
 
-msgid "ocrlang-malayalam-script"
+msgid "Malayalam script"
 msgstr ""
 
-msgid "ocrlang-malay"
+msgid "Malay"
 msgstr ""
 
-msgid "ocrlang-maltese"
+msgid "Maltese"
 msgstr ""
 
-msgid "ocrlang-maori"
+msgid "Maori"
 msgstr ""
 
-msgid "ocrlang-marathi"
+msgid "Marathi"
 msgstr ""
 
-msgid "ocrlang-mongolian"
+msgid "Mongolian"
 msgstr ""
 
-msgid "ocrlang-myanmar-script"
+msgid "Myanmar script"
 msgstr ""
 
-msgid "ocrlang-nepali"
+msgid "Nepali"
 msgstr ""
 
-msgid "ocrlang-norwegian"
+msgid "Norwegian"
 msgstr ""
 
-msgid "ocrlang-occitan-post-1500"
+msgid "Occitan (post 1500)"
 msgstr ""
 
-msgid "ocrlang-old-georgian"
+msgid "Old Georgian"
 msgstr ""
 
-msgid "ocrlang-oriya-odia-script"
+msgid "Oriya (Odia) script"
 msgstr ""
 
-msgid "ocrlang-oriya"
+msgid "Oriya"
 msgstr ""
 
-msgid "ocrlang-pashto"
+msgid "Pashto"
 msgstr ""
 
-msgid "ocrlang-persian"
+msgid "Persian"
 msgstr ""
 
-msgid "ocrlang-polish"
+msgid "Polish"
 msgstr ""
 
-msgid "ocrlang-portuguese"
+msgid "Portuguese"
 msgstr ""
 
-msgid "ocrlang-punjabi"
+msgid "Punjabi"
 msgstr ""
 
-msgid "ocrlang-quechua"
+msgid "Quechua"
 msgstr ""
 
-msgid "ocrlang-romanian"
+msgid "Romanian"
 msgstr ""
 
-msgid "ocrlang-russian"
+msgid "Russian"
 msgstr ""
 
-msgid "ocrlang-sanskrit"
+msgid "Sanskrit"
 msgstr ""
 
-msgid "ocrlang-script-and-orientation"
+msgid "script and orientation"
 msgstr ""
 
-msgid "ocrlang-serbian-latin"
+msgid "Serbian (Latin)"
 msgstr ""
 
-msgid "ocrlang-serbian"
+msgid "Serbian"
 msgstr ""
 
-msgid "ocrlang-sindhi"
+msgid "Sindhi"
 msgstr ""
 
-msgid "ocrlang-sinhala-script"
+msgid "Sinhala script"
 msgstr ""
 
-msgid "ocrlang-sinhala"
+msgid "Sinhala"
 msgstr ""
 
-msgid "ocrlang-slovakian"
+msgid "Slovakian"
 msgstr ""
 
-msgid "ocrlang-slovenian"
+msgid "Slovenian"
 msgstr ""
 
-msgid "ocrlang-spanish-castilian-old"
+msgid "Spanish, Castilian - Old"
 msgstr ""
 
-msgid "ocrlang-spanish"
+msgid "Spanish"
 msgstr ""
 
-msgid "ocrlang-sundanese"
+msgid "Sundanese"
 msgstr ""
 
-msgid "ocrlang-swahili"
+msgid "Swahili"
 msgstr ""
 
-msgid "ocrlang-swedish"
+msgid "Swedish"
 msgstr ""
 
-msgid "ocrlang-syriac-script"
+msgid "Syriac script"
 msgstr ""
 
-msgid "ocrlang-syriac"
+msgid "Syriac"
 msgstr ""
 
-msgid "ocrlang-tajik"
+msgid "Tajik"
 msgstr ""
 
-msgid "ocrlang-tamil-script"
+msgid "Tamil script"
 msgstr ""
 
-msgid "ocrlang-tamil"
+msgid "Tamil"
 msgstr ""
 
-msgid "ocrlang-tatar"
+msgid "Tatar"
 msgstr ""
 
-msgid "ocrlang-telugu-script"
+msgid "Telugu script"
 msgstr ""
 
-msgid "ocrlang-telugu"
+msgid "Telugu"
 msgstr ""
 
-msgid "ocrlang-thaana-script"
+msgid "Thaana script"
 msgstr ""
 
-msgid "ocrlang-thai-script"
+msgid "Thai script"
 msgstr ""
 
-msgid "ocrlang-thai"
+msgid "Thai"
 msgstr ""
 
-msgid "ocrlang-tibetan-script"
+msgid "Tibetan script"
 msgstr ""
 
-msgid "ocrlang-tibetan-standard"
+msgid "Tibetan Standard"
 msgstr ""
 
-msgid "ocrlang-tigrinya"
+msgid "Tigrinya"
 msgstr ""
 
-msgid "ocrlang-tonga"
+msgid "Tonga"
 msgstr ""
 
-msgid "ocrlang-turkish"
+msgid "Turkish"
 msgstr ""
 
-msgid "ocrlang-ukrainian"
+msgid "Ukrainian"
 msgstr ""
 
-msgid "ocrlang-urdu"
+msgid "Urdu"
 msgstr ""
 
-msgid "ocrlang-uyghur"
+msgid "Uyghur"
 msgstr ""
 
-msgid "ocrlang-uzbek-cyrillic"
+msgid "Uzbek (Cyrillic)"
 msgstr ""
 
-msgid "ocrlang-uzbek"
+msgid "Uzbek"
 msgstr ""
 
-msgid "ocrlang-vietnamese-script"
+msgid "Vietnamese script"
 msgstr ""
 
-msgid "ocrlang-vietnamese"
+msgid "Vietnamese"
 msgstr ""
 
-msgid "ocrlang-welsh"
+msgid "Welsh"
 msgstr ""
 
-msgid "ocrlang-yiddish"
+msgid "Yiddish"
 msgstr ""
 
-msgid "ocrlang-yoruba"
+msgid "Yoruba"
 msgstr ""

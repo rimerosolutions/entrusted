@@ -6,7 +6,7 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: dangerzone-client\n"
+"Project-Id-Version: dangerzone_client\n"
 "Report-Msgid-Bugs-To: andrea@nonymous.net\n"
 "POT-Creation-Date: 2016-01-25 18:51+0100\n"
 "PO-Revision-Date: 2022-06-11 11:51-0400\n"
@@ -16,660 +16,658 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
-msgid "window-macabout-aboutlabel"
+msgid "No container runtime executable found!"
+msgstr ""
+
+msgid "About"
 msgstr "About"
 
-msgid "window-macabout-versionlabel"
+msgid "Version"
 msgstr "Version"
 
-msgid "window-logs-title"
-msgstr "Logs"
+msgid "Logs"
+msgstr ""
 
-msgid "window-logs-log-close-button"
-msgstr "Close"
+msgid "Close"
+msgstr ""
 
-msgid "window-main-tabsettings-button-label"
-msgstr "Settings"
+msgid "Settings"
+msgstr ""
 
-msgid "window-main-tabconvert-button-label"
-msgstr "Convert"
+msgid "Convert"
+msgstr ""
 
-msgid "window-main-filesuffix-checkbutton-label"
-msgstr "Custom file suffix"
+msgid "Custom file suffix"
+msgstr ""
 
-msgid "window-main-filesuffix-checkbutton-tooltip"
-msgstr "The safe PDF will be named <input>-<suffix>.pdf by default."
+msgid "The safe PDF will be named <input>-<suffix>.pdf by default."
+msgstr ""
 
-msgid "window-main-ocrlang-checkbutton-label"
-msgstr "Enable full-text search? Yes, with language:"
+msgid "Enable full-text search? Yes, with language:"
+msgstr ""
 
-msgid "window-main-ocrlang-checkbutton-tooltip"
-msgstr "OCR (Optical character recognition) will be applied."
+msgid "OCR (Optical character recognition) will be applied."
+msgstr ""
 
-msgid "window-main-openwith-checkbutton-label"
-msgstr "Open document after conversion, using"
+msgid "Open document after conversion, using"
+msgstr ""
 
-msgid "window-main-openwith-checkbutton-tooltip"
-msgstr "Automatically open resulting PDFs with a given program."
+msgid "Automatically open resulting PDFs with a given program."
+msgstr ""
 
-msgid "window-main-openwith-inputchoice-rc-tooltip"
-msgstr "You can also paste the path to a PDF viewer"
+msgid "You can also paste the path to a PDF viewer"
+msgstr ""
 
-msgid "window-main-openwith-button-rc-tooltip"
-msgstr "Browse for PDF viewer program"
+msgid "Browse for PDF viewer program"
+msgstr ""
 
-msgid "window-main-ociimage-checkbutton-label"
-msgstr "Custom container image"
+msgid "Custom container image"
+msgstr ""
 
-msgid "window-main-ociimage-checkbutton-tooltip"
-msgstr "Expert option for sandbox solution"
+msgid "Expert option for sandbox solution"
+msgstr ""
 
-msgid "window-main-savesettings-button-label"
-msgstr "Save current settings as defaults"
+msgid "Save current settings as defaults"
+msgstr ""
 
-msgid "window-main-convert-frame-label-line1"
-msgstr "Drop 'potentially suspicious' file(s) here"
+msgid "Drop 'potentially suspicious' file(s) here"
+msgstr ""
 
-msgid "window-main-convert-frame-label-line2"
-msgstr "or"
+msgid "or"
+msgstr ""
 
-msgid "window-main-convert-frame-label-line3"
-msgstr "Click here to select file(s)"
+msgid "Click here to select file(s)"
+msgstr ""
 
-msgid "window-main-selectall-frame-rc-label"
-msgstr "Select all"
+msgid "Select all"
+msgstr ""
 
-msgid "window-main-deselectall-frame-rc-label"
-msgstr "Deselect all"
+msgid "Deselect all"
+msgstr ""
 
-msgid "window-main-delete-button-label"
-msgstr "Remove selected file(s)"
+msgid "Remove selected file(s)"
+msgstr ""
 
-msgid "window-main-convert-button-label"
-msgstr "Convert document(s)"
+msgid "Convert document(s)"
+msgstr ""
 
-msgid "window-main-conversion-message-failed"
-msgstr "Conversion failed"
+msgid "Conversion failed!"
+msgstr ""
 
-msgid "window-main-filelist-widget-column-filename"
-msgstr "File name"
+msgid "File name"
+msgstr ""
 
-msgid "window-main-filelist-widget-column-progress"
-msgstr "Progress(%)"
+msgid "Progress(%)"
+msgstr ""
 
-msgid "window-main-filelist-widget-column-status"
-msgstr "Status"
+msgid "Status"
+msgstr ""
 
-msgid "window-main-filelist-widget-column-message"
-msgstr "Message"
+msgid "Message"
+msgstr ""
 
-msgid "filedialog-selectpdfviewer-title"
-msgstr "Select PDF viewer program"
+msgid "Select PDF viewer program"
+msgstr ""
 
-msgid "filedialog-selectfiles-title"
-msgstr "Select 'potentially suspicious' file(s)"
+msgid "Select 'potentially suspicious' file(s)"
+msgstr ""
 
-msgid "error-cannot-open-pdfresult"
-msgstr "Could not open PDF result!"
+msgid "Could not open PDF result!"
+msgstr ""
 
-msgid "error-cannot-run-pdfviewer"
-msgstr "Could not run PDF viewer!"
+msgid "Could not run PDF viewer!"
+msgstr ""
 
-msgid "error-could-not-find-open-in-path"
-msgstr "Could not find open command in PATH!"
+msgid "Could not find open command in PATH!"
+msgstr ""
 
-msgid "default-language-name"
-msgstr "English"
+msgid "English"
+msgstr ""
 
-msgid "cmdline-help-output-filename"
-msgstr "Optional output filename defaulting to <filename>-dgz.pdf."
+msgid "Optional output filename defaulting to <filename>-dgz.pdf."
+msgstr ""
 
-msgid "cmdline-help-ocr-lang"
-msgstr "Optional language for OCR (i.e. 'eng' for English)"
+msgid "Optional language for OCR (i.e. 'eng' for English)"
+msgstr ""
 
-msgid "cmdline-help-input-filename"
-msgstr "Input filename"
+msgid "Input filename"
+msgstr ""
 
-msgid "cmdline-help-container-image-name"
-msgstr "Optional custom Docker or Podman image name"
+msgid "Optional custom Docker or Podman image name"
+msgstr ""
 
-msgid "cmdline-help-log-format"
-msgstr "Log format (json or plain)"
+msgid "Log format (json or plain)"
+msgstr ""
 
-msgid "cmdline-help-file-suffix"
-msgstr "Default file suffix (dgz)"
+msgid "Default file suffix (dgz)"
+msgstr ""
 
-msgid "container-msg-file-does-not-exists"
-msgstr "The selected file does not exists"
+msgid "The selected file does not exists! {0}"
+msgstr ""
 
-msgid "container-msg-converting"
-msgstr "Converting"
+msgid "Converting"
+msgstr ""
 
-msgid "container-msg-cannot-create-dir"
-msgstr "Cannot create directory"
+msgid "Cannot create directory"
+msgstr ""
 
-msgid "container-msg-image-check-exists"
-msgstr "Checking if container image exists"
+msgid "Checking if container image exists"
+msgstr ""
 
-msgid "container-msg-image-missing"
-msgstr "The container image was not found."
+msgid "The container image was not found. {0}."
+msgstr ""
 
-msgid "container-msg-image-download-wait"
-msgstr "Please wait, downloading image (roughly 600 MB)."
+msgid "Please wait, downloading image (roughly 600 MB)."
+msgstr ""
 
-msgid "container-msg-image-download-failed"
-msgstr "Couldn't download container image!"
+msgid "Couldn't download container image!"
+msgstr ""
 
-msgid "container-msg-image-download-completed"
-msgstr "Container image download completed..."
+msgid "Container image download completed..."
+msgstr ""
 
-msgid "container-msg-failed-to-cleanup-folder"
-msgstr "Failed to cleanup temporary folder!"
+msgid "Failed to cleanup temporary folder: {0}. {1}."
+msgstr ""
 
-msgid "container-msg-outputcapture-failed"
-msgstr "Command output capture failed!"
+msgid "Command output capture failed!"
+msgstr ""
 
-msgid "container-msg-command-failed"
-msgstr "Command failed!"
+msgid "Command failed!"
+msgstr ""
 
-msgid "container-msg-conversion-failed"
-msgstr "Conversion failed!"
+msgid "Conversion failed!"
+msgstr ""
 
-msgid "container-msg-prompt-install-for-windows"
-msgstr "Please install Docker."
+msgid "Please install Docker."
+msgstr ""
 
-msgid "container-msg-prompt-install-for-macos"
-msgstr "Please install Docker or Lima."
+msgid "Please install Docker or Lima."
+msgstr ""
 
-msgid "container-msg-prompt-install-for-linux"
-msgstr "Please install Podman."
+msgid "Please install Podman."
+msgstr ""
 
-msgid "cli-msg-ocrlang-msg-unsupported"
-msgstr "Unknown language code for the ocr-lang parameter: "
+msgid "Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English."
+msgstr ""
 
-msgid "cli-msg-ocrlang-msg-hint"
-msgstr "Hint: Try 'eng' for English. => "
+msgid "Afrikaans"
+msgstr ""
 
-msgid "ocrlang-afrikaans"
-msgstr "Afrikaans"
+msgid "Albanian"
+msgstr ""
 
-msgid "ocrlang-albanian"
-msgstr "Albanian"
+msgid "Amharic"
+msgstr ""
 
-msgid "ocrlang-amharic"
-msgstr "Amharic"
+msgid "Arabic"
+msgstr ""
 
-msgid "ocrlang-arabic"
-msgstr "Arabic"
+msgid "Arabic script"
+msgstr ""
 
-msgid "ocrlang-arabic-script"
-msgstr "Arabic script"
+msgid "Armenian"
+msgstr ""
 
-msgid "ocrlang-armenian"
-msgstr "Armenian"
+msgid "Armenian script"
+msgstr ""
 
-msgid "ocrlang-armenian-script"
-msgstr "Armenian script"
+msgid "Assamese"
+msgstr ""
 
-msgid "ocrlang-assamese"
-msgstr "Assamese"
+msgid "Azerbaijani"
+msgstr ""
 
-msgid "ocrlang-azerbaijani"
-msgstr "Azerbaijani"
+msgid "Azerbaijani (Cyrillic)"
+msgstr ""
 
-msgid "ocrlang-azerbaijani-cyrillic"
-msgstr "Azerbaijani (Cyrillic)"
+msgid "Basque"
+msgstr ""
 
-msgid "ocrlang-basque"
-msgstr "Basque"
+msgid "Belarusian"
+msgstr ""
 
-msgid "ocrlang-belarusian"
-msgstr "Belarusian"
+msgid "Bengali"
+msgstr ""
 
-msgid "ocrlang-bengali"
-msgstr "Bengali"
+msgid "Bengali script"
+msgstr ""
 
-msgid "ocrlang-bengali-script"
-msgstr "Bengali script"
+msgid "Bosnian"
+msgstr ""
 
-msgid "ocrlang-bosnian"
-msgstr "Bosnian"
+msgid "Breton"
+msgstr ""
 
-msgid "ocrlang-breton"
-msgstr "Breton"
+msgid "Bulgarian"
+msgstr ""
 
-msgid "ocrlang-bulgarian"
-msgstr "Bulgarian"
+msgid "Burmese"
+msgstr ""
 
-msgid "ocrlang-burmese"
-msgstr "Burmese"
+msgid "Canadian Aboriginal script"
+msgstr ""
 
-msgid "ocrlang-canadian-aboriginal-script"
-msgstr "Canadian Aboriginal script"
+msgid "Catalan"
+msgstr ""
 
-msgid "ocrlang-catalan"
-msgstr "Catalan"
+msgid "Cebuano"
+msgstr ""
 
-msgid "ocrlang-cebuano"
-msgstr "Cebuano"
+msgid "Cherokee"
+msgstr ""
 
-msgid "ocrlang-cherokee"
-msgstr "Cherokee"
+msgid "Cherokee script"
+msgstr ""
 
-msgid "ocrlang-cherokee-script"
-msgstr "Cherokee script"
+msgid "Chinese - Simplified"
+msgstr ""
 
-msgid "ocrlang-chinese-simplified"
-msgstr "Chinese - Simplified"
+msgid "Chinese - Simplified (vertical)"
+msgstr ""
 
-msgid "ocrlang-chinese-simplified-vertical"
-msgstr "Chinese - Simplified (vertical)"
+msgid "Chinese - Traditional"
+msgstr ""
 
-msgid "ocrlang-chinese-traditional"
-msgstr "Chinese - Traditional"
+msgid "Chinese - Traditional (vertical)"
+msgstr ""
 
-msgid "ocrlang-chinese-traditional-vertical"
-msgstr "Chinese - Traditional (vertical)"
+msgid "Corsican"
+msgstr ""
 
-msgid "ocrlang-corsican"
-msgstr "Corsican"
+msgid "Croatian"
+msgstr ""
 
-msgid "ocrlang-croatian"
-msgstr "Croatian"
+msgid "Cyrillic script"
+msgstr ""
 
-msgid "ocrlang-cyrillic-script"
-msgstr "Cyrillic script"
+msgid "Czech"
+msgstr ""
 
-msgid "ocrlang-czech"
-msgstr "Czech"
+msgid "Danish"
+msgstr ""
 
-msgid "ocrlang-danish"
-msgstr "Danish"
+msgid "Devanagari script"
+msgstr ""
 
-msgid "ocrlang-devanagari-script"
-msgstr "Devanagari script"
+msgid "Divehi"
+msgstr ""
 
-msgid "ocrlang-divehi"
-msgstr "Divehi"
+msgid "Dutch"
+msgstr ""
 
-msgid "ocrlang-dutch"
-msgstr "Dutch"
+msgid "Dzongkha"
+msgstr ""
 
-msgid "ocrlang-dzongkha"
-msgstr "Dzongkha"
+msgid "English"
+msgstr ""
 
-msgid "ocrlang-english"
-msgstr "English"
+msgid "English, Middle (1100-1500)"
+msgstr ""
 
-msgid "ocrlang-english-middle-1100-1500"
-msgstr "English, Middle (1100-1500)"
+msgid "Esperanto"
+msgstr ""
 
-msgid "ocrlang-esperanto"
-msgstr "Esperanto"
+msgid "Estonian"
+msgstr ""
 
-msgid "ocrlang-estonian"
-msgstr "Estonian"
+msgid "Ethiopic script"
+msgstr ""
 
-msgid "ocrlang-ethiopic-script"
-msgstr "Ethiopic script"
+msgid "Faroese"
+msgstr ""
 
-msgid "ocrlang-faroese"
-msgstr "Faroese"
+msgid "Filipino"
+msgstr ""
 
-msgid "ocrlang-filipino"
-msgstr "Filipino"
+msgid "Finnish"
+msgstr ""
 
-msgid "ocrlang-finnish"
-msgstr "Finnish"
+msgid "Fraktur script"
+msgstr ""
 
-msgid "ocrlang-fraktur-script"
-msgstr "Fraktur script"
+msgid "Frankish"
+msgstr ""
 
-msgid "ocrlang-frankish"
-msgstr "Frankish"
+msgid "French"
+msgstr ""
 
-msgid "ocrlang-french"
-msgstr "French"
+msgid "French, Middle (ca.1400-1600)"
+msgstr ""
 
-msgid "ocrlang-french-middle-ca-1400-1600"
-msgstr "French, Middle (ca.1400-1600)"
+msgid "Frisian (Western)"
+msgstr ""
 
-msgid "ocrlang-frisian-western"
-msgstr "Frisian (Western)"
+msgid "Gaelic (Scots)"
+msgstr ""
 
-msgid "ocrlang-gaelic-scots"
-msgstr "Gaelic (Scots)"
+msgid "Galician"
+msgstr ""
 
-msgid "ocrlang-galician"
-msgstr "Galician"
+msgid "Georgian"
+msgstr ""
 
-msgid "ocrlang-georgian"
-msgstr "Georgian"
+msgid "Georgian script"
+msgstr ""
 
-msgid "ocrlang-georgian-script"
-msgstr "Georgian script"
+msgid "German"
+msgstr ""
 
-msgid "ocrlang-german"
-msgstr "German"
+msgid "Greek"
+msgstr ""
 
-msgid "ocrlang-greek"
-msgstr "Greek"
+msgid "Greek script"
+msgstr ""
 
-msgid "ocrlang-greek-script"
-msgstr "Greek script"
+msgid "Gujarati"
+msgstr ""
 
-msgid "ocrlang-gujarati"
-msgstr "Gujarati"
+msgid "Gujarati script"
+msgstr ""
 
-msgid "ocrlang-gujarati-script"
-msgstr "Gujarati script"
+msgid "Gurmukhi script"
+msgstr ""
 
-msgid "ocrlang-gurmukhi-script"
-msgstr "Gurmukhi script"
+msgid "Hangul script"
+msgstr ""
 
-msgid "ocrlang-hangul-script"
-msgstr "Hangul script"
+msgid "Hangul (vertical) script"
+msgstr ""
 
-msgid "ocrlang-hangul-vertical-script"
-msgstr "Hangul (vertical) script"
+msgid "Han - Simplified script"
+msgstr ""
 
-msgid "ocrlang-han-simplified-script"
-msgstr "Han - Simplified script"
+msgid "Han - Simplified (vertical) script"
+msgstr ""
 
-msgid "ocrlang-han-simplified-vertical-script"
-msgstr "Han - Simplified (vertical) script"
+msgid "Han - Traditional script"
+msgstr ""
 
-msgid "ocrlang-han-traditional-script"
-msgstr "Han - Traditional script"
+msgid "Han - Traditional (vertical) script"
+msgstr ""
 
-msgid "ocrlang-han-traditional-vertical-script"
-msgstr "Han - Traditional (vertical) script"
+msgid "Hatian"
+msgstr ""
 
-msgid "ocrlang-hatian"
-msgstr "Hatian"
+msgid "Hebrew"
+msgstr ""
 
-msgid "ocrlang-hebrew"
-msgstr "Hebrew"
+msgid "Hebrew script"
+msgstr ""
 
-msgid "ocrlang-hebrew-script"
-msgstr "Hebrew script"
+msgid "Hindi"
+msgstr ""
 
-msgid "ocrlang-hindi"
-msgstr "Hindi"
+msgid "Hungarian"
+msgstr ""
 
-msgid "ocrlang-hungarian"
-msgstr "Hungarian"
+msgid "Icelandic"
+msgstr ""
 
-msgid "ocrlang-icelandic"
-msgstr "Icelandic"
+msgid "Indonesian"
+msgstr ""
 
-msgid "ocrlang-indonesian"
-msgstr "Indonesian"
+msgid "Inuktitut"
+msgstr ""
 
-msgid "ocrlang-inuktitut"
-msgstr "Inuktitut"
+msgid "Irish"
+msgstr ""
 
-msgid "ocrlang-irish"
-msgstr "Irish"
+msgid "Italian"
+msgstr ""
 
-msgid "ocrlang-italian"
-msgstr "Italian"
+msgid "Italian - Old"
+msgstr ""
 
-msgid "ocrlang-italian-old"
-msgstr "Italian - Old"
+msgid "Japanese"
+msgstr ""
 
-msgid "ocrlang-japanese"
-msgstr "Japanese"
+msgid "Japanese script"
+msgstr ""
 
-msgid "ocrlang-japanese-script"
-msgstr "Japanese script"
+msgid "Japanese (vertical)"
+msgstr ""
 
-msgid "ocrlang-japanese-vertical"
-msgstr "Japanese (vertical)"
+msgid "Japanese (vertical) script"
+msgstr ""
 
-msgid "ocrlang-japanese-vertical-script"
-msgstr "Japanese (vertical) script"
+msgid "Javanese"
+msgstr ""
 
-msgid "ocrlang-javanese"
-msgstr "Javanese"
+msgid "Kannada"
+msgstr ""
 
-msgid "ocrlang-kannada"
-msgstr "Kannada"
+msgid "Kannada script"
+msgstr ""
 
-msgid "ocrlang-kannada-script"
-msgstr "Kannada script"
+msgid "Kazakh"
+msgstr ""
 
-msgid "ocrlang-kazakh"
-msgstr "Kazakh"
+msgid "Khmer"
+msgstr ""
 
-msgid "ocrlang-khmer"
-msgstr "Khmer"
+msgid "Khmer script"
+msgstr ""
 
-msgid "ocrlang-khmer-script"
-msgstr "Khmer script"
+msgid "Korean"
+msgstr ""
 
-msgid "ocrlang-korean"
-msgstr "Korean"
+msgid "Korean (vertical)"
+msgstr ""
 
-msgid "ocrlang-korean-vertical"
-msgstr "Korean (vertical)"
+msgid "Kurdish (Arabic)"
+msgstr ""
 
-msgid "ocrlang-kurdish-arabic"
-msgstr "Kurdish (Arabic)"
+msgid "Kyrgyz"
+msgstr ""
 
-msgid "ocrlang-kyrgyz"
-msgstr "Kyrgyz"
+msgid "Lao"
+msgstr ""
 
-msgid "ocrlang-lao"
-msgstr "Lao"
+msgid "Lao script"
+msgstr ""
 
-msgid "ocrlang-lao-script"
-msgstr "Lao script"
+msgid "Latin"
+msgstr ""
 
-msgid "ocrlang-latin"
-msgstr "Latin"
+msgid "Latin script"
+msgstr ""
 
-msgid "ocrlang-latin-script"
-msgstr "Latin script"
+msgid "Latvian"
+msgstr ""
 
-msgid "ocrlang-latvian"
-msgstr "Latvian"
+msgid "Lithuanian"
+msgstr ""
 
-msgid "ocrlang-lithuanian"
-msgstr "Lithuanian"
+msgid "Luxembourgish"
+msgstr ""
 
-msgid "ocrlang-luxembourgish"
-msgstr "Luxembourgish"
+msgid "Macedonian"
+msgstr ""
 
-msgid "ocrlang-macedonian"
-msgstr "Macedonian"
+msgid "Malayalam"
+msgstr ""
 
-msgid "ocrlang-malayalam"
-msgstr "Malayalam"
+msgid "Malayalam script"
+msgstr ""
 
-msgid "ocrlang-malayalam-script"
-msgstr "Malayalam script"
+msgid "Malay"
+msgstr ""
 
-msgid "ocrlang-malay"
-msgstr "Malay"
+msgid "Maltese"
+msgstr ""
 
-msgid "ocrlang-maltese"
-msgstr "Maltese"
+msgid "Maori"
+msgstr ""
 
-msgid "ocrlang-maori"
-msgstr "Maori"
+msgid "Marathi"
+msgstr ""
 
-msgid "ocrlang-marathi"
-msgstr "Marathi"
+msgid "Mongolian"
+msgstr ""
 
-msgid "ocrlang-mongolian"
-msgstr "Mongolian"
+msgid "Myanmar script"
+msgstr ""
 
-msgid "ocrlang-myanmar-script"
-msgstr "Myanmar script"
+msgid "Nepali"
+msgstr ""
 
-msgid "ocrlang-nepali"
-msgstr "Nepali"
+msgid "Norwegian"
+msgstr ""
 
-msgid "ocrlang-norwegian"
-msgstr "Norwegian"
+msgid "Occitan (post 1500)"
+msgstr ""
 
-msgid "ocrlang-occitan-post-1500"
-msgstr "Occitan (post 1500)"
+msgid "Old Georgian"
+msgstr ""
 
-msgid "ocrlang-old-georgian"
-msgstr "Old Georgian"
+msgid "Oriya (Odia) script"
+msgstr ""
 
-msgid "ocrlang-oriya-odia-script"
-msgstr "Oriya (Odia) script"
+msgid "Oriya"
+msgstr ""
 
-msgid "ocrlang-oriya"
-msgstr "Oriya"
+msgid "Pashto"
+msgstr ""
 
-msgid "ocrlang-pashto"
-msgstr "Pashto"
+msgid "Persian"
+msgstr ""
 
-msgid "ocrlang-persian"
-msgstr "Persian"
+msgid "Polish"
+msgstr ""
 
-msgid "ocrlang-polish"
-msgstr "Polish"
+msgid "Portuguese"
+msgstr ""
 
-msgid "ocrlang-portuguese"
-msgstr "Portuguese"
+msgid "Punjabi"
+msgstr ""
 
-msgid "ocrlang-punjabi"
-msgstr "Punjabi"
+msgid "Quechua"
+msgstr ""
 
-msgid "ocrlang-quechua"
-msgstr "Quechua"
+msgid "Romanian"
+msgstr ""
 
-msgid "ocrlang-romanian"
-msgstr "Romanian"
+msgid "Russian"
+msgstr ""
 
-msgid "ocrlang-russian"
-msgstr "Russian"
+msgid "Sanskrit"
+msgstr ""
 
-msgid "ocrlang-sanskrit"
-msgstr "Sanskrit"
+msgid "script and orientation"
+msgstr ""
 
-msgid "ocrlang-script-and-orientation"
-msgstr "script and orientation"
+msgid "Serbian (Latin)"
+msgstr ""
 
-msgid "ocrlang-serbian-latin"
-msgstr "Serbian (Latin)"
+msgid "Serbian"
+msgstr ""
 
-msgid "ocrlang-serbian"
-msgstr "Serbian"
+msgid "Sindhi"
+msgstr ""
 
-msgid "ocrlang-sindhi"
-msgstr "Sindhi"
+msgid "Sinhala script"
+msgstr ""
 
-msgid "ocrlang-sinhala-script"
-msgstr "Sinhala script"
+msgid "Sinhala"
+msgstr ""
 
-msgid "ocrlang-sinhala"
-msgstr "Sinhala"
+msgid "Slovakian"
+msgstr ""
 
-msgid "ocrlang-slovakian"
-msgstr "Slovakian"
+msgid "Slovenian"
+msgstr ""
 
-msgid "ocrlang-slovenian"
-msgstr "Slovenian"
+msgid "Spanish, Castilian - Old"
+msgstr ""
 
-msgid "ocrlang-spanish-castilian-old"
-msgstr "Spanish, Castilian - Old"
+msgid "Spanish"
+msgstr ""
 
-msgid "ocrlang-spanish"
-msgstr "Spanish"
+msgid "Sundanese"
+msgstr ""
 
-msgid "ocrlang-sundanese"
-msgstr "Sundanese"
+msgid "Swahili"
+msgstr ""
 
-msgid "ocrlang-swahili"
-msgstr "Swahili"
+msgid "Swedish"
+msgstr ""
 
-msgid "ocrlang-swedish"
-msgstr "Swedish"
+msgid "Syriac script"
+msgstr ""
 
-msgid "ocrlang-syriac-script"
-msgstr "Syriac script"
+msgid "Syriac"
+msgstr ""
 
-msgid "ocrlang-syriac"
-msgstr "Syriac"
+msgid "Tajik"
+msgstr ""
 
-msgid "ocrlang-tajik"
-msgstr "Tajik"
+msgid "Tamil script"
+msgstr ""
 
-msgid "ocrlang-tamil-script"
-msgstr "Tamil script"
+msgid "Tamil"
+msgstr ""
 
-msgid "ocrlang-tamil"
-msgstr "Tamil"
+msgid "Tatar"
+msgstr ""
 
-msgid "ocrlang-tatar"
-msgstr "Tatar"
+msgid "Telugu script"
+msgstr ""
 
-msgid "ocrlang-telugu-script"
-msgstr "Telugu script"
+msgid "Telugu"
+msgstr ""
 
-msgid "ocrlang-telugu"
-msgstr "Telugu"
+msgid "Thaana script"
+msgstr ""
 
-msgid "ocrlang-thaana-script"
-msgstr "Thaana script"
+msgid "Thai script"
+msgstr ""
 
-msgid "ocrlang-thai-script"
-msgstr "Thai script"
+msgid "Thai"
+msgstr ""
 
-msgid "ocrlang-thai"
-msgstr "Thai"
+msgid "Tibetan script"
+msgstr ""
 
-msgid "ocrlang-tibetan-script"
-msgstr "Tibetan script"
+msgid "Tibetan Standard"
+msgstr ""
 
-msgid "ocrlang-tibetan-standard"
-msgstr "Tibetan Standard"
+msgid "Tigrinya"
+msgstr ""
 
-msgid "ocrlang-tigrinya"
-msgstr "Tigrinya"
+msgid "Tonga"
+msgstr ""
 
-msgid "ocrlang-tonga"
-msgstr "Tonga"
+msgid "Turkish"
+msgstr ""
 
-msgid "ocrlang-turkish"
-msgstr "Turkish"
+msgid "Ukrainian"
+msgstr ""
 
-msgid "ocrlang-ukrainian"
-msgstr "Ukrainian"
+msgid "Urdu"
+msgstr ""
 
-msgid "ocrlang-urdu"
-msgstr "Urdu"
+msgid "Uyghur"
+msgstr ""
 
-msgid "ocrlang-uyghur"
-msgstr "Uyghur"
+msgid "Uzbek (Cyrillic)"
+msgstr ""
 
-msgid "ocrlang-uzbek-cyrillic"
-msgstr "Uzbek (Cyrillic)"
+msgid "Uzbek"
+msgstr ""
 
-msgid "ocrlang-uzbek"
-msgstr "Uzbek"
+msgid "Vietnamese script"
+msgstr ""
 
-msgid "ocrlang-vietnamese-script"
-msgstr "Vietnamese script"
+msgid "Vietnamese"
+msgstr ""
 
-msgid "ocrlang-vietnamese"
-msgstr "Vietnamese"
+msgid "Welsh"
+msgstr ""
 
-msgid "ocrlang-welsh"
-msgstr "Welsh"
+msgid "Yiddish"
+msgstr ""
 
-msgid "ocrlang-yiddish"
-msgstr "Yiddish"
-
-msgid "ocrlang-yoruba"
-msgstr "Yoruba"
-
-msgid "container-msg-no-container-executable-found"
-msgstr "No container runtime executable found!"
+msgid "Yoruba"
+msgstr ""

@@ -1,6 +1,7 @@
 use serde_json;
 use std::error::Error;
 use std::fs;
+use std::io;
 use filetime::FileTime;
 use std::path::PathBuf;
 use std::env;
@@ -10,10 +11,10 @@ use std::thread::JoinHandle;
 use std::sync::mpsc::Sender;
 use std::thread;
 
-use crate::l10n;
+use dangerzone_l10n as l10n;
 use crate::common;
 
-fn read_output<R>(thread_name: &str, stream: R, tx: Sender<String>) -> Result<JoinHandle<Result<(), Box<dyn Error + Send + Sync>>>, std::io::Error>
+fn read_output<R>(thread_name: &str, stream: R, tx: Sender<String>) -> Result<JoinHandle<Result<(), Box<dyn Error + Send + Sync>>>, io::Error>
 where
     R: Read + Send + 'static {
     thread::Builder::new()
@@ -30,7 +31,7 @@ where
         })
 }
 
-fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str>, log_format: String, tx: Sender<String>, capture_output: bool, l10n:l10n::Messages) -> Result<(), Box<dyn Error>> {
+fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str>, log_format: String, tx: Sender<String>, capture_output: bool, trans: Box<dyn l10n::Translations>) -> Result<(), Box<dyn Error>> {
     let rt_path = container_program.exec_path;
     let sub_commands = container_program.sub_commands;
     let rt_executable: &str = &format!("{}", rt_path.display());
@@ -61,7 +62,7 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str
 
         for stdout_handle in stdout_handles {
             if let Err(ex) = stdout_handle?.join() {
-                return Err(format!("{} {:?}", l10n.get_message("container-msg-outputcapture-failed"), ex).into());
+                return Err(format!("{} {:?}", trans.gettext("Command output capture failed!"), ex).into());
             }
         }
     }
@@ -70,7 +71,7 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str
 
     match exit_status.success() {
         true => Ok(()),
-        false => Err(l10n.get_message("container-msg-command-failed").into())
+        false => Err(trans.gettext("Command failed!").into())
     }
 }
 
@@ -100,9 +101,9 @@ impl LogPrinter for JsonLogPrinter {
     }
 }
 
-pub fn convert(input_path: PathBuf, output_path: PathBuf, container_image_name: String, log_format: String, ocr_lang: Option<String>, tx: Sender<String>, l10n: l10n::Messages) -> Result<bool, Box<dyn Error>> {
+pub fn convert(input_path: PathBuf, output_path: PathBuf, container_image_name: String, log_format: String, ocr_lang: Option<String>, tx: Sender<String>, trans: Box<dyn l10n::Translations>) -> Result<bool, Box<dyn Error>> {
     if !input_path.exists() {
-        return Err(format!("{}: {}!", l10n.get_message("container-msg-file-does-not-exists"), input_path.display()).into());
+        return Err(trans.gettext_fmt("The selected file does not exists: {0}!", vec![&input_path.display().to_string()]).into());
     }
 
     let printer: Box<dyn LogPrinter> = if log_format == "plain".to_string() {
@@ -111,7 +112,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, container_image_name: 
         Box::new(JsonLogPrinter {})
     };
 
-    tx.send(printer.print(1, format!("{} {}.", l10n.get_message("container-msg-converting"), input_path.display())))?;
+    tx.send(printer.print(1, format!("{} {}.", trans.gettext("Converting"), input_path.display())))?;
 
     let mut success = false;
 
@@ -126,13 +127,13 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, container_image_name: 
         None => "".to_string()
     };
 
-    fn mkdirp(p: PathBuf) -> Result<(), Box<dyn Error>> {
+    fn mkdirp(p: PathBuf, trans: Box<dyn l10n::Translations>) -> Result<(), Box<dyn Error>> {
         if !p.exists() {
             let dir_created = fs::create_dir(&p);
 
             match dir_created {
                 Err(ex) => {
-                    Err(format!("Cannot create directory: {}! Error: {}", p.display(), ex.to_string()).into())
+                    Err(trans.gettext_fmt("Cannot create directory: {0}! Error: {1}", vec![&p.display().to_string(), &ex.to_string()]).into())
                 },
                 _ => Ok(())
             }
@@ -172,19 +173,19 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, container_image_name: 
     if let Some(container_rt) = common::container_runtime_path() {
         let mut ensure_image_args = vec!["inspect", &container_image_name];
 
-        tx.send(printer.print(1, l10n.get_message("container-msg-image-check-exists")))?;
+        tx.send(printer.print(1, trans.gettext("Checking if container image exists")))?;
 
-        if let Err(ex) = exec_crt_command(container_rt.clone(), ensure_image_args, log_format.clone(), tx.clone(), false, l10n.clone()) {
-            tx.send(printer.print(1, format!("{} {}.", l10n.get_message("container-msg-image-missing"), ex.to_string())))?;
+        if let Err(ex) = exec_crt_command(container_rt.clone(), ensure_image_args, log_format.clone(), tx.clone(), false, trans.clone()) {
+            tx.send(printer.print(1, trans.gettext_fmt("The container image was not found. {0}.", vec![&ex.to_string()])))?;
             ensure_image_args = vec!["pull", &container_image_name];
-            tx.send(printer.print(1, l10n.get_message("container-msg-image-download-wait")))?;
+            tx.send(printer.print(1, trans.gettext("Please wait, downloading image (roughly 600 MB).")))?;
 
-            if let Err(exe) = exec_crt_command(container_rt.clone(), ensure_image_args, log_format.clone(), tx.clone(), false, l10n.clone()) {
-                tx.send(printer.print(1, l10n.get_message("container-msg-image-download-failed")))?;
+            if let Err(exe) = exec_crt_command(container_rt.clone(), ensure_image_args, log_format.clone(), tx.clone(), false, trans.clone()) {
+                tx.send(printer.print(1, trans.gettext("Couldn't download container image!")))?;
                 return Err(exe.into());
             }
 
-            tx.send(printer.print(5, l10n.get_message("container-msg-image-download-completed")))?;
+            tx.send(printer.print(5, trans.gettext("Container image download completed...")))?;
         }
 
         let mut pixels_to_pdf_args = vec![];
@@ -199,21 +200,21 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, container_image_name: 
             None => env::temp_dir(),
         };
         dz_tmp.push("dangerzone");
-        mkdirp(dz_tmp.clone())?;
+        mkdirp(dz_tmp.clone(), trans.clone())?;
         cleanup_dir(dz_tmp.clone().to_path_buf())?;
 
         let mut dz_tmp_safe:PathBuf = dz_tmp.clone();
         dz_tmp_safe.push("safe");
-        mkdirp(dz_tmp_safe.clone())?;
+        mkdirp(dz_tmp_safe.clone(), trans.clone())?;
 
         let mut dz_tmp_pixels:PathBuf = dz_tmp.clone();
         dz_tmp_pixels.push("pixels");
-        mkdirp(dz_tmp_pixels.clone())?;
+        mkdirp(dz_tmp_pixels.clone(), trans.clone())?;
 
         let safedir_volume = &format!("{}:/safezone:z", dz_tmp_safe.display());
         let ocr_env = &format!("OCR={}", ocr);
         let ocr_language_env = &format!("OCR_LANGUAGE={}", ocr_language);
-        let locale_language_env = &format!("{}={}", l10n::ENV_VAR_DANGERZONE_LANGID, l10n.langid());
+        let locale_language_env = &format!("{}={}", l10n::ENV_VAR_DANGERZONE_LANGID, trans.langid());
 
         let logformat_env = &format!("LOG_FORMAT={}", log_format);
 
@@ -234,7 +235,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, container_image_name: 
             common::CONTAINER_IMAGE_EXE
         ]);
 
-        if let Ok(_) = exec_crt_command(container_rt, pixels_to_pdf_args, log_format, tx.clone(), true, l10n.clone()) {
+        if let Ok(_) = exec_crt_command(container_rt, pixels_to_pdf_args, log_format, tx.clone(), true, trans.clone()) {
             if output_path.exists() {
                 fs::remove_file(output_path.clone())?;
             }
@@ -250,23 +251,23 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, container_image_name: 
             let output_file = fs::File::open(output_path_clone)?;
             filetime::set_file_handle_times(&output_file, Some(atime), Some(atime))?;
 
-            if let Err(ex) = cleanup_dir(dz_tmp.clone().to_path_buf()) {
-                tx.send(printer.print(100, format!("{} {}! {}", l10n.get_message("container-msg-failed-to-cleanup-folder"), dz_tmp.clone().display(), ex.to_string())))?;
+            if let Err(ex) = cleanup_dir(dz_tmp.clone().to_path_buf()) {                
+                tx.send(printer.print(100, trans.gettext_fmt("Failed to cleanup temporary folder: {0}. {1}.", vec![&dz_tmp.clone().display().to_string(), &ex.to_string()])))?;
             }
             success = true;
         } else {
-            err_msg = l10n.get_message("container-msg-conversion-failed");
+            err_msg = trans.gettext("Conversion failed!");
         }
     } else {
-        err_msg.push_str(&l10n.get_message("container-msg-no-container-executable-found"));
+        err_msg.push_str(&trans.gettext("No container runtime executable found!"));
         err_msg.push_str("\n");
 
         if cfg!(any(target_os="windows")) {
-            err_msg.push_str(&l10n.get_message("container-msg-prompt-install-for-windows"));
+            err_msg.push_str(&trans.gettext("Please install Docker or Lima."));
         } else if cfg!(any(target_os="macos")) {
-            err_msg.push_str(&l10n.get_message("container-msg-prompt-install-for-linux"));
+            err_msg.push_str(&trans.gettext("container-msg-prompt-install-for-linux"));
         } else {
-            err_msg.push_str(&l10n.get_message("container-msg-prompt-install-for-linux"));
+            err_msg.push_str(&trans.gettext("Please install Podman."));
         }
     }
 

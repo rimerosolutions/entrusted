@@ -53,8 +53,7 @@ where T: Default + DeserializeOwned {
                 };
 
                 match ret {
-                    Err(ex) => {
-                        eprintln!("WARN: {}", ex.to_string());
+                    Err(_) => {
                         return Ok(T::default());
                     },
                     Ok(data) => {

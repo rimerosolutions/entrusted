@@ -18,59 +18,59 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-msgid "cmdline-help-host"
+msgid "Server host"
 msgstr "Hôte du serveur"
 
-msgid "cmdline-help-port"
+msgid "Server port"
 msgstr "Port du serveur"
 
-msgid "cmdline-help-container-image-name"
+msgid "Container image name"
 msgstr "Nom de l'image du conteneur"
 
-msgid "msg-download-from"
+msgid "Download from"
 msgstr "Télécharger à partir de"
 
-msgid "msg-could-not-find-notification-group-for"
+msgid "Could not find notification for"
 msgstr "Impossible de trouver la notification pour"
 
-msgid "msg-could-not-acquire-notifications-handle"
+msgid "Could not read notifications data"
 msgstr "Impossible de lire les notifications"
 
-msgid "msg-running-command"
+msgid "Running command"
 msgstr "Execution de la commande"
 
-msgid "msg-httperror-notfound"
+msgid "Resource not found"
 msgstr "Resource introuvable"
 
-msgid "msg-httperror-internalerror"
+msgid "Internal error"
 msgstr "Erreur interne"
 
-msgid "msg-could-not-read-input-file"
+msgid "Could not read input file"
 msgstr "Impossible de lire le fichier d'entrée"
 
-msgid "msg-could-not-delete-file"
+msgid "Could not delete file"
 msgstr "Impossible de supprimer le fichier"
 
-msgid "msg-processing-failure"
+msgid "Processing failure"
 msgstr "Échec du traitement"
 
-msgid "msg-missing-parameter-file"
+msgid "Missing 'file' in form data"
 msgstr "Paramètre de fichier binaire manquant"
 
-msgid "msg-missing-parameter-filename"
+msgid "Missing 'filename' in form data"
 msgstr "Paramètre de nom de fichier source manquant"
 
-msgid "msg-invalid-port-number"
+msgid "Invalid port number"
 msgstr "Numéro de port non valide"
 
-msgid "msg-missing-parameters"
+msgid "Runtime error, missing parameters!"
 msgstr "Erreur d'exécution, paramètres manquants!"
 
-msgid "msg-error-guess-mimetype"
+msgid "Mime type error! Does the input have a 'known' file extension?"
 msgstr "Erreur de type Mime! L'entrée a t-elle une extension de fichier connue?"
 
-msgid "msg-start-upload-with-refid"
+msgid "Starting file upload with reference ID"
 msgstr "Démarrage du téléchargement du fichier avec l'ID de référence"
 
-msgid "msg-starting-server-at"
+msgid "Starting server at address"
 msgstr "Démarrage du serveur à l'adresse"

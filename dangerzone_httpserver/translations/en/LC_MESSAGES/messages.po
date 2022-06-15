@@ -18,59 +18,59 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-msgid "cmdline-help-host"
-msgstr "Server host"
+msgid "Server host"
+msgstr ""
 
-msgid "cmdline-help-port"
-msgstr "Server port"
+msgid "Server port"
+msgstr ""
 
-msgid "cmdline-help-container-image-name"
-msgstr "Container image name"
+msgid "Container image name"
+msgstr ""
 
-msgid "msg-download-from"
-msgstr "Download from"
+msgid "Download from"
+msgstr ""
 
-msgid "msg-could-not-find-notification-group-for"
-msgstr "Could not find notification for"
+msgid "Could not find notification for"
+msgstr ""
 
-msgid "msg-could-not-acquire-notifications-handle"
-msgstr "Could not read notifications data"
+msgid "Could not read notifications data"
+msgstr ""
 
-msgid "msg-running-command"
-msgstr "Running command"
+msgid "Running command"
+msgstr ""
 
-msgid "msg-httperror-notfound"
-msgstr "Resource not found"
+msgid "Resource not found"
+msgstr ""
 
-msgid "msg-httperror-internalerror"
-msgstr "Internal error"
+msgid "Internal error"
+msgstr ""
 
-msgid "msg-could-not-read-input-file"
-msgstr "Could not read input file"
+msgid "Could not read input file"
+msgstr ""
 
-msgid "msg-could-not-delete-file"
-msgstr "Could not delete file"
+msgid "Could not delete file"
+msgstr ""
 
-msgid "msg-processing-failure"
-msgstr "Processing failure"
+msgid "Processing failure"
+msgstr ""
 
-msgid "msg-missing-parameter-file"
-msgstr "Missing 'file' in form data"
+msgid "Missing 'file' in form data"
+msgstr ""
 
-msgid "msg-missing-parameter-filename"
-msgstr "Missing 'filename' in form data"
+msgid "Missing 'filename' in form data"
+msgstr ""
 
-msgid "msg-invalid-port-number"
-msgstr "Invalid port number"
+msgid "Invalid port number"
+msgstr ""
 
-msgid "msg-missing-parameters"
-msgstr "Runtime error, missing parameters!"
+msgid "Runtime error, missing parameters!"
+msgstr ""
 
-msgid "msg-error-guess-mimetype"
-msgstr "Mime type error! Does the input have a 'known' file extension?"
+msgid "Mime type error! Does the input have a 'known' file extension?"
+msgstr ""
 
-msgid "msg-start-upload-with-refid"
-msgstr "Starting file upload with reference ID"
+msgid "Starting file upload with reference ID"
+msgstr ""
 
-msgid "msg-starting-server-at"
-msgstr "Starting server at address"
+msgid "Starting server at address"
+msgstr ""

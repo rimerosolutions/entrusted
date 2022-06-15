@@ -64,10 +64,7 @@ impl Clone for Box<dyn Translations> {
     }
 }
 
-pub fn new_translations(requested_locale: String) -> Box<dyn Translations + Send + Sync> {
-    let catalog_per_langid = CATALOG_PER_LOCALE.lock().unwrap();
-    let keys: Vec<String> = catalog_per_langid.keys().cloned().collect();
-
+pub fn negotiate_langid(requested_locale: String, keys: Vec<String>) -> String {    
     let requested = convert_vec_str_to_langids_lossy(&[requested_locale]);
     let available = convert_vec_str_to_langids_lossy(&keys);
     let default: LanguageIdentifier = DEFAULT_LANGID.parse().expect("Parsing default language failed!");
@@ -80,6 +77,14 @@ pub fn new_translations(requested_locale: String) -> Box<dyn Translations + Send
     );
 
     let locale = supported[0].to_string();
+
+    locale
+}
+
+pub fn new_translations(requested_locale: String) -> Box<dyn Translations + Send + Sync> {
+    let catalog_per_langid = CATALOG_PER_LOCALE.lock().unwrap();
+    let keys: Vec<String> = catalog_per_langid.keys().cloned().collect();
+    let locale = negotiate_langid(requested_locale, keys);
     let catalog = catalog_per_langid[&locale].clone();
 
     Box::new(GettextTranslations { locale, catalog })

@@ -2,6 +2,13 @@
 name = "dangerzone_l10n"
 version = "0.1.2"
 edition = "2021"
+description = "Dangerzone l10n library" 
+keywords = ["dangerzone", "l10n"]
+license = "GPL"
+repository = "https://github.com/rimerosolutions/dangerzone-rust"
+authors = [
+	"Yves Zoundi <yves_zoundi@hotmail.com>"
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

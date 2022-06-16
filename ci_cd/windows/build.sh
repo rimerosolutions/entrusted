@@ -19,7 +19,7 @@ rm -rf ${PROJECTDIR}/dangerzone_httpserver/target
 cd ${PROJECTDIR}
 
 echo "Building dangerzone_client"
-podman run --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:1.60.0 sh -c "cd /src/dangerzone_client && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu"
+podman --rm run --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:1.60.0 sh -c "cd /src/dangerzone_client && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu"
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Failure"
@@ -30,7 +30,7 @@ cp ${PROJECTDIR}/dangerzone_client/target/x86_64-pc-windows-gnu/release/dangerzo
 
 
 echo "Building dangerzone_httpserver"
-podman run --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:1.60.0 sh -c "cd /src/dangerzone_httpserver && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu"
+podman --rm run --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:1.60.0 sh -c "cd /src/dangerzone_httpserver && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu"
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Failure"
@@ -39,7 +39,7 @@ fi
 cp ${PROJECTDIR}/dangerzone_httpserver/target/x86_64-pc-windows-gnu/release/dangerzone-httpserver.exe ${ARTIFACTSDIR}/
 
 echo "Building dangerzone_httpclient"
-podman run --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:1.60.0 sh -c "cd /src/dangerzone_httpclient && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu"
+podman run --rm --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:1.60.0 sh -c "cd /src/dangerzone_httpclient && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu"
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Failure"

@@ -463,12 +463,16 @@ fn elapsed_time_string(millis: u128, l10n: Box<dyn l10n::Translations + Send>) -
 
     let l10n_keys_singular = vec!["hour", "minute", "second"];
     let l10n_keys_plural = vec!["hours", "minutes", "seconds"];
-    let values = vec![hours, minutes, seconds];
+    let values = vec![hours, minutes, seconds];    
 
     let mut ret = String::new();
-
-    for i in 0..values.len() {            
+    let n = values.len();
+    
+    for i in 0..n {            
         ret.push_str(&l10n.ngettext(l10n_keys_singular[i], l10n_keys_plural[i], values[i] as u64));
+        if i != n - 1 {
+            ret.push_str(" ");
+        }
     }
     
     ret
@@ -797,7 +801,7 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: Progress
     // step 5/7 Merge objects
     step_num += 1;
     progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
-    logger.log(progress_value, format!("++ {}", l10n.gettext("Combining PDF objects")));
+    logger.log(progress_value, l10n.gettext("Combining PDF objects"));
 
     if let (Some(catalog_object), Some(pages_object)) = (catalog_object, pages_object) {
         // Build a new "Pages" with updated fields
@@ -852,13 +856,13 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: Progress
     // step 6/7 Compress the document
     step_num += 1;
     progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
-    logger.log(progress_value, format!("++ {}", l10n.gettext("Compressing PDF")));
+    logger.log(progress_value, l10n.gettext("Compressing PDF"));
     document.compress();
 
     // step 7/7 Save the merged PDF
     step_num += 1;
     progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
-    logger.log(progress_value, format!("++ {}", l10n.gettext("Saving PDF")));
+    logger.log(progress_value, l10n.gettext("Saving PDF"));
     document.save(output_path)?;
 
     Ok(())

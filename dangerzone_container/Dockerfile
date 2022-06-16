@@ -19,7 +19,7 @@ RUN apk -U upgrade && \
 
 WORKDIR /home/rust/dangerzone-container
 COPY . .
-RUN cargo install --path .
+RUN cargo install --path dangerzone_container
 
 FROM docker.io/alpine:latest
 

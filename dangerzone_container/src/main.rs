@@ -31,7 +31,6 @@ macro_rules! incl_gettext_files {
             $(
                 let data = include_bytes!(concat!("../translations/", $x, "/LC_MESSAGES/messages.mo")).as_slice();
                 ret.insert($x, data);
-
             )*
 
                 ret

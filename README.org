@@ -18,14 +18,14 @@ This is not a mature project and there are [[./ROADMAP.org][couple of pending TO
 
 This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation purposes (/not an exact port/).
 - Similarly to the original Dangerzone tool, documents or images are converted inside a "sandbox"
-- Translated content whenever possible (for English and French so far)
-- Support for batch conversions (sequential conversions for now)
-- Optional Web interface that can act as an "online service" (multi-tenancy)
-- Transparent support for large files (avoid timeouts or other user-visible issues)
-- Live CD user experience for both enhanced security and convenience (=http://ip_address:13000=):
+- Text is translated whenever possible (English and French so far)
+- Documents can be converted in batch (sequential conversions for now)
+- There's an optional Web interface that can act as an "online service" (multi-tenancy)
+- The support for large/complex documents is transparent (avoid timeouts or other user-visible issues)
+- The live CD provides both enhanced security and convenience:
+  - Pre-installed [[https://xebia.com/blog/podman-the-free-container-engine-alternative-to-docker/][container solution]], with no required user configuration ([[./dangerzone_httpserver][dangerzone_httpserver]])
   - Extra isolation layer with a virtual machine
-  - Pre-installed [[https://xebia.com/blog/podman-the-free-container-engine-alternative-to-docker/][container solution]] with no required user configuration ([[./dangerzone_httpserver][dangerzone_httpserver]])
-- [[https://www.docker.com/products/docker-desktop/][Docker]] dependency alternative on Mac OS, via [[https://github.com/lima-vm/lima][Lima]]
+- On Mac OS, you're not constrained to [[https://www.docker.com/products/docker-desktop/][Docker]] with [[https://github.com/lima-vm/lima][Lima]] as a viable alternative
     
 * What is available?
 
@@ -94,30 +94,3 @@ Below is a high-level architecture overview, the solution relies on a container 
 Conversions will fail if the container solution is not running or available in your [[https://www.java.com/en/download/help/path.html]["PATH settings"]]:
   - The tool doesn't attempt to modify software on your machine (install Docker or other programs)
   - The tool doesn't manage other software running on your machine (start or stop services)
-
-* What are the differences with Dangerzone?
-
-This project is more of a hobby at this point: it lacks testing, maturity and few features.
-
-** The good
-
-|------------------------------------------+-----------------------------------------------------------------|
-| Topic                                    | Details                                                         |
-|------------------------------------------+-----------------------------------------------------------------|
-| *Likely faster processing*               | Programming language difference and "1-step" conversion process |
-| *Online service*                         | HTTP server with a minimal lightweight Web interface            |
-| *Docker alternative on Mac OS*           | [[https://github.com/lima-vm/lima][Lima]] was tested (Only support for "default instance")           |
-| *Less likelihood of conversion timeouts* | There's only one external program involved (=LibreOffice=)      |
-|------------------------------------------+-----------------------------------------------------------------|
-  
-** The ugly
-
-|------------------------------------------+-----------------------------------------------------------|
-| Topic                                    | Details                                                   |
-|------------------------------------------+-----------------------------------------------------------|
-| *Likely less secure than the dangerzone* | 1 step conversion process, instead of 2 steps             |
-| *This is mostly an experiment*           | Not heavily tested, even if I use =dangerzone-rust= daily |
-| *Not the best code*                      | I barely /know/ =Rust=, in comparison to let's say =Java= |
-| *Incomplete*                             | UI and code polishing, probably several "obvious things"  |
-|------------------------------------------+-----------------------------------------------------------|
-

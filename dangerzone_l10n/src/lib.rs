@@ -131,6 +131,8 @@ impl Translations for GettextTranslations {
     }
 }
 
+// copy paste a subset of https://github.com/woboq/tr/
+// Need dynamic evaluation for translation placeholder arguments
 mod runtime_format {
     pub struct FormatArg<'a> {
         #[doc(hidden)]

@@ -30,20 +30,18 @@
   - [X] Add DMG image for Mac OS, with the ability to still invoke external programs
   - [X] Add software installer for Windows via [[https://nsis.sourceforge.io/Main_Page][NSIS]] for now
 - [X] Support application preferences ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral15][spiral15 branch]])
-- [X] Add infrastructure for message translations: English and French for now ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral15][spiral16 branch]])  
-- [ ] Create artwork and rename the GitHub project
-- [ ] Cancellable conversions for those that haven't started yet
-- [ ] Custom output location for individual documents in the conversion queue
-- [ ] Support for password-protected PDF files
-  - Switch to [[https://manpages.ubuntu.com/manpages/bionic/man1/doc2odt.1.html][unoconv]] instead of the plain Libreoffice executable
-  - Review again alternatives in either Java and/or Rust (Java-Rust-Integration)
-- [ ] etc.
+- [X] Add infrastructure for message translations: English and French for now ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral16][spiral16 branch]])  
+- [ ] Minor code cleanup, create artwork and rename the GitHub project ([[https://github.com/rimerosolutions/dangerzone-rust/tree/spiral17][spiral17 branch]])  
+- [ ] Create Youtube video and a blogpost
 
 * Other improvements
 
-- [ ] Better maintenance
+- [ ] Code maintenance
   - [ ] Add tests (unit & integration tests)
-  - [ ] Code cleanup and refactoring    
+  - [ ] Code cleanup and refactoring
+  - [ ] More idiomatic Rust code
+  - [ ] Simplify and clarify the code
+  - Adopt Git flow and delete all the spiral branches (this is not a tutorial format anymore - incremental delivery)    
 - [ ] Revisit removal of LibreOffice from the container
   - [ ] Previous attempt to integrate Java and Rust haven't been that successful
   - [ ] There aren't "great + complete + free" OpenDocument libraries in either Rust or Java
@@ -62,13 +60,14 @@
   - [ ] Review container execution options (podman vs podman-remote, security options, etc.)
   - [ ] Review some of the code and read few security-related articles
   - Revisit container solution alternatives: =AppArmor=, =firejail=, =bubblewrap=
-- [ ] Improved batch conversions
+- [ ] Improved conversions
   - [ ] Parallel conversions
   - [ ] Minimal resources management to avoid exhausting computer CPU and memory
+  - [ ] Cancellable conversions for those that haven't started yet
+  - [ ] Custom output location for individual documents in the conversion queue
+  - [ ] Support for password-protected PDF files    
 - [ ] Performance
   - [ ] Mime-type detection
     - [ ] Avoid reading entire files for mimetype detections
-    - [ ] Consider switching mime type libraries, but is there anything better?
-  - [ ] Code review
-  - [ ] There're probably too many redraw operations in the Desktop UI
-  
+    - [ ] Consider switching mime type libraries, but is there anything better?    
+      - [ ] There're probably too many redraw operations in the Desktop UI

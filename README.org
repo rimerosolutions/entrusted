@@ -40,28 +40,7 @@ There are 3 user interfaces ([[./dangerzone_client][Desktop and CLI]], [[./dange
 
 [[./images/screenshots.png]]
 
-** Key components
-
-Most users will open a document with the =dangerzone-client=:
-- This doesn't install a container runtime, but will display "useful" error messages when possible
-- This will automatically install the =dangerzone-container= (on demand) and generate a PDF
-
-|-----------------------+---------------------------------------------|
-| Component             | Purpose                                     |
-|-----------------------+---------------------------------------------|
-| [[./dangerzone_container][dangerzone_container]]  | Document processing "sandbox"               |
-| [[./dangerzone_client][dangerzone_client]]     | Command-line and graphical user interfaces  |
-| [[./dangerzone_httpserver][dangerzone_httpserver]] | Online service feature with a Web interface |
-| [[./dangerzone_httpclient][dangerzone_httpclient]] | Command-line client for the online service  |
-|-----------------------+---------------------------------------------|
-
-** Architecture overview
-
-Below is a high-level architecture overview, the solution relies on a container engine solution (i.e. [[https://www.docker.com/][Docker]]).
-
-[[./images/image.png]]
-
-* Where can I get it?
+** Download artifacts
 
 For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-rust/releases][releases page]] (64 bit operating systems).
 
@@ -79,6 +58,28 @@ For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-
 | =Live CD=        | =dangerzone-livecd-amd64-<version>.iso=  | Web interface deployed in VM |
 |------------------+------------------------------------------+------------------------------|
 
+** Key software components
+
+Most users will interact with the =dangerzone_client=, via its Desktop user interface:
+- This doesn't install a container runtime, but will display "useful" error messages when possible
+- This will automatically download a container image (~600 MB) and generate a PDF
+
+|-----------------------+---------------------------------------------|
+| Component             | Purpose                                     |
+|-----------------------+---------------------------------------------|
+| [[./dangerzone_container][dangerzone_container]]  | Document processing "sandbox"               |
+| [[./dangerzone_client][dangerzone_client]]     | Command-line and graphical user interfaces  |
+| [[./dangerzone_httpserver][dangerzone_httpserver]] | Online service feature with a Web interface |
+| [[./dangerzone_httpclient][dangerzone_httpclient]] | Command-line client for the online service  |
+| [[./dangerzone_l10n][dangerzone_l10n]]       | Shared library for translation features     |
+|-----------------------+---------------------------------------------|
+
+** Architecture overview
+
+Below is a high-level architecture overview, the solution relies on a container engine solution (i.e. [[https://www.docker.com/][Docker]]).
+
+[[./images/image.png]]
+
 
 * What is required?
 
@@ -90,13 +91,13 @@ For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-
   - For Windows, Docker is recommended
   - For Mac OS, /please/ use either Docker or Lima
 
-Conversions will fail if the container solution running or available in your [[https://www.java.com/en/download/help/path.html]["PATH settings"]]:
+Conversions will fail if the container solution is not running or available in your [[https://www.java.com/en/download/help/path.html]["PATH settings"]]:
   - The tool doesn't attempt to modify software on your machine (install Docker or other programs)
   - The tool doesn't manage other software running on your machine (start or stop services)
 
 * What are the differences with Dangerzone?
 
-This project is more of a hobby at this point: it lacks testing, maturity and several features.
+This project is more of a hobby at this point: it lacks testing, maturity and few features.
 
 ** The good
 

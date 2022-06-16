@@ -46,7 +46,7 @@ cp "${THIS_SCRIPTS_DIR}"/../../artifacts/dangerzone-linux*/dangerzone-httpserver
 
 test -f /tmp/live-dangerzone-container.tar && rm /tmp/live-dangerzone-container.tar
 
-podman build -f "${THIS_SCRIPTS_DIR}"/../../dangerzone_container/Dockerfile -t "docker.io/uycyjnzgntrn/dangerzone-converter:${DANGERZONE_VERSION}"
+podman build -t "docker.io/uycyjnzgntrn/dangerzone-converter:${DANGERZONE_VERSION}" "${THIS_SCRIPTS_DIR}/../../" -f "${THIS_SCRIPTS_DIR}/../../dangerzone_container/Dockerfile"
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Unable to build container image, please check for compilation errors!"

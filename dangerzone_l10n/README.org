@@ -10,8 +10,6 @@ This is a helper library that provides reusable code for dealing with translatio
   - Dealing with tokens substitution and passing parameters to translated content
   - The translation files themselves would need to updated, instead of attempting to add more abstraction overhead (file format changes)
 
-[[./images/architecture.png]]
-
 * What is required?
 
 The usual Rust toolchain is needed for builds. The code itself is used in other projects (=dangerzone_container=, =dangerzone_client=, =dangerzone_httpserver=, =dangerzone_httpclient=).

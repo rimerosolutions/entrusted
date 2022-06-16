@@ -19,7 +19,7 @@ rm -rf ${PROJECTDIR}/dangerzone_httpserver/target
 cd ${PROJECTDIR}
 
 echo "Building dangerzone_client"
-podman --rm run --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:1.60.0 sh -c "cd /src/dangerzone_client && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu"
+podman run --rm --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:1.60.0 sh -c "cd /src/dangerzone_client && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu"
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Failure"
@@ -30,7 +30,7 @@ cp ${PROJECTDIR}/dangerzone_client/target/x86_64-pc-windows-gnu/release/dangerzo
 
 
 echo "Building dangerzone_httpserver"
-podman --rm run --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:1.60.0 sh -c "cd /src/dangerzone_httpserver && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu"
+podman run --rm  --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:1.60.0 sh -c "cd /src/dangerzone_httpserver && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu"
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Failure"
@@ -50,7 +50,7 @@ cp ${PROJECTDIR}/dangerzone_httpclient/target/x86_64-pc-windows-gnu/release/dang
 echo "Generate windows installer"
 cp ${SCRIPTDIR}/installer.nsi ${ARTIFACTSDIR}/
 perl -pi -e "s/_APPVERSION_/${APPVERSION}/g" ${ARTIFACTSDIR}/installer.nsi
-podman run -v "${ARTIFACTSDIR}":/build docker.io/binfalse/nsis installer.nsi
+podman run --rm -v "${ARTIFACTSDIR}":/build docker.io/binfalse/nsis installer.nsi
 rm ${ARTIFACTSDIR}/installer.nsi
 mv ${ARTIFACTSDIR}/dangerzone-windows-amd64-${APPVERSION}.exe ${ARTIFACTSDIR}/../
 

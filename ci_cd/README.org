@@ -20,19 +20,19 @@ The current build server is a virtual machine running [[https://ubuntu.com/][Ubu
 
 * About Installers and Packages
 
-While it could be preferrable on Linux to have a native packages, it's time consuming (build, test, maintain/support):
-  - How many distros do you target?
+While it could be preferrable on Linux to have a native packages, it's time consuming (build, test & support):
+  - How many distributions do you target?
   - How much testing is required and for which versions of a particular Linux distribution?
-  - When you have a service, do you provide associated files for any possible [[https://en.wikipedia.org/wiki/Init][init system]]?
-  - What about =Flatpak= vs =Snap= vs =AppImage=? Easy, I chose =AppImage= because it's very straightforward and painless.
+  - When you have a /service/, do you provide associated files for any possible [[https://en.wikipedia.org/wiki/Init][init system]]?
+  - What about =Flatpak= vs =Snap= vs =AppImage=? =AppImage= was selected only for the purpose of building binaries that will work out of the box for most distributions
 
-The binaries are not signed yet (Windows & MacOS), if possible this should be done inside a container too, without having to switch between different machines.
+The binaries are not signed yet (Windows & Mac OS), if possible this should be done inside a container too, without having to switch between different machines.
 
 * Targeted Operating Systems
 
 * Linux 
 
-The GUI is built on a Centos 7 container image to achieve maximal [[https://stackoverflow.com/questions/1771366/binary-compatibility-between-linux-distributions][binary compatibility across Linux distributions]]
+The GUI is built on a Centos 7 container image to achieve maximal [[https://stackoverflow.com/questions/1771366/binary-compatibility-between-linux-distributions][binary compatibility across Linux distributions]]:
 - The GUI binary cannot be statically linked
 - The libc versions ([[https://www.etalabs.net/compare_libcs.html][GLibc and alternatives]]) vary significantly across distributions, preventing the apps to run
 
@@ -42,6 +42,8 @@ The GUI is built on a Centos 7 container image to achieve maximal [[https://stac
 
 The performance, binaries and other details hasn't been assessed, but this seems to be running just fine.
 
+The EXE installer is built with the good old NSIS because it's fairly simple and has been around for a very long time (documentation, familiarity with the tool from projects a while back).
+
 * Mac OS
 
 The performance, binaries and other details hasn't been assessed, but this seems to be running just fine.
@@ -49,4 +51,5 @@ The performance, binaries and other details hasn't been assessed, but this seems
 For the "app bundle", there might be better ways to run external programs (i.e. not by wrapping the app binary within a shell script)
 - https://developer.apple.com/documentation/xcode/embedding-a-helper-tool-in-a-sandboxed-app
 - https://stackoverflow.com/questions/27505022/open-another-mac-app
+
   

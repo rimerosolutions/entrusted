@@ -14,6 +14,13 @@ fi
 ARTIFACTSDIR="${PROJECTDIR}/artifacts/dangerzone-livecd-amd64-${DANGERZONE_VERSION}"
 echo "Building dangerzone version: ${DANGERZONE_VERSION}"
 
+echo "Cleanup software components build folders"
+rm -rf ${PROJECTDIR}/dangerzone_l10n/target
+rm -rf ${PROJECTDIR}/dangerzone_container/target
+rm -rf ${PROJECTDIR}/dangerzone_client/target
+rm -rf ${PROJECTDIR}/dangerzone_httpclient/target
+rm -rf ${PROJECTDIR}/dangerzone_httpserver/target
+
 mkdir -p "${ARTIFACTSDIR}"
 
 ROOT_SCRIPTS_DIR="$(realpath $(dirname "$0"))"

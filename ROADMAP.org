@@ -37,11 +37,10 @@
 * Other improvements
 
 - [ ] Code maintenance
-  - [ ] Add tests (unit & integration tests)
+  - [ ] Add automated tests (unit & integration)
   - [ ] Code cleanup and refactoring
   - [ ] More idiomatic Rust code
   - [ ] Simplify and clarify the code
-  - Adopt Git flow and delete all the spiral branches (this is not a tutorial format anymore - incremental delivery)    
 - [ ] Revisit removal of LibreOffice from the container
   - [ ] Previous attempt to integrate Java and Rust haven't been that successful
   - [ ] There aren't "great + complete + free" OpenDocument libraries in either Rust or Java
@@ -50,16 +49,17 @@
     - Even if decryption is possible from shell invocation, in memory operations are preferred    
 - [ ] Online Web Service
   - [ ] Serve Web UI translations at once, instead of a second request on page load
-  - [ ] Use the =Content-Language= header in response    
+  - [ ] Use the =Content-Language= header in response (translations)    
   - [ ] Revisit notifications SSE + HTTP2, for the "Online Service"
 - [ ] Investigate if specific support is required for Tails Linux    
 - [ ] CI/CD
   - [ ] Transition CI/CD scrips to Github actions or TravisCI or something else?
-  - [ ] Revisit Flatpak support and =flatpak-spawn=
+  - [ ] Revisit Flatpak support requirements and =flatpak-spawn=
+  - [ ] Adopt Git flow and delete all the spiral branches
 - [ ] Hardening
   - [ ] Review container execution options (podman vs podman-remote, security options, etc.)
   - [ ] Review some of the code and read few security-related articles
-  - Revisit container solution alternatives: =AppArmor=, =firejail=, =bubblewrap=
+  - [ ] Revisit container solution alternatives: =AppArmor=, =firejail=, =bubblewrap=
 - [ ] Improved conversions
   - [ ] Parallel conversions
   - [ ] Minimal resources management to avoid exhausting computer CPU and memory
@@ -70,4 +70,4 @@
   - [ ] Mime-type detection
     - [ ] Avoid reading entire files for mimetype detections
     - [ ] Consider switching mime type libraries, but is there anything better?    
-      - [ ] There're probably too many redraw operations in the Desktop UI
+  - [ ] There're probably too many redraw operations in the Desktop UI

@@ -1,0 +1,76 @@
+# POT Template for the entrusted_client module.
+# Copyright (C) 2020 Rimero Solutions Inc.
+# This file is distributed under the same GPL-3.0 License, same as Entrusted.
+# Yves Zoundi <yves_zoundi@hotmail.com>, 2022
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: entrusted-webserver\n"
+"Report-Msgid-Bugs-To: yves_zoundi@hotmail.com\n"
+"POT-Creation-Date: 2022-06-11 14:07-0400\n"
+"PO-Revision-Date: 2022-06-11 14:07-0400\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
+
+msgid "Server host"
+msgstr ""
+
+msgid "Server port"
+msgstr ""
+
+msgid "Container image name"
+msgstr ""
+
+msgid "Download from"
+msgstr ""
+
+msgid "Could not find notification for"
+msgstr ""
+
+msgid "Could not read notifications data"
+msgstr ""
+
+msgid "Running command"
+msgstr ""
+
+msgid "Resource not found"
+msgstr ""
+
+msgid "Internal error"
+msgstr ""
+
+msgid "Could not read input file"
+msgstr ""
+
+msgid "Could not delete file"
+msgstr ""
+
+msgid "Processing failure"
+msgstr ""
+
+msgid "Missing 'file' in form data"
+msgstr ""
+
+msgid "Missing 'filename' in form data"
+msgstr ""
+
+msgid "Invalid port number"
+msgstr ""
+
+msgid "Runtime error, missing parameters!"
+msgstr ""
+
+msgid "Mime type error! Does the input have a 'known' file extension?"
+msgstr ""
+
+msgid "Starting file upload with reference ID"
+msgstr ""
+
+msgid "Starting server at address"
+msgstr ""

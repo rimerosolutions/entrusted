@@ -1,4 +1,4 @@
-Dangerzone README
+Entrusted README
 ==============================
 
 * Requirements
@@ -12,11 +12,11 @@ Dangerzone README
 
 * About the binaries
 
-- "Dangerzone_GUI-x86_64.AppImage" is the graphical user interface (GUI)
-- "dangerzone-cli" is a CLI program that is the equivalent of the GUI in command-line mode
-- "dangerzone-httpserver" is a CLI program that provides a shared service for document conversions, it has a minimal Web interface
-- "dangerzone-httpclient" is a CLI program that communicates with "dangerzone-httpserver" via HTTP
+- "Entrusted_GUI-x86_64.AppImage" is the graphical user interface (GUI)
+- "entrusted-cli" is a CLI program that is the equivalent of the GUI in command-line mode
+- "entrusted-webserver" is a CLI program that provides a shared service for document conversions, it has a minimal Web interface
+- "entrusted-webclient" is a CLI program that communicates with "entrusted-webserver" via HTTP
 
 * References
 
-For more information, please visit the homepage: https://github.com/rimerosolutions/dangerzone-rust
+For more information, please visit the homepage: https://github.com/rimerosolutions/entrusted

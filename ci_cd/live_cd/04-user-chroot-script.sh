@@ -1,10 +1,10 @@
 #!/usr/bin/env sh
 set -x
 
-DANGERZONE_VERSION=$(cat /etc/dangerzone_release | head -1)
+ENTRUSTED_VERSION=$(cat /etc/entrusted_release | head -1)
 
 mkdir -p $HOME/.config/containers
 
-cat /files/home/dangerzone/.bashrc_append >> ~/.bashrc
+cat /files/home/entrusted/.bashrc_append >> ~/.bashrc
 
-podman run --rm docker-archive:/files/dangerzone-container.tar "docker.io/uycyjnzgntrn/dangerzone-converter:${DANGERZONE_VERSION}" cat /etc/os-release
+podman run --rm docker-archive:/files/entrusted-container.tar "docker.io/uycyjnzgntrn/entrusted_container:${ENTRUSTED_VERSION}" cat /etc/os-release

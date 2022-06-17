@@ -1,0 +1,88 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#~ # SOME DESCRIPTIVE TITLE.
+#~ # Copyright (C) YEAR Free Software Foundation, Inc.
+#~ # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#~ #
+#~ #, fuzzy
+#~ msgid ""
+#~ msgstr ""
+#~ "Project-Id-Version: entrusted-webserver \n"
+#~ "Report-Msgid-Bugs-To: yves_zoundi@hotmail.com\n"
+#~ "POT-Creation-Date: 2022-06-11 11:15-0500\n"
+#~ "POT-Revision-Date: 2022-06-11 11:15-0500\n"
+#~ "Last-Translator: Yves Zoundi <yves_zoundi@hotmail.com>\n"
+#~ "Language-Team: Yves Zoundi <yves_zoundi@hotmail.com>\n"
+#~ "Language:\n"
+#~ "MIME-Version: 1.0\n"
+#~ "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Server host"
+msgstr ""
+
+msgid "Server port"
+msgstr ""
+
+msgid "Container image name"
+msgstr ""
+
+msgid "Download from"
+msgstr ""
+
+msgid "Could not find notification for"
+msgstr ""
+
+msgid "Could not read notifications data"
+msgstr ""
+
+msgid "Running command"
+msgstr ""
+
+msgid "Resource not found"
+msgstr ""
+
+msgid "Internal error"
+msgstr ""
+
+msgid "Could not read input file"
+msgstr ""
+
+msgid "Could not delete file"
+msgstr ""
+
+msgid "Processing failure"
+msgstr ""
+
+msgid "Missing 'file' in form data"
+msgstr ""
+
+msgid "Missing 'filename' in form data"
+msgstr ""
+
+msgid "Invalid port number"
+msgstr ""
+
+msgid "Runtime error, missing parameters!"
+msgstr ""
+
+msgid "Mime type error! Does the input have a 'known' file extension?"
+msgstr ""
+
+msgid "Starting file upload with reference ID"
+msgstr ""
+
+msgid "Starting server at address"
+msgstr ""

@@ -2,7 +2,7 @@
 
 * Overview
 
-The live CD is based on [[https://www.debian.org/][Debian]] GNU Linux and aims to provide a relatively painless installation of =dangerzone-rust=.
+The live CD is based on [[https://www.debian.org/][Debian]] GNU Linux and aims to provide a relatively painless installation of =entrusted=.
 - It's not always that easy for many to install [[https://docs.docker.com/get-docker/][Docker]] or [[https://podman.io/getting-started/installation][Podman]] (Operating System or User specific issues)
 - You may not want to run Docker or Podman directly on your main machine: That translates into running the software inside a virtual machine
   
@@ -18,16 +18,16 @@ By default, the live CD allocates =75%= of the assigned RAM as free disk space.
 
 ** User journey
 
-- Download the live CD iso image from the [[https://github.com/rimerosolutions/dangerzone-rust/releases][GitHub releases page]]
+- Download the live CD iso image from the [[https://github.com/rimerosolutions/entrusted/releases][GitHub releases page]]
 - Boot the live CD iso from the virtualization solution of your choice ([[https://www.qemu.org/][QEMU]], [[https://www.virtualbox.org/wiki/Downloads][VirtualBox]], [[https://www.vmware.com/products/workstation-player.html][VmWare]], etc.)
-- Convert your documents via the =dangerzone-rust= online service (Web Interface): =http://ip_of_vm:13000=
+- Convert your documents via the =entrusted= online service (Web Interface): =http://ip_of_vm:13000=
   
 ** Build steps
 
 The steps below have been tested on [[https://www.debian.org/][Debian]] 11 (/bullseye/) and [[https://ubuntu.com/][Ubuntu]] 22.04 (/jammy/).
-- Clone the =dangerzone-rust= git repository from GitHub=rsync=, etc.)
+- Clone the =entrusted= git repository from GitHub=rsync=, etc.)
 - Run the =build.sh= script in this directory: =chmod +x build.sh && ./build.sh=
-- The resulting ISO image will be available at =$HOME/LIVE_BOOT/dangerzone-livecd-VERSION_NUMBER.iso=
+- The resulting ISO image will be available at =$HOME/LIVE_BOOT/entrusted-livecd-VERSION_NUMBER.iso=
 
   The Live CD ISO image size is roughly 1 GB.
   
@@ -52,9 +52,9 @@ Excerpt of the build process from a Debian VM.
 
 [[./images/live_postlogin.png]]
 
-* Dangerzone Web UI access
+* Entrusted Web UI access
 
-By default, the /Dangerzone Online Service/ is running on port =13000= and binds to all network interfaces (=0.0.0.0=).
+By default, the /Entrusted Online Service/ is running on port =13000= and binds to all network interfaces (=0.0.0.0=).
 
 You can access it from your machine =http://IP_ADDRESS_OF_VIRTUAL_MACHINE:13000=
 

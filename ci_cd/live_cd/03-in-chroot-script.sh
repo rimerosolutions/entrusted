@@ -1,10 +1,10 @@
 #!/usr/bin/env sh
 set -x
 
-DANGERZONE_VERSION=$(cat /etc/dangerzone_release | head -1)
+ENTRUSTED_VERSION=$(cat /etc/entrusted_release | head -1)
 
 echo "Setting up hostname"
-echo "dangerzone-livecd" > /etc/hostname
+echo "entrusted-livecd" > /etc/hostname
 
 # mkdir -p /etc/live
 # echo > /etc/live/boot.conf
@@ -44,21 +44,21 @@ apt clean
 echo "Setting up system files"
 cp /files/etc/iptables/rules.v4 /etc/iptables/
 cp /files/etc/doas.conf /etc/ && chmod 400 /etc/doas.conf
-cp /files/etc/systemd/system/dangerzone-httpserver.service /etc/systemd/system/
+cp /files/etc/systemd/system/entrusted-webserver.service /etc/systemd/system/
 
 
-echo "Creating dangerzone user"
-useradd -ms /bin/bash dangerzone
-usermod -G sudo dangerzone
+echo "Creating entrusted user"
+useradd -ms /bin/bash entrusted
+usermod -G sudo entrusted
 
-echo "Creating dangerzone user files and pulling container image"
-/usr/sbin/runuser -l dangerzone -c "/files/04-user-chroot-script.sh ${DANGERZONE_VERSION}"
+echo "Creating entrusted user files and pulling container image"
+/usr/sbin/runuser -l entrusted -c "/files/04-user-chroot-script.sh ${ENTRUSTED_VERSION}"
 
-echo "Copying dangerzone binaries"
-mv /files/dangerzone-httpserver /files/dangerzone-cli /usr/local/bin
-cp /files/usr/local/bin/dangerzone-fw-enable /usr/local/bin/dangerzone-fw-enable
-cp /files/usr/local/bin/dangerzone-fw-disable /usr/local/bin/dangerzone-fw-disable
-chmod +x /usr/local/bin/dangerzone-*
+echo "Copying entrusted binaries"
+mv /files/entrusted-webserver /files/entrusted-cli /usr/local/bin
+cp /files/usr/local/bin/entrusted-fw-enable /usr/local/bin/entrusted-fw-enable
+cp /files/usr/local/bin/entrusted-fw-disable /usr/local/bin/entrusted-fw-disable
+chmod +x /usr/local/bin/entrusted-*
 
 echo "Updating default screen messages"
 cp /files/etc/motd /etc/motd
@@ -67,14 +67,14 @@ cp /files/usr/share/containers/containers.conf /usr/share/containers/containers.
 
 echo "Updating passwords"
 echo 'root:root' | /usr/sbin/chpasswd
-echo 'dangerzone:dangerzone' | /usr/sbin/chpasswd
+echo 'entrusted:entrusted' | /usr/sbin/chpasswd
 
 echo "Enabling default services"
 systemctl enable ssh
 systemctl enable NetworkManager
 systemctl enable netfilter-persistent
 systemctl enable systemd-networkd
-systemctl enable dangerzone-httpserver
+systemctl enable entrusted-webserver
 
 rm -rf /files
 

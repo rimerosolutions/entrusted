@@ -12,17 +12,17 @@ Var SMDir
 !insertmacro MUI_LANGUAGE "English"
 
 ; The name of the installer
-Name "Dangerzone"
+Name "Entrusted"
 
 ; The setup filename
-OutFile "dangerzone-windows-amd64-_APPVERSION_.exe"
+OutFile "entrusted-windows-amd64-_APPVERSION_.exe"
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\Dangerzone
+InstallDir $PROGRAMFILES\Entrusted
 
 ; Registry key to check for directory (so if you install again, it will
 ; overwrite the old one automatically)
-InstallDirRegKey HKLM "Software\Dangerzone" "Install_Dir"
+InstallDirRegKey HKLM "Software\Entrusted" "Install_Dir"
 
 ; For removing Start Menu shortcut in Windows 7
 RequestExecutionLevel admin
@@ -31,27 +31,27 @@ UninstPage uninstConfirm
 UninstPage instfiles
 
 ; start default section
-Section "Install Dangerzone"
+Section "Install Entrusted"
 
   SectionIn RO
 
   ; set the installation directory as the destination for the following actions
   SetOutPath $INSTDIR
 
-  File dangerzone-cli.exe
-  File dangerzone-gui.exe
-  File dangerzone-httpclient.exe
-  File dangerzone-httpserver.exe
+  File entrusted-cli.exe
+  File entrusted-gui.exe
+  File entrusted-webclient.exe
+  File entrusted-webserver.exe
   File LICENSE.txt
 
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\YOURPROGRAM "Install_Dir" "$INSTDIR"
 
   ; Write the uninstall keys for Windows
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Dangerzone" "DisplayName" "Dangerzone"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Dangerzone" "UninstallString" '"$INSTDIR\uninstall.exe"'
-  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Dangerzone" "NoModify" 1
-  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Dangerzone" "NoRepair" 1
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Entrusted" "DisplayName" "Entrusted"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Entrusted" "UninstallString" '"$INSTDIR\uninstall.exe"'
+  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Entrusted" "NoModify" 1
+  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Entrusted" "NoRepair" 1
   WriteUninstaller "$INSTDIR\uninstall.exe"
 SectionEnd
 
@@ -59,9 +59,9 @@ SectionEnd
 Section -StartMenu
   !insertmacro MUI_STARTMENU_WRITE_BEGIN 0 ;This macro sets $SMDir and skips to MUI_STARTMENU_WRITE_END if the "Don't create shortcuts" checkbox is checked... 
 
-  CreateDirectory "$SMPROGRAMS\Dangerzone"
-  CreateShortcut "$SMPROGRAMS\Dangerzone\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
-  CreateShortcut "$SMPROGRAMS\Dangerzone\Dangerzone.lnk" "$INSTDIR\dangerzone-gui.exe" "" "$INSTDIR\dangerzone-gui.exe" 0
+  CreateDirectory "$SMPROGRAMS\Entrusted"
+  CreateShortcut "$SMPROGRAMS\Entrusted\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
+  CreateShortcut "$SMPROGRAMS\Entrusted\Entrusted.lnk" "$INSTDIR\entrusted-gui.exe" "" "$INSTDIR\entrusted-gui.exe" 0
 
   !insertmacro MUI_STARTMENU_WRITE_END
 SectionEnd
@@ -69,18 +69,18 @@ SectionEnd
 ; uninstaller section
 Section -Uninstall
   ; Remove registry keys
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Dangerzone"
-  DeleteRegKey HKLM SOFTWARE\Dangerzone  
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Entrusted"
+  DeleteRegKey HKLM SOFTWARE\Entrusted  
 
-  Delete $INSTDIR\dangerzone-cli.exe
-  Delete $INSTDIR\dangerzone-gui.exe
-  Delete $INSTDIR\dangerzone-httpclient.exe
-  Delete $INSTDIR\dangerzone-httpserver.exe
+  Delete $INSTDIR\entrusted-cli.exe
+  Delete $INSTDIR\entrusted-gui.exe
+  Delete $INSTDIR\entrusted-webclient.exe
+  Delete $INSTDIR\entrusted-webserver.exe
   Delete $INSTDIR\LICENSE.txt
   Delete $INSTDIR\uninstaller.exe
 
-  Delete "$SMPROGRAMS\Dangerzone\*.*"
-  RMDir "$SMPROGRAMS\Dangerzone"
+  Delete "$SMPROGRAMS\Entrusted\*.*"
+  RMDir "$SMPROGRAMS\Entrusted"
 
   RMDir $INSTDIR
 SectionEnd

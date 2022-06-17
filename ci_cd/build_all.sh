@@ -8,7 +8,7 @@ test -d "${ROOT_SCRIPTDIR}/../packages"  && rm -rf ${ROOT_SCRIPTDIR}/../packages
 test -d "${ROOT_SCRIPTDIR}/../artifacts" && rm -rf ${ROOT_SCRIPTDIR}/../artifacts
 
 mkdir -p ${ROOT_SCRIPTDIR}/../packages
-sh ${ROOT_SCRIPTDIR}/darwin/build.sh
+sh ${ROOT_SCRIPTDIR}/macos/build.sh
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "MacOS build failure"

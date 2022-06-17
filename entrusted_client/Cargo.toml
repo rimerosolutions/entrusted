@@ -1,0 +1,49 @@
+[package]
+name = "entrusted-client"
+version = "0.1.3"
+edition = "2018"
+description = "Entrusted client" 
+keywords = ["entrusted", "client"]
+license = "GPL"
+repository = "https://github.com/rimerosolutions/entrusted"
+authors = [
+	"Yves Zoundi <yves_zoundi@hotmail.com>"
+]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+once_cell = "1.10.0"
+clap = "2.33.3"
+which = "4.2.2"
+filetime = "0.2"
+serde = { version = "1.0.136", features = ["derive"] }
+serde_json = "1.0.79"
+indicatif = "0.16.2"
+dirs = "4.0.0"
+toml = "0.5.9"
+fltk = { version = "1.3.8", features = ["fltk-bundled"] }
+entrusted_l10n = { path = "../entrusted_l10n" }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+freedesktop_entry_parser = "1.2.0"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+core-services = "0.2.0"
+core-foundation = "0.9.1"
+percent-encoding = "2.1.0"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+winreg = "0.9.0"
+
+[build-dependencies]
+embed-resource = "1.7.2"
+polib = "0.1.0"
+
+[[bin]]
+name = "entrusted-cli"
+path = "src/main_cli.rs"
+
+[[bin]]
+name = "entrusted-gui"
+path = "src/main_gui.rs"

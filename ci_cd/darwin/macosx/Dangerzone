@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-
-${SHELL} -l -c "$(dirname "$0")"/dangerzone-gui

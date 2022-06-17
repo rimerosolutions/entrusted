@@ -4,29 +4,29 @@ set -x
 PREVIOUSDIR="$(echo $PWD)"
 SCRIPTDIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${SCRIPTDIR}/../..)"
-APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' ${PROJECTDIR}/dangerzone_client/Cargo.toml)
+APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' ${PROJECTDIR}/entrusted_client/Cargo.toml)
 
-DANGERZONE_VERSION="${APPVERSION}"
+ENTRUSTED_VERSION="${APPVERSION}"
 
 if [ -n "$1" ]; then  
-  DANGERZONE_VERSION=$1
+  ENTRUSTED_VERSION=$1
 fi
-ARTIFACTSDIR="${PROJECTDIR}/artifacts/dangerzone-livecd-amd64-${DANGERZONE_VERSION}"
-echo "Building dangerzone version: ${DANGERZONE_VERSION}"
+ARTIFACTSDIR="${PROJECTDIR}/artifacts/entrusted-livecd-amd64-${ENTRUSTED_VERSION}"
+echo "Building entrusted version: ${ENTRUSTED_VERSION}"
 
 echo "Cleanup software components build folders"
-rm -rf ${PROJECTDIR}/dangerzone_l10n/target
-rm -rf ${PROJECTDIR}/dangerzone_container/target
-rm -rf ${PROJECTDIR}/dangerzone_client/target
-rm -rf ${PROJECTDIR}/dangerzone_httpclient/target
-rm -rf ${PROJECTDIR}/dangerzone_httpserver/target
+rm -rf ${PROJECTDIR}/entrusted_l10n/target
+rm -rf ${PROJECTDIR}/entrusted_container/target
+rm -rf ${PROJECTDIR}/entrusted_client/target
+rm -rf ${PROJECTDIR}/entrusted_webclient/target
+rm -rf ${PROJECTDIR}/entrusted_webserver/target
 
 mkdir -p "${ARTIFACTSDIR}"
 
 ROOT_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
 chmod +x "${ROOT_SCRIPTS_DIR}"/*.sh
 
-"${ROOT_SCRIPTS_DIR}"/01-pre-chroot-script.sh "${DANGERZONE_VERSION}"
+"${ROOT_SCRIPTS_DIR}"/01-pre-chroot-script.sh "${ENTRUSTED_VERSION}"
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Failed to prepare build system"

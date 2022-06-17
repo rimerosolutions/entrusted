@@ -7,15 +7,15 @@ individual files in /usr/share/doc/*/copyright.
 Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent 
 permitted by applicable law. 
  
--------- DANGERZONE LIVE CD -------- 
+-------- ENTRUSTED LIVE CD -------- 
  
-This is a live CD of dangerzone-rust 
+This is a live CD of entrusted
 - 'doas' is installed instead of 'sudo', the general usage is similar 
-- Standard service management: systemctl <action> dangerzone-httpserver 
+- Standard service management: systemctl <action> entrusted-webserver 
 - The relevant binaries are in /usr/local/bin 
 - By default the server binds to ALL interfaces on port 13000 
 - The Web interface is available at http://127.0.0.1:13000
 - By default internet connectivity is forbidden 
-  - As root, run 'dangerzone-fw-disable' to allow internet access 
-  - As root, run 'dangerzone-fw-enable' to restore firewall rules
+  - As root, run 'entrusted-fw-disable' to allow internet access 
+  - As root, run 'entrusted-fw-enable' to restore firewall rules
 

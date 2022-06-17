@@ -12,7 +12,7 @@ General steps:
   - You can test the live CD ISO image with a tool such as [[https://www.qemu.org/][QEMU]] or the software of your choice
 - Merge the current branch into the =main= branch, and push the changes
 - Tag the main branch with the new =release version= (i.e. =1.1.1=) and push the changes
-- Push the container image to [[https://hub.docker.com/r/uycyjnzgntrn/dangerzone-converter][Docker Hub]] per [[./dangerzone_container/README.org][publishing instructions]]
+- Push the container image to [[https://hub.docker.com/r/uycyjnzgntrn/entrusted_container][Docker Hub]] per [[./entrusted_container/README.org][publishing instructions]]
 - Create a new release from the GitHub Web interface:
   - Add the release notes
   - Upload all release artifacts (=exe=, =dmg=, =zip=, =tar= and =iso= files)

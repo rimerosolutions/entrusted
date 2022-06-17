@@ -1,0 +1,79 @@
+
+The notes below apply to *Linux* based systems for running =entrusted-webserver= as a service.
+- Under windows, [[https://github.com/winsw/winsw][winsw]] seems appealing
+- Under MacOS, it's probably possible to plist files and such
+  - See https://webinstall.dev/serviceman/, for a typical =launchd.plist file=
+  - See https://superuser.com/questions/930389/how-to-start-a-service-using-mac-osxs-launchctl
+
+* Creating a Systemd service
+
+On most Linux distributions, [[https://www.freedesktop.org/wiki/Software/systemd/][systemd]] manages services.
+
+** Create the service
+
+Create a file in =/etc/systemd/system/entrusted-webserver.service= with the contents below.
+
+Please replace =REGULAR_NON_ROOT_USER_HERE= with a normal user ID on your system.
+
+#+begin_src conf-toml
+  [Unit]
+  Description=Entrusted HTTP server
+  After=network.target
+
+  [Service]
+  Type=simple
+  User=REGULAR_NON_ROOT_USER_HERE
+  ExecStart=/usr/local/bin/entrusted-http-server --host 0.0.0.0 --port 11000
+  Restart=always
+
+  [Install]
+  WantedBy=multi-user.target
+#+end_src
+
+** Enable the service
+
+#+begin_src sh
+  systemctl enable entrusted-webserver
+#+end_src
+
+
+** Start the service
+
+#+begin_src sh
+  systemctl start entrusted-webserver
+#+end_src
+
+* Creating an OpenRC service
+
+On systems such as [[https://www.alpinelinux.org/][Alpine Linux]], there's [[https://github.com/OpenRC/openrc/blob/master/user-guide.md][OpenRC]].
+- https://wiki.alpinelinux.org/wiki/OpenRC
+- https://github.com/OpenRC/openrc/blob/master/service-script-guide.md  
+
+** Create the service
+
+Create a file at =/etc/init.d/entrusted-webserver= with the contents below.
+
+Please replace =REGULAR_NON_ROOT_USER_HERE= with a normal user ID on your system.
+
+#+begin_src sh
+  #!/sbin/openrc-run
+
+  description="Entrusted HTTP server"
+  command="/usr/local/bin/entrusted-webserver"
+  command_args="--host 0.0.0.0 --port 11000"
+  command_user="REGULAR_NON_ROOT_USER_HERE"
+  command_background="yes"
+  pidfile="/var/run/$RC_SVCNAME.pid
+#+end_src
+
+** Enable the service
+
+#+begin_src sh
+  rc-update add entrusted-webserver default
+#+end_src
+
+** Start the service
+
+#+begin_src sh
+  rc-service entrusted-webserver start
+#+end_src

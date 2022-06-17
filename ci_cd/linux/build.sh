@@ -4,24 +4,24 @@ set -x
 PREVIOUSDIR="$(echo $PWD)"
 SCRIPTDIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${SCRIPTDIR}/../..)"
-APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' ${PROJECTDIR}/dangerzone_client/Cargo.toml)
-ARTIFACTSDIR="${PROJECTDIR}/artifacts/dangerzone-linux-amd64-${APPVERSION}"
+APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' ${PROJECTDIR}/entrusted_client/Cargo.toml)
+ARTIFACTSDIR="${PROJECTDIR}/artifacts/entrusted-linux-amd64-${APPVERSION}"
 
 mkdir -p ${ARTIFACTSDIR}
 
-rm -rf ${PROJECTDIR}/dangerzone_container/target
-rm -rf ${PROJECTDIR}/dangerzone_client/target
-rm -rf ${PROJECTDIR}/dangerzone_httpclient/target
-rm -rf ${PROJECTDIR}/dangerzone_httpserver/target
+rm -rf ${PROJECTDIR}/entrusted_container/target
+rm -rf ${PROJECTDIR}/entrusted_client/target
+rm -rf ${PROJECTDIR}/entrusted_webclient/target
+rm -rf ${PROJECTDIR}/entrusted_webserver/target
 
 cd ${PROJECTDIR}
 
-echo "Building dangerzone_client (dangerzone-gui)"
-cp -f ${PROJECTDIR}/images/Dangerzone.png ${SCRIPTDIR}/appdir/dangerzone-gui.png
+echo "Building entrusted_client (entrusted-gui)"
+cp -f ${PROJECTDIR}/images/Entrusted.png ${SCRIPTDIR}/appdir/entrusted-gui.png
 
-podman run --rm --privileged -v "${PROJECTDIR}":/src -v "${SCRIPTDIR}/appdir":/appdir -v "${PROJECTDIR}/artifacts":/artifacts docker.io/uycyjnzgntrn/rust-centos7:1.60.0 /bin/bash -c "ln -sf /usr/lib64/libfuse.so.2.9.2 /usr/lib/libfuse.so.2 && mkdir -p /appdir/usr/bin /appdir/usr/share/icons && cd /src/dangerzone_client && /root/.cargo/bin/cargo build --release --bin dangerzone-gui && cp target/release/dangerzone-gui /appdir/ && mv /appdir/dangerzone-gui.png /appdir/usr/share/icons/dangerzone-gui.png && ARCH=x86_64 linuxdeploy --appdir /appdir --desktop-file /appdir/dangerzone-gui.desktop --icon-filename /appdir/usr/share/icons/dangerzone-gui.png --output appimage && mv *zone*.AppImage /artifacts/dangerzone-linux-amd64-${APPVERSION}/ && rm -rf /appdir/usr && rm -rf /appdir/dangerzone-gui /appdir/dangerzone-gui.png /appdir/.DirIcon"
+podman run --rm --privileged -v "${PROJECTDIR}":/src -v "${SCRIPTDIR}/appdir":/appdir -v "${PROJECTDIR}/artifacts":/artifacts docker.io/uycyjnzgntrn/rust-centos7:1.60.0 /bin/bash -c "ln -sf /usr/lib64/libfuse.so.2.9.2 /usr/lib/libfuse.so.2 && mkdir -p /appdir/usr/bin /appdir/usr/share/icons && cd /src/entrusted_client && /root/.cargo/bin/cargo build --release --bin entrusted-gui && cp target/release/entrusted-gui /appdir/ && mv /appdir/entrusted-gui.png /appdir/usr/share/icons/entrusted-gui.png && ARCH=x86_64 linuxdeploy --appdir /appdir --desktop-file /appdir/entrusted-gui.desktop --icon-filename /appdir/usr/share/icons/entrusted-gui.png --output appimage && mv *zone*.AppImage /artifacts/entrusted-linux-amd64-${APPVERSION}/ && rm -rf /appdir/usr && rm -rf /appdir/entrusted-gui /appdir/entrusted-gui.png /appdir/.DirIcon"
 echo "Restoring old GUI Desktop file to discard appimagetool changes"
-cd ${PROJECTDIR} && git checkout ci_cd/linux/appdir/dangerzone-gui.desktop && cd -
+cd ${PROJECTDIR} && git checkout ci_cd/linux/appdir/entrusted-gui.desktop && cd -
 
 retVal=$?
 if [ $retVal -ne 0 ]; then
@@ -29,39 +29,39 @@ if [ $retVal -ne 0 ]; then
   exit 1
 fi
 
-echo "Building dangerzone_client (dangerzone-cli)"
+echo "Building entrusted_client (entrusted-cli)"
 cd ${PROJECTDIR}
-podman run --rm --volume "${PWD}":/root/src --workdir /root/src docker.io/joseluisq/rust-linux-darwin-builder:1.60.0 sh -c "RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /root/src/dangerzone_client/Cargo.toml --bin dangerzone-cli"
+podman run --rm --volume "${PWD}":/root/src --workdir /root/src docker.io/joseluisq/rust-linux-darwin-builder:1.60.0 sh -c "RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /root/src/entrusted_client/Cargo.toml --bin entrusted-cli"
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Failure"
   exit 1
 fi
-cp ${PROJECTDIR}/dangerzone_client/target/x86_64-unknown-linux-musl/release/dangerzone-cli ${ARTIFACTSDIR}
+cp ${PROJECTDIR}/entrusted_client/target/x86_64-unknown-linux-musl/release/entrusted-cli ${ARTIFACTSDIR}
 
-echo "Building dangerzone_httpserver"
+echo "Building entrusted_webserver"
 cd ${PROJECTDIR}
-podman run --rm --volume "${PWD}":/root/src --workdir /root/src docker.io/joseluisq/rust-linux-darwin-builder:1.60.0 sh -c "RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /root//src/dangerzone_httpserver/Cargo.toml"
+podman run --rm --volume "${PWD}":/root/src --workdir /root/src docker.io/joseluisq/rust-linux-darwin-builder:1.60.0 sh -c "RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /root//src/entrusted_webserver/Cargo.toml"
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Failure"
   exit 1
 fi
-cp ${PROJECTDIR}/dangerzone_httpserver/target/x86_64-unknown-linux-musl/release/dangerzone-httpserver ${ARTIFACTSDIR}
+cp ${PROJECTDIR}/entrusted_webserver/target/x86_64-unknown-linux-musl/release/entrusted-webserver ${ARTIFACTSDIR}
 
-echo "Building dangerzone_httpclient"
+echo "Building entrusted_webclient"
 cd ${PROJECTDIR}
-podman run --rm --volume "${PWD}":/root/src --workdir /root/src docker.io/joseluisq/rust-linux-darwin-builder:1.60.0 sh -c "RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /root/src/dangerzone_httpclient/Cargo.toml"
+podman run --rm --volume "${PWD}":/root/src --workdir /root/src docker.io/joseluisq/rust-linux-darwin-builder:1.60.0 sh -c "RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /root/src/entrusted_webclient/Cargo.toml"
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Failure"
   exit 1
 fi
-cp ${PROJECTDIR}/dangerzone_httpclient/target/x86_64-unknown-linux-musl/release/dangerzone-httpclient ${ARTIFACTSDIR}
+cp ${PROJECTDIR}/entrusted_webclient/target/x86_64-unknown-linux-musl/release/entrusted-webclient ${ARTIFACTSDIR}
 
-mv ${ARTIFACTSDIR}/*.AppImage ${ARTIFACTSDIR}/Dangerzone_GUI-x86_64.AppImage
+mv ${ARTIFACTSDIR}/*.AppImage ${ARTIFACTSDIR}/Entrusted_GUI-x86_64.AppImage
 cp ${SCRIPTDIR}/release_README.txt ${ARTIFACTSDIR}/README.txt
 
-cd ${ARTIFACTSDIR}/.. && tar cvf dangerzone-linux-amd64-${APPVERSION}.tar dangerzone-linux-amd64-${APPVERSION}
+cd ${ARTIFACTSDIR}/.. && tar cvf entrusted-linux-amd64-${APPVERSION}.tar entrusted-linux-amd64-${APPVERSION}
 
 cd ${SCRIPTDIR}

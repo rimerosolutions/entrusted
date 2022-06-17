@@ -1,0 +1,14 @@
+[Unit]
+Description=Entrusted HTTP server
+After=network.target
+
+[Service]
+Type=simple
+User=entrusted
+ExecStart=/usr/local/bin/entrusted-webserver --host 0.0.0.0 --port 13000
+StandardOutput=file:/tmp/entrusted-webserver-stdout.log
+StandardError=file:/tmp/entrusted-webserver-stderr.log
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

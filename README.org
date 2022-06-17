@@ -5,8 +5,8 @@ This is not a mature project and there are [[./ROADMAP.org][couple of pending TO
 * What is this?
 
 ** Overview
-
-=dangerzone-rust= allows converting "/potentially suspicious documents/" into safe and trusted PDFs, without worrying too much about viruses or evil macros.
+trustedpdf
+=entrusted= is a document sanitizer tool that converts "/potentially suspicious files/" into /safe PDFs/:
 - This is achieved by transforming documents inside a "lightweight sandbox" ([[https://www.ibm.com/cloud/learn/containerization][containerization]]): =containerization= itself does not provide absolute security guarantees...
 - Supported file formats include PDF, common image formats, Office documents ([[https://www.office.com/][Microsoft Office]] or [[https://www.libreoffice.org/discover/what-is-opendocument/][OpenDocument]]). For Office documents, supported is limited to text documents, spreadsheets and presentations.
 
@@ -16,14 +16,14 @@ This is not a mature project and there are [[./ROADMAP.org][couple of pending TO
 
 ** Features
 
-This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation purposes (/not an exact port/).
-- Similarly to the original Dangerzone tool, documents or images are converted inside a "sandbox"
+This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://entrusted.rocks/][Entrusted]], for experimentation purposes (/not an exact port/).
+- Similarly to the original Entrusted tool, documents or images are converted inside a "sandbox"
 - Text is translated whenever possible (English and French so far)
 - Documents can be converted in batch (sequential conversions for now)
 - There's an optional Web interface that can act as an "online service" (multi-tenancy)
 - The support for large/complex documents is transparent (avoid timeouts or other user-visible issues)
 - The live CD provides both enhanced security and convenience:
-  - Pre-installed [[https://xebia.com/blog/podman-the-free-container-engine-alternative-to-docker/][container solution]], with no required user configuration ([[./dangerzone_httpserver][dangerzone_httpserver]])
+  - Pre-installed [[https://xebia.com/blog/podman-the-free-container-engine-alternative-to-docker/][container solution]], with no required user configuration ([[./entrusted_webserver][entrusted_webserver]])
   - Extra isolation layer with a virtual machine
 - On Mac OS, you're not constrained to [[https://www.docker.com/products/docker-desktop/][Docker]] with [[https://github.com/lima-vm/lima][Lima]] as a viable alternative
     
@@ -31,7 +31,7 @@ This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dang
 
 ** User interfaces
 
-There are 3 user interfaces ([[./dangerzone_client][Desktop and CLI]], [[./dangerzone_httpserver][Web]])
+There are 3 user interfaces ([[./entrusted_client][Desktop and CLI]], [[./entrusted_webserver][Web]])
 - Most users will likely want the Desktop version
 - If you prefer the Web interface, please download the live CD ISO for an "out of the box non-involved user experience" (/unless you'd rather setup the Web server yourself/):
   - You can run the live CD with tools such as [[https://www.qemu.org/][QEMU]], [[https://www.virtualbox.org/wiki/Downloads][VirtualBox]], [[https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v][Hyper-V]], [[https://www.vmware.com/nl/products/workstation-player.html][VmWare]], [[https://www.parallels.com/][Parallels]], etc.
@@ -42,36 +42,36 @@ There are 3 user interfaces ([[./dangerzone_client][Desktop and CLI]], [[./dange
 
 ** Download artifacts
 
-For downloads, please visit the [[https://github.com/rimerosolutions/dangerzone-rust/releases][releases page]] (64 bit operating systems).
+For downloads, please visit the [[https://github.com/rimerosolutions/entrusted/releases][releases page]] (64 bit operating systems).
 
 |------------------+------------------------------------------+------------------------------|
 | Operating System | Artifact                                 | Description                  |
 |------------------+------------------------------------------+------------------------------|
-| =Linux=          | =dangerzone-linux-amd64-<version>.tar=   | Portable binaries            |
+| =Linux=          | =entrusted-linux-amd64-<version>.tar=   | Portable binaries            |
 |------------------+------------------------------------------+------------------------------|
-| =Mac OS=         | =dangerzone-darwin-amd64-<version>.dmg=  | Installer with the GUI       |
-|                  | =dangerzone-darwin-amd64-<version>.zip=  | Portable binaries            |
+| =Mac OS=         | =entrusted-macos-amd64-<version>.dmg=  | Installer with the GUI       |
+|                  | =entrusted-macos-amd64-<version>.zip=  | Portable binaries            |
 |------------------+------------------------------------------+------------------------------|
-| =MS Windows=     | =dangerzone-windows-amd64-<version>.exe= | Installer with all binaries  |
-|                  | =dangerzone-windows-amd64-<version>.zip= | Portable binaries            |
+| =MS Windows=     | =entrusted-windows-amd64-<version>.exe= | Installer with all binaries  |
+|                  | =entrusted-windows-amd64-<version>.zip= | Portable binaries            |
 |------------------+------------------------------------------+------------------------------|
-| =Live CD=        | =dangerzone-livecd-amd64-<version>.iso=  | Web interface deployed in VM |
+| =Live CD=        | =entrusted-livecd-amd64-<version>.iso=  | Web interface deployed in VM |
 |------------------+------------------------------------------+------------------------------|
 
 ** Key software components
 
-Most users will interact with the =dangerzone_client=, via its Desktop user interface:
+Most users will interact with the =entrusted_client=, via its Desktop user interface:
 - This doesn't install a container runtime, but will display "useful" error messages when possible
 - This will automatically download a container image (~600 MB) and generate a PDF
 
 |-----------------------+---------------------------------------------|
 | Component             | Purpose                                     |
 |-----------------------+---------------------------------------------|
-| [[./dangerzone_container][dangerzone_container]]  | Document processing "sandbox"               |
-| [[./dangerzone_client][dangerzone_client]]     | Command-line and graphical user interfaces  |
-| [[./dangerzone_httpserver][dangerzone_httpserver]] | Online service feature with a Web interface |
-| [[./dangerzone_httpclient][dangerzone_httpclient]] | Command-line client for the online service  |
-| [[./dangerzone_l10n][dangerzone_l10n]]       | Shared library for translation features     |
+| [[./entrusted_container][entrusted_container]]  | Document processing "sandbox"               |
+| [[./entrusted_client][entrusted_client]]     | Command-line and graphical user interfaces  |
+| [[./entrusted_webserver][entrusted_webserver]] | Online service feature with a Web interface |
+| [[./entrusted_webclient][entrusted_webclient]] | Command-line client for the online service  |
+| [[./entrusted_l10n][entrusted_l10n]]       | Shared library for translation features     |
 |-----------------------+---------------------------------------------|
 
 ** Architecture overview

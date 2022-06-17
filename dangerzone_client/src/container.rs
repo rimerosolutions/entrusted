@@ -46,7 +46,7 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str
         Box::new(JsonLogPrinter {})
     };
     
-    tx.send(printer.print(1, format!("\n[CMD_LOCAL]: {} {}", rt_executable, cmd.join(" "))))?;
+    tx.send(printer.print(1, trans.gettext_fmt("Command: {0}", vec![&format!("{} {}", rt_executable, cmd.join(" "))])))?;
 
     let mut child = Command::new(rt_executable)
         .args(cmd)

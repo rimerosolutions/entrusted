@@ -30,6 +30,9 @@ msgstr ""
 #~ "MIME-Version: 1.0\n"
 #~ "Content-Type: text/plain; charset=UTF-8"
 
+msgid "Command: {0}"
+msgstr ""
+
 msgid "No container runtime executable found!"
 msgstr ""
 

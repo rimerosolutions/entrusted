@@ -18,6 +18,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "Command: {0}"
+msgstr "Commande: {0}"
+
 msgid "No container runtime executable found!"
 msgstr "Aucun exécutable d'exécution de conteneur trouvé!"
 

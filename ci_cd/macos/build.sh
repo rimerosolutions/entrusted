@@ -79,21 +79,21 @@ mkdir -p ${APPBUNDLE}/Contents
 mkdir -p ${APPBUNDLE}/Contents/MacOS
 mkdir -p ${APPBUNDLE}/Contents/Resources
 
-convert -scale 16x16 macosx/${APPNAME}.png macosx/${APPNAME}_16_16.png
-convert -scale 32x32 macosx/${APPNAME}.png macosx/${APPNAME}_32_32.png
-convert -scale 128x128 macosx/${APPNAME}.png macosx/${APPNAME}_128_128.png
-convert -scale 256x256 macosx/${APPNAME}.png macosx/${APPNAME}_256_256.png
-convert -scale 512x512 macosx/${APPNAME}.png macosx/${APPNAME}_512_512.png
+convert -scale 16x16 macos/${APPNAME}.png macos/${APPNAME}_16_16.png
+convert -scale 32x32 macos/${APPNAME}.png macos/${APPNAME}_32_32.png
+convert -scale 128x128 macos/${APPNAME}.png macos/${APPNAME}_128_128.png
+convert -scale 256x256 macos/${APPNAME}.png macos/${APPNAME}_256_256.png
+convert -scale 512x512 macos/${APPNAME}.png macos/${APPNAME}_512_512.png
 
-cp macosx/Info.plist ${APPBUNDLECONTENTS}/
-cp macosx/PkgInfo ${APPBUNDLECONTENTS}/
-png2icns ${APPBUNDLEICON}/${APPNAME}.icns macosx/${APPNAME}_16_16.png macosx/${APPNAME}_32_32.png macosx/${APPNAME}_128_128.png macosx/${APPNAME}_256_256.png macosx/${APPNAME}_512_512.png
+cp macos/Info.plist ${APPBUNDLECONTENTS}/
+cp macos/PkgInfo ${APPBUNDLECONTENTS}/
+png2icns ${APPBUNDLEICON}/${APPNAME}.icns macos/${APPNAME}_16_16.png macos/${APPNAME}_32_32.png macos/${APPNAME}_128_128.png macos/${APPNAME}_256_256.png macos/${APPNAME}_512_512.png
 
-rm macosx/${APPNAME}_16_16.png macosx/${APPNAME}_32_32.png macosx/${APPNAME}_128_128.png macosx/${APPNAME}_256_256.png macosx/${APPNAME}_512_512.png
+rm macos/${APPNAME}_16_16.png macos/${APPNAME}_32_32.png macos/${APPNAME}_128_128.png macos/${APPNAME}_256_256.png macos/${APPNAME}_512_512.png
 
 cp ${PROJECTDIR}/entrusted_client/target/x86_64-apple-darwin/release/entrusted-cli ${APPBUNDLEEXE}/
 mv ${ARTIFACTSDIR}/entrusted-gui ${APPBUNDLEEXE}/
-cp macosx/${APPNAME}  ${APPBUNDLEEXE}/
+cp macos/${APPNAME}  ${APPBUNDLEEXE}/
 perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ${APPBUNDLECONTENTS}/Info.plist
 perl -pi -e "s/_APPVERSION_/${APPBUNDLEVERSION}/g" ${APPBUNDLECONTENTS}/Info.plist
 

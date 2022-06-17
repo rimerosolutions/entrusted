@@ -11,7 +11,7 @@ mkdir -p ${ROOT_SCRIPTDIR}/../packages
 sh ${ROOT_SCRIPTDIR}/macos/build.sh
 retVal=$?
 if [ $retVal -ne 0 ]; then
-	echo "MacOS build failure"
+	echo "Mac OS build failure"
   exit 1
 fi
 

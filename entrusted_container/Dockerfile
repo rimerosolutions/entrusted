@@ -23,6 +23,17 @@ RUN cargo install --path entrusted_container
 
 FROM docker.io/alpine:latest
 
+LABEL maintainer="Yves Zoundi, Rimero Solutions Inc."
+LABEL org.opencontainers.image.title="Entrusted document sanitizer container image"
+LABEL org.opencontainers.image.description="Conversion of potentially suspicious documents to trusted PDFs, inside a container"
+LABEL org.opencontainers.image.authors="Yves Zoundi"
+LABEL org.opencontainers.image.vendor="Rimero Solutions Inc."
+LABEL org.opencontainers.image.documentation="https://github.com/rimerosolutions/entrusted/tree/main/entrusted_container"
+LABEL org.opencontainers.image.licenses="GPLv3"
+LABEL org.opencontainers.image.version="0.1.3"
+LABEL org.opencontainers.image.url="https://github.com/rimerosolutions/entrusted/tree/main/entrusted_container"
+LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrusted.git"
+
 RUN apk -U upgrade && \
     apk add \
     leptonica-dev \

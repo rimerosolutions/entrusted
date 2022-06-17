@@ -46,7 +46,6 @@ cp /files/etc/iptables/rules.v4 /etc/iptables/
 cp /files/etc/doas.conf /etc/ && chmod 400 /etc/doas.conf
 cp /files/etc/systemd/system/entrusted-webserver.service /etc/systemd/system/
 
-
 echo "Creating entrusted user"
 useradd -ms /bin/bash entrusted
 usermod -G sudo entrusted

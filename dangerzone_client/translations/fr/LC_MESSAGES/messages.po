@@ -48,14 +48,14 @@ msgstr "Suffixe de fichier personnalisé"
 msgid "The safe PDF will be named <input>-<suffix>.pdf by default."
 msgstr "Le fichier adhère au format suivant: fichier-<suffixe>.pdf"
 
-msgid "Enable full-text search? Yes, with language:"
-msgstr "Activer la recherche en texte intégral? Oui, en:"
+msgid "Enable full-text search? In:"
+msgstr "Activer la recherche en texte intégral? En:"
 
 msgid "OCR (Optical character recognition) will be applied."
 msgstr "La ROC (reconnaissance optique de caractères) sera appliquée"
 
-msgid "Open document after conversion, using"
-msgstr "Ouvrir le document après la conversion, avec"
+msgid "Open resulting PDF with"
+msgstr "Ouvrir le PDF resultat avec"
 
 msgid "Automatically open resulting PDFs with a given program."
 msgstr "Ouvrir automatiquement le résultat de conversion avec"

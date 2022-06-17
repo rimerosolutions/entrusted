@@ -464,11 +464,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     top_group.set_spacing(WIDGET_GAP);
 
     let mut tabsettings_button = button::Button::default()
-        .with_size(80, 20)
+        .with_size(120, 20)
         .with_label(&trans.gettext("Settings"));
 
     let mut tabconvert_button = button::Button::default()
-        .with_size(80, 20)
+        .with_size(120, 20)
         .with_label(&trans.gettext("Convert"));
     top_group.end();
 
@@ -525,7 +525,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     ocrlang_pack.set_spacing(WIDGET_GAP);
     let mut ocrlang_checkbutton = button::CheckButton::default()
         .with_size(300, 20)
-        .with_label(&trans.gettext("Enable full-text search? Yes, with language:"));
+        .with_label(&trans.gettext("Enable full-text search? In:"));
     ocrlang_checkbutton.set_tooltip(
         &trans.gettext("OCR (Optical character recognition) will be applied."),
     );
@@ -591,7 +591,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_size(570, 40)
         .with_type(group::PackType::Horizontal);
     openwith_pack.set_spacing(WIDGET_GAP);
-    let mut openwith_checkbutton = button::CheckButton::default().with_size(295, 20).with_label(&trans.gettext("Open document after conversion, using"));
+    let mut openwith_checkbutton = button::CheckButton::default().with_size(295, 20).with_label(&trans.gettext("Open resulting PDF with"));
     openwith_checkbutton.set_tooltip(&trans.gettext("Automatically open resulting PDFs with a given program."));
 
     let pdf_apps_by_name = list_apps_for_pdfs();
@@ -789,13 +789,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let convert_pack_rc = Rc::new(RefCell::new(
         group::Pack::default()
             .with_pos(20, 20)
-            .with_size(600, 680)
+            .with_size(680, 680)
             .below_of(&top_group, WIDGET_GAP)
             .with_type(group::PackType::Vertical),
     ));
     convert_pack_rc.borrow_mut().set_spacing(WIDGET_GAP);
 
-    let mut convert_frame = frame::Frame::default().with_size(500, 80).with_pos(10, 10);
+    let mut convert_frame = frame::Frame::default().with_size(680, 80).with_pos(10, 10);
     convert_frame.set_frame(enums::FrameType::RFlatBox);
     convert_frame.set_label_color(enums::Color::White);
     convert_frame.set_label(&format!("{}\n{}\n{}",
@@ -805,7 +805,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     convert_frame.set_color(enums::Color::Red);
 
     let mut row_convert_button = group::Pack::default()
-        .with_size(600, 40)
+        .with_size(680, 40)
         .below_of(&convert_frame, 30);
     row_convert_button.set_type(group::PackType::Horizontal);
     row_convert_button.set_spacing(WIDGET_GAP);
@@ -876,14 +876,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     selection_pack.end();
 
     let mut delete_button = button::Button::default()
-        .with_size(250, 20)
+        .with_size(280, 20)
         .with_label(&trans.gettext("Remove selected file(s)"));
     delete_button.set_label_color(enums::Color::Black);
     delete_button.set_color(enums::Color::White);
     delete_button.deactivate();
 
     let mut convert_button = button::Button::default()
-        .with_size(250, 20)
+        .with_size(280, 20)
         .with_label(&trans.gettext("Convert document(s)"));
 
     convert_button.set_label_color(enums::Color::Black);
@@ -1435,22 +1435,22 @@ fn main() -> Result<(), Box<dyn Error>> {
                     30,
                 );
 
-                tabconvert_button.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, 80, 30);
-                tabsettings_button.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, 80, 30);
-                let new_y = top_group_ref.y() + top_group_ref.h() + WIDGET_GAP;
+                tabconvert_button.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, tabconvert_button.w(), 30);
+                tabsettings_button.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, tabsettings_button.w(), 30);
+                let content_y = top_group_ref.y() + top_group_ref.h() + WIDGET_GAP;
 
                 let scroller_height = w.h() - top_group_ref.h() - convert_frame_ref.h() - row_convert_button_ref.h() - (messages_frame_ref.h() * 3);
 
                 convert_pack_rc_ref.borrow_mut().resize(
                     WIDGET_GAP,
-                    new_y,
+                    content_y,
                     w.w() - (WIDGET_GAP * 2),
                     w.h() - top_group_ref.h() + WIDGET_GAP,
                 );
 
                 settings_pack_rc_ref.borrow_mut().resize(
                     WIDGET_GAP,
-                    new_y,
+                    content_y,
                     w.w() - (WIDGET_GAP * 2),
                     w.h() - top_group_ref.h() + WIDGET_GAP,
                 );

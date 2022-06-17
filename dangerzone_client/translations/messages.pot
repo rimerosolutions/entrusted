@@ -60,13 +60,13 @@ msgstr ""
 msgid "The safe PDF will be named <input>-<suffix>.pdf by default."
 msgstr ""
 
-msgid "Enable full-text search? Yes, with language:"
+msgid "Enable full-text search? In:"
 msgstr ""
 
 msgid "OCR (Optical character recognition) will be applied."
 msgstr ""
 
-msgid "Open document after conversion, using"
+msgid "Open resulting PDF with"
 msgstr ""
 
 msgid "Automatically open resulting PDFs with a given program."

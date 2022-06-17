@@ -233,7 +233,7 @@ enum ContainerProgramStub<'a> {
 pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
     let container_program_stubs = [
         ContainerProgramStub::Docker("docker", vec![], vec![], None),
-        ContainerProgramStub::Podman("podman", vec![], vec!["--userns", "keep-id"], None),
+        ContainerProgramStub::Podman("podman", vec![], vec!["--userns", "keep-id", "--read-only"], None),
         ContainerProgramStub::Lima("lima", vec!["nerdctl"], vec![], Some("/tmp/lima")),
     ];
 

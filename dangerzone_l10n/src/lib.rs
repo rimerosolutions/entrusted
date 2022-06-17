@@ -44,7 +44,7 @@ struct GettextTranslations {
     catalog: Catalog,
 }
 
-pub trait Translations {
+pub trait Translations: Send + Sync {
     fn langid(&self, ) -> String;
 
     fn gettext(&self, msg: &str) -> String;
@@ -55,7 +55,7 @@ pub trait Translations {
 
     fn ngettext_fmt(&self, msgid: &str, msgid_plural: &str, n: u64, params: Vec<&str>) -> String;
 
-    fn clone_box(&self) -> Box<dyn Translations + Send>;
+    fn clone_box(&self) -> Box<dyn Translations>;
 }
 
 impl Clone for Box<dyn Translations> {
@@ -96,7 +96,7 @@ impl Translations for GettextTranslations {
         self.locale.clone()
     }
 
-    fn clone_box(&self) -> Box<dyn Translations + Send> {
+    fn clone_box(&self) -> Box<dyn Translations> {
         Box::new(self.clone())
     }
 

@@ -1053,7 +1053,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     active_row.status.set_label(FILELIST_ROW_STATUS_INPROGRESS);
                     active_row.checkbox.deactivate();
                     active_row.status.set_label_color(enums::Color::DarkYellow);
-                    let trans_ref: Box<dyn l10n::Translations + Send> = trans_ref.clone_box();
+                    let trans_ref = trans_ref.clone_box();
 
                     let mut exec_handle = Some(thread::spawn(move || {
                         match container::convert(

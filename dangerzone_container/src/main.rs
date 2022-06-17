@@ -168,7 +168,7 @@ fn move_file_to_dir(src_file_path: &PathBuf, dest_dir_path: &PathBuf) -> Result<
     Ok(())
 }
 
-fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRange, raw_input_path: PathBuf, l10n: Box<dyn l10n::Translations + Send>) -> Result<PathBuf, Box<dyn Error>> {    
+fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRange, raw_input_path: PathBuf, l10n: Box<dyn l10n::Translations>) -> Result<PathBuf, Box<dyn Error>> {    
     let conversion_by_mimetype: HashMap<&str, ConversionType> = [
         ("application/pdf", ConversionType::None),
         (
@@ -449,7 +449,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
 }
 
 #[inline]
-fn elapsed_time_string(millis: u128, l10n: Box<dyn l10n::Translations + Send>) -> String {
+fn elapsed_time_string(millis: u128, l10n: Box<dyn l10n::Translations>) -> String {
     let mut diff = millis;
     let secs_in_millis = 1000;
     let mins_in_millis = secs_in_millis * 60;
@@ -484,7 +484,7 @@ fn ocr_imgs_to_pdf(
     tess_settings: TessSettings,
     input_path: &PathBuf,
     output_path: &PathBuf,
-    l10n: Box<dyn l10n::Translations + Send>
+    l10n: Box<dyn l10n::Translations>
 ) -> Result<(), Box<dyn Error>> {
     let progress_delta = progress_range.delta();
     let mut progress_value: usize = progress_range.min;
@@ -622,7 +622,7 @@ impl ProgressRange {
     }
 }
 
-fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, doc: Document, dest_folder: &PathBuf, l10n: Box<dyn l10n::Translations + Send>) -> Result<(), Box<dyn Error>> {
+fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, doc: Document, dest_folder: &PathBuf, l10n: Box<dyn l10n::Translations>) -> Result<(), Box<dyn Error>> {
     let page_num = doc.n_pages();
     let mut progress_value: usize = progress_range.min;
 
@@ -668,7 +668,7 @@ fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_rang
     Ok(())
 }
 
-fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, input_dir_path: &PathBuf, output_path: &PathBuf, l10n: Box<dyn l10n::Translations + Send>) -> Result<(), Box<dyn Error>> {
+fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, input_dir_path: &PathBuf, output_path: &PathBuf, l10n: Box<dyn l10n::Translations>) -> Result<(), Box<dyn Error>> {
     logger.log(progress_range.min, 
                l10n.ngettext("Combining one PDF document",
                              "Combining few PDF documents",
@@ -867,7 +867,7 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: Progress
     Ok(())
 }
 
-fn imgs_to_pdf(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, input_path: &PathBuf, output_path: &PathBuf, l10n: Box<dyn l10n::Translations + Send>) -> Result<(), Box<dyn Error>> {
+fn imgs_to_pdf(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, input_path: &PathBuf, output_path: &PathBuf, l10n: Box<dyn l10n::Translations>) -> Result<(), Box<dyn Error>> {
     let progress_delta = progress_range.delta();
     let mut progress_value: usize = progress_range.min;
 

@@ -258,7 +258,7 @@ fn parse_accept_language(req_language: &HeaderValue, fallback_lang: String) -> S
     }
 }
 
-async fn serve(host: &str, port: &str, ci_image_name: String, l10n: Box<dyn l10n::Translations + Send>) -> std::io::Result<()> {
+async fn serve(host: &str, port: &str, ci_image_name: String, l10n: Box<dyn l10n::Translations>) -> std::io::Result<()> {
     let addr = format!("{}:{}", host, port);
     println!("{}: {}", l10n.gettext("Starting server at address"), &addr);
 

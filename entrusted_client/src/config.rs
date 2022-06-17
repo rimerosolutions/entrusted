@@ -7,7 +7,7 @@ use dirs;
 
 pub const PROGRAM_GROUP: &str = "com.rimerosolutions.entrusted.entrusted_client";
 pub const CFG_FILENAME: &str = "config.toml";
-pub const DEFAULT_FILE_SUFFIX: &str  ="dgz";
+pub const DEFAULT_FILE_SUFFIX: &str  ="entrusted";
 
 #[derive(Deserialize, Serialize, Clone)]
 #[serde(default)]

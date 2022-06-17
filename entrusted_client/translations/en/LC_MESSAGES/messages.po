@@ -129,7 +129,7 @@ msgstr ""
 msgid "English"
 msgstr ""
 
-msgid "Optional output filename defaulting to <filename>-dgz.pdf."
+msgid "Optional output filename defaulting to <filename>-entrusted.pdf."
 msgstr ""
 
 msgid "Optional language for OCR (i.e. 'eng' for English)"
@@ -144,7 +144,7 @@ msgstr ""
 msgid "Log format (json or plain)"
 msgstr ""
 
-msgid "Default file suffix (dgz)"
+msgid "Default file suffix (entrusted)"
 msgstr ""
 
 msgid "The selected file does not exists! {0}"

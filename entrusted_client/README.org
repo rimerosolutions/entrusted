@@ -35,14 +35,6 @@ The CLI can be convenient for "terminal warriors" or to supplement existing shel
 
 At the root of this project, open a command prompt and type =cargo build=.
 
-If using the =fltk-rs= master branch instead of a stable release, you'll need a custom pre-built cfltk library *under Mac OS*.
-
-#+begin_src sh
-  cd entrusted_client
-  mkdir -p target/cfltk && tar zxf cfltk_lib_x64-macos.tar.gz -C target/cfltk/
-  CFLTK_BUNDLE_DIR="${PWD}"/target/cfltk cargo build
-#+end_src
-
 * How to run this?
 
 ** Desktop usage
@@ -53,7 +45,9 @@ If using the =fltk-rs= master branch instead of a stable release, you'll need a 
 
 ** Command line usage
 
-In the example below, a suspicious PDF file is converted to a searchable PDF ([[https://en.wikipedia.org/wiki/Optical_character_recognition][OCR]]), instead of just PDF images (=ocr-lang= parameter). /OCR/ is a time consuming task in comparison to just generating PDF images for pages of the original input.
+In the example below, a suspicious PDF file is converted to a searchable PDF ([[https://en.wikipedia.org/wiki/Optical_character_recognition][OCR]]), instead of just PDF images (=ocr-lang= parameter).
+- /OCR/ is a time consuming task in comparison to just generating PDF images for pages of the original input.
+- You only need /OCR/ if you want to be able to select or search text in the resulting PDF
 
 *** Basic usage
 
@@ -64,7 +58,9 @@ In the example below, a suspicious PDF file is converted to a searchable PDF ([[
 
 *** Batch conversion
 
-There's no explicit command-line support for batch conversion, because in a UNIX/Linux environment it's best achieved with shell scripting for maximum flexibility. In the example below, all the PDF files in the =Downloads= folder of the =me= user will be converted (recursive folder traversal of all sub-directories).
+There's no explicit command-line support for batch conversion, because in a UNIX/Linux environment shell scripting is much more flexible.
+
+In the example below, all the PDF files in the =Downloads= folder of the =me= user will be converted (recursive folder traversal).
 
 #+begin_src sh
   find /home/me/Downloads \
@@ -115,9 +111,9 @@ The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to
 | Parameter                | Description                                                       |
 |--------------------------+-------------------------------------------------------------------|
 | =ocr-lang=               | The [[https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html][tesseract OCR langcode]] is OCR is desired (slower conversions) |
-| =file-suffix=            | Custom file suffix for converted files (defaults to =dgz=)        |
+| =file-suffix=            | Custom file suffix for converted files (defaults to =entrusted=)  |
 | =container-image-name=   | A custom container image for conversions (advanced option)        |
 | =preview-result-appname= | The PDF viewer as identified by the GUI to open converted files   |
 |--------------------------+-------------------------------------------------------------------|
 
-In CLI mode (=entrusted-cli=), there's never any attempt to consider the =preview-result-appname= parameter. It's only intended for Desktop usage ("Save current settings as defaults" in the GUI client).
+In CLI mode (=entrusted-cli=), the =preview-result-appname= parameter is ignored. It's only intended for Desktop usage ("Save current settings as defaults" in the GUI client).

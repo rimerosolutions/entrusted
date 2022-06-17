@@ -59,7 +59,7 @@ impl Default for AppConfig {
             ocr_lang: None,
             host: String::from("localhost"),
             port: 13000,
-            file_suffix: String::from("dgz")
+            file_suffix: String::from("entrusted")
         }
     }
 }
@@ -132,7 +132,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let help_output_filename = trans.gettext("Output filename");
     let help_input_filename = trans.gettext("Input filename");
     let help_ocr_lang = trans.gettext("Optional language for OCR (i.e. 'eng' for English)");
-    let help_file_suffix = trans.gettext("Default file suffix (dgz)");
+    let help_file_suffix = trans.gettext("Default file suffix (entrusted)");
     
     let app = App::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))

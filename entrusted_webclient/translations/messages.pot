@@ -45,7 +45,7 @@ msgstr ""
 msgid "Optional language for OCR (i.e. 'eng' for English)"
 msgstr ""
 
-msgid "Default file suffix (dgz)"
+msgid "Default file suffix (entrusted)"
 msgstr ""
 
 msgid "Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English."

@@ -129,7 +129,7 @@ msgstr "La commande ‘open’ n’a pas été trouvée"
 msgid "English"
 msgstr "Anglais"
 
-msgid "Optional output filename defaulting to <filename>-dgz.pdf."
+msgid "Optional output filename defaulting to <filename>-entrusted.pdf."
 msgstr "Fichier de sortie"
 
 msgid "Optional language for OCR (i.e. 'eng' for English)"
@@ -144,8 +144,8 @@ msgstr "Image de conteneur personalisée"
 msgid "Log format (json or plain)"
 msgstr "Format du journal (json ou plain)"
 
-msgid "Default file suffix (dgz)"
-msgstr "Suffixe de fichier (dgz)"
+msgid "Default file suffix (entrusted)"
+msgstr "Suffixe de fichier (entrusted)"
 
 msgid "The selected file does not exists! {0}"
 msgstr "Le fichier sélectionné n'existe pas! {0}"

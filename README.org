@@ -1,12 +1,10 @@
-#+TITLE: README
-
-This is not a mature project and there are [[./ROADMAP.org][couple of pending TODOs]].
+#+TITLE: entrusted README
 
 * What is this?
 
 ** Overview
-trustedpdf
-=entrusted= is a document sanitizer tool that converts "/potentially suspicious files/" into /safe PDFs/:
+
+=Entrusted= is a document sanitizer tool that converts "/potentially suspicious files/" into /safe PDFs/:
 - This is achieved by transforming documents inside a "lightweight sandbox" ([[https://www.ibm.com/cloud/learn/containerization][containerization]]): =containerization= itself does not provide absolute security guarantees...
 - Supported file formats include PDF, common image formats, Office documents ([[https://www.office.com/][Microsoft Office]] or [[https://www.libreoffice.org/discover/what-is-opendocument/][OpenDocument]]). For Office documents, supported is limited to text documents, spreadsheets and presentations.
 
@@ -44,19 +42,19 @@ There are 3 user interfaces ([[./entrusted_client][Desktop and CLI]], [[./entrus
 
 For downloads, please visit the [[https://github.com/rimerosolutions/entrusted/releases][releases page]] (64 bit operating systems).
 
-|------------------+------------------------------------------+------------------------------|
-| Operating System | Artifact                                 | Description                  |
-|------------------+------------------------------------------+------------------------------|
+|------------------+-----------------------------------------+------------------------------|
+| Operating System | Artifact                                | Description                  |
+|------------------+-----------------------------------------+------------------------------|
 | =Linux=          | =entrusted-linux-amd64-<version>.tar=   | Portable binaries            |
-|------------------+------------------------------------------+------------------------------|
-| =Mac OS=         | =entrusted-macos-amd64-<version>.dmg=  | Installer with the GUI       |
-|                  | =entrusted-macos-amd64-<version>.zip=  | Portable binaries            |
-|------------------+------------------------------------------+------------------------------|
+|------------------+-----------------------------------------+------------------------------|
+| =Mac OS=         | =entrusted-macos-amd64-<version>.dmg=   | Installer with the GUI       |
+|                  | =entrusted-macos-amd64-<version>.zip=   | Portable binaries            |
+|------------------+-----------------------------------------+------------------------------|
 | =MS Windows=     | =entrusted-windows-amd64-<version>.exe= | Installer with all binaries  |
 |                  | =entrusted-windows-amd64-<version>.zip= | Portable binaries            |
-|------------------+------------------------------------------+------------------------------|
+|------------------+-----------------------------------------+------------------------------|
 | =Live CD=        | =entrusted-livecd-amd64-<version>.iso=  | Web interface deployed in VM |
-|------------------+------------------------------------------+------------------------------|
+|------------------+-----------------------------------------+------------------------------|
 
 ** Key software components
 
@@ -64,15 +62,15 @@ Most users will interact with the =entrusted_client=, via its Desktop user inter
 - This doesn't install a container runtime, but will display "useful" error messages when possible
 - This will automatically download a container image (~600 MB) and generate a PDF
 
-|-----------------------+---------------------------------------------|
-| Component             | Purpose                                     |
-|-----------------------+---------------------------------------------|
-| [[./entrusted_container][entrusted_container]]  | Document processing "sandbox"               |
-| [[./entrusted_client][entrusted_client]]     | Command-line and graphical user interfaces  |
+|---------------------+---------------------------------------------|
+| Component           | Purpose                                     |
+|---------------------+---------------------------------------------|
+| [[./entrusted_container][entrusted_container]] | Document processing "sandbox"               |
+| [[./entrusted_client][entrusted_client]]    | Command-line and graphical user interfaces  |
 | [[./entrusted_webserver][entrusted_webserver]] | Online service feature with a Web interface |
 | [[./entrusted_webclient][entrusted_webclient]] | Command-line client for the online service  |
-| [[./entrusted_l10n][entrusted_l10n]]       | Shared library for translation features     |
-|-----------------------+---------------------------------------------|
+| [[./entrusted_l10n][entrusted_l10n]]      | Shared library for translation features     |
+|---------------------+---------------------------------------------|
 
 ** Architecture overview
 

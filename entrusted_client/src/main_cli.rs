@@ -35,12 +35,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         config::default_container_image_name()
     };
 
-    let help_output_filename = trans.gettext("Optional output filename defaulting to <filename>-dgz.pdf.");
+    let help_output_filename = trans.gettext("Optional output filename defaulting to <filename>-entrusted.pdf.");
     let help_ocr_lang = trans.gettext("Optional language for OCR (i.e. 'eng' for English)");
     let help_input_filename = trans.gettext("Input filename");
     let help_container_image_name = trans.gettext("Optional custom Docker or Podman image name");
     let help_log_format = trans.gettext("Log format (json or plain)");
-    let help_file_suffix = trans.gettext("Default file suffix (dgz)");
+    let help_file_suffix = trans.gettext("Default file suffix (entrusted)");
     
     let app = App::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))

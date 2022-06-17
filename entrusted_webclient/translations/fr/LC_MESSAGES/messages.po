@@ -33,8 +33,8 @@ msgstr "Nom du fichier de sortie"
 msgid "Optional language for OCR (i.e. 'eng' for English)"
 msgstr "Language pour OCR (‘eng’ pour Anglais)"
 
-msgid "Default file suffix (dgz)"
-msgstr "Suffixe de fichier (dgz)"
+msgid "Default file suffix (entrusted)"
+msgstr "Suffixe de fichier (entrusted)"
 
 msgid "Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English."
 msgstr "Code de langue inconnu pour le paramètre ocr-lang: {0}. Astuce: Essayez 'eng' pour l'anglais."

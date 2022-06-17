@@ -808,17 +808,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_size(680, 40)
         .below_of(&convert_frame, 30);
     row_convert_button.set_type(group::PackType::Horizontal);
-    row_convert_button.set_spacing(WIDGET_GAP);
+    row_convert_button.set_spacing(2);
 
     let mut selection_pack = group::Pack::default()
-        .with_size(150, 40)
+        .with_size(110, 40)
         .with_type(group::PackType::Vertical)
         .below_of(&convert_frame, 30);
     selection_pack.set_spacing(5);
 
     let selectall_frame_rc = Rc::new(RefCell::new(
         frame::Frame::default()
-            .with_size(150, 10)
+            .with_size(110, 10)
             .with_label(&trans.gettext("Select all"))
             .with_align(enums::Align::Inside | enums::Align::Left),
     ));
@@ -827,14 +827,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         .set_label_color(enums::Color::Blue);
     let deselectall_frame_rc = Rc::new(RefCell::new(
         frame::Frame::default()
-            .with_size(150, 10)
+            .with_size(110, 10)
             .with_label(&trans.gettext("Deselect all"))
             .with_align(enums::Align::Inside | enums::Align::Left),
     ));
+    
     deselectall_frame_rc
         .borrow_mut()
         .set_label_color(enums::Color::Blue);
-
 
     selectall_frame_rc.borrow_mut().draw({
         move |w| {

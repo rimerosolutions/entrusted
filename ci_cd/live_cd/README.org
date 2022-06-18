@@ -31,26 +31,19 @@ The steps below have been tested on [[https://www.debian.org/][Debian]] 11 (/bul
 
   The Live CD ISO image size is roughly 1 GB.
   
-* Screenshot build process
+* General Information
 
-Excerpt of the build process from a Debian VM.
+** Users
 
-[[./images/build_iso.png]]
+There are 2 users in the system:
+- The super user =root= with the password =root=
+- A regular user =entrusted= with the password =entrusted=
+  
+** Services
 
-* Initial boot from Live CD
-
-[[./images/live_boot.png]]
-
-
-* Login from Live CD
-
-** Pre-Login message
-
-[[./images/live_prelogin.png]]
-
-** Post-Login message
-
-[[./images/live_postlogin.png]]
+On top of default regular processes, the following runs on boot:
+- SSH is running on the default =22= port.
+- The =entrusted-webserver= service is running on port =13000=
 
 * Entrusted Web UI access
 

@@ -19,7 +19,7 @@ cd ${PROJECTDIR}
 echo "Building entrusted_client (entrusted-gui)"
 cp -f ${PROJECTDIR}/images/Entrusted.png ${SCRIPTDIR}/appdir/entrusted-gui.png
 
-podman run --rm --privileged -v "${PROJECTDIR}":/src -v "${SCRIPTDIR}/appdir":/appdir -v "${PROJECTDIR}/artifacts":/artifacts docker.io/uycyjnzgntrn/rust-centos7:1.60.0 /bin/bash -c "ln -sf /usr/lib64/libfuse.so.2.9.2 /usr/lib/libfuse.so.2 && mkdir -p /appdir/usr/bin /appdir/usr/share/icons && cd /src/entrusted_client && /root/.cargo/bin/cargo build --release --bin entrusted-gui && cp target/release/entrusted-gui /appdir/ && mv /appdir/entrusted-gui.png /appdir/usr/share/icons/entrusted-gui.png && ARCH=x86_64 linuxdeploy --appdir /appdir --desktop-file /appdir/entrusted-gui.desktop --icon-filename /appdir/usr/share/icons/entrusted-gui.png --output appimage && mv *.AppImage /artifacts/entrusted-linux-amd64-${APPVERSION}/ && rm -rf /appdir/usr && rm -rf /appdir/entrusted-gui /appdir/entrusted-gui.png /appdir/.DirIcon"
+podman run --rm --privileged -v "${PROJECTDIR}":/src -v "${SCRIPTDIR}/appdir":/appdir -v "${PROJECTDIR}/artifacts":/artifacts docker.io/uycyjnzgntrn/rust-centos7:1.60.0 /bin/bash -c "ln -sf /usr/lib64/libfuse.so.2.9.2 /usr/lib/libfuse.so.2 && mkdir -p /appdir/usr/bin /appdir/usr/share/icons && cd /src/entrusted_client && /root/.cargo/bin/cargo build --release --bin entrusted-gui && cp target/release/entrusted-gui /appdir/ && mv /appdir/entrusted-gui.png /appdir/usr/share/icons/entrusted-gui.png && ARCH=x86_64 linuxdeploy --appdir /appdir --desktop-file /appdir/entrusted-gui.desktop --icon-filename /appdir/usr/share/icons/entrusted-gui.png --output appimage && mv *.AppImage /artifacts/entrusted-linux-amd64-${APPVERSION}/Entrusted_GUI-x86_64.AppImage && rm -rf /appdir/usr && rm -rf /appdir/entrusted-gui /appdir/entrusted-gui.png /appdir/.DirIcon"
 echo "Restoring old GUI Desktop file to discard appimagetool changes"
 cd ${PROJECTDIR} && git checkout ci_cd/linux/appdir/entrusted-gui.desktop && cd -
 
@@ -59,7 +59,6 @@ if [ $retVal -ne 0 ]; then
 fi
 cp ${PROJECTDIR}/entrusted_webclient/target/x86_64-unknown-linux-musl/release/entrusted-webclient ${ARTIFACTSDIR}
 
-mv ${ARTIFACTSDIR}/*.AppImage ${ARTIFACTSDIR}/Entrusted_GUI-x86_64.AppImage
 cp ${SCRIPTDIR}/release_README.txt ${ARTIFACTSDIR}/README.txt
 
 cd ${ARTIFACTSDIR}/.. && tar cvf entrusted-linux-amd64-${APPVERSION}.tar entrusted-linux-amd64-${APPVERSION}

@@ -17,12 +17,6 @@ The client invokes the =entrusted-webserver= Web API and processes notifications
 
   [[./images/architecture.png]]
 
-* What does it look like?
-
-In the screenshot below, the client is running in an Ubuntu Linux VM and the server is running inside a Debian Linux VM.
-
-[[./images/screenshot-cli.png]]
-
 * How to build this?
 
 At the root of this project, open a command prompt and type =cargo build=.

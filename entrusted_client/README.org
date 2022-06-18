@@ -26,10 +26,7 @@ The user interface is built with the [[https://github.com/fltk-rs/fltk-rs][FLTK]
 
 ** Command-line client
 
-The CLI can be convenient for "terminal warriors" or to supplement existing shell scripts workflows (i.e. [[https://unix.stackexchange.com/questions/389705/understanding-the-exec-option-of-find][find-exec]]).
-
-[[./images/cli-screenshot.png]]
-
+The CLI can be convenient for "terminal warriors" or to supplement existing shell scripts workflows (i.e. [[https://unix.stackexchange.com/questions/389705/understanding-the-exec-option-of-find][find-exec]]). It is just a plain old boring command-line!
 
 * How to build this?
 

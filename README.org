@@ -36,8 +36,6 @@ There are 3 user interfaces ([[./entrusted_client][Desktop and CLI]], [[./entrus
   - The Web UI is available at =http://localhost:13000=
   - Replace =localhost= by the IP address of your virtual machine in the above-mentioned link
 
-[[./images/screenshots.png]]
-
 ** Download artifacts
 
 For downloads, please visit the [[https://github.com/rimerosolutions/entrusted/releases][releases page]] (64 bit operating systems).

@@ -14,7 +14,7 @@
 
 ** Features
 
-This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://entrusted.rocks/][Entrusted]], for experimentation purposes (/not an exact port/).
+This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation purposes (/not an exact port/).
 - Similarly to the original Entrusted tool, documents or images are converted inside a "sandbox"
 - Text is translated whenever possible (English and French so far)
 - Documents can be converted in batch (sequential conversions for now)

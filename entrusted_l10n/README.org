@@ -64,4 +64,4 @@ You don't need to provide compiled =.mo= files
 - Because it's reasonable (features and behavior)
 - There are couple of graphical tools for developers and translation contributors
 - Many Open Source developers and several old timers know GNU Gettext
-- I didn't really like other approaches such as fluent in the context of Rust ([[https://docs.rs/fluent-bundle/0.15.2/fluent_bundle/][fluent-bundle]])
+- I didn't really like other approaches such as fluent in the context of Rust ([[https://docs.rs/fluent-bundle/0.15.2/fluent_bundle/][fluent-bundle]]). Some of =entrusted_l10n= code originates from https://github.com/woboq/tr/ (dynamic formating for translated text placeholder arguments)

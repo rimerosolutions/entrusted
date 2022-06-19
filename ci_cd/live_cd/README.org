@@ -44,8 +44,25 @@ There are 2 users in the system:
 On top of default regular processes, the following runs on boot:
 - SSH is running on the default =22= port.
 - The =entrusted-webserver= service is running on port =13000=
-
+- Custom firewall rules (=iptables=) restrict network access to SSH and the =entrusted-webserver=
+  - The command =entrusted-fw-disable= allows all network traffic
+  - The command =entrusted-fw-enable= restores default firewall rules
+  
 * Entrusted Web UI access
+
+** Boot menu screenshot
+
+[[./images/live_bootmenu.png]]
+
+** Login screenshot
+
+[[./images/live_loginscreen.png]]
+
+** Post-login screenshot
+
+[[./images/live_loggedin.png]]
+
+** Web UI screenshot
 
 By default, the /Entrusted Online Service/ is running on port =13000= and binds to all network interfaces (=0.0.0.0=).
 

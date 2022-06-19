@@ -19,8 +19,8 @@ static CATALOG_PER_LOCALE: Lazy<Mutex<HashMap<String, Catalog>>> = Lazy::new(|| 
 pub fn sys_locale() -> String {
     let locale = locale_config::Locale::user_default();
 
-    if let Some(ll) = locale.tags().next() {
-        ll.1.to_string()
+    if let Some((_, language_range)) = locale.tags().next() {
+        language_range.to_string()
     } else {
         String::from(DEFAULT_LANGID)
     }

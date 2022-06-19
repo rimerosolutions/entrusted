@@ -10,7 +10,7 @@ static UITRANSLATIONS_PER_LOCALE: Lazy<Mutex<HashMap<String, Vec<u8>>>> = Lazy::
 macro_rules! incl_ui_json_files {
     ( $( $x:expr ),* ) => {
         {
-            let mut profs = Vec::new();
+            let mut profs = Vec::with_capacity(2);
             $(
                 let data = include_bytes!(concat!("../translations/", $x, "/messages.json")).as_slice();
                 profs.push(($x, data));

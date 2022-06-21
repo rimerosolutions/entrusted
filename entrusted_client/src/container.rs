@@ -263,9 +263,9 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, container_image_name: 
         err_msg.push_str("\n");
 
         if cfg!(any(target_os="windows")) {
-            err_msg.push_str(&trans.gettext("Please install Docker or Lima."));
+            err_msg.push_str(&trans.gettext("Please install Docker."));
         } else if cfg!(any(target_os="macos")) {
-            err_msg.push_str(&trans.gettext("container-msg-prompt-install-for-linux"));
+            err_msg.push_str(&trans.gettext("Please install Docker or Lima."));
         } else {
             err_msg.push_str(&trans.gettext("Please install Podman."));
         }

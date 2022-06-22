@@ -127,13 +127,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             imgs_to_pdf(&logger, progress_range, page_count, &output_dir_path, &output_dir_path, l10n.clone_box())?;
         } else {
             let ocr_lang = env::var("OCR_LANGUAGE")?;
-
-            if !l10n::ocr_lang_key_by_name().contains_key(&ocr_lang) {
-                return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![&ocr_lang]));
+            let ocr_lang_text = ocr_lang.as_str();
+            if !l10n::ocr_lang_key_by_name(l10n.clone_box()).contains_key(&ocr_lang_text) {
+                return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![ocr_lang_text]).into());
             }
 
             let tess_settings = TessSettings {
-                lang: ocr_lang.as_str(),
+                lang: ocr_lang_text,
                 data_dir: TESS_DATA_DIR,
             };
 

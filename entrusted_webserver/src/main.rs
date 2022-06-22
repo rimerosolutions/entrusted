@@ -518,7 +518,7 @@ async fn run_entrusted(
     langid: String
 ) -> Result<(), Box<dyn std::error::Error>> {
     if let Some(proposed_ocr_lang) = opt_ocr_lang.clone() {
-        let ocr_lang_by_code = l10n::ocr_lang_key_by_name(&l10n);
+        let ocr_lang_by_code = l10n::ocr_lang_key_by_name(l10n.clone_box());
 
         if !ocr_lang_by_code.contains_key(&*proposed_ocr_lang) {
             return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![&proposed_ocr_lang]).into());

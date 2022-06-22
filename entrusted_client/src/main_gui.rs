@@ -104,7 +104,7 @@ fn clip_text<S: Into<String>>(txt: S, max_width: i32) -> String {
             tmp.fill(0);
             let ch_str = ch.encode_utf8(&mut tmp);
             let (ch_w, _) = draw::measure(ch_str, true);
-            ret.push_str(ch_str);
+            ret.push(ch);
             total_width += ch_w;
 
             if total_width > max_width {

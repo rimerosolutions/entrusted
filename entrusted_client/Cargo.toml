@@ -1,6 +1,6 @@
 [package]
 name = "entrusted-client"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2018"
 description = "Entrusted client" 
 keywords = ["entrusted", "client"]

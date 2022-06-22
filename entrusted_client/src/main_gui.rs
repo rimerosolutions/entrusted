@@ -97,13 +97,15 @@ fn clip_text<S: Into<String>>(txt: S, max_width: i32) -> String {
 
     if width > max_width {
         let (mut total_width, _) = draw::measure(ELLIPSIS, true);
+        let mut tmp = [0u8; 4];
         let mut ret = String::new();
 
         for ch in text.chars() {
-            let current_char = ch.to_string();
-            let (w, _) = draw::measure(&current_char, true);
-            ret.push_str(&current_char);
-            total_width += w;
+            tmp.fill(0);
+            let ch_str = ch.encode_utf8(&mut tmp);
+            let (ch_w, _) = draw::measure(ch_str, true);
+            ret.push_str(ch_str);
+            total_width += ch_w;
 
             if total_width > max_width {
                 ret.push_str(ELLIPSIS);

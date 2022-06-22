@@ -86,3 +86,6 @@ msgstr ""
 
 msgid "Starting server at address"
 msgstr ""
+
+msgid "Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English."
+msgstr ""

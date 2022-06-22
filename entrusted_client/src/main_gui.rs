@@ -2,7 +2,6 @@
 
 use serde_json;
 use std::cell::RefCell;
-use std::cmp;
 use std::collections::HashMap;
 use std::env;
 use std::error::Error;
@@ -25,7 +24,7 @@ mod config;
 mod container;
 
 const WIDGET_GAP: i32 = 20;
-
+const ELLIPSIS: &str = "...";
 const FRAME_ICON: &[u8] = include_bytes!("../../images/Entrusted_icon.png");
 
 const FILELIST_ROW_STATUS_PENDING    :&str = "Pending";
@@ -92,30 +91,28 @@ impl  DerefMut for FileListWidget {
     }
 }
 
-fn clip_text<S: Into<String>>(txt_to_clip: S, max_w: i32) -> String {
-    let max_width = max_w - WIDGET_GAP;
-    let mut txt = txt_to_clip.into();
-    let (mut current_label_width, _) = draw::measure(&txt, true);
+fn clip_text<S: Into<String>>(txt: S, max_width: i32) -> String {
+    let text = txt.into();
+    let (width, _) = draw::measure(&text, true);
 
-    if current_label_width > max_width {
-        txt = txt
-            .chars()
-            .take(txt.len() - cmp::min(3, txt.len()))
-            .collect::<String>();
+    if width > max_width {
+        let (mut total_width, _) = draw::measure(ELLIPSIS, true);
+        let mut ret = String::new();
 
-        while current_label_width > max_width {
-            txt = txt
-                .chars()
-                .take(txt.len() - 1)
-                .collect::<String>();
-            let (label_width, _) = draw::measure(&txt, true);
-            current_label_width = label_width;
+        for ch in text.chars() {
+            let current_char = ch.to_string();
+            let (w, _) = draw::measure(&current_char, true);
+            ret.push_str(&current_char);
+            total_width += w;
+
+            if total_width > max_width {
+                ret.push_str(ELLIPSIS);
+                return ret;
+            }
         }
-
-        txt = txt + "...";
     }
 
-    String::from(txt)
+    text
 }
 
 impl <'a> FileListWidget {
@@ -420,7 +417,7 @@ impl <'a> FileListWidget {
 
 fn main() -> Result<(), Box<dyn Error>> {
     l10n::load_translations(incl_gettext_files!("en", "fr"));
-    
+
     let locale = match env::var(l10n::ENV_VAR_ENTRUSTED_LANGID) {
         Ok(selected_locale) => selected_locale,
         Err(_) => l10n::sys_locale()
@@ -537,7 +534,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let ocrlang_holdbrowser_rc = Rc::new(RefCell::new(
         browser::HoldBrowser::default().with_size(240, 60),
     ));
-    let ocr_languages_by_name = common::ocr_lang_key_by_name(trans_ref.clone_box());
+    let ocr_languages_by_name = l10n::ocr_lang_key_by_name(trans_ref.clone_box());
+    let ocr_languages_by_name_ref = ocr_languages_by_name.clone();
     let mut ocr_languages_by_lang = HashMap::with_capacity(ocr_languages_by_name.len());
     let mut ocr_languages: Vec<String> = Vec::with_capacity(ocr_languages_by_name.len());
 
@@ -554,7 +552,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let selected_ocrlang = if let Some(cur_ocrlangcode) = appconfig.ocr_lang.clone() {
         let cur_ocrlangcode_str = cur_ocrlangcode.as_str();
-        let ocr_languages_by_name_ref = common::ocr_lang_key_by_name(trans.clone_box());
+
         if let Some(cur_ocrlangname) = ocr_languages_by_name_ref.get(cur_ocrlangcode_str) {
             cur_ocrlangname.to_string()
         } else {
@@ -831,7 +829,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             .with_label(&trans.gettext("Deselect all"))
             .with_align(enums::Align::Inside | enums::Align::Left),
     ));
-    
+
     deselectall_frame_rc
         .borrow_mut()
         .set_label_color(enums::Color::Blue);
@@ -1043,6 +1041,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let active_ociimage_option = ociimage_option.clone();
                 let active_viewer_app_option = viewer_app_option.clone();
                 let active_file_suffix = file_suffix.clone();
+
                 filelist_scroll_ref.scroll_to(0, active_row.checkbox.y() - filelist_scroll_ref.y());
 
                 let (tx, rx) = mpsc::channel();

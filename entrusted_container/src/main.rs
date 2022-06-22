@@ -128,6 +128,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         } else {
             let ocr_lang = env::var("OCR_LANGUAGE")?;
 
+            if !l10n::ocr_lang_key_by_name().contains_key(&ocr_lang) {
+                return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![&ocr_lang]));
+            }
+
             let tess_settings = TessSettings {
                 lang: ocr_lang.as_str(),
                 data_dir: TESS_DATA_DIR,

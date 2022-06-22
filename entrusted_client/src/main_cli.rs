@@ -108,7 +108,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut ocr_lang = None;
 
     if let Some(proposed_ocr_lang) = &run_matches.value_of("ocr-lang") {
-        let supported_ocr_languages = common::ocr_lang_key_by_name(trans.clone_box());
+        let supported_ocr_languages = l10n::ocr_lang_key_by_name(trans.clone_box());
 
         if supported_ocr_languages.contains_key(proposed_ocr_lang) {
             ocr_lang = Some(format!("{}", proposed_ocr_lang));

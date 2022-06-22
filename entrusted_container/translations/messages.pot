@@ -149,3 +149,6 @@ msgid_plural "seconds"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+
+msgid "Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English."
+msgstr ""

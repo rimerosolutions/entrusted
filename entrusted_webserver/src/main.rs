@@ -26,7 +26,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use actix_multipart::Multipart;
-use actix_web::http::Uri;
+use actix_web::http::{Method, Uri};
 use futures::TryStreamExt;
 use http_api_problem::{HttpApiProblem, StatusCode};
 use tokio::io::AsyncWriteExt;
@@ -269,7 +269,7 @@ async fn serve(host: &str, port: &str, ci_image_name: String, l10n: Box<dyn l10n
     HttpServer::new(move|| {
         let cors = Cors::permissive()
             .supports_credentials()
-            .allowed_methods(vec!["GET", "POST", "OPTIONS", "HEAD"])
+            .allowed_methods(vec![Method::GET, Method::POST, Method::OPTIONS, Method::HEAD, ])
             .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT, header::CONTENT_TYPE, ]);
 
         let data = Broadcaster::create();
@@ -517,6 +517,13 @@ async fn run_entrusted(
     l10n: Box<dyn l10n::Translations>,
     langid: String
 ) -> Result<(), Box<dyn std::error::Error>> {
+    if let Some(proposed_ocr_lang) = opt_ocr_lang.clone() {
+        let ocr_lang_by_code = l10n::ocr_lang_key_by_name(&l10n);
+
+        if !ocr_lang_by_code.contains_key(&*proposed_ocr_lang) {
+            return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![&proposed_ocr_lang]).into());
+        }
+    }
     let mut cmdline = vec![
         "entrusted-cli".to_string(),
         "--log-format".to_string(),
@@ -535,6 +542,7 @@ async fn run_entrusted(
     }
 
     println!("{}: {}", l10n.gettext("Running command"), cmdline.join(" "));
+
     let err_find_notif = l10n.gettext("Could not find notification for");
     let err_notif_handle = l10n.gettext("Could not read notifications data");
 

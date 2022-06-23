@@ -1167,7 +1167,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             move || {
                 let logo_image_bytes = include_bytes!("../../images/Entrusted.png");
                 let dialog_width = 350;
-                let dialog_height = 150;
+                let dialog_height = 200;
                 let dialog_xpos = current_wind.x() + (current_wind.w() / 2) - (dialog_width / 2);
                 let dialog_ypos = current_wind.y() + (current_wind.h() / 2) - (dialog_height / 2);
                 let win_title = format!("{} {}", &trans_ref.gettext("About"),
@@ -1179,11 +1179,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                     .with_label(&win_title);
 
                 let dialog_text = format!(
-                    "{}\n{} {}\n{}",
+                    "{}\n{} {}\n\n{}",
                     option_env!("CARGO_PKG_DESCRIPTION").unwrap_or("Unknown"),
                     &trans_ref.gettext("Version"),
                     option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"),
-                    "Copyright Rimero Solutions, 2021-2022"
+                    &trans_ref.gettext_fmt("Copyright {0} {1}", vec!["2021-2022", "Rimero Solutions Inc."])
                 );
 
                 let mut logo_frame = frame::Frame::default()

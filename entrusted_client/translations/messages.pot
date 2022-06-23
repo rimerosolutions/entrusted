@@ -37,7 +37,10 @@ msgid "No container runtime executable found!"
 msgstr ""
 
 msgid "About"
-msgstr "About"
+msgstr ""
+
+msgid "Copyright {0} {1}"
+msgstr ""
 
 msgid "Version"
 msgstr "Version"

@@ -27,6 +27,11 @@ msgstr ""
 msgid "About"
 msgstr "About"
 
+msgid "Copyright {0} {1}"
+msgstr ""
+msgstr "© {0}\n"
+msgstr "{1} All rights reserved"
+
 msgid "Version"
 msgstr "Version"
 

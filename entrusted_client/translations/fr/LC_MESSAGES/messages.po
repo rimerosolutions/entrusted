@@ -27,6 +27,11 @@ msgstr "Aucun exécutable d'exécution de conteneur trouvé!"
 msgid "About"
 msgstr "A propos de"
 
+msgid "Copyright {0} {1}"
+msgstr ""
+msgstr "© {0}\n"
+msgstr "{1} Tous droits réservés"
+
 msgid "Version"
 msgstr "Version"
 

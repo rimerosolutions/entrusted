@@ -57,12 +57,6 @@ msgstr ""
 msgid "Mime type error! Does the input have a 'known' file extension?"
 msgstr ""
 
-msgid "Could not find office document PDF result!"
-msgstr ""
-
-msgid "Failed to execute 'libreoffice' process!"
-msgstr ""
-
 msgid "Conversion failed with reason: {0}"
 msgstr ""
 
@@ -75,7 +69,7 @@ msgstr[0] "Combining no PDF document"
 msgstr[1] "Combining {0} PDF document"
 msgstr[2] "Combining {0} PDF documents"
 
-msgid "Collecting PDF documents to combine"
+msgid "Collecting PDF documents"
 msgstr ""
 
 msgid "Updating bookmarks and page numbering"

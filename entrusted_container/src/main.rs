@@ -638,7 +638,7 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: Progress
 
     // step 1/7
     let mut progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
-    logger.log(progress_value, l10n.gettext("Collecting PDF documents to combine"));
+    logger.log(progress_value, l10n.gettext("Collecting PDF documents"));
     for i in 0..page_count {
         let src_path = input_dir_path.join(format!("page-{}.pdf", i + 1));
         let document: lopdf::Document = lopdf::Document::load(src_path)?;

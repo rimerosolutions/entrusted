@@ -57,12 +57,6 @@ msgstr "Type mime non pris en charge: {0}"
 msgid "Mime type error! Does the input have a 'known' file extension?"
 msgstr "Erreur de type Mime! L'entrée a t-elle une extension de fichier 'connue'?"
 
-msgid "Could not find office document PDF result!"
-msgstr "Impossible de trouver le résultat PDF du document office!"
-
-msgid "Failed to execute 'libreoffice' process!"
-msgstr "Échec de l'exécution du processus 'libreoffice'!"
-
 msgid "Conversion failed with reason: {0}"
 msgstr "La conversion a échoué avec la raison: {0}"
 
@@ -75,8 +69,8 @@ msgstr[0] "Combinaison de {0} documents PDF"
 msgstr[1] "Combinaison de {0} document PDF"
 msgstr[2] "Combinaison de {0} documents PDF"
 
-msgid "Collecting PDF documents to combine"
-msgstr "Collecte de documents PDF à combiner"
+msgid "Collecting PDF documents"
+msgstr "Collecte de documents PDF"
 
 msgid "Updating bookmarks and page numbering"
 msgstr "Mise à jour des signets et de la numérotation des pages"

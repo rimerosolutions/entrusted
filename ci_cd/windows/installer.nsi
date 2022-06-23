@@ -40,8 +40,6 @@ Section "Install Entrusted"
 
   File entrusted-cli.exe
   File entrusted-gui.exe
-  File entrusted-webclient.exe
-  File entrusted-webserver.exe
   File LICENSE.txt
 
   ; Write the installation path into the registry
@@ -74,8 +72,6 @@ Section -Uninstall
 
   Delete $INSTDIR\entrusted-cli.exe
   Delete $INSTDIR\entrusted-gui.exe
-  Delete $INSTDIR\entrusted-webclient.exe
-  Delete $INSTDIR\entrusted-webserver.exe
   Delete $INSTDIR\LICENSE.txt
   Delete $INSTDIR\uninstaller.exe
 

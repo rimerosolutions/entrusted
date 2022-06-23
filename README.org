@@ -40,19 +40,19 @@ There are 3 user interfaces ([[./entrusted_client][Desktop and CLI]], [[./entrus
 
 For downloads, please visit the [[https://github.com/rimerosolutions/entrusted/releases][releases page]] (64 bit operating systems).
 
-|------------------+-----------------------------------------+------------------------------|
-| Operating System | Artifact                                | Description                  |
-|------------------+-----------------------------------------+------------------------------|
-| =Linux=          | =entrusted-linux-amd64-<version>.tar=   | Portable binaries            |
-|------------------+-----------------------------------------+------------------------------|
-| =Mac OS=         | =entrusted-macos-amd64-<version>.dmg=   | Installer with the GUI       |
-|                  | =entrusted-macos-amd64-<version>.zip=   | Portable binaries            |
-|------------------+-----------------------------------------+------------------------------|
-| =MS Windows=     | =entrusted-windows-amd64-<version>.exe= | Installer with all binaries  |
-|                  | =entrusted-windows-amd64-<version>.zip= | Portable binaries            |
-|------------------+-----------------------------------------+------------------------------|
-| =Live CD=        | =entrusted-livecd-amd64-<version>.iso=  | Web interface deployed in VM |
-|------------------+-----------------------------------------+------------------------------|
+|------------------+-----------------------------------------+--------------------------------------------|
+| Operating System | Artifact                                | Description                                |
+|------------------+-----------------------------------------+--------------------------------------------|
+| =Linux=          | =entrusted-linux-amd64-<version>.tar=   | Archive with all the programs              |
+|------------------+-----------------------------------------+--------------------------------------------|
+| =Mac OS=         | =entrusted-macos-amd64-<version>.dmg=   | Installer with the Desktop and CLI clients |
+|                  | =entrusted-macos-amd64-<version>.zip=   | Archive with all programs                  |
+|------------------+-----------------------------------------+--------------------------------------------|
+| =MS Windows=     | =entrusted-windows-amd64-<version>.exe= | Installer with the Desktop and CLI clients |
+|                  | =entrusted-windows-amd64-<version>.zip= | Archive with all the programs              |
+|------------------+-----------------------------------------+--------------------------------------------|
+| =Live CD=        | =entrusted-livecd-amd64-<version>.iso=  | Web interface deployed in VM               |
+|------------------+-----------------------------------------+--------------------------------------------|
 
 ** Key software components
 

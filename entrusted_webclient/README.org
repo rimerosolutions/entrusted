@@ -60,6 +60,7 @@ The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to
 *** Example
 
 #+begin_src conf-toml
+  # Unless you need OCR all the time for a known language, do not set ocr-lang
   ocr-lang = "eng"
   host = "localhost"    
   port = 13000

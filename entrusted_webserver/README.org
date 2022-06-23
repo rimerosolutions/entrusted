@@ -161,10 +161,6 @@ The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to
 *** Example
 
 #+begin_src conf-toml
-  # This must be a valid tesseract lang code
-  # See also https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html
-  ocr-lang = "eng"
-
   # The server hostname or IP address to bind 
   host = "localhost"
 
@@ -182,7 +178,6 @@ The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to
 |------------------------+------------------------------------------------------------|
 | Parameter              | Description                                                |
 |------------------------+------------------------------------------------------------|
-| =ocr-lang=             | The [[https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html][tesseract OCR langcode]] if OCR is desired               |
 | =host=                 | The server hostname or IP address                          |
 | =port=                 | The server port number                                     |
 | =container-image-name= | A custom container image for conversions (advanced option) |

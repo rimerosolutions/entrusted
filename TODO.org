@@ -40,12 +40,7 @@
   - [ ] Code cleanup and refactoring
   - [ ] More idiomatic Rust code
   - [ ] Simplify and clarify the code
-- [ ] Revisit removal of LibreOffice from the container
-  - [ ] Previous attempt to integrate Java and Rust haven't been that successful
-  - [ ] There aren't "great + complete + free" OpenDocument libraries in either Rust or Java
-  - [ ] This could lead to supporting more password protected documents, including pending PDF support
-    - It's not possible to decrypt with LibreOffice CLI tools, except via UNO ([[https://manpages.ubuntu.com/manpages/bionic/man1/doc2odt.1.html][unoconv]])
-    - Even if decryption is possible from shell invocation, in memory operations are preferred
+- [X] Replace LibreOffice command-line calls with LibreOfficeKit integration (*UNRELEASED*)
 - [ ] Online Web Service
   - [ ] Serve Web UI translations at once, instead of a second request on page load
   - [ ] Use the =Content-Language= header in response (translations)
@@ -69,4 +64,6 @@
   - [ ] Mime-type detection
     - [ ] Avoid reading entire files for mimetype detections
     - [ ] Consider switching mime type libraries, but is there anything better?
+- User Interface
   - [ ] There're probably too many redraw operations in the Desktop UI
+  - [ ] Improve scrolling behavior during conversions ("smooth-scrolling")

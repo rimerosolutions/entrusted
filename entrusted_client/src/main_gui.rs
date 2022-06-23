@@ -424,6 +424,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Ok(selected_locale) => selected_locale,
         Err(_) => l10n::sys_locale()
     };
+
     let trans = l10n::new_translations(locale);
     let trans_ref = trans.clone_box();
 
@@ -805,20 +806,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     convert_frame.set_color(enums::Color::Red);
 
     let mut row_convert_button = group::Pack::default()
-        .with_size(680, 40)
+        .with_size(wind.w(), 40)
         .below_of(&convert_frame, 30);
     row_convert_button.set_type(group::PackType::Horizontal);
-    row_convert_button.set_spacing(2);
+    row_convert_button.set_spacing(WIDGET_GAP/2);
 
     let mut selection_pack = group::Pack::default()
-        .with_size(110, 40)
+        .with_size(150, 40)
         .with_type(group::PackType::Vertical)
         .below_of(&convert_frame, 30);
     selection_pack.set_spacing(5);
-
+    
     let selectall_frame_rc = Rc::new(RefCell::new(
         frame::Frame::default()
-            .with_size(110, 10)
+            .with_size(150, 10)
             .with_label(&trans.gettext("Select all"))
             .with_align(enums::Align::Inside | enums::Align::Left),
     ));
@@ -827,7 +828,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .set_label_color(enums::Color::Blue);
     let deselectall_frame_rc = Rc::new(RefCell::new(
         frame::Frame::default()
-            .with_size(110, 10)
+            .with_size(150, 10)
             .with_label(&trans.gettext("Deselect all"))
             .with_align(enums::Align::Inside | enums::Align::Left),
     ));
@@ -876,14 +877,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     selection_pack.end();
 
     let mut delete_button = button::Button::default()
-        .with_size(280, 20)
+        .with_size(260, 20)
         .with_label(&trans.gettext("Remove selected file(s)"));
     delete_button.set_label_color(enums::Color::Black);
     delete_button.set_color(enums::Color::White);
     delete_button.deactivate();
 
     let mut convert_button = button::Button::default()
-        .with_size(280, 20)
+        .with_size(260, 20)
         .with_label(&trans.gettext("Convert document(s)"));
 
     convert_button.set_label_color(enums::Color::Black);
@@ -1288,6 +1289,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut convert_button_ref = convert_button.clone();
         let mut columns_frame_ref = columns_frame.clone();
         let dialog_title = selectfiles_dialog_title.clone();
+        let mut row_convert_button_ref = row_convert_button.clone();
 
         move |_, ev| match ev {
             enums::Event::DndEnter => {
@@ -1335,6 +1337,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                             selection_pack_ref.set_damage(true);
                             selection_pack_ref.redraw();
                             columns_frame_ref.redraw();
+                            row_convert_button_ref.redraw();
                         }
                     }
                 }
@@ -1377,6 +1380,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                         selection_pack_ref.set_damage(true);
                         selection_pack_ref.redraw();
                         columns_frame_ref.redraw();
+                        row_convert_button_ref.redraw();
                     }
                 }
                 true
@@ -1416,9 +1420,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut filelist_scroll_ref = filelist_scroll.clone();
         let mut filelist_widget_ref = filelist_widget.clone();
 
-        let row_convert_button_ref = row_convert_button.clone();
+        let mut row_convert_button_ref = row_convert_button.clone();
         let convert_frame_ref = convert_frame.clone();
         let mut convert_button_ref = convert_button.clone();
+        let mut delete_button_ref = delete_button.clone();
         let mut columns_frame_ref = columns_frame.clone();
 
         let mut messages_frame_ref = messages_frame.clone();
@@ -1439,7 +1444,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 tabconvert_button.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, tabconvert_button.w(), 30);
                 tabsettings_button.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, tabsettings_button.w(), 30);
                 let content_y = top_group_ref.y() + top_group_ref.h() + WIDGET_GAP;
-
+                
                 let scroller_height = w.h() - top_group_ref.h() - convert_frame_ref.h() - row_convert_button_ref.h() - (messages_frame_ref.h() * 3);
 
                 convert_pack_rc_ref.borrow_mut().resize(
@@ -1455,6 +1460,19 @@ fn main() -> Result<(), Box<dyn Error>> {
                     w.w() - (WIDGET_GAP * 2),
                     w.h() - top_group_ref.h() + WIDGET_GAP,
                 );
+                
+                row_convert_button_ref.resize(
+                   WIDGET_GAP, row_convert_button_ref.y(), w.w() - (WIDGET_GAP * 2), row_convert_button_ref.h()
+                );
+
+                convert_button_ref.resize(
+                    convert_frame_ref.w() - convert_button_ref.w(), convert_button_ref.y(), convert_button_ref.w(), convert_button_ref.h()
+                );
+
+                delete_button_ref.resize(
+                    w.w() - (convert_button_ref.w() * 2), delete_button_ref.y(), delete_button_ref.w(), delete_button_ref.h()
+                );
+                
                 filelist_scroll_ref.resize(
                     filelist_scroll_ref.x(),
                     filelist_scroll_ref.y(),
@@ -1568,6 +1586,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 );
 
                 filelist_scroll_ref.redraw();
+
                 true
             }
             _ => {

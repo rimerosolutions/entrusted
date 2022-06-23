@@ -3,7 +3,6 @@ use std::env;
 use image;
 use infer;
 use lopdf;
-use std::process::{Command, Stdio};
 use poppler::Document;
 use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
@@ -16,6 +15,7 @@ use std::io::prelude::*;
 use std::path::PathBuf;
 use std::time::Instant;
 use zip;
+use libreoffice_rs;
 use entrusted_l10n as l10n;
 
 const SIG_LEGACY_OFFICE: [u8; 8] = [ 208, 207, 17, 224, 161, 177, 26, 225 ];
@@ -51,21 +51,6 @@ struct TessSettings<'a> {
 }
 
 const TESS_DATA_DIR: &str = "/usr/share/tessdata";
-
-fn mkdirp(p: PathBuf, error_message: String) -> Result<(), Box<dyn Error>> {
-    if !p.exists() {
-        let dir_created = fs::create_dir(&p);
-
-        match dir_created {
-            Err(ex) => {
-                Err(format!("{}: {:?}! {}", error_message, p, ex.to_string()).into())
-            },
-            _ => Ok(())
-        }
-    } else {
-        Ok(())
-    }
-}
 
 fn main() -> Result<(), Box<dyn Error>> {
     let timer = Instant::now();
@@ -403,43 +388,10 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
                     logger.log(5, l10n.gettext_fmt("Converting to PDF using LibreOffice with filter: {0}", vec![&output_filter]));
                     let new_input_path = PathBuf::from(format!("/tmp/input.{}", fileext));
                     fs::copy(&raw_input_path, &new_input_path)?;
-                    let output_dir_libreoffice = "/tmp/libreoffice";
-                    mkdirp(PathBuf::from(output_dir_libreoffice), l10n.gettext("msg-error-mkdir"))?;
-
-                    if let Some(raw_input_path_dir) = raw_input_path.parent() {
-                        let exec_status = Command::new("libreoffice")
-                            .current_dir(raw_input_path_dir)
-                            .arg("--headless")
-                            .arg("--convert-to")
-                            .arg(format!("pdf:{}", output_filter))
-                            .arg("--outdir")
-                            .arg(output_dir_libreoffice)
-                            .arg(new_input_path)
-                            .stdout(Stdio::inherit())
-                            .stderr(Stdio::inherit())
-                            .status()?;
-
-                        if !exec_status.success() {
-                            return Err(l10n.gettext("Failed to execute 'libreoffice' process!").into());
-                        }
-                    }
-
-                    let mut pdf_file_moved = false;
-
-                    for f in fs::read_dir(output_dir_libreoffice)? {
-                        let f_path = f?.path();
-                        let f_path_name = format!("{}", f_path.display());
-
-                        if f_path_name.ends_with(".pdf") {
-                            move_file_to_dir(&f_path, &PathBuf::from(&filename_pdf))?;
-                            pdf_file_moved = true;
-                            break;
-                        }
-                    }
-
-                    if !pdf_file_moved {
-                        return Err(l10n.gettext("Could not find office document PDF result!").into());
-                    }
+                    let mut office = libreoffice_rs::Office::new("/usr/lib/libreoffice/program")?;
+                    let new_input_path_text = &new_input_path.display().to_string();
+                    let mut doc = office.document_load(&new_input_path_text)?;
+                    doc.save_as(&filename_pdf, "pdf", None);
                 }
             }
         } else {

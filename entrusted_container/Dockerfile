@@ -6,6 +6,8 @@ RUN apk -U upgrade && \
     leptonica-dev \
     icu-data-full \
     tesseract-ocr-dev \
+    tesseract-ocr-dev \
+    libreofficekit \
     poppler-dev \
     cairo-dev \
     clang gcc clang-dev gcc cargo rust \
@@ -19,7 +21,7 @@ RUN apk -U upgrade && \
 
 WORKDIR /home/rust/entrusted-container
 COPY . .
-RUN cargo install --path entrusted_container
+RUN LO_INCLUDE_PATH=/usr/include/LibreOfficeKit cargo install --path entrusted_container && cargo clean --manifest-path entrusted_container/Cargo.toml
 
 FROM docker.io/alpine:latest
 
@@ -30,7 +32,7 @@ LABEL org.opencontainers.image.authors="Yves Zoundi"
 LABEL org.opencontainers.image.vendor="Rimero Solutions Inc."
 LABEL org.opencontainers.image.documentation="https://github.com/rimerosolutions/entrusted/tree/main/entrusted_container"
 LABEL org.opencontainers.image.licenses="GPLv3"
-LABEL org.opencontainers.image.version="0.1.3"
+LABEL org.opencontainers.image.version="0.1.4"
 LABEL org.opencontainers.image.url="https://github.com/rimerosolutions/entrusted/tree/main/entrusted_container"
 LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrusted.git"
 
@@ -107,7 +109,7 @@ RUN apk -U upgrade && \
     tesseract-ocr-data-tha \
     tesseract-ocr-data-tur \
     tesseract-ocr-data-ukr \
-    tesseract-ocr-data-vie 
+    tesseract-ocr-data-vie
 
 COPY --from=builder /root/.cargo/bin/entrusted-container /usr/local/bin/
 

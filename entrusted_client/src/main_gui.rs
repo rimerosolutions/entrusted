@@ -152,18 +152,18 @@ impl <'a> FileListWidget {
 
                 let mut xpos = active_row.checkbox.x();
                 active_row.checkbox.resize(xpos, active_row.checkbox.y(), width_checkbox, active_row.checkbox.h());
-                let path_name = format!("{}", active_row.file.file_name().and_then(|x| x.to_str()).unwrap());
-                active_row.checkbox.set_label(&clip_text(path_name, width_checkbox));
+
+                if let Some(path_name) = active_row.file.file_name().and_then(|x| x.to_str()) {
+                    active_row.checkbox.set_label(&clip_text(path_name, width_checkbox));
+                }
 
                 xpos += width_checkbox + WIDGET_GAP;
                 active_row.progressbar.resize(xpos, active_row.progressbar.y(), width_progressbar, active_row.progressbar.h());
 
                 xpos += width_progressbar + WIDGET_GAP;
-
                 active_row.status.resize(xpos, active_row.status.y(), width_status, active_row.status.h());
 
                 xpos += width_status + WIDGET_GAP;
-
                 active_row.log_link.resize(xpos, active_row.log_link.y(), width_logs, active_row.log_link.h());
             }
         }
@@ -1133,7 +1133,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     if result.load(Ordering::Relaxed) && active_viewer_app_option.is_some() {
                         if let Some(viewer_exe) = active_viewer_app_option {
                             if let Err(exe) = pdf_open_with(viewer_exe, current_output_path.clone()) {
-                                let err_text = format!("{}\n.{}.", "error.cannot_open_pdfresult", exe.to_string());
+                                let err_text = format!("{}\n.{}.", trans.gettext("Could not open PDF result!"), exe.to_string());
                                 dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, &err_text);
                             }
                         }
@@ -1183,7 +1183,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     option_env!("CARGO_PKG_DESCRIPTION").unwrap_or("Unknown"),
                     &trans_ref.gettext("Version"),
                     option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"),
-                    "Copyright Rimero Solutions, 2022-present"
+                    "Copyright Rimero Solutions, 2021-2022"
                 );
 
                 let mut logo_frame = frame::Frame::default()

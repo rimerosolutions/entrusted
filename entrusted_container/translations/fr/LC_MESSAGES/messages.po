@@ -69,8 +69,8 @@ msgstr[0] "Combinaison de {0} documents PDF"
 msgstr[1] "Combinaison de {0} document PDF"
 msgstr[2] "Combinaison de {0} documents PDF"
 
-msgid "Collecting PDF documents"
-msgstr "Collecte de documents PDF"
+msgid "Collecting PDF pages"
+msgstr "Collecte des pages PDF"
 
 msgid "Updating bookmarks and page numbering"
 msgstr "Mise à jour des signets et de la numérotation des pages"

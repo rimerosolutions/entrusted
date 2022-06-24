@@ -81,7 +81,7 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-msgid "Collecting PDF documents"
+msgid "Collecting PDF pages"
 msgstr ""
 
 msgid "Updating bookmarks and page numbering"

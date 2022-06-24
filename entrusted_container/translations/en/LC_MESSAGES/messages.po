@@ -69,7 +69,7 @@ msgstr[0] "Combining no PDF document"
 msgstr[1] "Combining {0} PDF document"
 msgstr[2] "Combining {0} PDF documents"
 
-msgid "Collecting PDF documents"
+msgid "Collecting PDF pages"
 msgstr ""
 
 msgid "Updating bookmarks and page numbering"

@@ -472,7 +472,7 @@
 
       function promptForPassword(source) {
         let found = false;
-        
+
         for (let i = 0; i < fileList.length && !found; i++) {
           let fileObj = fileList[i];
           let passwordElementId = "passwd-" + fileObj.id;
@@ -490,18 +490,19 @@
             let passwordContainerElement = document.createElement("div");
             let passwordInputElement = document.createElement("input");
             passwordInputElement.type = "password";
+            passwordInputElement.value = fileObj.passwd;
             passwordContainerElement.appendChild(passwordInputElement);
             documentFragment.appendChild(passwordContainerElement);
 
             let buttonsContainerElement = document.createElement("div");
-            
+
             let acceptButtonElement = document.createElement("button");
             acceptButtonElement.innerText = translations["data"]["l10n-window-password-accept-label"];
             acceptButtonElement.addEventListener("click", function(e) {
               fileObj.passwd = passwordInputElement.value;
               clearModalContents();
             });
-            
+
             let cancelButtonElement = document.createElement("button");
             cancelButtonElement.innerText = translations["data"]["l10n-window-password-cancel-label"];
             cancelButtonElement.addEventListener("click", function(e) {

@@ -109,10 +109,18 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         // step 1 0%
         let mut progress_range = ProgressRange::new(0, 20);
-        let input_file_path = input_as_pdf_to_pathbuf_uri(&logger, progress_range, raw_input_path, document_password, l10n.clone_box())?;
+        let input_file_path = input_as_pdf_to_pathbuf_uri(&logger, progress_range, raw_input_path, document_password.clone(), l10n.clone_box())?;
 
         let input_file_param = format!("{}", input_file_path.display());
-        let doc = Document::from_file(&input_file_param, None)?;
+        let doc = if let Some(passwd) = document_password {
+            // We only care about originally encrypted PDF files
+            // If the document was in another format, then it's already decrypted at this stage
+            // Providing a password for a non-encrypted document doesn't fail which removes the need for additional logic and state handling
+            Document::from_file(&input_file_param, Some(&passwd))?
+        } else {
+            Document::from_file(&input_file_param, None)?
+        };
+
         let page_count = doc.n_pages() as usize;
 
         // step 2 (20%)
@@ -382,15 +390,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
             match conversion_type {
                 ConversionType::None => {
                     logger.log(5, l10n.gettext_fmt("Copying PDF input to {0}", vec![&filename_pdf]));
-
-                    if let Some(passwd) = opt_passwd {
-                        let raw_input_path_uri = format!("file://{}", &raw_input_path.display());
-                        let filename_pdf_uri = format!("file://{}", &filename_pdf);
-                        let doc = Document::from_file(&raw_input_path_uri, Some(&passwd))?;
-                        doc.save_a_copy(&filename_pdf_uri)?;                        
-                    } else {
-                        fs::copy(&raw_input_path, PathBuf::from(&filename_pdf))?;
-                    }
+                    fs::copy(&raw_input_path, PathBuf::from(&filename_pdf))?;
                 }
                 ConversionType::Convert => {
                     logger.log(5, l10n.gettext("Converting input image to PDF"));
@@ -426,12 +426,14 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
                             let input_path_as_uri = format!("file://{}", new_input_path_text);
 
                             move |_type, _payload| {
-                                if !password_was_set.load(Ordering::Relaxed) {
+                                if !password_was_set.load(Ordering::Acquire) {
                                     let _ = office.set_document_password(&input_path_as_uri, &passwd);
-                                    password_was_set.store(true, Ordering::Relaxed);
+                                    password_was_set.store(true, Ordering::Release);
                                 } else {
-                                    failed_password_input.store(true, Ordering::Relaxed);
-                                    let _ = office.unset_document_password(&input_path_as_uri);
+                                    if !failed_password_input.load(Ordering::Acquire) {
+                                        failed_password_input.store(true, Ordering::Release);
+                                        let _ = office.unset_document_password(&input_path_as_uri);
+                                    }
                                 }
                             }
                         }) {

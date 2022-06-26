@@ -10,21 +10,25 @@
 
 *NOTE*: Unless you use the live CD, you MUST install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior running the program.
 
-[[./images/ui-screenshot.png]]
+Below are some screenshots of the graphical Desktop client running on Mac OS.
+
+[[./images/ui-screenshot-settings.png]]
+
+[[./images/ui-screenshot-convert.png]]
 
 ** Features
 
-This repository is a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation purposes (/not an exact port/).
+This application is a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], originally for experimentation purposes (/not an exact port/).
 - Similarly to the original /Dangerzone/ tool, documents or images are converted inside a "sandbox"
 - Documents can be converted in batch (sequential conversions for now)
-- There is support for password-protected documents (support Office document formats and PDF files)
-- There's an optional Web interface that can act as an "online service" (multi-tenancy)
-- The support for large/complex documents is transparent (avoid timeouts or other user-visible issues)
+- Password-protected files are supported: supported Office document formats and PDF files
+- An optional Web interface is available and can act as an "online service" (towards multi-tenancy)
+- The transformation of large/complex documents is frictionless (timeouts or other user-visible issues)
 - The live CD provides both enhanced security and convenience:
   - Pre-installed [[https://xebia.com/blog/podman-the-free-container-engine-alternative-to-docker/][container solution]], with no required user configuration ([[./entrusted_webserver][entrusted_webserver]])
   - Extra isolation layer with a virtual machine
-- Text is translated whenever possible (English and French so far)
-- On Mac OS, you're not constrained to [[https://www.docker.com/products/docker-desktop/][Docker]] with [[https://github.com/lima-vm/lima][Lima]] as a viable alternative
+- The application support multiple languages (English and French for now)
+- On Mac OS, [[https://github.com/lima-vm/lima][Lima]] is supported as an alternative to [[https://www.docker.com/products/docker-desktop/][Docker]]
     
 * What is available?
 
@@ -67,7 +71,7 @@ Most users will interact with the =entrusted_client=, via its Desktop user inter
 | [[./entrusted_container][entrusted_container]] | Document processing "sandbox"               |
 | [[./entrusted_client][entrusted_client]]    | Command-line and graphical user interfaces  |
 | [[./entrusted_webserver][entrusted_webserver]] | Online service feature with a Web interface |
-| [[./entrusted_webclient][entrusted_webclient]] | Command-line client for the online service  |
+| [[./entrusted_webclient][entrusted_webclient]] | Command-line client for the =webserver=     |
 | [[./entrusted_l10n][entrusted_l10n]]      | Shared library for translation features     |
 |---------------------+---------------------------------------------|
 
@@ -85,9 +89,9 @@ Below is a high-level architecture overview, the solution relies on a container 
   - BSD users can probably use the "Online service" and its Web interface
 - *Container Runtime*: [[https://podman.io/][Podman]], [[https://www.docker.com/][Docker]] or [[https://github.com/lima-vm/lima][Lima]]
   - On Linux, please install Podman
-  - For Windows, Docker is recommended
-  - For Mac OS, /please/ use either Docker or Lima
+  - On Windows, Docker is recommended
+  - On Mac OS, please use either Docker or Lima
 
 Conversions will fail if the container solution is not running or available in your [[https://www.java.com/en/download/help/path.html]["PATH settings"]]:
-  - The tool doesn't attempt to modify software on your machine (install Docker or other programs)
-  - The tool doesn't manage other software running on your machine (start or stop services)
+  - The tool doesn't attempt to modify software on your machine (install or change other programs)
+  - The tool doesn't attempt to manage other software running on your machine (start/stop services)

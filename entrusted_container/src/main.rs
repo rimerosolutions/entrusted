@@ -21,12 +21,16 @@ use libreoffice_rs::{Office, LibreOfficeKitOptionalFeatures};
 use entrusted_l10n as l10n;
 
 const SIG_LEGACY_OFFICE: [u8; 8] = [ 208, 207, 17, 224, 161, 177, 26, 225 ];
+const LOCATION_LIBREOFFICE_PROGRAM: &str = "/usr/lib/libreoffice/program";
 
 const IMAGE_DPI: f64   = 150.0;
 const TARGET_DPI : f64 = 72.0;
 const ZOOM_RATIO: f64  = IMAGE_DPI / TARGET_DPI;
-const LOCATION_LIBREOFFICE_PROGRAM: &str = "/usr/lib/libreoffice/program";
+
 const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str = "ENTRUSTED_DOC_PASSWD";
+const ENV_VAR_LOG_FORMAT: &str           = "LOG_FORMAT";
+const ENV_VAR_OCR: &str                  = "OCR";
+const ENV_VAR_OCR_LANGUAGE: &str         = "OCR_LANGUAGE";
 
 macro_rules! incl_gettext_files {
     ( $( $x:expr ),* ) => {
@@ -67,7 +71,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
     let l10n = l10n::new_translations(locale);
 
-    let skip_ocr = match env::var("OCR") {
+    let skip_ocr = match env::var(ENV_VAR_OCR) {
         Ok(ocr_set_value) => {
             match ocr_set_value.as_str() {
                 "1" => false,
@@ -89,7 +93,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         None
     };
 
-    let logger: Box<dyn ConversionLogger> = match env::var("LOG_FORMAT") {
+    let logger: Box<dyn ConversionLogger> = match env::var(ENV_VAR_LOG_FORMAT) {
         Ok(dgz_logformat_value) => {
             match dgz_logformat_value.as_str() {
                 "json" => {
@@ -133,7 +137,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         if skip_ocr {
             imgs_to_pdf(&logger, progress_range, page_count, &output_dir_path, &output_dir_path, l10n.clone_box())?;
         } else {
-            let ocr_lang = env::var("OCR_LANGUAGE")?;
+            let ocr_lang = env::var(ENV_VAR_OCR_LANGUAGE)?;
             let ocr_lang_text = ocr_lang.as_str();
             if !l10n::ocr_lang_key_by_name(l10n.clone_box()).contains_key(&ocr_lang_text) {
                 return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![ocr_lang_text]).into());
@@ -669,7 +673,7 @@ fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_rang
 
         if let Some(page) = doc.page(i) {
             let page_num_text = page_num.to_string();
-            progress_value = progress_range.min + (i * progress_delta as i32 / page_num) as usize;
+            progress_value = progress_range.min + (page_num * progress_delta as i32 / page_num) as usize;
             logger.log(progress_value, l10n.gettext_fmt("Extracting page {0} into a PNG image", vec![&page_num_text]));
 
             let dest_path = dest_folder.join(format!("page-{}.png", page_num));
@@ -754,8 +758,7 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: Progress
 
     // Catalog and Pages are mandatory
     let mut catalog_object: Option<(lopdf::ObjectId, lopdf::Object)> = None;
-    let mut pages_object: Option<(lopdf::ObjectId, lopdf::Object)> = None;
-
+    let mut pages_object: Option<(lopdf::ObjectId, lopdf::Object)>   = None;
 
     // step 3/7 Process all objects except "Page" type
     step_num += 1;
@@ -853,7 +856,6 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: Progress
             let mut dictionary = dictionary.clone();
             dictionary.set("Pages", pages_object.0);
             dictionary.remove(b"Outlines"); // Outlines not supported in merged PDFs
-
             document.objects.insert(catalog_object.0, lopdf::Object::Dictionary(dictionary));
         }
 
@@ -904,7 +906,7 @@ fn imgs_to_pdf(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange
     for i in 0..page_count {
         let idx = i + 1;
         let idx_text = idx.to_string();
-        progress_value = progress_range.min + (i * progress_delta / page_count) as usize;
+        progress_value = progress_range.min + (idx * progress_delta / page_count) as usize;
         logger.log(progress_value, l10n.gettext_fmt("Saving PNG image {0} to PDF", vec![&idx_text]));
         let src = input_path.join(format!("page-{}.png", idx));
         let dest = output_path.join(format!("page-{}.pdf", idx));

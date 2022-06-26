@@ -26,6 +26,7 @@ indicatif = "0.16.2"
 dirs = "4.0.0"
 toml = "0.5.9"
 entrusted_l10n = { path = "../entrusted_l10n" }
+rpassword = "6.0"
 
 [build-dependencies]
 polib = "0.1.0"

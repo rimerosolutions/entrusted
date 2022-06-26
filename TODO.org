@@ -35,31 +35,30 @@
 
 * Other improvements
 
-- [ ] Code maintenance
+- [-] Code maintenance
   - [ ] Add automated tests (unit & integration)
   - [ ] Code cleanup and refactoring
   - [ ] More idiomatic Rust code
+  - [X] Eliminate shell commands inside the container image
   - [ ] Simplify and clarify the code
-- [X] Replace LibreOffice command-line calls with LibreOfficeKit integration (*UNRELEASED*)
 - [ ] Online Web Service
   - [ ] Serve Web UI translations at once, instead of a second request on page load
   - [ ] Use the =Content-Language= header in response (translations)
   - [ ] Revisit notifications SSE + HTTP2, for the "Online Service"
 - [ ] Investigate if specific support is required for Tails Linux
-- [ ] CI/CD
+- [-] CI/CD
   - [ ] Transition CI/CD scrips to Github actions or TravisCI or something else?
   - [ ] Revisit Flatpak support requirements and =flatpak-spawn=
-  - [ ] Adopt Git flow
+  - [X] Adopt Git flow and delete all the previous spiral branches
 - [ ] Hardening
   - [ ] Review container execution options (podman vs podman-remote, security options, etc.)
   - [ ] Review some of the code and read few security-related articles
-  - [ ] Revisit container solution alternatives: =AppArmor=, =firejail=, =bubblewrap=
-- [ ] Improved conversions
+- [-] Improved conversions
   - [ ] Parallel conversions
   - [ ] Minimal resources management to avoid exhausting computer CPU and memory
   - [ ] Cancellable conversions for those that haven't started yet
   - [ ] Custom output location for individual documents in the conversion queue
-  - [ ] Support for password-protected PDF files
+  - [X] Support for password-protected documents
 - [ ] Performance
   - [ ] Mime-type detection
     - [ ] Avoid reading entire files for mimetype detections

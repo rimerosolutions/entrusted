@@ -15,6 +15,7 @@ authors = [
 [dependencies]
 once_cell = "1.10.0"
 clap = "2.33.3"
+rpassword = "6.0"
 which = "4.2.2"
 filetime = "0.2"
 serde = { version = "1.0.136", features = ["derive"] }

@@ -18,6 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "Failed to read password!"
+msgstr ""
+
+msgid "Please enter the password for the document"
+msgstr ""
+
+msgid "Prompt for document password"
+msgstr ""
+
 msgid "Server host or IP address"
 msgstr ""
 

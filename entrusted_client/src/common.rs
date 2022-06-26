@@ -4,6 +4,7 @@ use which;
 use serde::{Deserialize, Serialize};
 
 pub const CONTAINER_IMAGE_EXE: &str = "/usr/local/bin/entrusted-container";
+pub const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str = "ENTRUSTED_DOC_PASSWD";
 
 #[macro_export]
 macro_rules! incl_gettext_files {
@@ -35,6 +36,28 @@ pub struct LogMessage {
 }
 
 #[derive(Clone)]
+pub struct ConvertOptions {
+    pub container_image_name: String,
+    pub log_format: String,
+    pub opt_ocr_lang: Option<String>,
+    pub opt_passwd: Option<String>
+}
+
+impl ConvertOptions {
+    pub fn new(container_image_name: String,
+               log_format: String,
+               opt_ocr_lang: Option<String>,
+               opt_passwd: Option<String>) -> Self {
+        Self {
+            container_image_name,
+            log_format,
+            opt_ocr_lang,
+            opt_passwd
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct ContainerProgram<'a>{
     pub exec_path: PathBuf,
     pub sub_commands: Vec<&'a str>,
@@ -45,7 +68,7 @@ pub struct ContainerProgram<'a>{
 impl<'a> ContainerProgram<'a> {
     pub fn new(exec_path: PathBuf, sub_commands: Vec<&'a str>, suggested_run_args: Vec<&'a str>, suggested_tmp_dir: Option<PathBuf>) -> Self {
         Self {
-            exec_path,    
+            exec_path,
             sub_commands,
             suggested_run_args,
             suggested_tmp_dir

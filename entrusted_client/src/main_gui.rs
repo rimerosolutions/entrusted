@@ -26,6 +26,7 @@ mod container;
 const WIDGET_GAP: i32 = 20;
 const ELLIPSIS: &str = "...";
 const FRAME_ICON: &[u8] = include_bytes!("../../images/Entrusted_icon.png");
+const PASSWORD_ICON: &[u8] = include_bytes!("../../images/Password_icon.png");
 
 const FILELIST_ROW_STATUS_PENDING    :&str = "Pending";
 const FILELIST_ROW_STATUS_INPROGRESS :&str = "InProgress";
@@ -43,11 +44,13 @@ impl FileListWidgetEvent {
 #[derive(Clone)]
 struct FileListRow {
     file: PathBuf,
+    password_button: frame::Frame,
     checkbox: button::CheckButton,
     progressbar: misc::Progress,
     status: frame::Frame,
     log_link: button::Button,
     logs: Rc<RefCell<Vec<String>>>,
+    opt_passwd: Rc<RefCell<Option<String>>>,
 }
 
 impl FileListRow {
@@ -132,25 +135,29 @@ impl <'a> FileListWidget {
         }
     }
 
-    pub fn column_widths(&self, w: i32) -> (i32, i32, i32, i32){
-        let width_checkbox    = (w as f64 * 0.5) as i32;
+    pub fn column_widths(&self, w: i32) -> (i32, i32, i32, i32, i32) {
+        let width_password    = (w as f64 * 0.05) as i32;
+        let width_checkbox    = (w as f64 * 0.4) as i32;
         let width_progressbar = (w as f64 * 0.15) as i32;
         let width_status      = (w as f64 * 0.15) as i32;
         let width_logs        = (w as f64 * 0.1) as i32;
 
-        (width_checkbox, width_progressbar, width_status, width_logs)
+        (width_password, width_checkbox, width_progressbar, width_status, width_logs)
     }
 
     pub fn resize(&mut self, x: i32, y: i32, w: i32, _: i32) {
         self.container.resize(x, y, w, self.container.h());
 
-        let (width_checkbox, width_progressbar, width_status, width_logs) = self.column_widths(w);
+        let (width_password, width_checkbox, width_progressbar, width_status, width_logs) = self.column_widths(w);
 
         if let Ok(rows) = self.rows.try_borrow() {
             for row in rows.iter() {
                 let mut active_row = row.clone();
 
                 let mut xpos = active_row.checkbox.x();
+                active_row.password_button.resize(xpos, active_row.password_button.y(), width_password, active_row.password_button.h());
+
+                xpos += width_checkbox + WIDGET_GAP;
                 active_row.checkbox.resize(xpos, active_row.checkbox.y(), width_checkbox, active_row.checkbox.h());
 
                 if let Some(path_name) = active_row.file.file_name().and_then(|x| x.to_str()) {
@@ -263,19 +270,37 @@ impl <'a> FileListWidget {
     }
 
     pub fn add_file(&mut self, path: PathBuf) {
+        let new_translations = self.translations.borrow().clone();
+
         let ww = self.container.w();
 
-        let (width_checkbox, width_progressbar, width_status, width_logs) = self.column_widths(ww);
+        let (width_password, width_checkbox, width_progressbar, width_status, width_logs) = self.column_widths(ww);
 
         let mut row = group::Pack::default()
             .with_type(group::PackType::Horizontal)
             .with_size(ww, 40);
-
         row.set_spacing(WIDGET_GAP);
+
+        let row_height: i32 = 30;
+
+        let mut password_button =  frame::Frame::default().with_size(width_password, row_height);
+        
+        if let Ok(img) = image::PngImage::from_data(PASSWORD_ICON) {
+            password_button.set_image(Some(img));
+        }
+        password_button.set_color(enums::Color::White);
+        password_button.set_label_color(enums::Color::Red);
+        let password_button_label = match new_translations.get("Set document password (empty for none)") {
+            Some(vv) => vv.to_owned(),
+            None => String::from("Set document password (empty for none)")
+        };
+        
+        password_button.set_tooltip(&password_button_label);
+
         let path_name = format!("{}", path.file_name().and_then(|x| x.to_str()).unwrap());
         let path_tooltip = format!("{}", path.display());
         let mut selectrow_checkbutton = button::CheckButton::default()
-            .with_size(width_checkbox, 30)
+            .with_size(width_checkbox, row_height)
             .with_label(&clip_text(path_name, width_checkbox));
         selectrow_checkbutton.set_tooltip(&path_tooltip);
 
@@ -283,13 +308,13 @@ impl <'a> FileListWidget {
         let progressbar = misc::Progress::default().with_size(width_progressbar, 20).with_label("0%");
 
         let mut status_frame = frame::Frame::default()
-            .with_size(width_status, 30)
+            .with_size(width_status, row_height)
             .with_label(FILELIST_ROW_STATUS_PENDING)
             .with_align(enums::Align::Inside | enums::Align::Left);
         status_frame.set_label_color(enums::Color::Magenta);
 
         let mut logs_button = button::Button::default()
-            .with_size(width_logs, 30)
+            .with_size(width_logs, row_height)
             .with_label("   ");
         logs_button.set_frame(enums::FrameType::NoBox);
         logs_button.set_down_frame(enums::FrameType::NoBox);
@@ -299,15 +324,17 @@ impl <'a> FileListWidget {
         row.end();
 
         let file_list_row = FileListRow {
+            password_button: password_button.clone(),
             checkbox: check_buttonx2,
             progressbar,
             status: status_frame,
             log_link: logs_button.clone(),
             logs: Rc::new(RefCell::new(vec![])),
             file: path.clone(),
+            opt_passwd: Rc::new(RefCell::new(None))
         };
 
-        let new_translations = self.translations.borrow().clone();
+        
         let dialog_title = match new_translations.get("Logs") {
             Some(vv) => vv.to_owned(),
             None => String::from("Logs")
@@ -318,6 +345,109 @@ impl <'a> FileListWidget {
             None => String::from("Close")
         };
 
+        password_button.handle({
+            let active_row = file_list_row.clone();
+            let trans = new_translations.clone();
+
+            move |_, ev| match ev {
+                enums::Event::Push => {
+                    if let Some(current_wind) = app::first_window() {
+                        let dialog_width  = 350;
+                        let dialog_height = 200;
+                        let dialog_xpos   = current_wind.x() + (current_wind.w() / 2) - (dialog_width  / 2);
+                        let dialog_ypos   = current_wind.y() + (current_wind.h() / 2) - (dialog_height / 2);
+                        
+                        let (button_width, button_height) = (100, 40);
+
+                        let win_title: String = match trans.get("Set document password") {
+                            Some(v) => v.clone(),
+                            None => "Set document password".to_string()
+                        };
+                        let mut win = window::Window::default()
+                            .with_size(dialog_width, dialog_height)
+                            .with_pos(dialog_xpos, dialog_ypos)
+                            .with_label(&win_title);
+
+                        let mut container_pack = group::Pack::default()
+                            .with_pos(WIDGET_GAP, WIDGET_GAP)
+                            .with_type(group::PackType::Vertical)
+                            .with_size(dialog_width - (WIDGET_GAP * 2), dialog_height - (WIDGET_GAP * 2));
+                        container_pack.set_spacing(WIDGET_GAP);
+
+                        let mut secret_input = input::SecretInput::default()
+                            .with_size(dialog_width - WIDGET_GAP * 2, 40);
+
+                        let v = active_row.opt_passwd.borrow().clone();
+                        if let Some(current_password) = v {
+                            secret_input.set_value(&current_password);
+                        }
+
+                        let mut buttons_pack = group::Pack::default()
+                            .with_size(dialog_width, WIDGET_GAP * 2)
+                            .below_of(&secret_input, WIDGET_GAP)
+                            .with_type(group::PackType::Horizontal)
+                            .with_align(enums::Align::Inside | enums::Align::Right);
+                        buttons_pack.set_spacing(WIDGET_GAP);
+
+                        let ok_button_label: String = match trans.get("Accept") {
+                            Some(v) => v.clone(),
+                            None => "Accept".to_string()
+                        };
+                        let mut ok_button = button::Button::default()                        
+                        .with_size(button_width, button_height)
+                            .with_label(&ok_button_label);
+
+                        let cancel_button_label: String = match trans.get("Cancel") {
+                            Some(v) => v.clone(),
+                            None => "Cancel".to_string()
+                        };
+                        let mut cancel_button = button::Button::default()                        
+                        .with_size(button_width, button_height)
+                        .with_label(&cancel_button_label);
+
+                        ok_button.set_callback({
+                            let mut win = win.clone();
+                            let secret_input = secret_input.clone();
+                            let active_row = active_row.clone();
+                            
+                            move |_| {
+                                let input_value = secret_input.value();
+                                let new_passwd = if !input_value.is_empty() {
+                                    Some(input_value.clone())
+                                } else {
+                                    None
+                                };
+                                let mut passwd_holder = active_row.opt_passwd.borrow_mut();                                
+                                let _ = std::mem::replace(&mut *passwd_holder, new_passwd);
+                                win.hide();
+                            }
+                        });
+
+                        cancel_button.set_callback({
+                            let mut win = win.clone();
+                            
+                            move |_| {
+                                win.hide();
+                            }
+                        });
+
+                        buttons_pack.end();
+                        container_pack.end();
+
+                        win.end();
+                        win.make_modal(true);
+                        win.make_resizable(true);
+                        win.show();
+
+                        while win.shown() {
+                            app::wait();
+                        }
+                     }
+                    true
+                }
+                _ => false,
+            }
+        });
         logs_button.set_callback({
             let active_row = file_list_row.clone();
 
@@ -816,7 +946,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_type(group::PackType::Vertical)
         .below_of(&convert_frame, 30);
     selection_pack.set_spacing(5);
-    
+
     let selectall_frame_rc = Rc::new(RefCell::new(
         frame::Frame::default()
             .with_size(150, 10)
@@ -897,29 +1027,33 @@ fn main() -> Result<(), Box<dyn Error>> {
     columns_frame.set_frame(enums::FrameType::NoBox);
 
     let filelist_scroll = group::Scroll::default().with_size(580, 200);
-    let mut translations = HashMap::with_capacity(2);
-    let label_log_window_close = trans.gettext("Close");
-    let label_log_window_title = trans.gettext("Logs");
-    translations.insert(String::from("Logs"), label_log_window_title);
-    translations.insert(String::from("Close"), label_log_window_close);
+    let translations: HashMap<String, String> = [
+        "Logs", "Close", "Accept", "Cancel", "Set document password", "Set document password (empty for none)"        
+    ].map(|k| (k.to_string(), trans.gettext(k)))
+        .iter()
+        .cloned()
+        .collect();
+    
     let mut filelist_widget = FileListWidget::new(Rc::new(RefCell::new(translations.clone())));
 
+    let col_label_password = String::new();
     let col_label_filename = trans.gettext("File name");
     let col_label_progress = trans.gettext("Progress(%)");
     let col_label_status   = trans.gettext("Status");
     let col_label_message  = trans.gettext("Message");
 
     columns_frame.draw({
-        let filelist_widget_ref = filelist_widget.clone();
+        let filelist_widget_ref    = filelist_widget.clone();
+        let col_label_password_ref = col_label_password.to_owned();
         let col_label_filename_ref = col_label_filename.to_owned();
         let col_label_progress_ref = col_label_progress.to_owned();
-        let col_label_status_ref = col_label_status.to_owned();
-        let col_label_message_ref = col_label_message.to_owned();
+        let col_label_status_ref   = col_label_status.to_owned();
+        let col_label_message_ref  = col_label_message.to_owned();
 
         move |wid| {
             if filelist_widget_ref.children() != 0 {
                 let y = wid.y();
-                let column_names = vec![col_label_filename_ref.clone(), col_label_progress_ref.clone(), col_label_status_ref.clone(), col_label_message_ref.clone()];
+                let column_names = vec![col_label_password_ref.clone(), col_label_filename_ref.clone(), col_label_progress_ref.clone(), col_label_status_ref.clone(), col_label_message_ref.clone()];
                 let (_, h) = draw::measure(&column_names[0], true);
 
                 let old_color = draw::get_color();
@@ -1009,6 +1143,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             for current_row in filelist_widget_ref.rows.borrow_mut().iter() {
                 let mut active_row = current_row.clone();
                 active_row.reset_ui_state();
+                active_row.password_button.deactivate();
                 active_row.checkbox.deactivate();
             }
 
@@ -1056,14 +1191,20 @@ fn main() -> Result<(), Box<dyn Error>> {
                     active_row.checkbox.deactivate();
                     active_row.status.set_label_color(enums::Color::DarkYellow);
                     let trans_ref = trans_ref.clone_box();
+                    let d = active_row.opt_passwd.clone();
+                    let opt_passwd = d.borrow().clone();
 
                     let mut exec_handle = Some(thread::spawn(move || {
+                        let opt_passwd_value  = opt_passwd.to_owned();
+                        let convert_options = common::ConvertOptions::new(
+                            active_ociimage_option,
+                            String::from("json"),
+                            active_ocrlang_option, opt_passwd_value);
+
                         match container::convert(
                             current_input_path.clone(),
                             output_path.clone(),
-                            active_ociimage_option,
-                            String::from("json"),
-                            active_ocrlang_option,
+                            convert_options,
                             tx,
                             trans_ref
                         ) {
@@ -1444,7 +1585,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 tabconvert_button.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, tabconvert_button.w(), 30);
                 tabsettings_button.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, tabsettings_button.w(), 30);
                 let content_y = top_group_ref.y() + top_group_ref.h() + WIDGET_GAP;
-                
+
                 let scroller_height = w.h() - top_group_ref.h() - convert_frame_ref.h() - row_convert_button_ref.h() - (messages_frame_ref.h() * 3);
 
                 convert_pack_rc_ref.borrow_mut().resize(
@@ -1460,9 +1601,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                     w.w() - (WIDGET_GAP * 2),
                     w.h() - top_group_ref.h() + WIDGET_GAP,
                 );
-                
+
                 row_convert_button_ref.resize(
-                   WIDGET_GAP, row_convert_button_ref.y(), w.w() - (WIDGET_GAP * 2), row_convert_button_ref.h()
+                    WIDGET_GAP, row_convert_button_ref.y(), w.w() - (WIDGET_GAP * 2), row_convert_button_ref.h()
                 );
 
                 convert_button_ref.resize(
@@ -1472,7 +1613,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 delete_button_ref.resize(
                     w.w() - (convert_button_ref.w() * 2), delete_button_ref.y(), delete_button_ref.w(), delete_button_ref.h()
                 );
-                
+
                 filelist_scroll_ref.resize(
                     filelist_scroll_ref.x(),
                     filelist_scroll_ref.y(),

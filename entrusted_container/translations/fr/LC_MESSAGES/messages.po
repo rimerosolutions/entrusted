@@ -18,6 +18,21 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "Failed to enable password-protected Office document features! {0}"
+msgstr "Échec de l'activation des fonctionnalités de document Office protégés par mot de passe! {0}"
+
+msgid "Failed to handle password-protected Office document features! {0}"
+msgstr "Échec de la gestion des fonctionnalités de document Office protégées par mot de passe! {0}"
+
+msgid "Could not save document as PDF"
+msgstr "Impossible d'enregistrer le document au format PDF"
+
+msgid "Password input failed!"
+msgstr "La saisie du mot de passe a échoué!"
+
+msgid "Could not export input document as PDF! {0}"
+msgstr "Impossible d'exporter le document d'entrée au format PDF! {0}"
+
 msgid "Copying PDF input to {0}"
 msgstr "Copier l'entrée PDF vers {0}"
 

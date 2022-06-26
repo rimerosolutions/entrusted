@@ -1,6 +1,10 @@
 {
   "locale": "en",
   "data": {
+    "l10n-window-password-title": "Set document password",
+    "l10n-window-password-cancel-label": "Cancel",
+    "l10n-window-password-accept-label": "Accept",
+    "l10n-file-password-button-title": "Set document password (empty for none)",
     "l10n-file-deleted-from-server": "File deleted from server.",
     "l10n-window-logs-title": "Logs",
     "l10n-download-pdf-text": "Download trusted PDF",

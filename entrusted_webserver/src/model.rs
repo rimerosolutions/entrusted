@@ -7,6 +7,20 @@ pub struct Notification {
     pub data: String,
 }
 
+#[derive(Debug, Clone)]
+pub struct ConversionOptions {
+    pub ci_image_name: String,
+    pub opt_ocr_lang: Option<String>,    
+    pub opt_passwd: Option<String>,    
+}
+
+impl ConversionOptions {
+    pub fn new (ci_image_name: String, opt_ocr_lang: Option<String>, opt_passwd: Option<String>) -> Self {
+        Self {
+            ci_image_name, opt_ocr_lang, opt_passwd
+        }
+    }
+}
 impl Notification {
     pub fn new(event: String, id: String, data: String) -> Self {
         Self { event, id, data }

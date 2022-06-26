@@ -14,13 +14,16 @@
     <meta name="description" content="Entrusted Web Application"/>
     <title>Entrusted Web _APPVERSION_</title>
     <script>
-      let fileCounter = 0;
       let fileList = new Array();
       let logByFileId = new Map();
       let isConverting = false;
       let translations = {
         "locale": "en",
         "data": {
+          "l10n-window-password-title": "Set document password",
+          "l10n-window-password-cancel-label": "Cancel",
+          "l10n-window-password-accept-label": "Accept",
+          "l10n-file-password-button-title": "Set document password (empty for none)",
           "l10n-file-deleted-from-server": "File deleted from server.",
           "l10n-window-logs-title": "Logs",
           "l10n-download-pdf-text": "Download trusted PDF",
@@ -388,6 +391,7 @@
           for (let i = 0; i < currentFileList.length; i++) {
             let fileObj = {
               id: "file-" + Date.now() + "" + i,
+              passwd: "",
               fileName: currentFileList[i].name,
               progressStatus: "0%",
               processingStatus: 'Pending',
@@ -397,8 +401,8 @@
 
             fileList.push(fileObj);
 
-            let columnData = [fileObj.fileName, fileObj.progressStatus, fileObj.processingStatus, fileObj.progressMessage];
-            let idPrefixes = ["filename-", "progress-status-", "processing-status-", "progress-message-"];
+            let columnData = [" ", fileObj.fileName, fileObj.progressStatus, fileObj.processingStatus, fileObj.progressMessage];
+            let idPrefixes = ["passwd-", "filename-", "progress-status-", "processing-status-", "progress-message-"];
             let rowElement = document.createElement("tr");
             rowElement.id = fileObj.id;
 
@@ -406,7 +410,14 @@
               let rowColumnElement = document.createElement("td");
               rowColumnElement.id = idPrefixes[j] + fileObj.id;
 
-              if (j == 0) {
+              if (idPrefixes[j].indexOf("passwd-") != -1) {
+                let passwordElement = document.createElement("button");
+                passwordElement.id = "passwd-" + fileObj.id;
+                passwordElement.title = translations["data"]["l10n-file-password-button-title"];
+                passwordElement.className = "passwordFileIcon";
+                passwordElement.innerText = columnData[j];
+                rowColumnElement.appendChild(passwordElement);
+              } else if (idPrefixes[j].indexOf("filename-") != -1) {
                 let checkboxElement = document.createElement("input");
                 checkboxElement.type = "checkbox";
                 checkboxElement.id = "chk-" + fileObj.id;
@@ -418,14 +429,14 @@
                 checkboxLabelElement.for = "chk-" + fileObj.id;
                 checkboxLabelElement.innerText = columnData[j];
                 rowColumnElement.appendChild(checkboxLabelElement);
-              } else if (j == 1) {
+              } else if (idPrefixes[j].indexOf("progress-status-") != -1) {
                 let progressElement = document.createElement("progress");
                 progressElement.id = "progress-" + fileObj.id;
                 progressElement.value = 0;
                 progressElement.max = 100;
                 rowColumnElement.appendChild(progressElement);
               } else {
-                if (j == 2) {
+                if (idPrefixes[j].indexOf("processing-status-") != -1) {
                   rowColumnElement.className= "pending";
                 }
 
@@ -459,8 +470,56 @@
         source.removeEventListener("click", disableLinkListener);
       }
 
+      function promptForPassword(source) {
+        let found = false;
+        
+        for (let i = 0; i < fileList.length && !found; i++) {
+          let fileObj = fileList[i];
+          let passwordElementId = "passwd-" + fileObj.id;
+
+          if (passwordElementId == source.id) {
+            found = true;
+            let modal = document.getElementById("modalWindow");
+            let modalContent = document.getElementById("modalContent");
+            let documentFragment = document.createDocumentFragment();
+
+            let windowTitleElement = document.createElement("h3");
+            windowTitleElement.innerText = "Set document password";
+            documentFragment.appendChild(windowTitleElement);
+
+            let passwordContainerElement = document.createElement("div");
+            let passwordInputElement = document.createElement("input");
+            passwordInputElement.type = "password";
+            passwordContainerElement.appendChild(passwordInputElement);
+            documentFragment.appendChild(passwordContainerElement);
+
+            let buttonsContainerElement = document.createElement("div");
+            
+            let acceptButtonElement = document.createElement("button");
+            acceptButtonElement.innerText = translations["data"]["l10n-window-password-accept-label"];
+            acceptButtonElement.addEventListener("click", function(e) {
+              fileObj.passwd = passwordInputElement.value;
+              clearModalContents();
+            });
+            
+            let cancelButtonElement = document.createElement("button");
+            cancelButtonElement.innerText = translations["data"]["l10n-window-password-cancel-label"];
+            cancelButtonElement.addEventListener("click", function(e) {
+              clearModalContents();
+            });
+
+            buttonsContainerElement.appendChild(acceptButtonElement);
+            buttonsContainerElement.appendChild(cancelButtonElement);
+            documentFragment.appendChild(buttonsContainerElement);
+
+            modalContent.appendChild(documentFragment);
+            modal.style.display = "block";
+          }
+        }
+      }
+
       function openLog(fileId) {
-        let modal = document.getElementById("logWindow");
+        let modal = document.getElementById("modalWindow");
         let modalContent = document.getElementById("modalContent");
         let logs = logByFileId.get(fileId) || [];
         let documentFragment = document.createDocumentFragment();
@@ -492,6 +551,7 @@
 
         let formData = new FormData();
         formData.append("file", file);
+        formData.append("docpasswd", fileObj.passwd);
         formData.append("filename", filename);
 
         if (ocrSettings["ocrlang"] != null && ocrSettings["ocrlang"] != undefined) {
@@ -542,7 +602,9 @@
           if (fileList.length != 0) {
             let nextFileObj = fileList.shift();
             let checkboxElement = document.getElementById("chk-" + nextFileObj.id);
+            let passwdElement = document.getElementById("passwd-" + nextFileObj.id);
             checkboxElement.disabled = true;
+            passwdElement.disabled = true;
             submitOneFile(nextFileObj, ocrSettings, uploadUrl);
           } else {
             let dropFileZoneElement = document.getElementById("dropFileZone");
@@ -650,14 +712,17 @@
 
         let fileObj = fileList.shift();
 
-        let checkboxElement = document.getElementById("chk-" + fileObj.id);
-        checkboxElement.disabled = true;
+        let rowElementIdsToDisable = ["chk-" + fileObj.id, "passwd-" + fileObj.id];
+        for (let i = 0; i < rowElementIdsToDisable.length; i++) {
+          let rowElementToDisable = document.getElementById(rowElementIdsToDisable[i]);
+          rowElementToDisable.disabled = true;
+        }
 
         submitOneFile(fileObj, ocrSettings, uploadUrl);
       }
 
       function clearModalContents() {
-        let modal = document.getElementById("logWindow");
+        let modal = document.getElementById("modalWindow");
         let modalContent = document.getElementById("modalContent");
 
         for (let i = modalContent.children.length - 1; i > 0; i--) {
@@ -762,6 +827,8 @@
 
           if (clickedElement.classList.contains("deleteFileIcon")) {
             toggleOneSelection(clickedElement);
+          } else if (clickedElement.classList.contains("passwordFileIcon")) {
+            promptForPassword(clickedElement);
           }
         }, true);
       }, true);
@@ -839,6 +906,10 @@
         accent-color: yellow;
       }
 
+      .filePasswordColumn {
+        width: 2%;
+      }
+
       .fileNameColumn {
         width: 30%;
       }
@@ -852,7 +923,7 @@
       }
 
       .progressMessageColumn {
-        width: 50%;
+        width: 48%;
       }
 
       #dropFileZone {
@@ -900,6 +971,15 @@
       }
 
       .deleteFileIcon {
+      }
+
+      .passwordFileIcon {
+        background-size: cover;
+        width: 20px;
+        height: 20px;
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-image: url("data:image/png;base64,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");
       }
 
       #fileListTable {
@@ -984,7 +1064,7 @@
   </head>
   <body class="invisible">
     <noscript>Your browser does not support JavaScript!</noscript>
-    <div id="logWindow" class="modal">
+    <div id="modalWindow" class="modal">
       <div class="modal-content" id="modalContent">
         <span class="close" id="modalClose">&times;</span>
       </div>
@@ -1204,6 +1284,7 @@
       <table id="fileListTable">
         <thead>
           <tr>
+            <th class="filePasswordColumn"></th>
             <th class="fileNameColumn" data-l10n="l10n-filelist-column-filename-text">File name</th>
             <th class="progressStatusColumn" data-l10n="l10n-filelist-column-progress-text">Progress(%)</th>
             <th class="processingStatusColumn" data-l10n="l10n-filelist-column-status-text">Status</th>

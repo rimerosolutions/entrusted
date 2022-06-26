@@ -1,6 +1,10 @@
 {
   "locale": "fr",
   "data": {
+    "l10n-window-password-title": "Définir le mot de passe du document",
+    "l10n-window-password-cancel-label": "Annuler",
+    "l10n-window-password-accept-label": "Accepter",
+    "l10n-file-password-button-title": "Définir le mot de passe du document (vide pour aucun)",
     "l10n-file-deleted-from-server": "Fichier supprimé du serveur.",
     "l10n-window-logs-title": "Journal",
     "l10n-download-pdf-text": "Télécharger le PDF de confiance",

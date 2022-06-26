@@ -93,13 +93,14 @@ There are three key API endpoints from a developer perspective.
 
 The =/upload= endpoint receives files to process (=multipart/form-data=). As soon as the document is uploaded without errors, document sanitization process is kicked-off automatically and the API client can start consuming "processing updates".
 
-|------------+-----------+----------------------------------------------------------|
-| Parameters | Required? | Description                                              |
-|------------+-----------+----------------------------------------------------------|
-| =file=     | YES       | The file bytes                                           |
-| =filename= | YES       | The file name for the uploaded file                      |
-| =ocrlang=  | NO        | A valid [[https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html][OCR Tesseract LangCode]] such as =eng= for English |
-|------------+-----------+----------------------------------------------------------|
+|-------------+-----------+----------------------------------------------------------|
+| Parameters  | Required? | Description                                              |
+|-------------+-----------+----------------------------------------------------------|
+| =file=      | YES       | The file bytes                                           |
+| =filename=  | YES       | The file name for the uploaded file                      |
+| =ocrlang=   | NO        | A valid [[https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html][OCR Tesseract LangCode]] such as =eng= for English |
+| =docpasswd= | NO        | The password for the Office or PDF document              |
+|-------------+-----------+----------------------------------------------------------|
 
 If the upload was successful, the server returns a JSON payload with a reference =id= of the file being processed (HTTP 202 =ACCEPTED=. The returned =tracking_uri= helps processing notification updates.
 

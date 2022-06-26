@@ -7,6 +7,7 @@ use std::fs;
 use std::thread;
 use serde_json;
 use indicatif::ProgressBar;
+use rpassword;
 use std::collections::HashMap;
 use entrusted_l10n as l10n;
 
@@ -41,6 +42,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let help_container_image_name = trans.gettext("Optional custom Docker or Podman image name");
     let help_log_format = trans.gettext("Log format (json or plain)");
     let help_file_suffix = trans.gettext("Default file suffix (entrusted)");
+    let help_password_prompt = trans.gettext("Prompt for document password");
     
     let app = App::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
@@ -86,7 +88,14 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .default_value(&app_config.file_suffix)
                 .required(false)
                 .takes_value(true)
+        ).arg(
+            Arg::with_name("passwd-prompt")
+                .long("passwd-prompt")
+                .help(&help_password_prompt)
+                .required(false)
+                .takes_value(false)
         );
+    
 
     let run_matches= app.to_owned().get_matches();
 
@@ -160,10 +169,27 @@ fn main() -> Result<(), Box<dyn Error>> {
         None => LOG_FORMAT_PLAIN.to_string()
     };
 
+    let opt_passwd = if run_matches.is_present("passwd-prompt") {
+        // Simplification for password entry from the Web interface and similar non-TTY use-cases
+        if let Ok(env_passwd) = env::var("ENTRUSTED_AUTOMATED_PASSWORD_ENTRY") {
+            Some(env_passwd)
+        } else {
+            println!("{}", trans.gettext("Please enter the password for the document"));
+            if let Ok(password) = rpassword::read_password() {
+                Some(password)
+            } else {
+                return Err(trans.gettext("Failed to read password!").into());
+            }            
+        }
+    }  else {
+            None
+    };
+
     let (tx, rx) = channel();
 
     let exec_handle = thread::spawn(move || {
-        match container::convert(src_path_copy, output_filename, container_image_name, String::from(LOG_FORMAT_JSON), ocr_lang, tx, trans.clone_box()) {
+        let convert_options = common::ConvertOptions::new(container_image_name, String::from(LOG_FORMAT_JSON), ocr_lang, opt_passwd);
+        match container::convert(src_path_copy, output_filename, convert_options, tx, trans.clone_box()) {
             Ok(_) => None,
             Err(ex) => Some(format!("{}", ex))
         }

@@ -15,7 +15,9 @@ use std::io::prelude::*;
 use std::path::PathBuf;
 use std::time::Instant;
 use zip;
-use libreoffice_rs;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use libreoffice_rs::{Office, LibreOfficeKitOptionalFeatures};
 use entrusted_l10n as l10n;
 
 const SIG_LEGACY_OFFICE: [u8; 8] = [ 208, 207, 17, 224, 161, 177, 26, 225 ];
@@ -23,6 +25,8 @@ const SIG_LEGACY_OFFICE: [u8; 8] = [ 208, 207, 17, 224, 161, 177, 26, 225 ];
 const IMAGE_DPI: f64   = 150.0;
 const TARGET_DPI : f64 = 72.0;
 const ZOOM_RATIO: f64  = IMAGE_DPI / TARGET_DPI;
+const LOCATION_LIBREOFFICE_PROGRAM: &str = "/usr/lib/libreoffice/program";
+const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str = "ENTRUSTED_DOC_PASSWD";
 
 macro_rules! incl_gettext_files {
     ( $( $x:expr ),* ) => {
@@ -75,6 +79,16 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     };
 
+    let document_password = if let Ok(passwd) = env::var(ENV_VAR_ENTRUSTED_DOC_PASSWD) {
+        if !passwd.is_empty() {
+            Some(passwd)
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
     let logger: Box<dyn ConversionLogger> = match env::var("LOG_FORMAT") {
         Ok(dgz_logformat_value) => {
             match dgz_logformat_value.as_str() {
@@ -95,7 +109,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         // step 1 0%
         let mut progress_range = ProgressRange::new(0, 20);
-        let input_file_path = input_as_pdf_to_pathbuf_uri(&logger, progress_range, raw_input_path, l10n.clone_box())?;
+        let input_file_path = input_as_pdf_to_pathbuf_uri(&logger, progress_range, raw_input_path, document_password, l10n.clone_box())?;
 
         let input_file_param = format!("{}", input_file_path.display());
         let doc = Document::from_file(&input_file_param, None)?;
@@ -134,7 +148,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let mut exit_code = 0;
-    
+
     let msg: String = if let Err(ex) = ret() {
         exit_code = 1;
         l10n.gettext_fmt("Conversion failed with reason: {0}", vec![&ex.to_string()])
@@ -146,7 +160,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let millis = timer.elapsed().as_millis();
     logger.log(100, format!("{}: {}", l10n.gettext("Elapsed time"), elapsed_time_string(millis, l10n)));
-    
+
     std::process::exit(exit_code);
 }
 
@@ -157,7 +171,7 @@ fn move_file_to_dir(src_file_path: &PathBuf, dest_dir_path: &PathBuf) -> Result<
     Ok(())
 }
 
-fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRange, raw_input_path: PathBuf, l10n: Box<dyn l10n::Translations>) -> Result<PathBuf, Box<dyn Error>> {    
+fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRange, raw_input_path: PathBuf, opt_passwd: Option<String>, l10n: Box<dyn l10n::Translations>) -> Result<PathBuf, Box<dyn Error>> {
     let conversion_by_mimetype: HashMap<&str, ConversionType> = [
         ("application/pdf", ConversionType::None),
         (
@@ -369,7 +383,14 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
                 ConversionType::None => {
                     logger.log(5, l10n.gettext_fmt("Copying PDF input to {0}", vec![&filename_pdf]));
 
-                    fs::copy(&raw_input_path, PathBuf::from(&filename_pdf))?;
+                    if let Some(passwd) = opt_passwd {
+                        let raw_input_path_uri = format!("file://{}", &raw_input_path.display());
+                        let filename_pdf_uri = format!("file://{}", &filename_pdf);
+                        let doc = Document::from_file(&raw_input_path_uri, Some(&passwd))?;
+                        doc.save_a_copy(&filename_pdf_uri)?;                        
+                    } else {
+                        fs::copy(&raw_input_path, PathBuf::from(&filename_pdf))?;
+                    }
                 }
                 ConversionType::Convert => {
                     logger.log(5, l10n.gettext("Converting input image to PDF"));
@@ -388,10 +409,57 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
                     logger.log(5, l10n.gettext_fmt("Converting to PDF using LibreOffice with filter: {0}", vec![&output_filter]));
                     let new_input_path = PathBuf::from(format!("/tmp/input.{}", fileext));
                     fs::copy(&raw_input_path, &new_input_path)?;
-                    let mut office = libreoffice_rs::Office::new("/usr/lib/libreoffice/program")?;
+                    let mut office = Office::new(LOCATION_LIBREOFFICE_PROGRAM)?;
                     let new_input_path_text = &new_input_path.display().to_string();
-                    let mut doc = office.document_load(&new_input_path_text)?;
-                    doc.save_as(&filename_pdf, "pdf", None);
+
+                    let password_was_set = Arc::new(AtomicBool::new(false));
+                    let failed_password_input = Arc::new(AtomicBool::new(false));
+
+                    if let Some(passwd) = opt_passwd {
+                        if let Err(ex) = office.set_optional_features(vec![LibreOfficeKitOptionalFeatures::LOK_FEATURE_DOCUMENT_PASSWORD]) {
+                            return Err(l10n.gettext_fmt("Failed to enable password-protected Office document features! {0}", vec![&ex.to_string()]).into());
+                        }
+
+                        if let Err(ex) = office.register_callback({
+                            let mut office = office.clone();
+                            let failed_password_input = failed_password_input.clone();
+                            let input_path_as_uri = format!("file://{}", new_input_path_text);
+
+                            move |_type, _payload| {
+                                if !password_was_set.load(Ordering::Relaxed) {
+                                    let _ = office.set_document_password(&input_path_as_uri, &passwd);
+                                    password_was_set.store(true, Ordering::Relaxed);
+                                } else {
+                                    failed_password_input.store(true, Ordering::Relaxed);
+                                    let _ = office.unset_document_password(&input_path_as_uri);
+                                }
+                            }
+                        }) {
+                            return Err(l10n.gettext_fmt("Failed to handle password-protected Office document features! {0}", vec![&ex.to_string()]).into());
+                        }
+                    }
+
+                    let res_document_saved: Result<(), Box<dyn Error>> = match office.document_load(&new_input_path_text) {
+                        Ok(mut doc) => {
+                            if doc.save_as(&filename_pdf, "pdf", None) {
+                                Ok(())
+                            } else {
+                                Err(l10n.gettext("Could not save document as PDF").into())
+                            }
+                        },
+                        Err(ex) =>  {
+                            let err_reason = if failed_password_input.load(Ordering::Relaxed) {
+                                l10n.gettext("Password input failed!")
+                            } else {
+                                ex.to_string()
+                            };
+                            Err(err_reason.into())
+                        }
+                    };
+
+                    if let Err(ex) = res_document_saved {
+                        return Err(l10n.gettext_fmt("Could not export input document as PDF! {0}", vec![&ex.to_string()]).into());
+                    }
                 }
             }
         } else {
@@ -418,18 +486,18 @@ fn elapsed_time_string(millis: u128, l10n: Box<dyn l10n::Translations>) -> Strin
 
     let l10n_keys_singular = vec!["hour", "minute", "second"];
     let l10n_keys_plural = vec!["hours", "minutes", "seconds"];
-    let values = vec![hours, minutes, seconds];    
+    let values = vec![hours, minutes, seconds];
 
     let mut ret = String::new();
     let n = values.len();
-    
-    for i in 0..n {            
+
+    for i in 0..n {
         ret.push_str(&l10n.ngettext(l10n_keys_singular[i], l10n_keys_plural[i], values[i] as u64));
         if i != n - 1 {
             ret.push_str(" ");
         }
     }
-    
+
     ret
 }
 
@@ -625,10 +693,10 @@ fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_rang
 }
 
 fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, input_dir_path: &PathBuf, output_path: &PathBuf, l10n: Box<dyn l10n::Translations>) -> Result<(), Box<dyn Error>> {
-    logger.log(progress_range.min, 
+    logger.log(progress_range.min,
                l10n.ngettext("Combining one PDF document",
                              "Combining few PDF documents",
-                                           page_count as u64));
+                             page_count as u64));
 
     let mut documents: Vec<lopdf::Document> = Vec::with_capacity(page_count);
     let step_count = 7;
@@ -829,7 +897,7 @@ fn imgs_to_pdf(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange
 
     logger.log(progress_value, l10n.ngettext("Saving one PNG image to PDF",
                                              "Saving few PNG images to PDF",
-                                       page_count as u64));
+                                             page_count as u64));
 
     for i in 0..page_count {
         let idx = i + 1;

@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 use std::collections::HashMap;
 use indicatif::ProgressBar;
+use rpassword;
 
 use std::env;
 
@@ -95,6 +96,15 @@ where T: Default + DeserializeOwned {
     Ok(T::default())
 }
 
+#[derive(Clone, Debug)]
+pub struct ConversionOptions {
+    pub host: String,
+    pub port: String,
+    pub opt_ocr_lang: Option<String>,
+    pub opt_passwd: Option<String>,
+    pub file_suffix: String,
+}
+
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct UploadResponse {
     pub id: String,
@@ -114,9 +124,16 @@ pub struct LogMessage {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {    
+async fn main() {
     l10n::load_translations(incl_gettext_files!("en", "fr"));
 
+    if let Err(ex) = handle_args().await {
+        eprintln!("{}", ex.to_string());
+        std::process::exit(1);
+    }
+}
+
+async fn handle_args() -> Result<(), Box<dyn Error + Send + Sync>> {    
     let locale = match env::var(l10n::ENV_VAR_ENTRUSTED_LANGID) {
         Ok(selected_locale) => selected_locale,
         Err(_) => l10n::sys_locale()
@@ -133,6 +150,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let help_input_filename = trans.gettext("Input filename");
     let help_ocr_lang = trans.gettext("Optional language for OCR (i.e. 'eng' for English)");
     let help_file_suffix = trans.gettext("Default file suffix (entrusted)");
+    let help_password_prompt = trans.gettext("Prompt for document password");
     
     let app = App::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
@@ -181,17 +199,23 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 .default_value(&appconfig.file_suffix)
                 .required(false)
                 .takes_value(true)
+        ).arg(
+            Arg::with_name("passwd-prompt")
+                .long("passwd-prompt")
+                .help(&help_password_prompt)
+                .required(false)
+                .takes_value(false)
         );
 
     let run_matches = app.to_owned().get_matches();
 
-    let ocr_lang_opt = if let Some(proposed_ocr_lang) = run_matches.value_of("ocr-lang") {
+    let opt_ocr_lang = if let Some(proposed_ocr_lang) = run_matches.value_of("ocr-lang") {
         Some(String::from(proposed_ocr_lang))
     } else {
         appconfig.ocr_lang
     };
 
-    if let Some(proposed_ocr_lang) = &ocr_lang_opt {
+    if let Some(proposed_ocr_lang) = &opt_ocr_lang {
         let supported_ocr_languages = l10n::ocr_lang_key_by_name(trans.clone_box());
         let proposed_ocr_lang_str = proposed_ocr_lang.as_str();
         
@@ -242,9 +266,24 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
             return Err(trans.gettext("The input file doesn't exists!").into());
         }
 
+        let opt_passwd = if run_matches.is_present("passwd-prompt") {
+            println!("{}", trans.gettext("Please enter the password for the document"));
+            if let Ok(password) = rpassword::read_password() {
+                Some(password)
+            } else {
+                return Err(trans.gettext("Failed to read password!").into());
+            }            
+        } else {
+            None
+        };
+
         if let Some(output_dir) = p.parent() {
             let filename = p.file_name().unwrap().to_str().unwrap();
-            convert_file(host, port, ocr_lang_opt, output_dir.to_path_buf(), p.clone(), filename.to_string(), output_path_opt, file_suffix, trans.clone_box()).await
+            
+            let conversion_options = ConversionOptions {
+                host:host.to_string(), port:port.to_string(), opt_ocr_lang, opt_passwd, file_suffix,
+            };
+            convert_file(conversion_options, output_dir.to_path_buf(), p.clone(), filename.to_string(), output_path_opt, trans.clone_box()).await
         } else {
             Err(trans.gettext("Could not determine input directory!").into())
         }
@@ -254,19 +293,16 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
 }
 
 async fn convert_file (
-    host: &str,
-    port: &str,
-    ocr_lang_opt: Option<String>,
+    conversion_options: ConversionOptions,
     output_dir: PathBuf,
     input_path: PathBuf,
     filename: String,
     output_path_opt: Option<PathBuf>,
-    file_suffix: String,
     l10n: Box<dyn l10n::Translations>
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     println!("{}: {}", l10n.gettext("Converting file"), input_path.display());
 
-    let addr = format!("{}:{}", host, port.parse::<u16>()?);
+    let addr = format!("{}:{}", conversion_options.host, conversion_options.port.parse::<u16>()?);
     println!("{}: {}", l10n.gettext("Connecting to server at"), addr.clone());
 
     let file = File::open(input_path.clone()).await?;
@@ -277,8 +313,12 @@ async fn convert_file (
         .text("filename", filename)
         .part("file", stream_part);
 
-    if let Some(ocr_lang) = ocr_lang_opt {
+    if let Some(ocr_lang) = conversion_options.opt_ocr_lang {
         multipart_form = multipart_form.text("ocrlang", ocr_lang);
+    }
+
+    if let Some(passwd) = conversion_options.opt_passwd {
+        multipart_form = multipart_form.text("docpasswd", passwd);
     }
 
     let client = Client::new();
@@ -308,7 +348,7 @@ async fn convert_file (
         let filename_noext_opt = input_path.file_stem().and_then(|i| i.to_str());
 
         if let Some(filename_noext) = filename_noext_opt {
-            output_dir.join([filename_noext.to_string(), "-".to_string(), file_suffix, ".pdf".to_string()].concat())
+            output_dir.join([filename_noext.to_string(), "-".to_string(), conversion_options.file_suffix, ".pdf".to_string()].concat())
         } else {
             return Err(l10n.gettext("Could not determine input file base name!").into());
         }
@@ -341,16 +381,27 @@ async fn process_notifications(tracking_url: String,
                         }
                     } else {
                         if msg.event == "processing_success" {
-                            let log_msg_ret: LogMessage = serde_json::from_str(&msg.data).unwrap();                            
-                            download_uri = log_msg_ret.data.clone();
-                            println!("{}", l10n.gettext("Conversion completed successfully!"));
+                            let log_msg_ret: serde_json::Result<LogMessage> = serde_json::from_str(&msg.data);
+
+                            if let Ok(log_msg) = log_msg_ret {
+                                download_uri = log_msg.data.clone();
+                                pb.set_position(log_msg.percent_complete as u64);
+                                println!("{}", l10n.gettext("Conversion completed successfully!"));
+                            }
+
                             es.close();
                             
                             return Ok(download_uri);
                         } else if msg.event == "processing_failure" {
-                            println!("{}", l10n.gettext("Conversion failed!"));
+                            let log_msg_ret: serde_json::Result<LogMessage> = serde_json::from_str(&msg.data);
+
+                            if let Ok(log_msg) = log_msg_ret {
+                                pb.set_position(log_msg.percent_complete as u64);
+                            }
+                            
                             es.close();
-                            return Err(msg.data.into());
+
+                            return Err(l10n.gettext("Conversion failed!").into());
                         }
                     }
                 },

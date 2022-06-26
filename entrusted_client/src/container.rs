@@ -31,7 +31,7 @@ where
         })
 }
 
-fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str>, log_format: String, tx: Sender<String>, capture_output: bool, trans: Box<dyn l10n::Translations>) -> Result<(), Box<dyn Error>> {
+fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str>, tx: Sender<String>, capture_output: bool, printer: Box<dyn LogPrinter>, trans: Box<dyn l10n::Translations>) -> Result<(), Box<dyn Error>> {
     let rt_path = container_program.exec_path;
     let sub_commands = container_program.sub_commands;
     let rt_executable: &str = &format!("{}", rt_path.display());
@@ -40,13 +40,17 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str
     cmd.extend(sub_commands);
     cmd.extend(args.clone());
 
-    let printer: Box<dyn LogPrinter> = if log_format == "plain".to_string() {
-        Box::new(PlainLogPrinter {})
-    } else {
-        Box::new(JsonLogPrinter {})
-    };
+    let cmd_masked: Vec<&str> = cmd.clone()
+        .iter()
+        .map(|i| {
+            if i.contains(common::ENV_VAR_ENTRUSTED_DOC_PASSWD) {
+                "******"
+            } else {
+                i
+            }
+        }).collect();
     
-    tx.send(printer.print(1, trans.gettext_fmt("Running command: {0}", vec![&format!("{} {}", rt_executable, cmd.join(" "))])))?;
+    tx.send(printer.print(1, trans.gettext_fmt("Running command: {0}", vec![&format!("{} {}", rt_executable, cmd_masked.join(" "))])))?;
 
     let mut child = Command::new(rt_executable)
         .args(cmd)
@@ -75,9 +79,16 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str
     }
 }
 
-
-trait LogPrinter {
+trait LogPrinter: Send + Sync {
     fn print(&self, percent_complete: usize, data: String) -> String;
+
+    fn clone_box(&self) -> Box<dyn LogPrinter>;
+}
+
+impl Clone for Box<dyn LogPrinter> {
+    fn clone(&self) -> Box<dyn LogPrinter> {
+        self.clone_box()
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -90,6 +101,10 @@ impl LogPrinter for PlainLogPrinter {
     fn print(&self, percent_complete: usize, data: String) -> String {
         format!("{}% {}", percent_complete, data)
     }
+    
+    fn clone_box(&self) -> Box<dyn LogPrinter> {
+        Box::new(self.clone())
+    }
 }
 
 impl LogPrinter for JsonLogPrinter {
@@ -99,14 +114,18 @@ impl LogPrinter for JsonLogPrinter {
         };
         serde_json::to_string(log_msg).unwrap()
     }
+    
+    fn clone_box(&self) -> Box<dyn LogPrinter> {
+        Box::new(self.clone())
+    }
 }
 
-pub fn convert(input_path: PathBuf, output_path: PathBuf, container_image_name: String, log_format: String, ocr_lang: Option<String>, tx: Sender<String>, trans: Box<dyn l10n::Translations>) -> Result<bool, Box<dyn Error>> {
+pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: common::ConvertOptions, tx: Sender<String>, trans: Box<dyn l10n::Translations>) -> Result<bool, Box<dyn Error>> {
     if !input_path.exists() {
         return Err(trans.gettext_fmt("The selected file does not exists: {0}!", vec![&input_path.display().to_string()]).into());
     }
 
-    let printer: Box<dyn LogPrinter> = if log_format == "plain".to_string() {
+    let printer: Box<dyn LogPrinter> = if convert_options.log_format == "plain".to_string() {
         Box::new(PlainLogPrinter {})
     } else {
         Box::new(JsonLogPrinter {})
@@ -116,15 +135,15 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, container_image_name: 
 
     let mut success = false;
 
-    let ocr = if ocr_lang.is_some() {
+    let ocr = if convert_options.opt_ocr_lang.is_some() {
         "1"
     } else {
         "0"
     };
 
-    let ocr_language = match ocr_lang {
+    let ocr_language = match convert_options.opt_ocr_lang {
         Some(ocr_lang_val) => ocr_lang_val,
-        None => "".to_string()
+        None => String::new()
     };
 
     fn mkdirp(p: PathBuf, trans: Box<dyn l10n::Translations>) -> Result<(), Box<dyn Error>> {
@@ -171,16 +190,16 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, container_image_name: 
 
     // TODO for Lima we assume the default VM instance, that might not be true all the time...
     if let Some(container_rt) = common::container_runtime_path() {
-        let mut ensure_image_args = vec!["inspect", &container_image_name];
+        let mut ensure_image_args = vec!["inspect", &convert_options.container_image_name];
 
         tx.send(printer.print(1, trans.gettext("Checking if container image exists")))?;
 
-        if let Err(ex) = exec_crt_command(container_rt.clone(), ensure_image_args, log_format.clone(), tx.clone(), false, trans.clone()) {
+        if let Err(ex) = exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone(), false, printer.clone_box(), trans.clone()) {
             tx.send(printer.print(1, trans.gettext_fmt("The container image was not found. {0}.", vec![&ex.to_string()])))?;
-            ensure_image_args = vec!["pull", &container_image_name];
+            ensure_image_args = vec!["pull", &convert_options.container_image_name];
             tx.send(printer.print(1, trans.gettext("Please wait, downloading image (roughly 600 MB).")))?;
 
-            if let Err(exe) = exec_crt_command(container_rt.clone(), ensure_image_args, log_format.clone(), tx.clone(), false, trans.clone()) {
+            if let Err(exe) = exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone(), false, printer.clone_box(), trans.clone()) {
                 tx.send(printer.print(1, trans.gettext("Couldn't download container image!")))?;
                 return Err(exe.into());
             }
@@ -215,8 +234,8 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, container_image_name: 
         let ocr_env = &format!("OCR={}", ocr);
         let ocr_language_env = &format!("OCR_LANGUAGE={}", ocr_language);
         let locale_language_env = &format!("{}={}", l10n::ENV_VAR_ENTRUSTED_LANGID, trans.langid());
-
-        let logformat_env = &format!("LOG_FORMAT={}", log_format);
+        let passwd_env = &format!("{}={}", common::ENV_VAR_ENTRUSTED_DOC_PASSWD, convert_options.opt_passwd.unwrap_or_default());
+        let logformat_env = &format!("LOG_FORMAT={}", convert_options.log_format);
 
         pixels_to_pdf_args.append(&mut vec![
             "-v",
@@ -230,12 +249,14 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, container_image_name: 
             "-e",
             ocr_language_env,
             "-e",
+            passwd_env,
+            "-e",
             locale_language_env,
-            &container_image_name,
+            &convert_options.container_image_name,
             common::CONTAINER_IMAGE_EXE
         ]);
 
-        if let Ok(_) = exec_crt_command(container_rt, pixels_to_pdf_args, log_format, tx.clone(), true, trans.clone()) {
+        if let Ok(_) = exec_crt_command(container_rt, pixels_to_pdf_args, tx.clone(), true, printer.clone_box(), trans.clone()) {
             if output_path.exists() {
                 fs::remove_file(output_path.clone())?;
             }

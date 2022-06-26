@@ -30,6 +30,15 @@ msgstr ""
 #~ "MIME-Version: 1.0\n"
 #~ "Content-Type: text/plain; charset=UTF-8"
 
+msgid "Failed to read password!"
+msgstr ""
+
+msgid "Please enter the password for the document"
+msgstr ""
+
+msgid "Prompt for document password"
+msgstr ""
+
 msgid "Server host or IP address"
 msgstr ""
 

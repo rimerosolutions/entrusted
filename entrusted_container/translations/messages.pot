@@ -30,6 +30,21 @@ msgstr ""
 #~ "MIME-Version: 1.0\n"
 #~ "Content-Type: text/plain; charset=UTF-8"
 
+msgid "Failed to enable password-protected Office document features! {0}"
+msgstr ""
+
+msgid "Failed to handle password-protected Office document features! {0}"
+msgstr ""
+
+msgid "Could not save document as PDF"
+msgstr ""
+
+msgid "Password input failed!"
+msgstr ""
+
+msgid "Could not export input document as PDF! {0}"
+msgstr ""
+
 msgid "Copying PDF input to {0}"
 msgstr ""
 

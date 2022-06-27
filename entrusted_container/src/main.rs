@@ -490,21 +490,10 @@ fn elapsed_time_string(millis: u128, l10n: Box<dyn l10n::Translations>) -> Strin
     diff = diff % mins_in_millis;
     let seconds = diff / secs_in_millis;
 
-    let l10n_keys_singular = vec!["hour", "minute", "second"];
-    let l10n_keys_plural = vec!["hours", "minutes", "seconds"];
-    let values = vec![hours, minutes, seconds];
-
-    let mut ret = String::new();
-    let n = values.len();
-
-    for i in 0..n {
-        ret.push_str(&l10n.ngettext(l10n_keys_singular[i], l10n_keys_plural[i], values[i] as u64));
-        if i != n - 1 {
-            ret.push_str(" ");
-        }
-    }
-
-    ret
+    format!("{} {} {}",
+            l10n.ngettext("hour",   "hours",   hours   as u64),
+            l10n.ngettext("minute", "minutes", minutes as u64),
+            l10n.ngettext("second", "seconds", seconds as u64))
 }
 
 fn ocr_imgs_to_pdf(

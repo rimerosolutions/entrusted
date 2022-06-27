@@ -4,7 +4,8 @@
 
 The live CD is based on [[https://www.debian.org/][Debian]] GNU Linux and aims to provide a relatively painless installation of =entrusted=.
 - It's not always that easy for many to install [[https://docs.docker.com/get-docker/][Docker]] or [[https://podman.io/getting-started/installation][Podman]] (Operating System or User specific issues)
-- You may not want to run Docker or Podman directly on your main machine: That translates into running the software inside a virtual machine
+- You may not want to run Docker or Podman directly on your main machine
+- A live system running in a virtual machine might be more convenient overall
   
 ** Recommended settings
 
@@ -41,7 +42,7 @@ There are 2 users in the system:
   
 ** Services
 
-On top of default regular processes, the following runs on boot:
+On top of default regular processes, the following runs on boot ([[https://www.freedesktop.org/wiki/Software/systemd/][systemd]]):
 - SSH is running on the default =22= port.
 - The =entrusted-webserver= service is running on port =13000=
 - Custom firewall rules (=iptables=) restrict network access to SSH and the =entrusted-webserver=
@@ -64,11 +65,11 @@ On top of default regular processes, the following runs on boot:
 
 ** Web UI screenshot
 
-By default, the /Entrusted Online Service/ is running on port =13000= and binds to all network interfaces (=0.0.0.0=).
+By default, the /Entrusted Online Service/ runs on port =13000= and binds to all network interfaces (=0.0.0.0=).
 
-You can access it from your machine =http://IP_ADDRESS_OF_VIRTUAL_MACHINE:13000=
+You can access it from your machine =http://IP_ADDRESS_OF_VIRTUAL_MACHINE:13000=.
 
-Please *replace* =IP_ADDRESS_OF_VIRTUAL_MACHINE= with a valid IP address or hostname, based on your virtual machine network settings.
+Please *replace* =IP_ADDRESS_OF_VIRTUAL_MACHINE= with a valid IP address or hostname, based on your network settings.
 
 [[./images/live_webui.png]]
 

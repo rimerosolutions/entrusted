@@ -48,7 +48,7 @@ Yes, the configuration file (=config.toml=) is optional and its location is oper
 |------------------+---------------------------------------------------------------------------------------------------|
 | Operating System | Configuration File Location                                                                       |
 |------------------+---------------------------------------------------------------------------------------------------|
-| Linux & Others   | =XDG_CONFIG_HOME/com.rimerosolutions.entrusted.entrusted_webclient/config.toml=                   |
+| Linux & Others   | =$XDG_CONFIG_HOME/com.rimerosolutions.entrusted.entrusted_webclient/config.toml=                  |
 | Mac OS           | =$HOME/Library/Application Support/com.rimerosolutions.entrusted.entrusted_webclient/config.toml= |
 | Windows          | =%APPDATA%\com.rimerosolutions.entrusted.entrusted_webclient\config.toml=                         |
 |------------------+---------------------------------------------------------------------------------------------------|

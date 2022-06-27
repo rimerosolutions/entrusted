@@ -1,39 +1,6 @@
 #+TITLE: ROADMAP
 
-* Initial TODOs:
-
-- [X] Replicate CLI functions of the original tool, not necessarily the exact behavior
-- [X] "Misc." bulk fixes & changes
-  - [X] Eliminate CLI calls inside the container, most of the job can likely be done with libraries
-  - [X] Minimal Desktop user interface via the [[https://github.com/fltk-rs/fltk-rs][FLTK]] lightweight toolkit
-  - [X] Temporarily drop support for Office documents (OpenDocument, MS Office), more research for [[https://github.com/rimerosolutions/rust-calls-java][Java native libraries integration]] (few runtime errors with [[https://www.oracle.com/java/graalvm/][GraalVM]])
-- [X] UI and other improvements, including tech debt and other issues
-- [X] Bring back Office document support via LibreOffice
-  - [X] Add workarounds for mime-type detection library (OpenDocument, OOXML, Legacy office format)
-  - [X] Update processing logic to use libreOffice for initial PDF conversion, prior further processing
-- [X] Documentation updates and compilation error fix
-- [X] Usability improvements and slightly better MS Windows support
-- [X] Online service with Web interface and remote CLI client
-- [X] Look at releases for Linux, Mac OS and Windows
-- [X] Documentation updates
-- [X] Implement conversion progress information
-- [X] Minimal CI/CD pipeline
-- [X] Provide live CD
-- [X] Initial support for batch conversions
-  - [X] In the Web user interface
-  - [X] In the graphical desktop interface
-  - [X] Document a simple =find-exec= workflow for the command-line client
-- [X] Fix few obvious issues and then release new batch conversion feature
-  - [X] Do not ship an unsigned app bundle for Mac OS as it doesn't behave/work anyway
-  - [X] Mitigate some of the new Desktop and Web UI bugs as much as possible
-- [X] Additional release artifacts for convenience
-  - [X] Add DMG image for Mac OS, with the ability to still invoke external programs
-  - [X] Add software installer for Windows via [[https://nsis.sourceforge.io/Main_Page][NSIS]] for now
-- [X] Support application preferences
-- [X] Add infrastructure for message translations: English and French for now
-- [X] Minor code cleanup, create artwork and rename the GitHub project
-
-* Other improvements
+* Next steps
 
 - [-] Code maintenance
   - [ ] Add automated tests (unit & integration)
@@ -66,3 +33,36 @@
 - User Interface
   - [ ] There're probably too many redraw operations in the Desktop UI
   - [ ] Improve scrolling behavior during conversions ("smooth-scrolling")
+
+* Initial plan
+
+- [X] Replicate CLI functions of the original tool, not necessarily the exact behavior
+- [X] "Misc." bulk fixes & changes
+  - [X] Eliminate CLI calls inside the container, most of the job can likely be done with libraries
+  - [X] Minimal Desktop user interface via the [[https://github.com/fltk-rs/fltk-rs][FLTK]] lightweight toolkit
+  - [X] Temporarily drop support for Office documents (OpenDocument, MS Office), more research for [[https://github.com/rimerosolutions/rust-calls-java][Java native libraries integration]] (few runtime errors with [[https://www.oracle.com/java/graalvm/][GraalVM]])
+- [X] UI and other improvements, including tech debt and other issues
+- [X] Bring back Office document support via LibreOffice
+  - [X] Add workarounds for mime-type detection library (OpenDocument, OOXML, Legacy office format)
+  - [X] Update processing logic to use libreOffice for initial PDF conversion, prior further processing
+- [X] Documentation updates and compilation error fix
+- [X] Usability improvements and slightly better MS Windows support
+- [X] Online service with Web interface and remote CLI client
+- [X] Look at releases for Linux, Mac OS and Windows
+- [X] Documentation updates
+- [X] Implement conversion progress information
+- [X] Minimal CI/CD pipeline
+- [X] Provide live CD
+- [X] Initial support for batch conversions
+  - [X] In the Web user interface
+  - [X] In the graphical desktop interface
+  - [X] Document a simple =find-exec= workflow for the command-line client
+- [X] Fix few obvious issues and then release new batch conversion feature
+  - [X] Do not ship an unsigned app bundle for Mac OS as it doesn't behave/work anyway
+  - [X] Mitigate some of the new Desktop and Web UI bugs as much as possible
+- [X] Additional release artifacts for convenience
+  - [X] Add DMG image for Mac OS, with the ability to still invoke external programs
+  - [X] Add software installer for Windows via [[https://nsis.sourceforge.io/Main_Page][NSIS]] for now
+- [X] Support application preferences
+- [X] Add infrastructure for message translations: English and French for now
+- [X] Minor code cleanup, create artwork and rename the GitHub project

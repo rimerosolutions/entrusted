@@ -12,14 +12,15 @@ This repository provides an online shared service for [[https://github.com/rimer
 
 * General principles
 
-- Balance around minimalism and convenience, but focus on performance.
-- Stick to a general common look and feel, in contrast with the Desktop interface
+- Strive for balance between minimalism and convenience, but focus on performance
+- Keep a general common look and feel for user interfaces (Web or Desktop interfaces)
 - Avoid large feature gaps with the Desktop interface, based on what is possible in the browser (among other considerations)
-- The server immediately deletes documents upon download (original document and its sanitized version)
+- Delete automatically files from the server upon download for both privacy and free disk space purposes
 
 * What does it look like?
 
 There's a basic Web interface that can be accessed from the server root URL (i.e. [[http://localhost:13000]]).
+It is a single page application that interacts with a backend service via HTTP calls.
 
 [[./images/screenshot-web.png]]
 
@@ -37,10 +38,10 @@ This is used for a single workstation, in a multi virtual machines scenario (sev
 ** Runtime requirements
 
 For the =server= component, any OS that can run the [[https://github.com/rimerosolutions/entrusted/tree/main/entrusted-client][entrusted-cli]] binary:
-- It is assumed that the =entrusted-cli= program is available
+- It is assumed that the =entrusted-cli= program is installed
 - The =entrusted-cli= program must also be directly accessible (i.e. [[https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html][in your PATH variable]])
 
-You can run the server as follow, once the program is built (Linux assumed here).
+You can run the server as follow, once the program is built (Linux assumed below).
 
 #+begin_src sh
   ./target/x86_64-unknown-linux-musl/release/entrusted-webserver
@@ -79,7 +80,7 @@ It's possible to produce standalone binaries on Linux, with no runtime dependenc
 
 Yes, the user interface (simple HTML page) interacts with the Web API of the =entrusted-webserver=.
 
-There are three key API endpoints from a developer perspective.
+There are three "main" API endpoints from a developer perspective.
 
 |-------------------+-------------+----------------------------------------|
 | Endpoint          | HTTP Method | Description                            |
@@ -99,7 +100,7 @@ The =/upload= endpoint receives files to process (=multipart/form-data=). As soo
 | =file=      | YES       | The file bytes                                           |
 | =filename=  | YES       | The file name for the uploaded file                      |
 | =ocrlang=   | NO        | A valid [[https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html][OCR Tesseract LangCode]] such as =eng= for English |
-| =docpasswd= | NO        | The password for the Office or PDF document              |
+| =docpasswd= | NO        | The password for the encrypted Office or PDF document    |
 |-------------+-----------+----------------------------------------------------------|
 
 If the upload was successful, the server returns a JSON payload with a reference =id= of the file being processed (HTTP 202 =ACCEPTED=. The returned =tracking_uri= helps processing notification updates.
@@ -111,19 +112,18 @@ If the upload was successful, the server returns a JSON payload with a reference
   }
 #+end_src
 
-The retrieved =id= used subsequently to receive processing notifications (=tracking_uri=), as well as downloading the converted document once the uploaded file is successfully sanitized.
-
+The retrieved =id= used subsequently to receive processing notifications (=tracking_uri=), as well as downloading the final PDF document later on.
 
 ** Consuming processing notifications
 
 The =/events/{id}= endpoint informs clients about conversion progress via [[https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events][SSE events]] (=text/event-stream=).
-- The =id= path parameter to provide is the one obtained upon file upload submission (=/upload= endpoint).
+- The =id= path parameter value is the one obtained upon file upload submission (=/upload= endpoint response).
 - In order to consume events, you need to open an event source connection to the server, different from traditional GET
   - [[https://golb.hplar.ch/2018/02/Access-Server-Sent-Events-from-Java.html][Java SSE client example]]
   - [[https://javascript.info/server-sent-events][JavaScript SSE client example]]
   - Please search on the Internet for "SSE MyProgrammingLanguage", more generally speaking
 
-There's no need =blindly poll= indefintely the =downloads= endpoint with a hope that processing was successful.
+There's no need =blindly poll= indefinitely the =downloads= endpoint with a hope that processing was successful.
 
 |-----------------------+---------------------+-------------------------------------------------------|
 | Custom Emitted Events | =data= field Format | =data= field Description                              |
@@ -135,9 +135,9 @@ There's no need =blindly poll= indefintely the =downloads= endpoint with a hope 
 
 ** Downloading files
 
-The =/downloads/{id}= endpoints allows downloading successfully converted documents
-- The =id= path parameter to provide is the one obtained upon file upload submission (=/upload= endpoint)
-- Instead of hardcoding the URL, you should parse the data field of the =processing_success= field (from processing notifications).
+The =/downloads/{id}= endpoint allows downloading successfully converted documents
+- The =id= path parameter is the one obtained upon file upload submission (=/upload= endpoint)
+- Instead of hardcoding the URL, you should parse the data field of the =processing_success= field (while processing notifications).
 
  Please note that once downloaded, the file is immediately deleted from the server!
 
@@ -150,7 +150,7 @@ Yes, the configuration file (=config.toml=) is optional and its location is oper
 |------------------+---------------------------------------------------------------------------------------------------|
 | Operating System | Configuration File Location                                                                       |
 |------------------+---------------------------------------------------------------------------------------------------|
-| Linux & Others   | =XDG_CONFIG_HOME/com.rimerosolutions.entrusted.entrusted_webserver/config.toml=                   |
+| Linux & Others   | =$XDG_CONFIG_HOME/com.rimerosolutions.entrusted.entrusted_webserver/config.toml=                  |
 | Mac OS           | =$HOME/Library/Application Support/com.rimerosolutions.entrusted.entrusted_webserver/config.toml= |
 | Windows          | =%APPDATA%\com.rimerosolutions.entrusted.entrusted_webserver\config.toml=                         |
 |------------------+---------------------------------------------------------------------------------------------------|

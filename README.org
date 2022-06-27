@@ -63,7 +63,7 @@ For downloads, please visit the [[https://github.com/rimerosolutions/entrusted/r
 
 Most users will interact with the =entrusted_client=, via its Desktop user interface:
 - This doesn't install a container runtime, but will display "useful" error messages when possible
-- This will automatically download a container image (~600 MB) and generate a PDF
+- This will automatically download a container image (~600 MB), if needed, prior conversion
 
 |---------------------+---------------------------------------------|
 | Component           | Purpose                                     |
@@ -86,7 +86,7 @@ Below is a high-level architecture overview, the solution relies on a container 
 
 - *Operating System*: Linux, Mac OS or Windows
   - Mostly Linux has been tested
-  - BSD users can probably use the "Online service" and its Web interface
+  - BSD users can probably use the "Online service" from the Live CD ISO (via VirtualBox, etc.)
 - *Container Runtime*: [[https://podman.io/][Podman]], [[https://www.docker.com/][Docker]] or [[https://github.com/lima-vm/lima][Lima]]
   - On Linux, please install Podman
   - On Windows, Docker is recommended

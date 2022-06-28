@@ -49,7 +49,7 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str
                 i
             }
         }).collect();
-    
+
     tx.send(printer.print(1, trans.gettext_fmt("Running command: {0}", vec![&format!("{} {}", rt_executable, cmd_masked.join(" "))])))?;
 
     let mut child = Command::new(rt_executable)
@@ -101,7 +101,7 @@ impl LogPrinter for PlainLogPrinter {
     fn print(&self, percent_complete: usize, data: String) -> String {
         format!("{}% {}", percent_complete, data)
     }
-    
+
     fn clone_box(&self) -> Box<dyn LogPrinter> {
         Box::new(self.clone())
     }
@@ -114,7 +114,7 @@ impl LogPrinter for JsonLogPrinter {
         };
         serde_json::to_string(log_msg).unwrap()
     }
-    
+
     fn clone_box(&self) -> Box<dyn LogPrinter> {
         Box::new(self.clone())
     }
@@ -184,7 +184,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         "--network",
         "none",
     ];
-    
+
     let input_file_volume = &format!("{}:/tmp/input_file", input_path.display());
     let mut err_msg = "".to_string();
 
@@ -234,24 +234,30 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         let ocr_env = &format!("OCR={}", ocr);
         let ocr_language_env = &format!("OCR_LANGUAGE={}", ocr_language);
         let locale_language_env = &format!("{}={}", l10n::ENV_VAR_ENTRUSTED_LANGID, trans.langid());
-        let passwd_env = &format!("{}={}", common::ENV_VAR_ENTRUSTED_DOC_PASSWD, convert_options.opt_passwd.unwrap_or_default());
         let logformat_env = &format!("LOG_FORMAT={}", convert_options.log_format);
+        let passwd_env = &format!("{}={}", common::ENV_VAR_ENTRUSTED_DOC_PASSWD, convert_options.opt_passwd.clone().unwrap_or_default());
 
         pixels_to_pdf_args.append(&mut vec![
-            "-v",
-            input_file_volume,
-            "-v",
-            safedir_volume,
-            "-e",
-            ocr_env,
-            "-e",
-            logformat_env,
-            "-e",
-            ocr_language_env,
-            "-e",
-            passwd_env,
-            "-e",
-            locale_language_env,
+            "-v", input_file_volume,
+            "-v", safedir_volume,
+        ]);
+
+        pixels_to_pdf_args.append(&mut vec![
+            "-e", ocr_env,
+            "-e", logformat_env,
+            "-e", ocr_language_env,
+            "-e", locale_language_env
+        ]);
+
+        if let Some(passwd) = convert_options.opt_passwd {
+            if !passwd.is_empty() {
+                pixels_to_pdf_args.append(&mut vec![
+                    "-e", passwd_env
+                ]);
+            }
+        }
+
+        pixels_to_pdf_args.append(&mut vec![
             &convert_options.container_image_name,
             common::CONTAINER_IMAGE_EXE
         ]);
@@ -272,7 +278,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             let output_file = fs::File::open(output_path_clone)?;
             filetime::set_file_handle_times(&output_file, Some(atime), Some(atime))?;
 
-            if let Err(ex) = cleanup_dir(dz_tmp.clone().to_path_buf()) {                
+            if let Err(ex) = cleanup_dir(dz_tmp.clone().to_path_buf()) {
                 tx.send(printer.print(100, trans.gettext_fmt("Failed to cleanup temporary folder: {0}. {1}.", vec![&dz_tmp.clone().display().to_string(), &ex.to_string()])))?;
             }
             success = true;

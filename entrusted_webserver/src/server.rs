@@ -41,8 +41,6 @@ static NOTIFICATIONS_PER_REFID: Lazy<Mutex<HashMap<String, Arc<Mutex<Vec<model::
     Mutex::new(HashMap::<String, Arc<Mutex<Vec<model::Notification>>>>::new())
 });
 
-
-
 struct Broadcaster {
     clients: Vec<Sender<Bytes>>,
 }
@@ -324,7 +322,7 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
         let langid_ref = langid.clone();
 
         actix_web::rt::spawn(async move {
-            let opt_passwd = if new_upload_info.0.is_empty() {
+            let opt_passwd = if new_upload_info.0.len() == 0 {
                 None
             } else {
                 Some(new_upload_info.0.clone())

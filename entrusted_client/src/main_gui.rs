@@ -44,7 +44,7 @@ impl FileListWidgetEvent {
 #[derive(Clone)]
 struct FileListRow {
     file: PathBuf,
-    password_button: frame::Frame,
+    password_frame: frame::Frame,
     checkbox: button::CheckButton,
     progressbar: misc::Progress,
     status: frame::Frame,
@@ -155,7 +155,7 @@ impl <'a> FileListWidget {
                 let mut active_row = row.clone();
 
                 let mut xpos = active_row.checkbox.x();
-                active_row.password_button.resize(xpos, active_row.password_button.y(), width_password, active_row.password_button.h());
+                active_row.password_frame.resize(xpos, active_row.password_frame.y(), width_password, active_row.password_frame.h());
 
                 xpos += width_checkbox + WIDGET_GAP;
                 active_row.checkbox.resize(xpos, active_row.checkbox.y(), width_checkbox, active_row.checkbox.h());
@@ -283,19 +283,19 @@ impl <'a> FileListWidget {
 
         let row_height: i32 = 30;
 
-        let mut password_button =  frame::Frame::default().with_size(width_password, row_height);
+        let mut password_frame =  frame::Frame::default().with_size(width_password, row_height);
         
         if let Ok(img) = image::PngImage::from_data(PASSWORD_ICON) {
-            password_button.set_image(Some(img));
+            password_frame.set_image(Some(img));
         }
-        password_button.set_color(enums::Color::White);
-        password_button.set_label_color(enums::Color::Red);
+        password_frame.set_color(enums::Color::White);
+        password_frame.set_label_color(enums::Color::Red);
         let password_button_label = match new_translations.get("Set document password (empty for none)") {
             Some(vv) => vv.to_owned(),
             None => String::from("Set document password (empty for none)")
         };
         
-        password_button.set_tooltip(&password_button_label);
+        password_frame.set_tooltip(&password_button_label);
 
         let path_name = format!("{}", path.file_name().and_then(|x| x.to_str()).unwrap());
         let path_tooltip = format!("{}", path.display());
@@ -324,7 +324,7 @@ impl <'a> FileListWidget {
         row.end();
 
         let file_list_row = FileListRow {
-            password_button: password_button.clone(),
+            password_frame: password_frame.clone(),
             checkbox: check_buttonx2,
             progressbar,
             status: status_frame,
@@ -336,16 +336,32 @@ impl <'a> FileListWidget {
 
         
         let dialog_title = match new_translations.get("Logs") {
-            Some(vv) => vv.to_owned(),
-            None => String::from("Logs")
+            Some(trans_value) => trans_value.to_owned(),
+            None => "Logs".to_string()
         };
 
         let close_button_label = match new_translations.get("Close") {
-            Some(vv) => vv.to_owned(),
-            None => String::from("Close")
+            Some(trans_value) => trans_value.to_owned(),
+            None => "Close".to_string()
         };
 
-        password_button.handle({
+        password_frame.draw({
+            let opt_passwd = file_list_row.opt_passwd.clone();
+
+            move |w| {
+                let old_color = draw::get_color();
+                let current_color = if opt_passwd.borrow().is_some() {
+                    enums::Color::DarkRed
+                } else {
+                    enums::Color::Yellow
+                };
+                draw::set_draw_color(current_color);
+                draw::draw_rect(w.x(), w.y(), w.w(), w.h());
+                draw::set_draw_color(old_color);
+            }
+        });
+
+        password_frame.handle({
             let active_row = file_list_row.clone();
             let trans = new_translations.clone();
 
@@ -1143,7 +1159,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             for current_row in filelist_widget_ref.rows.borrow_mut().iter() {
                 let mut active_row = current_row.clone();
                 active_row.reset_ui_state();
-                active_row.password_button.deactivate();
+                active_row.password_frame.deactivate();
                 active_row.checkbox.deactivate();
             }
 

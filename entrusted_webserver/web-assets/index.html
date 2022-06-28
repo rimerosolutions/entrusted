@@ -414,7 +414,7 @@
                 let passwordElement = document.createElement("button");
                 passwordElement.id = "passwd-" + fileObj.id;
                 passwordElement.title = translations["data"]["l10n-file-password-button-title"];
-                passwordElement.className = "passwordFileIcon";
+                passwordElement.className = "passwordFileIcon passwordNotSet";
                 passwordElement.innerText = columnData[j];
                 rowColumnElement.appendChild(passwordElement);
               } else if (idPrefixes[j].indexOf("filename-") != -1) {
@@ -500,6 +500,15 @@
             acceptButtonElement.innerText = translations["data"]["l10n-window-password-accept-label"];
             acceptButtonElement.addEventListener("click", function(e) {
               fileObj.passwd = passwordInputElement.value;
+              let passwordElement = document.getElementById(passwordElementId);
+
+              if (fileObj.passwd.length == 0) {
+                passwordElement.classList.remove("passwordSet");
+                passwordElement.classList.add("passwordNotSet");
+              } else {
+                passwordElement.classList.remove("passwordNotSet");
+                passwordElement.classList.add("passwordSet");
+              }
               clearModalContents();
             });
 
@@ -974,6 +983,14 @@
       .deleteFileIcon {
       }
 
+      .passwordNotSet {
+        border: 1px solid yellow;
+      }
+
+      .passwordSet {
+        border: 1px solid #8B0000;
+      }
+      
       .passwordFileIcon {
         background-size: cover;
         width: 20px;

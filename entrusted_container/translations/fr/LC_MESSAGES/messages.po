@@ -24,8 +24,8 @@ msgstr "Échec de l'activation des fonctionnalités de document Office protégé
 msgid "Failed to handle password-protected Office document features! {0}"
 msgstr "Échec de la gestion des fonctionnalités de document Office protégées par mot de passe! {0}"
 
-msgid "Could not save document as PDF"
-msgstr "Impossible d'enregistrer le document au format PDF"
+msgid "Could not save document as PDF: {0}"
+msgstr "Impossible d'enregistrer le document au format PDF: {0}"
 
 msgid "Password input failed!"
 msgstr "La saisie du mot de passe a échoué!"

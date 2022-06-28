@@ -36,7 +36,7 @@ msgstr ""
 msgid "Failed to handle password-protected Office document features! {0}"
 msgstr ""
 
-msgid "Could not save document as PDF"
+msgid "Could not save document as PDF: {0}"
 msgstr ""
 
 msgid "Password input failed!"

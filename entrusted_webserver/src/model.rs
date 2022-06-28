@@ -50,3 +50,12 @@ impl UploadResponse {
         Self { id, tracking_uri }
     }
 }
+
+#[derive(Deserialize, Serialize, Clone, Debug, Default)]
+pub struct UploadedFile {
+    pub id: String,
+    pub docpassword: String,
+    pub location: String,
+    pub ocrlang: String,
+    pub fileext: String
+}

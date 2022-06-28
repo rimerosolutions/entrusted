@@ -76,4 +76,7 @@ msgid "Starting server at address"
 msgstr "Démarrage du serveur à l'adresse"
 
 msgid "Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English."
-msgstr "Code de langue inconnu pour le paramètre ocr-lang: {0}. Astuce: Essayez 'eng' pour l'anglais."
+msgstr "Code de langue inconnu pour le paramètre ocr-lang: {0}. Astuce: Essayez 'eng' pour l'Anglais."
+
+msgid "Invalid request identifier"
+msgstr "Identifiant de requête non valide"

@@ -6,7 +6,7 @@ use std::io::Read;
 use dirs;
 
 pub const PROGRAM_GROUP: &str = "com.rimerosolutions.entrusted.entrusted_webserver";
-pub const DEFAULT_FILE_SUFFIX: &str  ="entrusted";
+pub const DEFAULT_FILE_SUFFIX: &str  = "entrusted";
 
 #[derive(Deserialize, Serialize, Clone)]
 #[serde(default)]

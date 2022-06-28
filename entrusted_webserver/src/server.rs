@@ -1,3 +1,5 @@
+extern crate base64_lib;
+
 use actix_web::http::header::HeaderValue;
 use once_cell::sync::Lazy;
 
@@ -29,6 +31,9 @@ use actix_web::http::{Method, Uri};
 use futures::TryStreamExt;
 use http_api_problem::{HttpApiProblem, StatusCode};
 use tokio::io::AsyncWriteExt;
+
+use pi_base58::{FromBase58, ToBase58};
+
 use entrusted_l10n as l10n;
 
 use crate::config;
@@ -155,6 +160,12 @@ async fn notfound(l10n: Data<Mutex<Box<dyn l10n::Translations>>>) -> impl Respon
     HttpResponse::NotFound().body(l10n.lock().unwrap().gettext("Resource not found"))
 }
 
+fn request_problem(reason: String, uri: &Uri) -> HttpApiProblem {
+    HttpApiProblem::with_title_and_type_from_status(StatusCode::BAD_REQUEST)
+        .set_detail(reason)
+        .set_instance(format!("{}", uri))
+}
+
 fn server_problem(reason: String, uri: &Uri) -> HttpApiProblem {
     HttpApiProblem::with_title_and_type_from_status(StatusCode::INTERNAL_SERVER_ERROR)
         .set_detail(reason)
@@ -200,7 +211,7 @@ pub async fn serve(host: &str, port: &str, ci_image_name: String, l10n: Box<dyn 
             .route("/upload", web::post().to(upload))
             .route("/events/{id}", web::get().to(events))
             .route("/uitranslations", web::get().to(uitranslations))
-            .route("/downloads/{id}", web::get().to(download))
+            .route("/downloads/{id}", web::get().to(downloads))
             .default_service(web::get().to(notfound))
     })
         .bind(addr)?
@@ -222,7 +233,7 @@ async fn uitranslations(req: HttpRequest) -> impl Responder {
         .body(json_data)
 }
 
-async fn index() -> impl Responder {    
+async fn index() -> impl Responder {
     let app_version = option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown");
     let html_data = SPA_INDEX_HTML.replace("_APPVERSION_", app_version);
 
@@ -231,23 +242,51 @@ async fn index() -> impl Responder {
         .body(html_data)
 }
 
-async fn download(info: actix_web::web::Path<String>, req: HttpRequest, l10n: Data<Mutex<Box<dyn l10n::Translations>>>) -> impl Responder {
+async fn downloads(info: actix_web::web::Path<String>, req: HttpRequest, l10n: Data<Mutex<Box<dyn l10n::Translations>>>) -> impl Responder {
     let l10n_ref = l10n.lock().unwrap();
     println!("{}: {}", l10n_ref.gettext("Download from"), req.uri());
 
-    let file_id = info.into_inner();
-    let filename = output_filename_for(file_id.clone());
-    let filepath = env::temp_dir().join(config::PROGRAM_GROUP).join(filename.clone());
+    let request_id = info.into_inner();
+    let mut fileid = String::new();
+    let mut filename = String::new();
+    let mut request_err_found = true;
+
+    if let Ok(request_id_inner_bytes) = request_id.from_base58() {
+        if let Ok(request_id_inner) = std::str::from_utf8(&request_id_inner_bytes) {
+            let file_data_parts = request_id_inner.split(";").map(|i| i.to_string()).collect::<Vec<String>>();
+
+            if file_data_parts.len() == 2 {
+                let fileid_data   = base64_lib::decode(&file_data_parts[0]);
+                let filename_data = base64_lib::decode(&file_data_parts[1]);
+
+                
+                    if let (Ok(fileid_value), Ok(filename_value)) = (std::str::from_utf8(&fileid_data), std::str::from_utf8(&filename_data)) {
+                        fileid.push_str(&output_filename_for(fileid_value.to_string()));
+                        filename.push_str(&output_filename_for(filename_value.to_string()));
+                        request_err_found = false;
+                    }
+                
+            }
+        }
+    }
+
+    if request_err_found {
+        return HttpResponse::BadRequest().json(request_problem(
+            l10n_ref.gettext("Invalid request identifier"),
+            req.uri(),
+        ));
+    }
+
+    let filepath = env::temp_dir().join(config::PROGRAM_GROUP).join(fileid.clone());
     let filepath_buf = PathBuf::from(filepath);
 
     if !filepath_buf.exists() {
-        NOTIFICATIONS_PER_REFID.lock().unwrap().remove(&file_id.to_string());
         HttpResponse::NotFound().body(l10n_ref.gettext("Resource not found"))
     } else {
         match fs::read(filepath_buf.clone()) {
             Ok(data) => {
                 let _ = std::fs::remove_file(filepath_buf);
-                NOTIFICATIONS_PER_REFID.lock().unwrap().remove(&file_id.to_string());
+                NOTIFICATIONS_PER_REFID.lock().unwrap().remove(&request_id.to_string());
                 HttpResponse::Ok()
                     .append_header((header::CONTENT_TYPE, "application/pdf"))
                     .append_header((header::CONTENT_DISPOSITION, format!("attachment; filename={}", filename)))
@@ -261,7 +300,7 @@ async fn download(info: actix_web::web::Path<String>, req: HttpRequest, l10n: Da
                     eprintln!("{} {}. {}.", l10n_ref.gettext("Could not delete file"), &filepath_buf.display(), ioe.to_string());
                 }
 
-                NOTIFICATIONS_PER_REFID.lock().unwrap().remove(&file_id.to_string());
+                NOTIFICATIONS_PER_REFID.lock().unwrap().remove(&request_id.to_string());
                 HttpResponse::InternalServerError().body(l10n_ref.gettext("Internal error"))
             }
         }
@@ -284,31 +323,27 @@ async fn events(info: actix_web::web::Path<String>, broadcaster: Data<Mutex<Broa
 }
 
 fn output_filename_for(request_id: String) -> String {
-    [request_id, "-".to_string(), config::DEFAULT_FILE_SUFFIX.to_string(), ".pdf".to_string()].concat()
+    let basename = PathBuf::from(&request_id).with_extension("").display().to_string();
+    [basename, "-".to_string(), config::DEFAULT_FILE_SUFFIX.to_string(), ".pdf".to_string()].concat()
 }
 
 async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<String>>, l10n: Data<Mutex<Box<dyn l10n::Translations>>>) -> impl Responder {
     let l10n_ref = l10n.lock().unwrap();
-    
+
     let langid = if let Some(req_language) = req.headers().get("Accept-Language") {
         parse_accept_language(req_language, l10n_ref.langid())
     } else {
         l10n_ref.langid()
     };
-    
-    let request_id = Uuid::new_v4().to_string();
-    let request_id_clone = request_id.clone();
-    
-    println!("{}: {}.", l10n_ref.gettext("Starting file upload with reference ID"), &request_id);
 
     let tmpdir = env::temp_dir().join(config::PROGRAM_GROUP);
-    let input_path_status = save_file(request_id.clone(), payload, tmpdir.clone(), l10n_ref.clone()).await;
+    let uploaded_file_ret = save_file(payload, tmpdir.clone(), l10n_ref.clone()).await;
     let mut err_msg = String::new();
-    let mut upload_info = (String::new(), String::new(), String::new(), String::new());
+    let mut uploaded_file = model::UploadedFile::default();
 
-    match input_path_status {
-        Ok((doc_passwd, ocr_lang, fileext, filepath)) => {
-            upload_info = (doc_passwd, ocr_lang, fileext, filepath);
+    match uploaded_file_ret {
+        Ok(uploaded_file_value) => {
+            uploaded_file = uploaded_file_value;
         }
         Err(ex) => {
             err_msg.push_str(&ex.to_string());
@@ -316,26 +351,27 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
     }
 
     if err_msg.is_empty() {
-        NOTIFICATIONS_PER_REFID.lock().unwrap().insert(request_id.clone(), Arc::new(Mutex::new(Vec::<model::Notification>::new())));
-        let new_upload_info = upload_info.clone();
+        NOTIFICATIONS_PER_REFID.lock().unwrap().insert(uploaded_file.id.clone(), Arc::new(Mutex::new(Vec::<model::Notification>::new())));
+        let new_upload_info = uploaded_file.clone();
         let l10n_async_ref = l10n_ref.clone();
         let langid_ref = langid.clone();
 
         actix_web::rt::spawn(async move {
-            let opt_passwd = if new_upload_info.0.len() == 0 {
+            let opt_passwd = if new_upload_info.docpassword.is_empty() {
                 None
             } else {
-                Some(new_upload_info.0.clone())
-            };
-            
-            let ocr_lang_opt = if new_upload_info.1.is_empty() {
-                None
-            } else {
-                Some(new_upload_info.1.clone())
+                Some(new_upload_info.docpassword.clone())
             };
 
-            let input_path = PathBuf::from(new_upload_info.3);
-            let output_path = PathBuf::from(tmpdir).join(output_filename_for(request_id.clone()));
+            let ocr_lang_opt = if new_upload_info.ocrlang.is_empty() {
+                None
+            } else {
+                Some(new_upload_info.ocrlang.clone())
+            };
+
+            let request_id = new_upload_info.id.clone();
+            let input_path = PathBuf::from(&new_upload_info.location);
+            let output_path = PathBuf::from(tmpdir).join(output_filename_for(new_upload_info.location.clone()));
             let container_image_name = ci_image_name.lock().unwrap().to_string();
             let conversion_options = model::ConversionOptions::new(container_image_name, ocr_lang_opt, opt_passwd);
 
@@ -346,9 +382,9 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
     };
 
     if err_msg.is_empty() {
-        HttpResponse::Accepted().json(model::UploadResponse::new(request_id_clone.clone(), format!("/events/{}", request_id_clone.clone())))
+        HttpResponse::Accepted().json(model::UploadResponse::new(uploaded_file.id.clone(), format!("/events/{}", uploaded_file.id.clone())))
     } else {
-        HttpResponse::BadRequest().json(server_problem(
+        HttpResponse::InternalServerError().json(server_problem(
             err_msg,
             req.uri(),
         ))
@@ -356,16 +392,15 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
 }
 
 pub async fn save_file(
-    request_id: String,
     mut payload: Multipart,
     tmpdir: PathBuf,
     l10n: Box<dyn l10n::Translations>
-) -> Result<(String, String, String, String), Box<dyn std::error::Error>> {
-    let mut buf       = Vec::<u8>::new();
-    let mut filename  = String::new();
-    let mut fileext   = String::new();
-    let mut ocr_lang  = String::new();
-    let mut doc_passwd = String::new();
+) -> Result<model::UploadedFile, Box<dyn std::error::Error>> {
+    let mut buf         = Vec::<u8>::new();
+    let mut filename    = String::new();
+    let mut fileext     = String::new();
+    let mut ocrlang     = String::new();
+    let mut docpassword = String::new();
 
     while let Ok(Some(mut field)) = payload.try_next().await {
         let fname = field.name();
@@ -383,7 +418,7 @@ pub async fn save_file(
                 let data = &String::from_utf8(chunk?.to_vec())?;
 
                 if !data.trim().is_empty() {
-                    ocr_lang.push_str(data);
+                    ocrlang.push_str(data);
                 }
             }
         } else if fname == "docpasswd" {
@@ -391,7 +426,7 @@ pub async fn save_file(
                 let data = &String::from_utf8(chunk?.to_vec())?;
 
                 if !data.trim().is_empty() {
-                    doc_passwd.push_str(data);
+                    docpassword.push_str(data);
                 }
             }
         }
@@ -405,6 +440,10 @@ pub async fn save_file(
         return Err(l10n.gettext("Missing 'file' in form data").into());
     }
 
+    let file_uuid = Uuid::new_v4().to_string();
+    let id_token = format!("{};{}", base64_lib::encode(&file_uuid.clone().into_bytes()), base64_lib::encode(&filename.clone().into_bytes()));
+    let id = id_token.as_bytes().to_base58();
+
     let p = std::path::Path::new(&filename);
 
     if let Some(fext) = p.extension().map(|i| i.to_str()).and_then(|i| i) {
@@ -417,11 +456,15 @@ pub async fn save_file(
         fs::create_dir(&tmpdir)?;
     }
 
-    let filepath = tmpdir.join(format!("{}.{}", request_id, fileext));
+    let filepath = tmpdir.join(format!("{}.{}", &file_uuid, fileext));
     let mut f = tokio::fs::File::create(&filepath).await?;
     f.write_all(&buf).await?;
 
-    Ok((doc_passwd, ocr_lang, fileext, format!("{}", filepath.display())))
+    let location = filepath.display().to_string();
+
+    Ok(model::UploadedFile {
+        id, docpassword, location, ocrlang, fileext
+    })
 }
 
 fn progress_made(refid: String, event: &str, data: String, counter: i32, err_find_notif: String, err_notif_handle: String) -> Result<(), Box<dyn std::error::Error>> {

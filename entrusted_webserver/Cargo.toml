@@ -31,6 +31,8 @@ serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.79"
 dirs = "4.0.0"
 toml = "0.5.9"
+base64-lib = "0.2.2"
+pi_base58 = "0.1.0"
 entrusted_l10n = { path = "../entrusted_l10n" }
 
 [build-dependencies]

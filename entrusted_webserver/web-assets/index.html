@@ -411,8 +411,9 @@
               rowColumnElement.id = idPrefixes[j] + fileObj.id;
 
               if (idPrefixes[j].indexOf("passwd-") != -1) {
+                rowColumnElement.classList.add("passwordFileIconContainer");
                 let passwordElement = document.createElement("button");
-                passwordElement.id = "passwd-" + fileObj.id;
+                passwordElement.id = "passwd-btn-" + fileObj.id;
                 passwordElement.title = translations["data"]["l10n-file-password-button-title"];
                 passwordElement.className = "passwordFileIcon passwordNotSet";
                 passwordElement.innerText = columnData[j];
@@ -475,9 +476,10 @@
 
         for (let i = 0; i < fileList.length && !found; i++) {
           let fileObj = fileList[i];
-          let passwordElementId = "passwd-" + fileObj.id;
+          let passwordElementId = "passwd-" + fileObj.id;          
+          let passwordButtonElementId = "passwd-btn-" + fileObj.id;
 
-          if (passwordElementId == source.id) {
+          if (passwordButtonElementId == source.id || passwordElementId == source.id) {
             found = true;
             let modal = document.getElementById("modalWindow");
             let modalContent = document.getElementById("modalContent");
@@ -500,14 +502,14 @@
             acceptButtonElement.innerText = translations["data"]["l10n-window-password-accept-label"];
             acceptButtonElement.addEventListener("click", function(e) {
               fileObj.passwd = passwordInputElement.value;
-              let passwordElement = document.getElementById(passwordElementId);
+              let passwordButtonElement = document.getElementById(passwordButtonElementId);
 
               if (fileObj.passwd.length == 0) {
-                passwordElement.classList.remove("passwordSet");
-                passwordElement.classList.add("passwordNotSet");
+                passwordButtonElement.classList.remove("passwordSet");
+                passwordButtonElement.classList.add("passwordNotSet");
               } else {
-                passwordElement.classList.remove("passwordNotSet");
-                passwordElement.classList.add("passwordSet");
+                passwordButtonElement.classList.remove("passwordNotSet");
+                passwordButtonElement.classList.add("passwordSet");
               }
               clearModalContents();
             });
@@ -676,7 +678,7 @@
                     progressMessageElement.innerText = ndata;
                   }
                 } catch (e) {
-                  console.log("error:", e);
+                  console.log("Cannot parse JSON payload:", ndata, ", error:", e);
                 }
               });
             });
@@ -837,7 +839,8 @@
 
           if (clickedElement.classList.contains("deleteFileIcon")) {
             toggleOneSelection(clickedElement);
-          } else if (clickedElement.classList.contains("passwordFileIcon")) {
+          } else if (clickedElement.classList.contains("passwordFileIconContainer")
+                     || clickedElement.classList.contains("passwordFileIcon")) {
             promptForPassword(clickedElement);
           }
         }, true);

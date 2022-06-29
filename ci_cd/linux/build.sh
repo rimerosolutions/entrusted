@@ -41,7 +41,7 @@ cp ${PROJECTDIR}/entrusted_client/target/x86_64-unknown-linux-musl/release/entru
 
 echo "Building entrusted_webserver"
 cd ${PROJECTDIR}
-podman run --rm --volume "${PWD}":/root/src --workdir /root/src docker.io/joseluisq/rust-linux-darwin-builder:1.60.0 sh -c "RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /root//src/entrusted_webserver/Cargo.toml"
+podman run --rm --volume "${PWD}":/root/src --workdir /root/src docker.io/joseluisq/rust-linux-darwin-builder:1.60.0 sh -c "RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /root/src/entrusted_webserver/Cargo.toml"
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Failure"

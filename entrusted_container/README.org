@@ -2,27 +2,23 @@
 
 * What is this?
 
-This is the =backend/server= part of the solution running inside a container "solution" ([[https://www.docker.com/][Docker]] or [[https://podman.io/][Podman]] or [[https://github.com/lima-vm/lima][Lima]]).
+This is the =backend= part of the solution running inside a "sandbox" ([[https://www.docker.com/][Docker]] or [[https://podman.io/][Podman]] or [[https://github.com/lima-vm/lima][Lima]]).
 
-There's a small series of transformations leading to the generation of a trusted PDF document (optionally a searchable PDF instead of only images, that is if [[https://en.wikipedia.org/wiki/Optical_character_recognition][OCR]] was requested).
-- Most of the conversion steps happen in memory, except for printing office documents to PDF (early stages of the conversion).
-- OCR is a resources intensive and time consuming: it should always be disabled, unless you NEED to be able to search or select text in the PDF.
+- There's a small series of transformations leading to the generation of a trusted PDF document (optionally with full-text search support, if [[https://en.wikipedia.org/wiki/Optical_character_recognition][OCR]] was requested)
+- There is no command-line invocation of external programs within the container
+- OCR is a resources intensive and time consuming: it should always be disabled, unless you NEED to be able to search or select text in the PDF
 
 [[./images/architecture.png]]
 
 * What is required?
 
-You only need a container engine such as /Docker/ or /Podman/ or /Lima/. Please note that this has mostly been tested under Linux with Podman so far.
+This module is deployed as a container image (/Docker/ or /Podman/ or /Lima/), published on [[https://hub.docker.com/r/uycyjnzgntrn/entrusted_container][Docker Hub]].
 
 * How to build this?
 
-Please note that the container image of this project is published on [[https://hub.docker.com/r/uycyjnzgntrn/entrusted_container][Docker Hub]].
-
-At the root of this project, accordingly your container engine, please invoke one of the commands below.
+Because of a shared library, you must build the container image from the =entrusted= root folder.
 
 ** Podman
-
-Because of a shared library, you must build the container image from the =entrusted= root folder.
 
 #+begin_src sh
   podman build -t localhost/entrusted_container . -f entrusted_container/Dockerfile
@@ -46,12 +42,14 @@ For "manual testing" purposes, the following dependencies are required under =Vo
 - =clang=
 - =tesseract-ocr-devel=
 - =poppler-glib-devel=
+- =libreoffice-kit=
+
 
 * How to publish to Docker Hub?
 
 The command examples below apply to =podman=, the syntax is similar for =docker= or =lima=.
 
-For all the command below it is assumed that you're at the root of the =entrusted_container= folder.
+For all the command to follow, it is assumed that you're at the root of the =entrusted_container= folder.
 
 #+begin_src sh
   APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' Cargo.toml)
@@ -70,4 +68,4 @@ For all the command below it is assumed that you're at the root of the =entruste
 
 * How to run this?
 
-This application is leveraged by the =entrusted-client= program (shell commands to =podman= or =docker= or =lima=) , it's not really meant to be used "directly" except for dev/testing purposes.
+This application is leveraged by the =entrusted-client= program (shell commands to =podman= or =docker= or =lima=) , it's not really meant to be used "directly" (except for dev/testing purposes).

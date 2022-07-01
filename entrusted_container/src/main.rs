@@ -17,7 +17,7 @@ use std::time::Instant;
 use zip;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use libreoffice_rs::{Office, LibreOfficeKitOptionalFeatures, FileUri};
+use libreoffice_rs::{Office, LibreOfficeKitOptionalFeatures, urls};
 use entrusted_l10n as l10n;
 
 const SIG_LEGACY_OFFICE: [u8; 8] = [ 208, 207, 17, 224, 161, 177, 26, 225 ];
@@ -414,9 +414,9 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
                     let new_input_path = PathBuf::from(format!("/tmp/input.{}", fileext));
                     fs::copy(&raw_input_path, &new_input_path)?;
                     let mut office = Office::new(LOCATION_LIBREOFFICE_PROGRAM)?;
-                    let input_uri = FileUri::new(&new_input_path.display().to_string())?;
+                    let input_uri = urls::local_into_abs(&new_input_path.display().to_string())?;
 
-                    let password_was_set = Arc::new(AtomicBool::new(false));
+                    let password_was_set =AtomicBool::new(false);
                     let failed_password_input = Arc::new(AtomicBool::new(false));
 
                     if let Some(passwd) = opt_passwd {
@@ -429,14 +429,14 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
                             let failed_password_input = failed_password_input.clone();
                             let input_uri = input_uri.clone();
 
-                            move |_type, _payload| {
+                            move |_, _| {
                                 if !password_was_set.load(Ordering::Acquire) {
-                                    let _ = office.set_document_password(&input_uri, &passwd);
+                                    let _ = office.set_document_password(input_uri.clone(), &passwd);
                                     password_was_set.store(true, Ordering::Release);
                                 } else {
                                     if !failed_password_input.load(Ordering::Acquire) {
                                         failed_password_input.store(true, Ordering::Release);
-                                        let _ = office.unset_document_password(&input_uri);
+                                        let _ = office.unset_document_password(input_uri.clone());
                                     }
                                 }
                             }
@@ -445,7 +445,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
                         }
                     }
 
-                    let res_document_saved: Result<(), Box<dyn Error>> = match office.document_load(&input_uri) {
+                    let res_document_saved: Result<(), Box<dyn Error>> = match office.document_load(input_uri) {
                         Ok(mut doc) => {
                             if doc.save_as(&filename_pdf, "pdf", None) {
                                 Ok(())

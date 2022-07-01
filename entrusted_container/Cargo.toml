@@ -23,8 +23,7 @@ cfb = "0.6.1"
 zip = "0.5"
 serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.79"
-#libreoffice-rs = "0.2.1"
-libreoffice-rs = { git = "https://github.com/yveszoundi/libreoffice-rs", rev="b0aea9c43b529fbf4ef90ee974e75af2a1a8467c" }
+libreoffice-rs = { git = "https://github.com/undeflife/libreoffice-rs", branch="master" }
 entrusted_l10n = { path = "../entrusted_l10n" }
 
 [build-dependencies]

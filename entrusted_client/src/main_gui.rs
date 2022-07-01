@@ -147,31 +147,34 @@ impl <'a> FileListWidget {
 
     pub fn resize(&mut self, x: i32, y: i32, w: i32, _: i32) {
         self.container.resize(x, y, w, self.container.h());
-
         let (width_password, width_checkbox, width_progressbar, width_status, width_logs) = self.column_widths(w);
+        let col_widths =[
+            width_password, width_checkbox, width_progressbar, width_status, width_logs
+        ];
 
         if let Ok(rows) = self.rows.try_borrow() {
             for row in rows.iter() {
-                let mut active_row = row.clone();
+                let mut col_widgets: Vec<Box<dyn WidgetExt>> = vec![
+                    Box::new(row.password_frame.clone()),
+                    Box::new(row.checkbox.clone()),
+                    Box::new(row.progressbar.clone()),
+                    Box::new(row.status.clone()),
+                    Box::new(row.log_link.clone())
+                ];
 
-                let mut xpos = active_row.checkbox.x();
-                active_row.password_frame.resize(xpos, active_row.password_frame.y(), width_password, active_row.password_frame.h());
+                let mut xx = x;
+                
+                for i in 0..col_widths.len() {
+                    let wid = &mut col_widgets[i];
+                    wid.resize(xx, wid.y(), col_widths[i], wid.h());
+                    xx = xx + col_widths[i] + WIDGET_GAP;
 
-                xpos += width_checkbox + WIDGET_GAP;
-                active_row.checkbox.resize(xpos, active_row.checkbox.y(), width_checkbox, active_row.checkbox.h());
-
-                if let Some(path_name) = active_row.file.file_name().and_then(|x| x.to_str()) {
-                    active_row.checkbox.set_label(&clip_text(path_name, width_checkbox));
+                    if i == 1 {
+                        if let Some(path_name) = row.file.file_name().and_then(|x| x.to_str()) {
+                            wid.set_label(&clip_text(path_name, width_checkbox));
+                        }
+                    }                    
                 }
-
-                xpos += width_checkbox + WIDGET_GAP;
-                active_row.progressbar.resize(xpos, active_row.progressbar.y(), width_progressbar, active_row.progressbar.h());
-
-                xpos += width_progressbar + WIDGET_GAP;
-                active_row.status.resize(xpos, active_row.status.y(), width_status, active_row.status.h());
-
-                xpos += width_status + WIDGET_GAP;
-                active_row.log_link.resize(xpos, active_row.log_link.y(), width_logs, active_row.log_link.h());
             }
         }
     }
@@ -284,7 +287,7 @@ impl <'a> FileListWidget {
         let row_height: i32 = 30;
 
         let mut password_frame =  frame::Frame::default().with_size(width_password, row_height);
-        
+
         if let Ok(img) = image::PngImage::from_data(PASSWORD_ICON) {
             password_frame.set_image(Some(img));
         }
@@ -294,7 +297,7 @@ impl <'a> FileListWidget {
             Some(vv) => vv.to_owned(),
             None => String::from("Set document password (empty for none)")
         };
-        
+
         password_frame.set_tooltip(&password_button_label);
 
         let path_name = format!("{}", path.file_name().and_then(|x| x.to_str()).unwrap());
@@ -334,7 +337,7 @@ impl <'a> FileListWidget {
             opt_passwd: Rc::new(RefCell::new(None))
         };
 
-        
+
         let dialog_title = match new_translations.get("Logs") {
             Some(trans_value) => trans_value.to_owned(),
             None => "Logs".to_string()
@@ -372,7 +375,7 @@ impl <'a> FileListWidget {
                         let dialog_height = 200;
                         let dialog_xpos   = current_wind.x() + (current_wind.w() / 2) - (dialog_width  / 2);
                         let dialog_ypos   = current_wind.y() + (current_wind.h() / 2) - (dialog_height / 2);
-                        
+
                         let (button_width, button_height) = (100, 40);
 
                         let win_title: String = match trans.get("Set document password") {
@@ -409,7 +412,7 @@ impl <'a> FileListWidget {
                             Some(v) => v.clone(),
                             None => "Accept".to_string()
                         };
-                        let mut ok_button = button::Button::default()                        
+                        let mut ok_button = button::Button::default()
                         .with_size(button_width, button_height)
                             .with_label(&ok_button_label);
 
@@ -417,7 +420,7 @@ impl <'a> FileListWidget {
                             Some(v) => v.clone(),
                             None => "Cancel".to_string()
                         };
-                        let mut cancel_button = button::Button::default()                        
+                        let mut cancel_button = button::Button::default()
                         .with_size(button_width, button_height)
                         .with_label(&cancel_button_label);
 
@@ -425,7 +428,7 @@ impl <'a> FileListWidget {
                             let mut win = win.clone();
                             let secret_input = secret_input.clone();
                             let active_row = active_row.clone();
-                            
+
                             move |_| {
                                 let input_value = secret_input.value();
                                 let new_passwd = if !input_value.is_empty() {
@@ -433,7 +436,7 @@ impl <'a> FileListWidget {
                                 } else {
                                     None
                                 };
-                                let mut passwd_holder = active_row.opt_passwd.borrow_mut();                                
+                                let mut passwd_holder = active_row.opt_passwd.borrow_mut();
                                 let _ = std::mem::replace(&mut *passwd_holder, new_passwd);
                                 win.hide();
                             }
@@ -441,7 +444,7 @@ impl <'a> FileListWidget {
 
                         cancel_button.set_callback({
                             let mut win = win.clone();
-                            
+
                             move |_| {
                                 win.hide();
                             }
@@ -1044,12 +1047,12 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let filelist_scroll = group::Scroll::default().with_size(580, 200);
     let translations: HashMap<String, String> = [
-        "Logs", "Close", "Accept", "Cancel", "Set document password", "Set document password (empty for none)"        
+        "Logs", "Close", "Accept", "Cancel", "Set document password", "Set document password (empty for none)"
     ].map(|k| (k.to_string(), trans.gettext(k)))
         .iter()
         .cloned()
         .collect();
-    
+
     let mut filelist_widget = FileListWidget::new(Rc::new(RefCell::new(translations.clone())));
 
     let col_label_password = String::new();
@@ -1068,9 +1071,24 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         move |wid| {
             if filelist_widget_ref.children() != 0 {
-                let y = wid.y();
-                let column_names = vec![col_label_password_ref.clone(), col_label_filename_ref.clone(), col_label_progress_ref.clone(), col_label_status_ref.clone(), col_label_message_ref.clone()];
-                let (_, h) = draw::measure(&column_names[0], true);
+                let w = wid.w();
+
+                let column_widths = [
+                    (w as f64 * 0.05) as i32,
+                    (w as f64 * 0.4) as i32,
+                    (w as f64 * 0.15) as i32,
+                    (w as f64 * 0.15) as i32,
+                    (w as f64 * 0.1) as i32,
+                ];                    
+                
+                let column_names = vec![
+                    col_label_password_ref.clone(),
+                    col_label_filename_ref.clone(),
+                    col_label_progress_ref.clone(),
+                    col_label_status_ref.clone(),
+                    col_label_message_ref.clone()
+                ];
+                let y = wid.y() + wid.h()/2;
 
                 let old_color = draw::get_color();
                 let old_font = draw::font();
@@ -1079,14 +1097,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                 draw::set_font(enums::Font::HelveticaBold, old_font_size);
                 draw::set_draw_color(enums::Color::Black);
 
-                if let Some(first_child) = filelist_widget_ref.child(0) {
-                    if let Some(first_child_group) = first_child.as_group() {
-                        for i in 0..first_child_group.children() {
-                            if let Some(child_wid) = first_child_group.child(i) {
-                                draw::draw_text(&column_names[i as usize], std::cmp::max(wid.x(), child_wid.x()), y + h);
-                            }
-                        }
-                    }
+                let mut column_x = wid.x() ;
+
+                for i in 1..column_names.len() {
+                    column_x = column_x + WIDGET_GAP + column_widths[i - 1];
+                    draw::draw_text(&column_names[i], column_x, y);
                 }
 
                 draw::set_draw_color(old_color);
@@ -1631,14 +1646,15 @@ fn main() -> Result<(), Box<dyn Error>> {
                 );
 
                 filelist_scroll_ref.resize(
-                    filelist_scroll_ref.x(),
+                    WIDGET_GAP, 
                     filelist_scroll_ref.y(),
-                    w.w() - (WIDGET_GAP * 3),
+                    w.w() - (WIDGET_GAP * 2),
                     scroller_height,
                 );
 
                 let wval = w.w() - (WIDGET_GAP * 3);
-                columns_frame_ref.resize(columns_frame_ref.x(), columns_frame_ref.y(), w.w() - (WIDGET_GAP * 2), columns_frame_ref.h());
+                columns_frame_ref.widget_resize(WIDGET_GAP, columns_frame_ref.y(), w.w() - (WIDGET_GAP * 2), columns_frame_ref.h());
+
                 filelist_widget_ref.resize(filelist_scroll_ref.x(), filelist_scroll_ref.y(), wval, 0);
 
                 filelist_scroll_ref.redraw();
@@ -1741,7 +1757,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                     w.w() - (WIDGET_GAP * 4),
                     messages_frame_ref.h(),
                 );
-
+                
+                columns_frame_ref.redraw();
                 filelist_scroll_ref.redraw();
 
                 true

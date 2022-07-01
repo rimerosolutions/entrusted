@@ -93,16 +93,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         None
     };
 
-    let logger: Box<dyn ConversionLogger> = match env::var(ENV_VAR_LOG_FORMAT) {
-        Ok(dgz_logformat_value) => {
-            match dgz_logformat_value.as_str() {
-                "json" => {
-                    Box::new(JsonConversionLogger)
-                },
-                _ => Box::new(PlainConversionLogger)
-            }
-        },
-        Err(_) => Box::new(PlainConversionLogger)
+    let logger: Box<dyn ConversionLogger> = if let Ok(dgz_logformat_value) = env::var(ENV_VAR_LOG_FORMAT) {
+        match dgz_logformat_value.as_str() {
+            "json" => {
+                Box::new(JsonConversionLogger)
+            },
+            _ => Box::new(PlainConversionLogger)
+        }
+    } else {
+        Box::new(PlainConversionLogger)
     };
 
     let ret = || -> Result<(), Box<dyn Error>> {
@@ -139,6 +138,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         } else {
             let ocr_lang = env::var(ENV_VAR_OCR_LANGUAGE)?;
             let ocr_lang_text = ocr_lang.as_str();
+
             if !l10n::ocr_lang_key_by_name(l10n.clone_box()).contains_key(&ocr_lang_text) {
                 return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![ocr_lang_text]).into());
             }
@@ -413,9 +413,9 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
                     logger.log(5, l10n.gettext_fmt("Converting to PDF using LibreOffice with filter: {0}", vec![&output_filter]));
                     let new_input_path = PathBuf::from(format!("/tmp/input.{}", fileext));
                     fs::copy(&raw_input_path, &new_input_path)?;
+
                     let mut office = Office::new(LOCATION_LIBREOFFICE_PROGRAM)?;
                     let input_uri = urls::local_into_abs(&new_input_path.display().to_string())?;
-
                     let password_was_set =AtomicBool::new(false);
                     let failed_password_input = Arc::new(AtomicBool::new(false));
 
@@ -696,7 +696,6 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: Progress
     let mut documents: Vec<lopdf::Document> = Vec::with_capacity(page_count);
     let step_count = 7;
     let mut step_num = 1;
-
     let progress_delta = progress_range.delta();
 
     // step 1/7

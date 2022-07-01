@@ -25,8 +25,9 @@ mod container;
 
 const WIDGET_GAP: i32 = 20;
 const ELLIPSIS: &str = "...";
-const FRAME_ICON: &[u8] = include_bytes!("../../images/Entrusted_icon.png");
-const PASSWORD_ICON: &[u8] = include_bytes!("../../images/Password_icon.png");
+
+const ICON_FRAME: &[u8]    = include_bytes!("../../images/Entrusted_icon.png");
+const ICON_PASSWORD: &[u8] = include_bytes!("../../images/Password_icon.png");
 
 const FILELIST_ROW_STATUS_PENDING    :&str = "Pending";
 const FILELIST_ROW_STATUS_INPROGRESS :&str = "InProgress";
@@ -288,7 +289,7 @@ impl <'a> FileListWidget {
 
         let mut password_frame =  frame::Frame::default().with_size(width_password, row_height);
 
-        if let Ok(img) = image::PngImage::from_data(PASSWORD_ICON) {
+        if let Ok(img) = image::PngImage::from_data(ICON_PASSWORD) {
             password_frame.set_image(Some(img));
         }
         password_frame.set_color(enums::Color::White);
@@ -301,7 +302,7 @@ impl <'a> FileListWidget {
         password_frame.set_tooltip(&password_button_label);
 
         let path_name = format!("{}", path.file_name().and_then(|x| x.to_str()).unwrap());
-        let path_tooltip = format!("{}", path.display());
+        let path_tooltip = path.display().to_string();
         let mut selectrow_checkbutton = button::CheckButton::default()
             .with_size(width_checkbox, row_height)
             .with_label(&clip_text(path_name, width_checkbox));
@@ -380,7 +381,7 @@ impl <'a> FileListWidget {
 
                         let win_title: String = match trans.get("Set document password") {
                             Some(v) => v.clone(),
-                            None => "Set document password".to_string()
+                            None    => "Set document password".to_string()
                         };
                         let mut win = window::Window::default()
                             .with_size(dialog_width, dialog_height)
@@ -396,8 +397,8 @@ impl <'a> FileListWidget {
                         let mut secret_input = input::SecretInput::default()
                             .with_size(dialog_width - WIDGET_GAP * 2, 40);
 
-                        let v = active_row.opt_passwd.borrow().clone();
-                        if let Some(current_password) = v {
+                        let opt_current_password = active_row.opt_passwd.borrow().clone();
+                        if let Some(current_password) = opt_current_password {
                             secret_input.set_value(&current_password);
                         }
 
@@ -410,7 +411,7 @@ impl <'a> FileListWidget {
 
                         let ok_button_label: String = match trans.get("Accept") {
                             Some(v) => v.clone(),
-                            None => "Accept".to_string()
+                            None    => "Accept".to_string()
                         };
                         let mut ok_button = button::Button::default()
                         .with_size(button_width, button_height)
@@ -418,7 +419,7 @@ impl <'a> FileListWidget {
 
                         let cancel_button_label: String = match trans.get("Cancel") {
                             Some(v) => v.clone(),
-                            None => "Cancel".to_string()
+                            None    => "Cancel".to_string()
                         };
                         let mut cancel_button = button::Button::default()
                         .with_size(button_width, button_height)
@@ -496,7 +497,6 @@ impl <'a> FileListWidget {
                         .with_pos((wind_w / 2) - (button_width / 2), 400 - button_height - (WIDGET_GAP / 2))
                         .with_size(button_width, button_height)
                         .with_label(&close_button_label);
-
 
                     log_close_button.set_callback({
                         let mut dialog_window = dialog.clone();
@@ -598,7 +598,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     wind.set_xclass("entrusted");
 
-    if let Ok(frame_icon) = image::PngImage::from_data(FRAME_ICON) {
+    if let Ok(frame_icon) = image::PngImage::from_data(ICON_FRAME) {
         wind.set_icon(Some(frame_icon));
     }
 
@@ -815,7 +815,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             let selected_filename = selectpdfviewer_dialog.filename();
 
             if !selected_filename.as_os_str().is_empty() {
-                let path_name = format!("{}", selectpdfviewer_dialog.filename().display());
+                let path_name = selectpdfviewer_dialog.filename().display().to_string();
                 pdf_viewer_list_ref.borrow_mut().set_value(&path_name);
             }
         }
@@ -1075,10 +1075,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 let column_widths = [
                     (w as f64 * 0.05) as i32,
-                    (w as f64 * 0.4) as i32,
+                    (w as f64 * 0.4)  as i32,
                     (w as f64 * 0.15) as i32,
                     (w as f64 * 0.15) as i32,
-                    (w as f64 * 0.1) as i32,
+                    (w as f64 * 0.1)  as i32,
                 ];                    
                 
                 let column_names = vec![
@@ -1088,7 +1088,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                     col_label_status_ref.clone(),
                     col_label_message_ref.clone()
                 ];
-                let y = wid.y() + wid.h()/2;
 
                 let old_color = draw::get_color();
                 let old_font = draw::font();
@@ -1098,6 +1097,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 draw::set_draw_color(enums::Color::Black);
 
                 let mut column_x = wid.x() ;
+                let y = wid.y() + wid.h() / 2;
 
                 for i in 1..column_names.len() {
                     column_x = column_x + WIDGET_GAP + column_widths[i - 1];
@@ -1182,7 +1182,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if let Some(selected_lang) = ocrlang_holdbrowser_rc_ref.borrow().selected_text() {
                     ocr_languages_by_lang
                         .get(&selected_lang)
-                        .map(|i| format!("{}", i))
+                        .map(|i| i.to_string())
                 } else {
                     None
                 }
@@ -1222,8 +1222,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                     active_row.checkbox.deactivate();
                     active_row.status.set_label_color(enums::Color::DarkYellow);
                     let trans_ref = trans_ref.clone_box();
-                    let d = active_row.opt_passwd.clone();
-                    let opt_passwd = d.borrow().clone();
+                    let opt_row_passwd = active_row.opt_passwd.clone();
+                    let opt_passwd = opt_row_passwd.borrow().clone();
 
                     let mut exec_handle = Some(thread::spawn(move || {
                         let opt_passwd_value  = opt_passwd.to_owned();
@@ -1240,7 +1240,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                             trans_ref
                         ) {
                             Ok(_) => None,
-                            Err(ex) => Some(format!("{}", ex)),
+                            Err(ex) => Some(ex.to_string())
                         }
                     }));
 

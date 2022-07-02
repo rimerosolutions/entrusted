@@ -18,6 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "Select"
+msgstr ""
+
+msgid "Reset"
+msgstr ""
+
+msgid "Custom output file"
+msgstr ""
+
 msgid "Failed to read password!"
 msgstr ""
 

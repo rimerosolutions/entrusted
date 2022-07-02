@@ -18,6 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "Select"
+msgstr "Sélectionner"
+
+msgid "Reset"
+msgstr "Réinitialiser"
+
+msgid "Custom output file"
+msgstr "Fichier de sortie personnalisé"
+
 msgid "Failed to read password!"
 msgstr "Impossible de lire le mot de passe!"
 
@@ -156,7 +165,7 @@ msgid "English"
 msgstr "Anglais"
 
 msgid "Optional output filename defaulting to <filename>-entrusted.pdf."
-msgstr "Fichier de sortie"
+msgstr "Nom de fichier de sortie facultatif par défaut <nom_de_fichier>-entrusted.pdf."
 
 msgid "Optional language for OCR (i.e. 'eng' for English)"
 msgstr "Language pour OCR (‘eng’ pour Anglais)"

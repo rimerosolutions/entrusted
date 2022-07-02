@@ -26,6 +26,7 @@ mod container;
 const WIDGET_GAP: i32 = 20;
 const ELLIPSIS: &str = "...";
 
+const ICON_SAVE: &[u8]    =  include_bytes!("../../images/Save_icon.png");
 const ICON_FRAME: &[u8]    = include_bytes!("../../images/Entrusted_icon.png");
 const ICON_PASSWORD: &[u8] = include_bytes!("../../images/Password_icon.png");
 
@@ -45,7 +46,9 @@ impl FileListWidgetEvent {
 #[derive(Clone)]
 struct FileListRow {
     file: PathBuf,
-    password_frame: frame::Frame,
+    opt_output_file: Rc<RefCell<Option<String>>>,
+    password_button: button::Button,
+    output_file_button: button::Button,
     checkbox: button::CheckButton,
     progressbar: misc::Progress,
     status: frame::Frame,
@@ -121,6 +124,17 @@ fn clip_text<S: Into<String>>(txt: S, max_width: i32) -> String {
     text
 }
 
+pub fn filelist_column_widths(w: i32) -> (i32, i32, i32, i32, i32, i32) {
+    let width_password    = 40;
+    let width_output_file = 40;
+    let width_checkbox    = (w as f64 * 0.35) as i32;
+    let width_progressbar = (w as f64 * 0.15) as i32;
+    let width_status      = (w as f64 * 0.15) as i32;
+    let width_logs        = (w as f64 * 0.1)  as i32;
+
+    (width_output_file, width_password, width_checkbox, width_progressbar, width_status, width_logs)
+}
+
 impl <'a> FileListWidget {
     pub fn new(translations: Rc<RefCell<HashMap<String, String>>>) -> Self {
         let mut container = group::Pack::default().with_type(group::PackType::Vertical).with_size(300, 300);
@@ -136,27 +150,18 @@ impl <'a> FileListWidget {
         }
     }
 
-    pub fn column_widths(&self, w: i32) -> (i32, i32, i32, i32, i32) {
-        let width_password    = (w as f64 * 0.05) as i32;
-        let width_checkbox    = (w as f64 * 0.4) as i32;
-        let width_progressbar = (w as f64 * 0.15) as i32;
-        let width_status      = (w as f64 * 0.15) as i32;
-        let width_logs        = (w as f64 * 0.1) as i32;
-
-        (width_password, width_checkbox, width_progressbar, width_status, width_logs)
-    }
-
     pub fn resize(&mut self, x: i32, y: i32, w: i32, _: i32) {
         self.container.resize(x, y, w, self.container.h());
-        let (width_password, width_checkbox, width_progressbar, width_status, width_logs) = self.column_widths(w);
+        let (width_password, width_output_file, width_checkbox, width_progressbar, width_status, width_logs) = filelist_column_widths(w);
         let col_widths =[
-            width_password, width_checkbox, width_progressbar, width_status, width_logs
+            width_password, width_output_file, width_checkbox, width_progressbar, width_status, width_logs
         ];
 
         if let Ok(rows) = self.rows.try_borrow() {
             for row in rows.iter() {
                 let mut col_widgets: Vec<Box<dyn WidgetExt>> = vec![
-                    Box::new(row.password_frame.clone()),
+                    Box::new(row.password_button.clone()),
+                    Box::new(row.output_file_button.clone()),
                     Box::new(row.checkbox.clone()),
                     Box::new(row.progressbar.clone()),
                     Box::new(row.status.clone()),
@@ -164,17 +169,17 @@ impl <'a> FileListWidget {
                 ];
 
                 let mut xx = x;
-                
+
                 for i in 0..col_widths.len() {
                     let wid = &mut col_widgets[i];
                     wid.resize(xx, wid.y(), col_widths[i], wid.h());
                     xx = xx + col_widths[i] + WIDGET_GAP;
 
-                    if i == 1 {
+                    if i == 2 {
                         if let Some(path_name) = row.file.file_name().and_then(|x| x.to_str()) {
                             wid.set_label(&clip_text(path_name, width_checkbox));
                         }
-                    }                    
+                    }
                 }
             }
         }
@@ -278,7 +283,7 @@ impl <'a> FileListWidget {
 
         let ww = self.container.w();
 
-        let (width_password, width_checkbox, width_progressbar, width_status, width_logs) = self.column_widths(ww);
+        let (width_password, width_output_file, width_checkbox, width_progressbar, width_status, width_logs) = filelist_column_widths(ww);
 
         let mut row = group::Pack::default()
             .with_type(group::PackType::Horizontal)
@@ -287,19 +292,30 @@ impl <'a> FileListWidget {
 
         let row_height: i32 = 30;
 
-        let mut password_frame =  frame::Frame::default().with_size(width_password, row_height);
-
-        if let Ok(img) = image::PngImage::from_data(ICON_PASSWORD) {
+        let mut password_frame =  button::Button::default().with_size(width_password, row_height);
+        if let Ok(mut img) = image::PngImage::from_data(ICON_PASSWORD) {            
+            img.scale(width_password, row_height, true, true);
             password_frame.set_image(Some(img));
         }
         password_frame.set_color(enums::Color::White);
         password_frame.set_label_color(enums::Color::Red);
-        let password_button_label = match new_translations.get("Set document password (empty for none)") {
+        let password_button_tooltip = match new_translations.get("Set document password (empty for none)") {
             Some(vv) => vv.to_owned(),
-            None => String::from("Set document password (empty for none)")
+            None     => String::from("Set document password (empty for none)")
         };
+        password_frame.set_tooltip(&password_button_tooltip);
 
-        password_frame.set_tooltip(&password_button_label);
+        let output_file_tooltip = match new_translations.get("Custom output file") {
+            Some(vv) => vv.to_owned(),
+            None     => String::from("Custom output file")
+        };
+        let mut output_file_button = button::Button::default()
+            .with_size(width_output_file, row_height);
+        output_file_button.set_tooltip(&output_file_tooltip);
+        if let Ok(mut img) = image::PngImage::from_data(ICON_SAVE) {
+            img.scale(width_output_file, row_height, true, true);
+            output_file_button.set_image(Some(img));
+        }        
 
         let path_name = format!("{}", path.file_name().and_then(|x| x.to_str()).unwrap());
         let path_tooltip = path.display().to_string();
@@ -328,16 +344,169 @@ impl <'a> FileListWidget {
         row.end();
 
         let file_list_row = FileListRow {
-            password_frame: password_frame.clone(),
+            password_button: password_frame.clone(),
             checkbox: check_buttonx2,
             progressbar,
             status: status_frame,
             log_link: logs_button.clone(),
             logs: Rc::new(RefCell::new(vec![])),
             file: path.clone(),
+            output_file_button: output_file_button.clone(),
+            opt_output_file: Rc::new(RefCell::new(None)),
             opt_passwd: Rc::new(RefCell::new(None))
         };
 
+        output_file_button.set_callback({
+            let opt_output_file = file_list_row.opt_output_file.clone();
+            let trans = new_translations.clone();
+
+            move|_| {
+                if let Some(current_wind) = app::first_window() {
+                    let dialog_width  = 450;
+                    let dialog_height = 200;
+                    let dialog_xpos   = current_wind.x() + (current_wind.w() / 2) - (dialog_width  / 2);
+                    let dialog_ypos   = current_wind.y() + (current_wind.h() / 2) - (dialog_height / 2);
+                    let (button_width, button_height) = (100, 40);
+
+                    let win_title: String = match trans.get("Custom output file") {
+                        Some(v) => v.clone(),
+                        None    => "Custom output file".to_string()
+                    };
+
+                    let mut win = window::Window::default()
+                        .with_size(dialog_width, dialog_height)
+                        .with_pos(dialog_xpos, dialog_ypos)
+                        .with_label(&win_title);
+
+                    let mut container_pack = group::Pack::default()
+                        .with_pos(WIDGET_GAP, WIDGET_GAP)
+                        .with_type(group::PackType::Vertical)
+                        .with_size(dialog_width - (WIDGET_GAP * 2), dialog_height - (WIDGET_GAP * 2));
+                    container_pack.set_spacing(WIDGET_GAP);
+
+                    let mut buttonsfile_pack = group::Pack::default()
+                        .with_type(group::PackType::Horizontal)
+                        .with_size(dialog_width - (WIDGET_GAP * 2), button_height);
+                    buttonsfile_pack.set_spacing(WIDGET_GAP);
+                    let outputfile_input_rc = Rc::new(RefCell::new(input::Input::default().with_size(290, button_height)));
+
+                    let outputfile_tooltip = match trans.get("Optional output filename defaulting to <filename>-entrusted.pdf.") {
+                        Some(v) => v.clone(),
+                        None    => "Optional output filename defaulting to <filename>-entrusted.pdf.".to_string()
+                    };
+                    outputfile_input_rc.borrow_mut().set_tooltip(&outputfile_tooltip);
+
+                    if let Some(v) = opt_output_file.borrow_mut().take() {
+                        outputfile_input_rc.borrow_mut().set_value(&v);
+                    }
+
+                    let select_button_label = match trans.get("Select") {
+                        Some(v) => v.clone(),
+                        None    => "Select".to_string()
+                    };
+                    let mut select_button = button::Button::default()
+                        .with_size(button_width, button_height)
+                        .with_label(&select_button_label);
+                    buttonsfile_pack.end();
+
+                    let mut buttons_pack = group::Pack::default()
+                        .with_type(group::PackType::Horizontal)
+                        .with_size(dialog_width - (WIDGET_GAP * 2), button_height);
+                    buttons_pack.set_spacing(WIDGET_GAP);
+
+                    let reset_button_label = match trans.get("Reset") {
+                        Some(v) => v.clone(),
+                        None    => "Reset".to_string()
+                    };
+                    let mut reset_button = button::Button::default()
+                        .with_size(button_width, button_height)
+                        .with_label(&reset_button_label);
+
+                    let accept_button_label = match trans.get("Accept") {
+                        Some(v) => v.clone(),
+                        None    => "Accept".to_string()
+                    };
+                    let mut accept_button = button::Button::default()
+                        .with_size(button_width, button_height)
+                        .with_label(&accept_button_label);
+
+                    let cancel_button_label = match trans.get("Cancel") {
+                        Some(v) => v.clone(),
+                        None    => "Cancel".to_string()
+                    };
+                    let mut cancel_button = button::Button::default()
+                        .with_size(button_width, button_height)
+                        .with_label(&cancel_button_label);
+
+                    let select_pdffile_msg = match trans.get("Custom output file") {
+                        Some(v) => v.clone(),
+                        None    => "Custom output file".to_string()
+                    };
+
+                    select_button.set_callback({
+                        let outputfile_input_rc = outputfile_input_rc.clone();
+                        let select_pdffile_msg = select_pdffile_msg.clone();
+
+                        move |_| {
+                            let mut dlg = dialog::FileDialog::new(dialog::FileDialogType::BrowseSaveFile);
+                            dlg.set_title(&select_pdffile_msg);
+                            dlg.show();
+                            let selected_filename = dlg.filename();
+
+                            if !selected_filename.as_os_str().is_empty() {
+                                let path_name = dlg.filename().display().to_string();
+                                outputfile_input_rc.borrow_mut().set_value(&path_name);
+                            }
+                        }
+                    });
+
+                    reset_button.set_callback({
+                        let mut win = win.clone();
+                        let opt_output_file = opt_output_file.clone();
+
+                        move |_| {
+                            opt_output_file.replace(None);
+                            win.hide();
+                        }
+                    });
+
+                    accept_button.set_callback({
+                        let mut win = win.clone();
+                        let outputfile_input_rc = outputfile_input_rc.clone();
+                        let opt_output_file = opt_output_file.clone();
+
+                        move |_| {
+                            let output_filename = outputfile_input_rc.borrow().value();
+                            if output_filename.trim().len() != 0 {
+                                opt_output_file.replace(Some(output_filename));
+                            }
+                            win.hide();
+                        }
+                    });
+
+                    cancel_button.set_callback({
+                        let mut win = win.clone();
+
+                        move |_| {
+                            win.hide();
+                        }
+                    });
+
+                    buttons_pack.end();
+
+                    container_pack.end();
+
+                    win.end();
+                    win.make_modal(true);
+                    win.make_resizable(true);
+                    win.show();
+
+                    while win.shown() {
+                        app::wait();
+                    }
+                }
+            }
+        });
 
         let dialog_title = match new_translations.get("Logs") {
             Some(trans_value) => trans_value.to_owned(),
@@ -352,25 +521,27 @@ impl <'a> FileListWidget {
         password_frame.draw({
             let opt_passwd = file_list_row.opt_passwd.clone();
 
-            move |w| {
-                let old_color = draw::get_color();
-                let current_color = if opt_passwd.borrow().is_some() {
-                    enums::Color::DarkRed
-                } else {
-                    enums::Color::Yellow
-                };
-                draw::set_draw_color(current_color);
-                draw::draw_rect(w.x(), w.y(), w.w(), w.h());
-                draw::set_draw_color(old_color);
+            move |wid| {
+                if wid.active() {
+                    let old_color = draw::get_color();
+                    let current_color = if opt_passwd.borrow().is_some() {
+                        enums::Color::DarkRed
+                    } else {
+                        enums::Color::Yellow
+                    };
+                    draw::set_draw_color(current_color);
+                    draw::draw_rect(wid.x(), wid.y(), wid.w(), wid.h());
+                    draw::set_draw_color(old_color);
+                }
             }
         });
 
-        password_frame.handle({
+        password_frame.set_callback({
             let active_row = file_list_row.clone();
             let trans = new_translations.clone();
 
-            move |_, ev| match ev {
-                enums::Event::Push => {
+            move |_| {
+                
                     if let Some(current_wind) = app::first_window() {
                         let dialog_width  = 350;
                         let dialog_height = 200;
@@ -414,7 +585,7 @@ impl <'a> FileListWidget {
                             None    => "Accept".to_string()
                         };
                         let mut ok_button = button::Button::default()
-                        .with_size(button_width, button_height)
+                            .with_size(button_width, button_height)
                             .with_label(&ok_button_label);
 
                         let cancel_button_label: String = match trans.get("Cancel") {
@@ -422,8 +593,8 @@ impl <'a> FileListWidget {
                             None    => "Cancel".to_string()
                         };
                         let mut cancel_button = button::Button::default()
-                        .with_size(button_width, button_height)
-                        .with_label(&cancel_button_label);
+                            .with_size(button_width, button_height)
+                            .with_label(&cancel_button_label);
 
                         ok_button.set_callback({
                             let mut win = win.clone();
@@ -462,10 +633,7 @@ impl <'a> FileListWidget {
                         while win.shown() {
                             app::wait();
                         }
-                     }
-                    true
-                }
-                _ => false,
+                    }
             }
         });
         logs_button.set_callback({
@@ -568,7 +736,7 @@ impl <'a> FileListWidget {
 
 fn main() -> Result<(), Box<dyn Error>> {
     l10n::load_translations(incl_gettext_files!("en", "fr"));
-
+    
     let locale = match env::var(l10n::ENV_VAR_ENTRUSTED_LANGID) {
         Ok(selected_locale) => selected_locale,
         Err(_) => l10n::sys_locale()
@@ -809,7 +977,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         move |_| {
             let mut selectpdfviewer_dialog = dialog::FileDialog::new(dialog::FileDialogType::BrowseFile);
-            selectpdfviewer_dialog.set_title("filedialog-selectpdfviewer-title");
+            selectpdfviewer_dialog.set_title("Browse for PDF viewer program");
             selectpdfviewer_dialog.show();
 
             let selected_filename = selectpdfviewer_dialog.filename();
@@ -1047,7 +1215,16 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let filelist_scroll = group::Scroll::default().with_size(580, 200);
     let translations: HashMap<String, String> = [
-        "Logs", "Close", "Accept", "Cancel", "Set document password", "Set document password (empty for none)"
+        "Logs",
+        "Close",
+        "Optional output filename defaulting to <filename>-entrusted.pdf.",
+        "Accept",
+        "Cancel",
+        "Set document password",
+        "Set document password (empty for none)",
+        "Custom output file",
+        "Reset",
+        "Select"
     ].map(|k| (k.to_string(), trans.gettext(k)))
         .iter()
         .cloned()
@@ -1055,34 +1232,34 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut filelist_widget = FileListWidget::new(Rc::new(RefCell::new(translations.clone())));
 
-    let col_label_password = String::new();
-    let col_label_filename = trans.gettext("File name");
-    let col_label_progress = trans.gettext("Progress(%)");
-    let col_label_status   = trans.gettext("Status");
-    let col_label_message  = trans.gettext("Message");
+    let col_label_password   = String::new();
+    let col_label_outputfile = String::new();
+    let col_label_filename   = trans.gettext("File name");
+    let col_label_progress   = trans.gettext("Progress(%)");
+    let col_label_status     = trans.gettext("Status");
+    let col_label_message    = trans.gettext("Message");
 
     columns_frame.draw({
-        let filelist_widget_ref    = filelist_widget.clone();
-        let col_label_password_ref = col_label_password.to_owned();
-        let col_label_filename_ref = col_label_filename.to_owned();
-        let col_label_progress_ref = col_label_progress.to_owned();
-        let col_label_status_ref   = col_label_status.to_owned();
-        let col_label_message_ref  = col_label_message.to_owned();
+        let filelist_widget_ref      = filelist_widget.clone();
+        let col_label_password_ref   = col_label_password.to_owned();
+        let col_label_outputfile_ref = col_label_outputfile.to_owned();
+        let col_label_filename_ref   = col_label_filename.to_owned();
+        let col_label_progress_ref   = col_label_progress.to_owned();
+        let col_label_status_ref     = col_label_status.to_owned();
+        let col_label_message_ref    = col_label_message.to_owned();
 
         move |wid| {
             if filelist_widget_ref.children() != 0 {
                 let w = wid.w();
 
+                let (width_output_file, width_password, width_checkbox, width_progressbar, width_status, width_logs) = filelist_column_widths(w);
                 let column_widths = [
-                    (w as f64 * 0.05) as i32,
-                    (w as f64 * 0.4)  as i32,
-                    (w as f64 * 0.15) as i32,
-                    (w as f64 * 0.15) as i32,
-                    (w as f64 * 0.1)  as i32,
-                ];                    
-                
+                    width_output_file, width_password, width_checkbox, width_progressbar, width_status, width_logs
+                ];
+
                 let column_names = vec![
                     col_label_password_ref.clone(),
+                    col_label_outputfile_ref.clone(),
                     col_label_filename_ref.clone(),
                     col_label_progress_ref.clone(),
                     col_label_status_ref.clone(),
@@ -1096,11 +1273,14 @@ fn main() -> Result<(), Box<dyn Error>> {
                 draw::set_font(enums::Font::HelveticaBold, old_font_size);
                 draw::set_draw_color(enums::Color::Black);
 
-                let mut column_x = wid.x() ;
+                let mut column_x = column_widths[0] + column_widths[1];
                 let y = wid.y() + wid.h() / 2;
 
-                for i in 1..column_names.len() {
+                for i in 2..column_names.len() {
                     column_x = column_x + WIDGET_GAP + column_widths[i - 1];
+                    if i > 2 {
+                        column_x -= WIDGET_GAP/2;
+                    }
                     draw::draw_text(&column_names[i], column_x, y);
                 }
 
@@ -1174,7 +1354,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             for current_row in filelist_widget_ref.rows.borrow_mut().iter() {
                 let mut active_row = current_row.clone();
                 active_row.reset_ui_state();
-                active_row.password_frame.deactivate();
+                active_row.password_button.deactivate();
                 active_row.checkbox.deactivate();
             }
 
@@ -1215,103 +1395,111 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 let (tx, rx) = mpsc::channel();
 
-                if let Ok(output_path) = common::default_output_path(input_path.clone(), active_file_suffix) {
-                    let current_input_path = input_path.clone();
-                    let current_output_path = output_path.clone();
-                    active_row.status.set_label(FILELIST_ROW_STATUS_INPROGRESS);
-                    active_row.checkbox.deactivate();
-                    active_row.status.set_label_color(enums::Color::DarkYellow);
-                    let trans_ref = trans_ref.clone_box();
-                    let opt_row_passwd = active_row.opt_passwd.clone();
-                    let opt_passwd = opt_row_passwd.borrow().clone();
+                let output_path = if let Some(custom_output_path) = active_row.opt_output_file.borrow().clone() {
+                    PathBuf::from(custom_output_path)
+                } else {
+                    common::default_output_path(input_path.clone(), active_file_suffix.clone()).unwrap()
+                };
 
-                    let mut exec_handle = Some(thread::spawn(move || {
-                        let opt_passwd_value  = opt_passwd.to_owned();
-                        let convert_options = common::ConvertOptions::new(
-                            active_ociimage_option,
-                            String::from("json"),
-                            active_ocrlang_option, opt_passwd_value);
+                let current_input_path = input_path.clone();
+                let current_output_path = output_path.clone();
+                active_row.status.set_label(FILELIST_ROW_STATUS_INPROGRESS);
+                active_row.checkbox.deactivate();
+                active_row.output_file_button.deactivate();
+                active_row.status.set_label_color(enums::Color::DarkYellow);
+                let trans_ref = trans_ref.clone_box();
+                let opt_row_passwd = active_row.opt_passwd.clone();
+                let opt_passwd = opt_row_passwd.borrow().clone();
 
-                        match container::convert(
-                            current_input_path.clone(),
-                            output_path.clone(),
-                            convert_options,
-                            tx,
-                            trans_ref
-                        ) {
-                            Ok(_) => None,
-                            Err(ex) => Some(ex.to_string())
-                        }
-                    }));
+                let mut exec_handle = Some(thread::spawn(move || {
+                    let opt_passwd_value  = opt_passwd.to_owned();
+                    let convert_options = common::ConvertOptions::new(
+                        active_ociimage_option,
+                        String::from("json"),
+                        active_ocrlang_option,
+                        opt_passwd_value);
 
-                    while let Ok(raw_msg) = rx.recv() {
-                        app::wait();
+                    match container::convert(
+                        current_input_path.clone(),
+                        output_path.clone(),
+                        convert_options,
+                        tx,
+                        trans_ref
+                    ) {
+                        Ok(_) => None,
+                        Err(ex) => Some(ex.to_string())
+                    }
+                }));
 
-                        let log_msg_ret: serde_json::Result<common::LogMessage> =
-                            serde_json::from_slice(raw_msg.as_bytes());
+                while let Ok(raw_msg) = rx.recv() {
+                    app::wait();
 
-                        if let Ok(log_msg) = log_msg_ret {
-                            let progress_text = format!("{} %", log_msg.percent_complete);
-                            active_row.progressbar.set_label(&progress_text);
-                            active_row.progressbar.set_value(log_msg.percent_complete as f64);
-                            messages_frame_ref.set_label(&clip_text(&log_msg.data, messages_frame_ref.w()));
-                            active_row.logs.borrow_mut().push(log_msg.data);
-                            active_row.progressbar.parent().unwrap().redraw();
-                        }
+                    let log_msg_ret: serde_json::Result<common::LogMessage> =
+                        serde_json::from_slice(raw_msg.as_bytes());
 
-                        app::awake();
+                    if let Ok(log_msg) = log_msg_ret {
+                        let progress_text = format!("{} %", log_msg.percent_complete);
+                        active_row.progressbar.set_label(&progress_text);
+                        active_row.progressbar.set_value(log_msg.percent_complete as f64);
+                        messages_frame_ref.set_label(&clip_text(&log_msg.data, messages_frame_ref.w()));
+                        active_row.logs.borrow_mut().push(log_msg.data);
+                        active_row.progressbar.parent().unwrap().redraw();
                     }
 
-                    let mut status_color = enums::Color::Red;
-                    let mut row_status = FILELIST_ROW_STATUS_FAILED;
+                    app::awake();
+                }
 
-                    match exec_handle.take().map(thread::JoinHandle::join) {
-                        Some(exec_handle_result) => match exec_handle_result {
-                            Ok(None) => {
-                                result.swap(true, Ordering::Relaxed);
-                                active_row.progressbar.set_label("100%");
-                                active_row.progressbar.set_value(100.0);
-                                status_color = enums::Color::DarkGreen;
-                                row_status = FILELIST_ROW_STATUS_SUCCEEDED;
-                            }
-                            Ok(err_string_opt) => {
-                                if let Some(err_text) = err_string_opt {
-                                    active_row.logs.borrow_mut().push(err_text.clone());
-                                    active_row.log_link.set_label(&err_text);
-                                }
-                            }
-                            Err(ex) => {
-                                let err_text = format!("{:?}", ex);
+                let mut status_color = enums::Color::Red;
+                let mut row_status = FILELIST_ROW_STATUS_FAILED;
+
+                match exec_handle.take().map(thread::JoinHandle::join) {
+                    Some(exec_handle_result) => match exec_handle_result {
+                        Ok(None) => {
+                            result.swap(true, Ordering::Relaxed);
+                            active_row.progressbar.set_label("100%");
+                            active_row.progressbar.set_value(100.0);
+                            status_color = enums::Color::DarkGreen;
+                            row_status = FILELIST_ROW_STATUS_SUCCEEDED;
+                        }
+                        Ok(err_string_opt) => {
+                            if let Some(err_text) = err_string_opt {
                                 active_row.logs.borrow_mut().push(err_text.clone());
                                 active_row.log_link.set_label(&err_text);
                             }
-                        },
-                        None => {
-                            let label_text = failure_message;
-                            active_row.log_link.set_label(label_text);
-                            active_row.logs.borrow_mut().push(String::from(label_text));
                         }
+                        Err(ex) => {
+                            let err_text = format!("{:?}", ex);
+                            active_row.logs.borrow_mut().push(err_text.clone());
+                            active_row.log_link.set_label(&err_text);
+                        }
+                    },
+                    None => {
+                        let label_text = failure_message;
+                        active_row.log_link.set_label(label_text);
+                        active_row.logs.borrow_mut().push(String::from(label_text));
                     }
+                }
 
-                    active_row.status.set_label(row_status);
-                    active_row.status.set_label_color(status_color);
-                    active_row.progressbar.set_label("100%");
-                    active_row.progressbar.set_value(100.0);
-                    active_row.log_link.set_label(logs_title_button_label);
-                    active_row.log_link.set_frame(enums::FrameType::ThinUpBox);
-                    active_row.log_link.set_down_frame(enums::FrameType::ThinDownBox);
-                    active_row.log_link.activate();
-                    messages_frame_ref.set_label("");
+                active_row.status.set_label(row_status);
+                active_row.status.set_label_color(status_color);
+                active_row.progressbar.set_label("100%");
+                active_row.progressbar.set_value(100.0);
+                active_row.log_link.set_label(logs_title_button_label);
+                active_row.log_link.set_frame(enums::FrameType::ThinUpBox);
+                active_row.log_link.set_down_frame(enums::FrameType::ThinDownBox);
+                active_row.log_link.activate();
 
-                    if result.load(Ordering::Relaxed) && active_viewer_app_option.is_some() {
-                        if let Some(viewer_exe) = active_viewer_app_option {
-                            if let Err(exe) = pdf_open_with(viewer_exe, current_output_path.clone()) {
-                                let err_text = format!("{}\n.{}.", trans.gettext("Could not open PDF result!"), exe.to_string());
-                                dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, &err_text);
-                            }
+                messages_frame_ref.set_label("");
+
+                if result.load(Ordering::Relaxed) && active_viewer_app_option.is_some() {
+                    if let Some(viewer_exe) = active_viewer_app_option {
+                        if let Err(exe) = pdf_open_with(viewer_exe, current_output_path.clone()) {
+                            let err_text = format!("{}\n.{}.", trans.gettext("Could not open PDF result!"), exe.to_string());
+                            dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, &err_text);
                         }
                     }
                 }
+
             }
 
             tabsettings_button_ref.activate();
@@ -1646,7 +1834,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 );
 
                 filelist_scroll_ref.resize(
-                    WIDGET_GAP, 
+                    WIDGET_GAP,
                     filelist_scroll_ref.y(),
                     w.w() - (WIDGET_GAP * 2),
                     scroller_height,
@@ -1757,7 +1945,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     w.w() - (WIDGET_GAP * 4),
                     messages_frame_ref.h(),
                 );
-                
+
                 columns_frame_ref.redraw();
                 filelist_scroll_ref.redraw();
 

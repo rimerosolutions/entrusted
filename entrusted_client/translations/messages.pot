@@ -30,6 +30,15 @@ msgstr ""
 #~ "MIME-Version: 1.0\n"
 #~ "Content-Type: text/plain; charset=UTF-8"
 
+msgid "Select"
+msgstr ""
+
+msgid "Reset"
+msgstr ""
+
+msgid "Custom output file"
+msgstr ""
+
 msgid "Failed to read password!"
 msgstr ""
 

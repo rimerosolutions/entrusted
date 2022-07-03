@@ -757,11 +757,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut tabsettings_button = button::Button::default()
         .with_size(120, 20)
         .with_label(&trans.gettext("Settings"));
-
+    
     let mut tabconvert_button = button::Button::default()
         .with_size(120, 20)
         .with_label(&trans.gettext("Convert"));
-    
+
     top_group.end();
 
     let settings_pack_rc = Rc::new(RefCell::new(
@@ -1475,6 +1475,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             tabsettings_button_ref.activate();
             convert_frame_ref.activate();
+
+            filelist_scroll_ref.scroll_to(0, 0);
         }
     });
 
@@ -1792,6 +1794,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 tabconvert_button.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, tabconvert_button.w(), 30);
                 tabsettings_button.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, tabsettings_button.w(), 30);
+
                 let content_y = top_group_ref.y() + top_group_ref.h() + WIDGET_GAP;
 
                 let scroller_height = w.h() - top_group_ref.h() - convert_frame_ref.h() - row_convert_button_ref.h() - (messages_frame_ref.h() * 3);

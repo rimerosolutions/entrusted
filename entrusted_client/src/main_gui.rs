@@ -527,88 +527,87 @@ impl <'a> FileListWidget {
             let trans = trans.clone();
 
             move |_| {
+                if let Some(current_wind) = app::first_window() {
+                    let dialog_width  = 350;
+                    let dialog_height = 200;
+                    let dialog_xpos   = current_wind.x() + (current_wind.w() / 2) - (dialog_width  / 2);
+                    let dialog_ypos   = current_wind.y() + (current_wind.h() / 2) - (dialog_height / 2);
 
-                    if let Some(current_wind) = app::first_window() {
-                        let dialog_width  = 350;
-                        let dialog_height = 200;
-                        let dialog_xpos   = current_wind.x() + (current_wind.w() / 2) - (dialog_width  / 2);
-                        let dialog_ypos   = current_wind.y() + (current_wind.h() / 2) - (dialog_height / 2);
+                    let (button_width, button_height) = (100, 40);
 
-                        let (button_width, button_height) = (100, 40);
+                    let mut win = window::Window::default()
+                        .with_size(dialog_width, dialog_height)
+                        .with_pos(dialog_xpos, dialog_ypos)
+                        .with_label(&trans.gettext("Set document password"));
 
-                        let mut win = window::Window::default()
-                            .with_size(dialog_width, dialog_height)
-                            .with_pos(dialog_xpos, dialog_ypos)
-                            .with_label(&trans.gettext("Set document password"));
+                    let mut container_pack = group::Pack::default()
+                        .with_pos(WIDGET_GAP, WIDGET_GAP)
+                        .with_type(group::PackType::Vertical)
+                        .with_size(dialog_width - (WIDGET_GAP * 2), dialog_height - (WIDGET_GAP * 2));
+                    container_pack.set_spacing(WIDGET_GAP);
 
-                        let mut container_pack = group::Pack::default()
-                            .with_pos(WIDGET_GAP, WIDGET_GAP)
-                            .with_type(group::PackType::Vertical)
-                            .with_size(dialog_width - (WIDGET_GAP * 2), dialog_height - (WIDGET_GAP * 2));
-                        container_pack.set_spacing(WIDGET_GAP);
+                    let mut secret_input = input::SecretInput::default()
+                        .with_size(dialog_width - WIDGET_GAP * 2, 40);
+                    secret_input.set_tooltip(&trans.gettext("Set document password (empty for none)"));
 
-                        let mut secret_input = input::SecretInput::default()
-                            .with_size(dialog_width - WIDGET_GAP * 2, 40);
-                        secret_input.set_tooltip(&trans.gettext("Set document password (empty for none)"));
-
-                        let opt_current_password = active_row.opt_passwd.borrow().clone();
-                        if let Some(current_password) = opt_current_password {
-                            secret_input.set_value(&current_password);
-                        }
-
-                        let mut buttons_pack = group::Pack::default()
-                            .with_size(dialog_width, WIDGET_GAP * 2)
-                            .below_of(&secret_input, WIDGET_GAP)
-                            .with_type(group::PackType::Horizontal)
-                            .with_align(enums::Align::Inside | enums::Align::Right);
-                        buttons_pack.set_spacing(WIDGET_GAP);
-
-                        let mut ok_button = button::Button::default()
-                            .with_size(button_width, button_height)
-                            .with_label(&trans.gettext("Accept"));
-
-                        let mut cancel_button = button::Button::default()
-                            .with_size(button_width, button_height)
-                            .with_label(&trans.gettext("Cancel"));
-
-                        ok_button.set_callback({
-                            let mut win = win.clone();
-                            let secret_input = secret_input.clone();
-                            let active_row = active_row.clone();
-
-                            move |_| {
-                                let input_value = secret_input.value();
-                                let new_passwd = if !input_value.is_empty() {
-                                    Some(input_value.clone())
-                                } else {
-                                    None
-                                };
-                                let mut passwd_holder = active_row.opt_passwd.borrow_mut();
-                                let _ = std::mem::replace(&mut *passwd_holder, new_passwd);
-                                win.hide();
-                            }
-                        });
-
-                        cancel_button.set_callback({
-                            let mut win = win.clone();
-
-                            move |_| {
-                                win.hide();
-                            }
-                        });
-
-                        buttons_pack.end();
-                        container_pack.end();
-
-                        win.end();
-                        win.make_modal(true);
-                        win.make_resizable(true);
-                        win.show();
-
-                        while win.shown() {
-                            app::wait();
-                        }
+                    let opt_current_password = active_row.opt_passwd.borrow().clone();
+                    if let Some(current_password) = opt_current_password {
+                        secret_input.set_value(&current_password);
                     }
+
+                    let mut buttons_pack = group::Pack::default()
+                        .with_size(dialog_width, WIDGET_GAP * 2)
+                        .below_of(&secret_input, WIDGET_GAP)
+                        .with_type(group::PackType::Horizontal)
+                        .with_align(enums::Align::Inside | enums::Align::Right);
+                    buttons_pack.set_spacing(WIDGET_GAP);
+
+                    let mut ok_button = button::Button::default()
+                        .with_size(button_width, button_height)
+                        .with_label(&trans.gettext("Accept"));
+
+                    let mut cancel_button = button::Button::default()
+                        .with_size(button_width, button_height)
+                        .with_label(&trans.gettext("Cancel"));
+
+                    ok_button.set_callback({
+                        let mut win = win.clone();
+                        let secret_input = secret_input.clone();
+                        let active_row = active_row.clone();
+
+                        move |_| {
+                            let input_value = secret_input.value();
+                            let new_passwd = if !input_value.is_empty() {
+                                Some(input_value.clone())
+                            } else {
+                                None
+                            };
+                            let mut passwd_holder = active_row.opt_passwd.borrow_mut();
+                            let _ = std::mem::replace(&mut *passwd_holder, new_passwd);
+                            win.hide();
+                        }
+                    });
+
+                    cancel_button.set_callback({
+                        let mut win = win.clone();
+
+                        move |_| {
+                            win.hide();
+                        }
+                    });
+
+                    buttons_pack.end();
+                    container_pack.end();
+
+                    win.end();
+                    win.make_modal(true);
+                    win.make_resizable(true);
+                    win.show();
+
+                    while win.shown() {
+                        app::wait();
+                    }
+                }
             }
         });
         logs_button.set_callback({
@@ -1013,7 +1012,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
-
     let savesettings_pack = group::Pack::default()
         .with_size(150, 30)
         .below_of(&ociimage_pack, WIDGET_GAP);
@@ -1116,9 +1114,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             .with_label(&trans.gettext("Select all"))
             .with_align(enums::Align::Inside | enums::Align::Left),
     ));
-    selectall_frame_rc
-        .borrow_mut()
-        .set_label_color(enums::Color::Blue);
+
     let deselectall_frame_rc = Rc::new(RefCell::new(
         frame::Frame::default()
             .with_size(150, 10)
@@ -1126,23 +1122,37 @@ fn main() -> Result<(), Box<dyn Error>> {
             .with_align(enums::Align::Inside | enums::Align::Left),
     ));
 
-    deselectall_frame_rc
+    selectall_frame_rc
         .borrow_mut()
         .set_label_color(enums::Color::Blue);
 
     selectall_frame_rc.borrow_mut().draw({
-        move |w| {
-            let (lw, _) = draw::measure(&w.label(), true);
-            draw::draw_line(w.x() + 3, w.y() + w.h(), w.x() + lw, w.y() + w.h());
+        move |wid| {
+            if wid.visible() {
+                let (lw, _) = draw::measure(&wid.label(), true);
+                let old_color = draw::get_color();
+                draw::set_draw_color(wid.label_color());
+                draw::draw_line(wid.x() + 3, wid.y() + wid.h(), wid.x() + lw, wid.y() + wid.h());
+                draw::set_draw_color(old_color);
+            }
         }
     });
 
     deselectall_frame_rc.borrow_mut().draw({
-        move |w| {
-            let (lw, _) = draw::measure(&w.label(), true);
-            draw::draw_line(w.x() + 3, w.y() + w.h(), w.x() + lw, w.y() + w.h());
+        move |wid| {
+            if wid.visible() {
+                let (lw, _) = draw::measure(&wid.label(), true);
+                let old_color = draw::get_color();
+                draw::set_draw_color(wid.label_color());
+                draw::draw_line(wid.x() + 3, wid.y() + wid.h(), wid.x() + lw, wid.y() + wid.h());
+                draw::set_draw_color(old_color);
+            }
         }
     });
+
+    deselectall_frame_rc
+        .borrow_mut()
+        .set_label_color(enums::Color::Blue);
 
     selectall_frame_rc.borrow_mut().handle({
         move |_, ev| match ev {
@@ -1285,6 +1295,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             tabsettings_button_ref.deactivate();
             selectall_frame_rc_ref.borrow_mut().deactivate();
             deselectall_frame_rc_ref.borrow_mut().deactivate();
+            selectall_frame_rc_ref.borrow_mut().set_label_color(enums::Color::from_rgb(82, 82, 82));
+            deselectall_frame_rc_ref.borrow_mut().set_label_color(enums::Color::from_rgb(82, 82, 82));
             convert_frame_ref.deactivate();
 
             is_converting_ref.store(true, Ordering::Relaxed);
@@ -1312,6 +1324,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let mut active_row = current_row.clone();
                 active_row.reset_ui_state();
                 active_row.password_button.deactivate();
+                active_row.output_file_button.deactivate();
                 active_row.checkbox.deactivate();
             }
 
@@ -1362,7 +1375,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let current_output_path = output_path.clone();
                 active_row.status.set_label(FILELIST_ROW_STATUS_INPROGRESS);
                 active_row.checkbox.deactivate();
-                active_row.output_file_button.deactivate();
                 active_row.status.set_label_color(enums::Color::DarkYellow);
                 let trans_ref = trans_ref.clone_box();
                 let opt_row_passwd = active_row.opt_passwd.clone();
@@ -1460,8 +1472,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
 
             tabsettings_button_ref.activate();
-            selectall_frame_rc_ref.borrow_mut().activate();
-            deselectall_frame_rc_ref.borrow_mut().activate();
             convert_frame_ref.activate();
         }
     });
@@ -1638,6 +1648,16 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
 
                     if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut filelist_scroll_ref) {
+                        if !selectall_frame_rc_ref.borrow().active() {
+                            selectall_frame_rc_ref.borrow_mut().activate();
+                            selectall_frame_rc_ref.borrow_mut().set_label_color(enums::Color::Blue);
+                        }
+
+                        if !deselectall_frame_rc_ref.borrow().active() {
+                            deselectall_frame_rc_ref.borrow_mut().activate();
+                            deselectall_frame_rc_ref.borrow_mut().set_label_color(enums::Color::Blue);
+                        }
+
                         if !convert_button_ref.active() {
                             convert_button_ref.activate();
                             selection_pack_ref.set_damage(true);
@@ -1681,6 +1701,16 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
 
                 if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut filelist_scroll_ref) {
+                    if !selectall_frame_rc_ref.borrow().active() {
+                        selectall_frame_rc_ref.borrow_mut().activate();
+                        selectall_frame_rc_ref.borrow_mut().set_label_color(enums::Color::Blue);
+                    }
+
+                    if !deselectall_frame_rc_ref.borrow().active() {
+                        deselectall_frame_rc_ref.borrow_mut().activate();
+                        deselectall_frame_rc_ref.borrow_mut().set_label_color(enums::Color::Blue);
+                    }
+
                     if !convert_button_ref.active() {
                         convert_button_ref.activate();
                         selection_pack_ref.set_damage(true);
@@ -1986,6 +2016,16 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
 
                 if add_to_conversion_queue(vec![file_path], &mut filelist_widget_ref, &mut scroll_ref) {
+                    if !selectall_frame_rc.borrow().active() {
+                        selectall_frame_rc.borrow_mut().activate();
+                        selectall_frame_rc.borrow_mut().set_label_color(enums::Color::Blue);
+                    }
+
+                    if !deselectall_frame_rc.borrow().active() {
+                        deselectall_frame_rc.borrow_mut().activate();
+                        deselectall_frame_rc.borrow_mut().set_label_color(enums::Color::Blue);
+                    }
+
                     if !convert_button.active() {
                         convert_button.activate();
                         selection_pack_ref.set_damage(true);

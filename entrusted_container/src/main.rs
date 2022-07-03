@@ -243,7 +243,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
     }
 
     let kind = infer::get_from_path(&raw_input_path)?;
-    let mut mime_type: &str = "";
+    let mut mime_type: &str;
 
     fn of_interest_openxml(name: &str) -> bool {
         name == "_rels/.rels" || name == "[Content_Types].xml"

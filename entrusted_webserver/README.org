@@ -107,12 +107,12 @@ If the upload was successful, the server returns a JSON payload with a reference
 
 #+begin_src js
   {
-    "id": "20943e8a-a68c-42bc-8747-7e30a467c1be"
-    "tracking_uri": "/events/20943e8a-a68c-42bc-8747-7e30a467c1be"
+    "id":           "USm3fpXnKG5EUBx2ndxBDMPVciP5hGey2Jh4NDv6gmeo1LkMeiKrLJUUBk6Z",
+    "tracking_uri": "/events/USm3fpXnKG5EUBx2ndxBDMPVciP5hGey2Jh4NDv6gmeo1LkMeiKrLJUUBk6Z"
   }
 #+end_src
 
-The retrieved =id= used subsequently to receive processing notifications (=tracking_uri=), as well as downloading the final PDF document later on.
+The retrieved =id= used subsequently to receive processing notifications (=tracking_uri=), as well as downloading the final PDF document later on. The =id= is a [[https://tools.ietf.org/id/draft-msporny-base58-01.html][base58]] encoded value (=base64_fileuuid= *;* =base64_filename=).
 
 ** Consuming processing notifications
 
@@ -129,7 +129,7 @@ There's no need =blindly poll= indefinitely the =downloads= endpoint with a hope
 | Custom Emitted Events | =data= field Format | =data= field Description                              |
 |-----------------------+---------------------+-------------------------------------------------------|
 | =processing_update=   | JSON                | ={"data":"doing stuff", "percent_complete":65}=       |
-| =processing_success=  | JSON                | ={"data":"/downloads/id123", "percent_complete":100}= |
+| =processing_success=  | JSON                | ={"data":"/downloads/id", "percent_complete":100}=    |
 | =processing_failure=  | JSON                | ={"data":"doing stuff", "percent_complete":100}=      |
 |-----------------------+---------------------+-------------------------------------------------------|
 

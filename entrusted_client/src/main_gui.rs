@@ -289,12 +289,12 @@ impl <'a> FileListWidget {
             .with_type(group::PackType::Horizontal)
             .with_size(ww, 40);
         row.set_spacing(WIDGET_GAP);
-
+        
         let row_height: i32 = 30;
 
         let mut password_frame =  button::Button::default().with_size(width_password, row_height);
         if let Ok(mut img) = image::PngImage::from_data(ICON_PASSWORD) {            
-            img.scale(width_password, row_height, true, true);
+            img.scale(width_password - 2, row_height - 2, true, true);
             password_frame.set_image(Some(img));
         }
         password_frame.set_color(enums::Color::White);
@@ -305,7 +305,7 @@ impl <'a> FileListWidget {
             .with_size(width_output_file, row_height);
         output_file_button.set_tooltip(&trans.gettext("Custom output file"));
         if let Ok(mut img) = image::PngImage::from_data(ICON_SAVE) {
-            img.scale(width_output_file, row_height, true, true);
+            img.scale(width_output_file- 2, row_height - 2, true, true);
             output_file_button.set_image(Some(img));
         }        
 
@@ -471,22 +471,48 @@ impl <'a> FileListWidget {
             }
         });
 
-        let dialog_title = trans.gettext("Logs");
-        let close_button_label = trans.gettext("Close");
-
-        password_frame.draw({
-            let opt_passwd = file_list_row.opt_passwd.clone();
+        output_file_button.draw({
+            let opt_current = file_list_row.opt_output_file.clone();
 
             move |wid| {
                 if wid.active() {
                     let old_color = draw::get_color();
-                    let current_color = if opt_passwd.borrow().is_some() {
+                    let current_color = if opt_current.borrow().is_some() {
                         enums::Color::DarkRed
                     } else {
                         enums::Color::Yellow
                     };
                     draw::set_draw_color(current_color);
-                    draw::draw_rect(wid.x(), wid.y(), wid.w(), wid.h());
+
+                    let stroke = 2;
+                    for i in 1..(stroke + 1) {                        
+                        draw::draw_rect(wid.x() + i, wid.y() + i, wid.w() - i - i, wid.h() - i - i);
+                    }
+
+                    draw::set_draw_color(old_color);
+                }
+            }
+        });
+
+        let dialog_title = trans.gettext("Logs");
+        let close_button_label = trans.gettext("Close");
+
+        password_frame.draw({
+            let opt_current = file_list_row.opt_passwd.clone();
+
+            move |wid| {
+                if wid.active() {
+                    let old_color = draw::get_color();
+                    let current_color = if opt_current.borrow().is_some() {
+                        enums::Color::DarkRed
+                    } else {
+                        enums::Color::Yellow
+                    };
+                    draw::set_draw_color(current_color);
+                    let stroke = 2;
+                    for i in 1..(stroke + 1) {                        
+                        draw::draw_rect(wid.x() + i, wid.y() + i, wid.w() - i - i, wid.h() - i - i);
+                    }
                     draw::set_draw_color(old_color);
                 }
             }
@@ -519,6 +545,7 @@ impl <'a> FileListWidget {
 
                         let mut secret_input = input::SecretInput::default()
                             .with_size(dialog_width - WIDGET_GAP * 2, 40);
+                        secret_input.set_tooltip(&trans.gettext("Set document password (empty for none)"));
 
                         let opt_current_password = active_row.opt_passwd.borrow().clone();
                         if let Some(current_password) = opt_current_password {
@@ -680,11 +707,11 @@ impl <'a> FileListWidget {
 
 fn main() -> Result<(), Box<dyn Error>> {
     l10n::load_translations(incl_gettext_files!("en", "fr"));
-    let locale = "fr".to_string();
-    // let locale = match env::var(l10n::ENV_VAR_ENTRUSTED_LANGID) {
-    //     Ok(selected_locale) => selected_locale,
-    //     Err(_) => l10n::sys_locale()
-    // };
+
+    let locale = match env::var(l10n::ENV_VAR_ENTRUSTED_LANGID) {
+        Ok(selected_locale) => selected_locale,
+        Err(_) => l10n::sys_locale()
+    };
 
     let trans = l10n::new_translations(locale);
     let trans_ref = trans.clone_box();
@@ -1179,7 +1206,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         move |wid| {
             if filelist_widget_ref.children() != 0 {
-                let w = wid.w();
+                let w = filelist_widget_ref.container.w();
 
                 let (width_output_file, width_password, width_checkbox, width_progressbar, width_status, width_logs) = filelist_column_widths(w);
                 let column_widths = [
@@ -1207,9 +1234,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 for i in 2..column_names.len() {
                     column_x = column_x + WIDGET_GAP + column_widths[i - 1];
-                    if i > 2 {
-                        column_x -= WIDGET_GAP/2;
-                    }
                     draw::draw_text(&column_names[i], column_x, y);
                 }
 

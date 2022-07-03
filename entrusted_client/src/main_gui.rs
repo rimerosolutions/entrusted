@@ -761,6 +761,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut tabconvert_button = button::Button::default()
         .with_size(120, 20)
         .with_label(&trans.gettext("Convert"));
+    
     top_group.end();
 
     let settings_pack_rc = Rc::new(RefCell::new(
@@ -1219,7 +1220,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         let col_label_message_ref    = col_label_message.to_owned();
 
         move |wid| {
-            if filelist_widget_ref.children() != 0 {
+            let file_count = filelist_widget_ref.children();
+            if file_count != 0 {
                 let w = filelist_widget_ref.container.w();
 
                 let (width_output_file, width_password, width_checkbox, width_progressbar, width_status, width_logs) = filelist_column_widths(w);
@@ -1230,7 +1232,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let column_names = vec![
                     col_label_password_ref.clone(),
                     col_label_outputfile_ref.clone(),
-                    col_label_filename_ref.clone(),
+                    format!("{} [{}]", &col_label_filename_ref, file_count),
                     col_label_progress_ref.clone(),
                     col_label_status_ref.clone(),
                     col_label_message_ref.clone()

@@ -81,7 +81,7 @@ struct FileListWidget {
     container: group::Pack,
     selected_indices: Rc<RefCell<Vec<usize>>>,
     rows: Rc<RefCell<Vec<FileListRow>>>,
-    translations: Rc<RefCell<HashMap<String, String>>>,
+    trans: Box<dyn l10n::Translations>
 }
 
 impl Deref for FileListWidget {
@@ -136,7 +136,7 @@ pub fn filelist_column_widths(w: i32) -> (i32, i32, i32, i32, i32, i32) {
 }
 
 impl <'a> FileListWidget {
-    pub fn new(translations: Rc<RefCell<HashMap<String, String>>>) -> Self {
+    pub fn new(translations: Box<dyn l10n::Translations>) -> Self {
         let mut container = group::Pack::default().with_type(group::PackType::Vertical).with_size(300, 300);
         container.set_spacing(WIDGET_GAP);
         container.end();
@@ -144,7 +144,7 @@ impl <'a> FileListWidget {
 
         Self {
             container,
-            translations,
+            trans: translations,
             selected_indices: Rc::new(RefCell::new(vec![])),
             rows: Rc::new(RefCell::new(vec![])),
         }
@@ -279,7 +279,7 @@ impl <'a> FileListWidget {
     }
 
     pub fn add_file(&mut self, path: PathBuf) {
-        let new_translations = self.translations.borrow().clone();
+        let trans = &self.trans;
 
         let ww = self.container.w();
 
@@ -298,20 +298,12 @@ impl <'a> FileListWidget {
             password_frame.set_image(Some(img));
         }
         password_frame.set_color(enums::Color::White);
-        password_frame.set_label_color(enums::Color::Red);
-        let password_button_tooltip = match new_translations.get("Set document password (empty for none)") {
-            Some(vv) => vv.to_owned(),
-            None     => String::from("Set document password (empty for none)")
-        };
-        password_frame.set_tooltip(&password_button_tooltip);
+        password_frame.set_label_color(enums::Color::Red);        
+        password_frame.set_tooltip(&trans.gettext("Set document password (empty for none)"));
 
-        let output_file_tooltip = match new_translations.get("Custom output file") {
-            Some(vv) => vv.to_owned(),
-            None     => String::from("Custom output file")
-        };
         let mut output_file_button = button::Button::default()
             .with_size(width_output_file, row_height);
-        output_file_button.set_tooltip(&output_file_tooltip);
+        output_file_button.set_tooltip(&trans.gettext("Custom output file"));
         if let Ok(mut img) = image::PngImage::from_data(ICON_SAVE) {
             img.scale(width_output_file, row_height, true, true);
             output_file_button.set_image(Some(img));
@@ -358,7 +350,7 @@ impl <'a> FileListWidget {
 
         output_file_button.set_callback({
             let opt_output_file = file_list_row.opt_output_file.clone();
-            let trans = new_translations.clone();
+            let trans = trans.clone_box();
 
             move|_| {
                 if let Some(current_wind) = app::first_window() {
@@ -368,15 +360,10 @@ impl <'a> FileListWidget {
                     let dialog_ypos   = current_wind.y() + (current_wind.h() / 2) - (dialog_height / 2);
                     let (button_width, button_height) = (100, 40);
 
-                    let win_title: String = match trans.get("Custom output file") {
-                        Some(v) => v.clone(),
-                        None    => "Custom output file".to_string()
-                    };
-
                     let mut win = window::Window::default()
                         .with_size(dialog_width, dialog_height)
                         .with_pos(dialog_xpos, dialog_ypos)
-                        .with_label(&win_title);
+                        .with_label(&trans.gettext("Custom output file"));
 
                     let mut container_pack = group::Pack::default()
                         .with_pos(WIDGET_GAP, WIDGET_GAP)
@@ -388,25 +375,16 @@ impl <'a> FileListWidget {
                         .with_type(group::PackType::Horizontal)
                         .with_size(dialog_width - (WIDGET_GAP * 2), button_height);
                     buttonsfile_pack.set_spacing(WIDGET_GAP);
+
                     let outputfile_input_rc = Rc::new(RefCell::new(input::Input::default().with_size(290, button_height)));
-
-                    let outputfile_tooltip = match trans.get("Optional output filename defaulting to <filename>-entrusted.pdf.") {
-                        Some(v) => v.clone(),
-                        None    => "Optional output filename defaulting to <filename>-entrusted.pdf.".to_string()
-                    };
-                    outputfile_input_rc.borrow_mut().set_tooltip(&outputfile_tooltip);
-
+                    outputfile_input_rc.borrow_mut().set_tooltip(&trans.gettext("Optional output filename defaulting to <filename>-entrusted.pdf."));
                     if let Some(v) = opt_output_file.borrow_mut().take() {
                         outputfile_input_rc.borrow_mut().set_value(&v);
                     }
 
-                    let select_button_label = match trans.get("Select") {
-                        Some(v) => v.clone(),
-                        None    => "Select".to_string()
-                    };
                     let mut select_button = button::Button::default()
                         .with_size(button_width, button_height)
-                        .with_label(&select_button_label);
+                        .with_label(&trans.gettext("Select"));
                     buttonsfile_pack.end();
 
                     let mut buttons_pack = group::Pack::default()
@@ -414,34 +392,19 @@ impl <'a> FileListWidget {
                         .with_size(dialog_width - (WIDGET_GAP * 2), button_height);
                     buttons_pack.set_spacing(WIDGET_GAP);
 
-                    let reset_button_label = match trans.get("Reset") {
-                        Some(v) => v.clone(),
-                        None    => "Reset".to_string()
-                    };
                     let mut reset_button = button::Button::default()
                         .with_size(button_width, button_height)
-                        .with_label(&reset_button_label);
+                        .with_label(&trans.gettext("Reset"));
 
-                    let accept_button_label = match trans.get("Accept") {
-                        Some(v) => v.clone(),
-                        None    => "Accept".to_string()
-                    };
                     let mut accept_button = button::Button::default()
                         .with_size(button_width, button_height)
-                        .with_label(&accept_button_label);
+                        .with_label(&trans.gettext("Accept"));
 
-                    let cancel_button_label = match trans.get("Cancel") {
-                        Some(v) => v.clone(),
-                        None    => "Cancel".to_string()
-                    };
                     let mut cancel_button = button::Button::default()
                         .with_size(button_width, button_height)
-                        .with_label(&cancel_button_label);
+                        .with_label(&trans.gettext("Cancel"));
 
-                    let select_pdffile_msg = match trans.get("Custom output file") {
-                        Some(v) => v.clone(),
-                        None    => "Custom output file".to_string()
-                    };
+                    let select_pdffile_msg = trans.gettext("Custom output file");
 
                     select_button.set_callback({
                         let outputfile_input_rc = outputfile_input_rc.clone();
@@ -508,15 +471,8 @@ impl <'a> FileListWidget {
             }
         });
 
-        let dialog_title = match new_translations.get("Logs") {
-            Some(trans_value) => trans_value.to_owned(),
-            None => "Logs".to_string()
-        };
-
-        let close_button_label = match new_translations.get("Close") {
-            Some(trans_value) => trans_value.to_owned(),
-            None => "Close".to_string()
-        };
+        let dialog_title = trans.gettext("Logs");
+        let close_button_label = trans.gettext("Close");
 
         password_frame.draw({
             let opt_passwd = file_list_row.opt_passwd.clone();
@@ -538,7 +494,7 @@ impl <'a> FileListWidget {
 
         password_frame.set_callback({
             let active_row = file_list_row.clone();
-            let trans = new_translations.clone();
+            let trans = trans.clone();
 
             move |_| {
                 
@@ -549,15 +505,11 @@ impl <'a> FileListWidget {
                         let dialog_ypos   = current_wind.y() + (current_wind.h() / 2) - (dialog_height / 2);
 
                         let (button_width, button_height) = (100, 40);
-
-                        let win_title: String = match trans.get("Set document password") {
-                            Some(v) => v.clone(),
-                            None    => "Set document password".to_string()
-                        };
+                        
                         let mut win = window::Window::default()
                             .with_size(dialog_width, dialog_height)
                             .with_pos(dialog_xpos, dialog_ypos)
-                            .with_label(&win_title);
+                            .with_label(&trans.gettext("Set document password"));
 
                         let mut container_pack = group::Pack::default()
                             .with_pos(WIDGET_GAP, WIDGET_GAP)
@@ -580,21 +532,13 @@ impl <'a> FileListWidget {
                             .with_align(enums::Align::Inside | enums::Align::Right);
                         buttons_pack.set_spacing(WIDGET_GAP);
 
-                        let ok_button_label: String = match trans.get("Accept") {
-                            Some(v) => v.clone(),
-                            None    => "Accept".to_string()
-                        };
                         let mut ok_button = button::Button::default()
                             .with_size(button_width, button_height)
-                            .with_label(&ok_button_label);
+                            .with_label(&trans.gettext("Accept"));
 
-                        let cancel_button_label: String = match trans.get("Cancel") {
-                            Some(v) => v.clone(),
-                            None    => "Cancel".to_string()
-                        };
                         let mut cancel_button = button::Button::default()
                             .with_size(button_width, button_height)
-                            .with_label(&cancel_button_label);
+                            .with_label(&trans.gettext("Cancel"));
 
                         ok_button.set_callback({
                             let mut win = win.clone();
@@ -736,11 +680,11 @@ impl <'a> FileListWidget {
 
 fn main() -> Result<(), Box<dyn Error>> {
     l10n::load_translations(incl_gettext_files!("en", "fr"));
-    
-    let locale = match env::var(l10n::ENV_VAR_ENTRUSTED_LANGID) {
-        Ok(selected_locale) => selected_locale,
-        Err(_) => l10n::sys_locale()
-    };
+    let locale = "fr".to_string();
+    // let locale = match env::var(l10n::ENV_VAR_ENTRUSTED_LANGID) {
+    //     Ok(selected_locale) => selected_locale,
+    //     Err(_) => l10n::sys_locale()
+    // };
 
     let trans = l10n::new_translations(locale);
     let trans_ref = trans.clone_box();
@@ -946,7 +890,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let openwith_button_rc = Rc::new(RefCell::new(button::Button::default().with_size(35, 20).with_label("..")));
-    openwith_button_rc.borrow_mut().set_tooltip(&trans.gettext("Browse for PDF viewer program"));
+    let openwith_button_tooltip = trans.gettext("Browse for PDF viewer program");
+    openwith_button_rc.borrow_mut().set_tooltip(&openwith_button_tooltip);
 
     openwith_button_rc.borrow_mut().deactivate();
 
@@ -977,7 +922,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         move |_| {
             let mut selectpdfviewer_dialog = dialog::FileDialog::new(dialog::FileDialogType::BrowseFile);
-            selectpdfviewer_dialog.set_title("Browse for PDF viewer program");
+            selectpdfviewer_dialog.set_title(&openwith_button_tooltip);
             selectpdfviewer_dialog.show();
 
             let selected_filename = selectpdfviewer_dialog.filename();
@@ -1214,23 +1159,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     columns_frame.set_frame(enums::FrameType::NoBox);
 
     let filelist_scroll = group::Scroll::default().with_size(580, 200);
-    let translations: HashMap<String, String> = [
-        "Logs",
-        "Close",
-        "Optional output filename defaulting to <filename>-entrusted.pdf.",
-        "Accept",
-        "Cancel",
-        "Set document password",
-        "Set document password (empty for none)",
-        "Custom output file",
-        "Reset",
-        "Select"
-    ].map(|k| (k.to_string(), trans.gettext(k)))
-        .iter()
-        .cloned()
-        .collect();
-
-    let mut filelist_widget = FileListWidget::new(Rc::new(RefCell::new(translations.clone())));
+    let mut filelist_widget = FileListWidget::new(trans.clone_box());
 
     let col_label_password   = String::new();
     let col_label_outputfile = String::new();

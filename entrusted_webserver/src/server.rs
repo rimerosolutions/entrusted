@@ -259,13 +259,13 @@ async fn downloads(info: actix_web::web::Path<String>, req: HttpRequest, l10n: D
                 let fileid_data   = base64_lib::decode(&file_data_parts[0]);
                 let filename_data = base64_lib::decode(&file_data_parts[1]);
 
-                
-                    if let (Ok(fileid_value), Ok(filename_value)) = (std::str::from_utf8(&fileid_data), std::str::from_utf8(&filename_data)) {
-                        fileid.push_str(&output_filename_for(fileid_value.to_string()));
-                        filename.push_str(&output_filename_for(filename_value.to_string()));
-                        request_err_found = false;
-                    }
-                
+
+                if let (Ok(fileid_value), Ok(filename_value)) = (std::str::from_utf8(&fileid_data), std::str::from_utf8(&filename_data)) {
+                    fileid.push_str(&output_filename_for(fileid_value.to_string()));
+                    filename.push_str(&output_filename_for(filename_value.to_string()));
+                    request_err_found = false;
+                }
+
             }
         }
     }

@@ -130,7 +130,7 @@ pub fn filelist_column_widths(w: i32) -> (i32, i32, i32, i32, i32, i32) {
     let width_checkbox    = (w as f64 * 0.35) as i32;
     let width_progressbar = (w as f64 * 0.15) as i32;
     let width_status      = (w as f64 * 0.15) as i32;
-    let width_logs        = (w as f64 * 0.1)  as i32;
+    let width_logs        = (w as f64 * 0.2)  as i32;
 
     (width_output_file, width_password, width_checkbox, width_progressbar, width_status, width_logs)
 }
@@ -159,6 +159,8 @@ impl <'a> FileListWidget {
 
         if let Ok(rows) = self.rows.try_borrow() {
             for row in rows.iter() {
+                let mut active_row = row.clone();
+
                 let mut col_widgets: Vec<Box<dyn WidgetExt>> = vec![
                     Box::new(row.password_button.clone()),
                     Box::new(row.output_file_button.clone()),
@@ -181,6 +183,8 @@ impl <'a> FileListWidget {
                         }
                     }
                 }
+
+                active_row.log_link.resize(active_row.log_link.x(), active_row.log_link.x(), 60, active_row.log_link.h());
             }
         }
     }
@@ -289,16 +293,16 @@ impl <'a> FileListWidget {
             .with_type(group::PackType::Horizontal)
             .with_size(ww, 40);
         row.set_spacing(WIDGET_GAP);
-        
+
         let row_height: i32 = 30;
 
         let mut password_frame =  button::Button::default().with_size(width_password, row_height);
-        if let Ok(mut img) = image::PngImage::from_data(ICON_PASSWORD) {            
+        if let Ok(mut img) = image::PngImage::from_data(ICON_PASSWORD) {
             img.scale(width_password - 2, row_height - 2, true, true);
             password_frame.set_image(Some(img));
         }
         password_frame.set_color(enums::Color::White);
-        password_frame.set_label_color(enums::Color::Red);        
+        password_frame.set_label_color(enums::Color::Red);
         password_frame.set_tooltip(&trans.gettext("Set document password (empty for none)"));
 
         let mut output_file_button = button::Button::default()
@@ -307,7 +311,7 @@ impl <'a> FileListWidget {
         if let Ok(mut img) = image::PngImage::from_data(ICON_SAVE) {
             img.scale(width_output_file- 2, row_height - 2, true, true);
             output_file_button.set_image(Some(img));
-        }        
+        }
 
         let path_name = format!("{}", path.file_name().and_then(|x| x.to_str()).unwrap());
         let path_tooltip = path.display().to_string();
@@ -485,7 +489,7 @@ impl <'a> FileListWidget {
                     draw::set_draw_color(current_color);
 
                     let stroke = 2;
-                    for i in 1..(stroke + 1) {                        
+                    for i in 1..(stroke + 1) {
                         draw::draw_rect(wid.x() + i, wid.y() + i, wid.w() - i - i, wid.h() - i - i);
                     }
 
@@ -510,7 +514,7 @@ impl <'a> FileListWidget {
                     };
                     draw::set_draw_color(current_color);
                     let stroke = 2;
-                    for i in 1..(stroke + 1) {                        
+                    for i in 1..(stroke + 1) {
                         draw::draw_rect(wid.x() + i, wid.y() + i, wid.w() - i - i, wid.h() - i - i);
                     }
                     draw::set_draw_color(old_color);
@@ -523,7 +527,7 @@ impl <'a> FileListWidget {
             let trans = trans.clone();
 
             move |_| {
-                
+
                     if let Some(current_wind) = app::first_window() {
                         let dialog_width  = 350;
                         let dialog_height = 200;
@@ -531,7 +535,7 @@ impl <'a> FileListWidget {
                         let dialog_ypos   = current_wind.y() + (current_wind.h() / 2) - (dialog_height / 2);
 
                         let (button_width, button_height) = (100, 40);
-                        
+
                         let mut win = window::Window::default()
                             .with_size(dialog_width, dialog_height)
                             .with_pos(dialog_xpos, dialog_ypos)

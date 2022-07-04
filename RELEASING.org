@@ -3,9 +3,11 @@
 General steps:
 
 - Review and update the README page for impacted components as needed
-- Bump the =version= field in all the projects (=Cargo.toml= files)
-  - The container image tag is inferred from the release version to standardize as much as possible
-  - Please try to follow closely [[https://semver.org/][semantic versioning]]
+- Bump the version of the application  
+  - Bump the =version= field in all the projects (=Cargo.toml= files)
+    - The container image tag is inferred from the release version to standardize as much as possible
+    - Please try to follow closely [[https://semver.org/][semantic versioning]]
+  - Bump the =version= field in the /Dockerfile/ for the label =org.opencontainers.image.version=
 - On a recent Ubuntu Linux installation, build all the release artifacts =ci_cd/build_all.sh=
   - This generates all the release artifacts under a new folder called =packages=
   - You can then test the resulting archives and executables under Linux, Mac OS and Windows

@@ -32,7 +32,7 @@ LABEL org.opencontainers.image.authors="Yves Zoundi"
 LABEL org.opencontainers.image.vendor="Rimero Solutions Inc."
 LABEL org.opencontainers.image.documentation="https://github.com/rimerosolutions/entrusted/tree/main/entrusted_container"
 LABEL org.opencontainers.image.licenses="GPLv3"
-LABEL org.opencontainers.image.version="0.1.4"
+LABEL org.opencontainers.image.version="0.2.1"
 LABEL org.opencontainers.image.url="https://github.com/rimerosolutions/entrusted/tree/main/entrusted_container"
 LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrusted.git"
 

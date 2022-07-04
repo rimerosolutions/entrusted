@@ -124,7 +124,68 @@ fn clip_text<S: Into<String>>(txt: S, max_width: i32) -> String {
     text
 }
 
-pub fn filelist_column_widths(w: i32) -> (i32, i32, i32, i32, i32, i32) {
+fn show_info_dialog(parent_window_bounds: (i32, i32, i32, i32), trans: Box<dyn l10n::Translations>) {
+    let wind_w = 450;
+    let wind_h = 300;
+    let wind_x = parent_window_bounds.0 + (parent_window_bounds.2 / 2) - (wind_w / 2);
+    let wind_y = parent_window_bounds.1 + (parent_window_bounds.3 / 2) - (wind_h / 2);
+
+    let mut win = window::Window::default()
+        .with_size(wind_w, wind_h)
+        .with_pos(wind_x, wind_y)
+        .with_label(&trans.gettext("Help"));
+
+    win.begin();
+    win.make_resizable(true);
+
+    let mut grp = group::Pack::default()
+        .with_pos(WIDGET_GAP, 10)
+        .with_size(wind_w - (WIDGET_GAP * 2), wind_h - (WIDGET_GAP * 2))
+        .center_of(&win)
+        .with_type(group::PackType::Vertical);
+    grp.set_spacing(5);
+
+    let label_container_solution = format!("{}{}{}{}",
+                                           "The program requires a container solution: \n",
+                                           "- Docker (Windows, Linux, Mac OS)\n",
+                                           "- Podman (Linux)\n",
+                                           "- Lima (Mac OS)");
+
+    frame::Frame::default()
+        .with_size(350, 80)
+        .center_of(&win)
+        .with_label(&trans.gettext(&label_container_solution))
+        .with_align(enums::Align::Inside | enums::Align::Left);
+
+    let label_supported_docs = format!("Supported document types: \n- {}\n- {}\n- {}\n- {}\n- {}",
+                                       "Images (.jpg, .jpeg, .gif, .png, .tif, .tiff)",
+                                       "Document Graphics (.odg)",
+                                       "Text Documents (.rtf, .doc, .docx, .odt)",
+                                       "Spreadsheets (.xls, .xlsx)",
+                                       "Presentations (.ppt, .pptx, .odp)");
+
+
+    frame::Frame::default()
+        .with_size(350, 130)
+        .with_label(&trans.gettext(&label_supported_docs))
+        .with_align(enums::Align::Inside | enums::Align::Left);
+
+    let label_website = "https://github.com/rimerosolutions/entrusted";
+
+    frame::Frame::default()
+        .with_size(350, 30)
+        .with_label(&trans.gettext_fmt("For more information, please visit:\n{0}", vec![&label_website]))
+        .with_align(enums::Align::Inside | enums::Align::Left);
+
+    grp.end();
+
+    win.show();
+    while win.shown() {
+        app::wait();
+    }
+}
+
+fn filelist_column_widths(w: i32) -> (i32, i32, i32, i32, i32, i32) {
     let width_password    = 40;
     let width_output_file = 40;
     let width_checkbox    = (w as f64 * 0.35) as i32;
@@ -762,10 +823,43 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut tabsettings_button = button::Button::default()
         .with_size(120, 20)
         .with_label(&trans.gettext("Settings"));
-    
+
     let mut tabconvert_button = button::Button::default()
         .with_size(120, 20)
         .with_label(&trans.gettext("Convert"));
+
+    let mut helpinfo_frame = frame::Frame::default_fill();
+
+    helpinfo_frame.draw({
+        move |wid| {
+            let (w, h) = draw::measure("H", true);
+            let widx = wid.x() + wid.w() - WIDGET_GAP;
+            let widy = wid.y() + 2;
+            draw::draw_rect_fill(widx, widy, WIDGET_GAP, WIDGET_GAP, enums::Color::Blue);
+            draw::set_draw_color(enums::Color::White);
+            draw::draw_text("H", (widx + WIDGET_GAP/2) - w/2, wid.y() + h);
+        }
+    });
+
+    helpinfo_frame.handle({
+        let wind = wind.clone();
+        let trans_ref = trans_ref.clone();
+
+        move |wid, ev| match ev {
+            enums::Event::Push => {
+                let (x, y) = app::event_coords();
+                let widx = wid.x() + wid.w() - WIDGET_GAP;
+                let widy = wid.y() + 2;
+
+                if x >= widx && x <= widx + WIDGET_GAP && y >= widy && y <= widy + WIDGET_GAP {
+                    show_info_dialog((wind.x(), wind.y(), wind.w(), wind.h()), trans_ref.clone_box());
+                }
+
+                true
+            }
+            _ => false,
+        }
+    });
 
     top_group.end();
 
@@ -1470,7 +1564,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if result.load(Ordering::Relaxed) && active_viewer_app_option.is_some() {
                     if let Some(viewer_exe) = active_viewer_app_option {
                         if let Err(exe) = pdf_open_with(viewer_exe, current_output_path.clone()) {
-                            let err_text = format!("{}\n.{}.", trans.gettext("Could not open PDF result!"), exe.to_string());
+                            let err_text = format!("{}\n{}.", trans.gettext("Could not open PDF result!"), exe.to_string());
                             dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, &err_text);
                         }
                     }
@@ -1748,6 +1842,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     wind.handle({
         let mut top_group_ref = top_group.clone();
 
+        let mut helpinfo_frame_ref = helpinfo_frame.clone();
+
         let settings_pack_rc_ref = settings_pack_rc.clone();
 
         let mut filesuffix_pack_ref = filesuffix_pack.clone();
@@ -1797,8 +1893,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                     30,
                 );
 
-                tabconvert_button.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, tabconvert_button.w(), 30);
-                tabsettings_button.resize(WIDGET_GAP, top_group_ref.y() + WIDGET_GAP, tabsettings_button.w(), 30);
+                let tabs_width = tabconvert_button.w();
+                tabsettings_button.resize(WIDGET_GAP, top_group_ref.y(), tabs_width, 30);
+                tabconvert_button.resize(tabsettings_button.x() + WIDGET_GAP, top_group_ref.y(), tabs_width, 30);
+
+                helpinfo_frame_ref.resize(tabconvert_button.x() + WIDGET_GAP, top_group_ref.y(), w.w() - (WIDGET_GAP * 4) - (tabs_width * 2), 30);
 
                 let content_y = top_group_ref.y() + top_group_ref.h() + WIDGET_GAP;
 
@@ -2308,45 +2407,46 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
                         let cf_path = CFURLCopyPath(cf_ref);
                         let cf_ptr = CFStringGetCStringPtr(cf_path, kCFStringEncodingUTF8);
                         let c_str = CStr::from_ptr(cf_ptr);
-                        let mut r_app_name = String::new();
+                        let mut app_name = String::new();
 
                         if let Ok(app_url) = c_str.to_str() {
                             if let Ok(app_url_decoded) = percent_decode(&app_url.as_bytes()).decode_utf8() {
-                                let app_url_path = app_url_decoded.to_string();
+                                let app_path = app_url_decoded.to_string();
 
-                                if let Some(bundle_url) = CFURL::from_path(&app_url_path, true) {
+                                if let Some(bundle_url) = CFURL::from_path(&app_path, true) {
                                     if let Some(bundle) = CFBundle::new(bundle_url) {
-                                        let dict = bundle.info_dictionary();
-                                        let key_bundle_name = CFString::new("CFBundleName");
-                                        let key_bundle_display_name = CFString::new("CFBundleDisplayName");
+                                        let bundle_dict = bundle.info_dictionary();
+                                        let bundle_key_display_name = CFString::new("CFBundleDisplayName");
+                                        let bundle_key_name = CFString::new("CFBundleName");
 
-                                        let current_key = if dict.contains_key(&key_bundle_display_name) {
-                                            Some(key_bundle_name)
-                                        } else if dict.contains_key(&key_bundle_name) {
-                                            Some(key_bundle_name)
+                                        let current_key = if bundle_dict.contains_key(&bundle_key_display_name) {
+                                            Some(bundle_key_display_name)
+                                        } else if bundle_dict.contains_key(&bundle_key_name) {
+                                            Some(bundle_key_name)
                                         } else {
                                             None
                                         };
 
                                         if let Some(active_key) = current_key {
-                                            if let Some(active_key_value) = dict.find(&active_key)
+                                            if let Some(active_key_value) = bundle_dict.find(&active_key)
                                                 .and_then(|value_ref| value_ref.downcast::<CFString>())
                                                 .map(|value| value.to_string()) {
-                                                    r_app_name.push_str(&active_key_value);
+                                                    app_name.push_str(&active_key_value);
                                                 }
                                         } else {
                                             let app_url_pathbuf = PathBuf::from(&app_url);
                                             if let Some(basename_ostr) = &app_url_pathbuf.file_stem() {
                                                 if let Some(basename) = &basename_ostr.to_str() {
                                                     if let Ok(r_app_name_decoded)= percent_decode(basename.as_bytes()).decode_utf8() {
-                                                        r_app_name.push_str(&r_app_name_decoded);
+                                                        app_name.push_str(&r_app_name_decoded);
                                                     }
                                                 }
                                             }
                                         }
 
-                                        ret.insert(r_app_name.to_string(), app_url.to_string());
-                                        
+                                        if !app_name.is_empty() {
+                                            ret.insert(app_name, app_path);
+                                        }
                                     }
                                 }
                             }

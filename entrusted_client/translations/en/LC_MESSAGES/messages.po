@@ -18,6 +18,28 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "Help"
+msgstr ""
+
+msgid ""
+"The program requires a container solution: \n"
+"- Docker (Windows, Linux, Mac OS)\n"
+"- Podman (Linux)\n"
+"- Lima (Mac OS)"
+msgstr ""
+
+msgid ""
+"Supported document types: \n"
+"- Images (.jpg, .jpeg, .gif, .png, .tif, .tiff)\n"
+"- Document Graphics (.odg)\n"
+"- Text Documents (.rtf, .doc, .docx, .odt)\n"
+"- Spreadsheets (.xls, .xlsx)\n"
+"- Presentations (.ppt, .pptx, .odp)"
+msgstr ""
+
+msgid "For more information, please visit:\n{0}"
+msgstr ""
+
 msgid "Select"
 msgstr ""
 

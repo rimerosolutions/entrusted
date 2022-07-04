@@ -20,6 +20,19 @@
       let translations = {
         "locale": "en",
         "data": {
+          "l10n-window-help-title": "Help",
+          "l10n-window-help-program-reqs-line1": "The program requires a container solution:",
+          "l10n-window-help-program-reqs-line2": "Docker (Windows, Linux, Mac OS)",
+          "l10n-window-help-program-reqs-line3": "Podman (Linux)",
+          "l10n-window-help-program-reqs-line4": "Lima (Mac OS)",
+          "l10n-window-help-supported-docs-line1": "Supported document types:",
+          "l10n-window-help-supported-docs-line2": "Images (.jpg, .jpeg, .gif, .png, .tif, .tiff)",
+          "l10n-window-help-supported-docs-line3": "Document Graphics (.odg)",
+          "l10n-window-help-supported-docs-line4": "Text Documents (.rtf, .doc, .docx, .odt)",
+          "l10n-window-help-supported-docs-line5": "Spreadsheets (.xls, .xlsx)",
+          "l10n-window-help-supported-docs-line6": "Presentations (.ppt, .pptx, .odp)",
+          "l10n-window-help-more-info-line1": "For more information, please visit:",
+          "l10n-window-help-more-info-line2": "https://github.com/rimerosolutions/entrusted",
           "l10n-window-password-title": "Set document password",
           "l10n-window-password-cancel-label": "Cancel",
           "l10n-window-password-accept-label": "Accept",
@@ -471,6 +484,69 @@
         source.removeEventListener("click", disableLinkListener);
       }
 
+      function showHelpDialog(event) {
+        let source = event.target;
+
+        if (!(source.classList.contains("help") || source.classList.contains("helpContainer"))) {
+          return;
+        }
+
+        function lineElements(lineL10nKeys) {
+          let containerElement = document.createElement("div");
+          let firstLine = document.createElement("p");
+          firstLine.innerText = translations["data"][lineL10nKeys[0]];
+          firstLine.className = "leftAligned";
+          containerElement.appendChild(firstLine);
+
+          for (let i = 1; i < lineL10nKeys.length; i++) {
+            let line = document.createElement("li");
+            line.innerText = translations["data"][lineL10nKeys[i]];
+            line.className = "leftAligned";
+            containerElement.appendChild(line);
+          }
+
+          let lastLine = document.createElement("br");
+          containerElement.appendChild(lastLine);
+
+          return containerElement
+        }
+
+        let modal = document.getElementById("modalWindow");
+        let modalContent = document.getElementById("modalContent");
+        let documentFragment = document.createDocumentFragment();
+
+        let windowTitleElement = document.createElement("h3");
+        windowTitleElement.innerText = translations["data"]["l10n-window-help-title"];
+        documentFragment.appendChild(windowTitleElement);
+
+        documentFragment.appendChild(lineElements([
+          "l10n-window-help-program-reqs-line1",
+          "l10n-window-help-program-reqs-line2",
+          "l10n-window-help-program-reqs-line3",
+          "l10n-window-help-program-reqs-line4"
+        ]));
+
+        documentFragment.appendChild(lineElements([
+          "l10n-window-help-supported-docs-line1",
+          "l10n-window-help-supported-docs-line2",
+          "l10n-window-help-supported-docs-line3",
+          "l10n-window-help-supported-docs-line4",
+          "l10n-window-help-supported-docs-line5",
+          "l10n-window-help-supported-docs-line6"
+        ]));
+
+        let moreInfoElementKeys = ["l10n-window-help-more-info-line1", "l10n-window-help-more-info-line2"];
+        for (let i = 0; i < moreInfoElementKeys.length; i++) {
+          let moreInfoElement = document.createElement("p");
+          moreInfoElement.className = "leftAligned";
+          moreInfoElement.innerText = translations["data"][moreInfoElementKeys[i]];
+          documentFragment.appendChild(moreInfoElement);
+        }        
+
+        modalContent.appendChild(documentFragment);
+        modal.style.display = "block";
+      }
+
       function promptForPassword(source) {
         let found = false;
 
@@ -486,7 +562,7 @@
             let documentFragment = document.createDocumentFragment();
 
             let windowTitleElement = document.createElement("h3");
-            windowTitleElement.innerText = "Set document password";
+            windowTitleElement.innerText = translations["data"]["l10n-window-password-title"];
             documentFragment.appendChild(windowTitleElement);
 
             let passwordContainerElement = document.createElement("div");
@@ -779,6 +855,8 @@
             }
           };
         }
+
+        
         document.body.className = "visible";
       }
 
@@ -883,6 +961,10 @@
         float: right;
         font-size: 2em;
         font-weight: bold;
+      }
+
+      .leftAligned {
+        text-align: left;
       }
 
       .close:hover,
@@ -1042,13 +1124,28 @@
       }
 
       fieldset {
-        border: 2px solid blue;
+        border: 1px solid black;
       }
 
+      .helpContainer {
+        width: 100%;
+        text-align: right;
+      }
+
+      .help {
+        position:absolute;
+        right: 1%;
+        top: 2%;
+        color: white;
+        width: 1%;
+        background: blue;
+        text-align: center;
+      }
+      
       legend {
         padding: 10px;
-        background: blue;
-        color: cyan;
+        background: darkgray;
+        color: black;
       }
 
       #eventList {
@@ -1093,6 +1190,8 @@
     <h3 class="title-text" data-l10n="l10n-app-name">Entrusted Web</h3>
     <br/>
     <div>
+      <div class="helpContainer" onclick="showHelpDialog(event)"><p class="help">H</p></div>
+      <br/>
       <form id="uploadForm" action="./upload" method="post" enctype="multipart/form-data" onsubmit="preventDefaults(event)">
         <fieldset>
           <legend data-l10n="l10n-settings">Settings</legend>

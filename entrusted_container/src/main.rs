@@ -187,6 +187,10 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
     let conversion_by_mimetype: HashMap<&str, ConversionType> = [
         ("application/pdf", ConversionType::None),
         (
+            "application/rtf",
+            ConversionType::LibreOffice("writer_pdf_Export".to_string(), "rtf".to_string()),
+        ),
+        (
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             ConversionType::LibreOffice("writer_pdf_Export".to_string(), "docx".to_string()),
         ),

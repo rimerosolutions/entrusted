@@ -2394,7 +2394,7 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
             let result = LSCopyAllRoleHandlersForContentType(cf_key, kLSRolesAll);
             let count = CFArrayGetCount(result);
 
-            for i in 0..count - 1 {
+            for i in 0..count {
                 let bundle_id = CFArrayGetValueAtIndex(result, i) as CFStringRef;
                 let err_ref = std::ptr::null_mut();
                 let apps = LSCopyApplicationURLsForBundleIdentifier(bundle_id, err_ref);

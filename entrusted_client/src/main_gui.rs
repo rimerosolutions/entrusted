@@ -2273,6 +2273,9 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
 #[cfg(target_os = "macos")]
 pub fn list_apps_for_pdfs() -> HashMap<String, String> {
     use core_foundation::array::{CFArrayGetCount, CFArrayGetValueAtIndex};
+    use core_foundation::url::CFURL;
+    use core_foundation::bundle::CFBundle;
+    use core_services::CFString;
     use core_foundation::string::{
         kCFStringEncodingUTF8, CFStringCreateWithCString, CFStringGetCStringPtr, CFStringRef,
     };
@@ -2288,8 +2291,7 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
 
     unsafe {
         if let Ok(c_key) = CString::new(content_type) {
-            let cf_key =
-                CFStringCreateWithCString(std::ptr::null(), c_key.as_ptr(), kCFStringEncodingUTF8);
+            let cf_key = CFStringCreateWithCString(std::ptr::null(), c_key.as_ptr(), kCFStringEncodingUTF8);
             let result = LSCopyAllRoleHandlersForContentType(cf_key, kLSRolesAll);
             let count = CFArrayGetCount(result);
 
@@ -2306,18 +2308,45 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
                         let cf_path = CFURLCopyPath(cf_ref);
                         let cf_ptr = CFStringGetCStringPtr(cf_path, kCFStringEncodingUTF8);
                         let c_str = CStr::from_ptr(cf_ptr);
+                        let mut r_app_name = String::new();
 
                         if let Ok(app_url) = c_str.to_str() {
-                            let app_url_path = PathBuf::from(app_url);
-                            let basename_path = &app_url_path.file_stem();
+                            if let Ok(app_url_decoded) = percent_decode(&app_url.as_bytes()).decode_utf8() {
+                                let app_url_path = app_url_decoded.to_string();
 
-                            if let Some(basename_ostr) = basename_path {
-                                if let Some(basename) = basename_ostr.to_str() {
-                                    if let (Ok(r_app_name), Ok(r_app_url)) = (
-                                        percent_decode(basename.as_bytes()).decode_utf8(),
-                                        percent_decode(app_url.as_bytes()).decode_utf8(),
-                                    ) {
-                                        ret.insert(r_app_name.to_string(), r_app_url.to_string());
+                                if let Some(bundle_url) = CFURL::from_path(&app_url_path, true) {
+                                    if let Some(bundle) = CFBundle::new(bundle_url) {
+                                        let dict = bundle.info_dictionary();
+                                        let key_bundle_name = CFString::new("CFBundleName");
+                                        let key_bundle_display_name = CFString::new("CFBundleDisplayName");
+
+                                        let current_key = if dict.contains_key(&key_bundle_display_name) {
+                                            Some(key_bundle_name)
+                                        } else if dict.contains_key(&key_bundle_name) {
+                                            Some(key_bundle_name)
+                                        } else {
+                                            None
+                                        };
+
+                                        if let Some(active_key) = current_key {
+                                            if let Some(active_key_value) = dict.find(&active_key)
+                                                .and_then(|value_ref| value_ref.downcast::<CFString>())
+                                                .map(|value| value.to_string()) {
+                                                    r_app_name.push_str(&active_key_value);
+                                                }
+                                        } else {
+                                            let app_url_pathbuf = PathBuf::from(&app_url);
+                                            if let Some(basename_ostr) = &app_url_pathbuf.file_stem() {
+                                                if let Some(basename) = &basename_ostr.to_str() {
+                                                    if let Ok(r_app_name_decoded)= percent_decode(basename.as_bytes()).decode_utf8() {
+                                                        r_app_name.push_str(&r_app_name_decoded);
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        ret.insert(r_app_name.to_string(), app_url.to_string());
+                                        
                                     }
                                 }
                             }

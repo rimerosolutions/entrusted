@@ -1,29 +1,25 @@
-FROM docker.io/alpine:latest as builder
+FROM docker.io/rust:1.58-bullseye as builder
+LABEL stage=entrusted_container_builder
 
-RUN apk -U upgrade && \
-    apk add \
-    binutils \
-    leptonica-dev \
-    icu-data-full \
-    tesseract-ocr-dev \
-    tesseract-ocr-dev \
-    libreofficekit \
-    poppler-dev \
-    cairo-dev \
-    clang gcc clang-dev gcc cargo rust \
-    tiff-dev \
-    jpeg-dev \
-    giflib-dev \
+RUN DEBIAN_FRONTEND=noninteractive apt update && apt install -y \
+    libleptonica-dev \
+    libtesseract-dev \
+    libreofficekit-dev \
+    libpoppler-dev \
+    libcairo2-dev \
+    libclang-11-dev llvm gcc \
+    libtiff-dev \
+    libjpeg-dev \
+    libgif-dev \
     libwebp-dev \
-    openjpeg-dev \
-    musl-dev \
-    curl
+    libjpeg-dev \
+    curl libpoppler-glib-dev && apt-get clean
 
 WORKDIR /home/rust/entrusted-container
 COPY . .
-RUN LO_INCLUDE_PATH=/usr/include/LibreOfficeKit cargo install --path entrusted_container && cargo clean --manifest-path entrusted_container/Cargo.toml
+RUN LO_INCLUDE_PATH=/usr/include/LibreOfficeKit cargo build --release --manifest-path entrusted_container/Cargo.toml && cp entrusted_container/target/release/entrusted-container /home/rust/entrusted-container/executable && cargo clean --manifest-path entrusted_container/Cargo.toml
 
-FROM docker.io/alpine:latest
+FROM docker.io/debian:bullseye-slim
 
 LABEL maintainer="Yves Zoundi, Rimero Solutions Inc."
 LABEL org.opencontainers.image.title="Entrusted document sanitizer container image"
@@ -36,85 +32,22 @@ LABEL org.opencontainers.image.version="0.2.1"
 LABEL org.opencontainers.image.url="https://github.com/rimerosolutions/entrusted/tree/main/entrusted_container"
 LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrusted.git"
 
-RUN apk -U upgrade && \
-    apk add \
-    leptonica-dev \
-    icu-data-full \
+RUN DEBIAN_FRONTEND=noninteractive apt update && apt install -y --no-install-recommends \
+    libleptonica-dev \
+    libtesseract-dev \
+    libreofficekit-dev \
     libreoffice \
-    tesseract-ocr-dev \
-    poppler-dev \
-    cairo-dev \
-    terminus-font ttf-inconsolata ttf-dejavu \
-    tesseract-ocr \
-    tesseract-ocr-data-afr \
-    tesseract-ocr-data-ara \
-    tesseract-ocr-data-aze \
-    tesseract-ocr-data-bel \
-    tesseract-ocr-data-ben \
-    tesseract-ocr-data-bul \
-    tesseract-ocr-data-cat \
-    tesseract-ocr-data-ces \
-    tesseract-ocr-data-chi_sim \
-    tesseract-ocr-data-chi_tra \
-    tesseract-ocr-data-chr \
-    tesseract-ocr-data-dan \
-    tesseract-ocr-data-deu \
-    tesseract-ocr-data-ell \
-    tesseract-ocr-data-enm \
-    tesseract-ocr-data-epo \
-    tesseract-ocr-data-equ \
-    tesseract-ocr-data-est \
-    tesseract-ocr-data-eus \
-    tesseract-ocr-data-fin \
-    tesseract-ocr-data-fra \
-    tesseract-ocr-data-frk \
-    tesseract-ocr-data-frm \
-    tesseract-ocr-data-glg \
-    tesseract-ocr-data-grc \
-    tesseract-ocr-data-heb \
-    tesseract-ocr-data-hin \
-    tesseract-ocr-data-hrv \
-    tesseract-ocr-data-hun \
-    tesseract-ocr-data-ind \
-    tesseract-ocr-data-isl \
-    tesseract-ocr-data-ita \
-    tesseract-ocr-data-ita_old \
-    tesseract-ocr-data-jpn \
-    tesseract-ocr-data-kan \
-    tesseract-ocr-data-kat \
-    tesseract-ocr-data-kor \
-    tesseract-ocr-data-lav \
-    tesseract-ocr-data-lit \
-    tesseract-ocr-data-mal \
-    tesseract-ocr-data-mkd \
-    tesseract-ocr-data-mlt \
-    tesseract-ocr-data-msa \
-    tesseract-ocr-data-nld \
-    tesseract-ocr-data-nor \
-    tesseract-ocr-data-pol \
-    tesseract-ocr-data-por \
-    tesseract-ocr-data-ron \
-    tesseract-ocr-data-rus \
-    tesseract-ocr-data-slk \
-    tesseract-ocr-data-slv \
-    tesseract-ocr-data-spa \
-    tesseract-ocr-data-spa_old \
-    tesseract-ocr-data-sqi \
-    tesseract-ocr-data-srp \
-    tesseract-ocr-data-swa \
-    tesseract-ocr-data-swe \
-    tesseract-ocr-data-tam \
-    tesseract-ocr-data-tel \
-    tesseract-ocr-data-tgl \
-    tesseract-ocr-data-tha \
-    tesseract-ocr-data-tur \
-    tesseract-ocr-data-ukr \
-    tesseract-ocr-data-vie
+    libpoppler-dev \
+    libcairo2-dev \
+    libreoffice \
+    tesseract-ocr-all \
+    fonts-terminus fonts-dejavu fonts-inconsolata libpoppler-glib-dev && apt-get clean && \
+    ln -sf /usr/share/tesseract-ocr/4.00/tessdata /usr/share/tessdata
 
-COPY --from=builder /root/.cargo/bin/entrusted-container /usr/local/bin/
+COPY --from=builder /home/rust/entrusted-container/executable /usr/local/bin/entrusted-container
 
 # Add the unprivileged user
-RUN adduser -h /home/entrusted -s /bin/sh -D entrusted
+RUN useradd -ms /bin/bash entrusted
 USER entrusted
 
 # /tmp/input_file is where the first convert expects the input file to be, and

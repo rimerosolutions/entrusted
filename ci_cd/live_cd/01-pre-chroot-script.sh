@@ -46,12 +46,15 @@ cp "${THIS_SCRIPTS_DIR}"/../../artifacts/entrusted-linux*/entrusted-webserver /t
 
 test -f /tmp/live-entrusted-container.tar && rm /tmp/live-entrusted-container.tar
 
-podman build -t "docker.io/uycyjnzgntrn/entrusted_container:${ENTRUSTED_VERSION}" "${THIS_SCRIPTS_DIR}/../../" -f "${THIS_SCRIPTS_DIR}/../../entrusted_container/Dockerfile"
+podman build --squash -t "docker.io/uycyjnzgntrn/entrusted_container:${ENTRUSTED_VERSION}" "${THIS_SCRIPTS_DIR}/../../" -f "${THIS_SCRIPTS_DIR}/../../entrusted_container/Dockerfile"
+
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Unable to build container image, please check for compilation errors!"
   exit 1
 fi
+
+podman image prune --filter label=stage=entrusted_container_builder
 
 podman save -o /tmp/live-entrusted-container.tar "docker.io/uycyjnzgntrn/entrusted_container:${ENTRUSTED_VERSION}"
 

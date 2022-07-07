@@ -4,11 +4,12 @@ use actix_web::http::header::HeaderValue;
 use once_cell::sync::Lazy;
 
 use actix_cors::Cors;
+use tokio::io::AsyncBufReadExt;
+use tokio::io::BufReader;
+use tokio::process::Command;
 use std::collections::HashMap;
 use std::env;
 use std::fs;
-use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio::process::Command;
 
 use std::path::PathBuf;
 use std::pin::Pin;
@@ -220,7 +221,7 @@ pub async fn serve(host: &str, port: &str, ci_image_name: String, l10n: Box<dyn 
 }
 
 async fn uitranslations(req: HttpRequest) -> impl Responder {
-    let langid = if let Some(req_language) = req.headers().get("Accept-Language") {
+    let langid = if let Some(req_language) = req.headers().get(header::ACCEPT_LANGUAGE) {
         parse_accept_language(req_language, l10n::DEFAULT_LANGID.to_string())
     } else {
         String::from(l10n::DEFAULT_LANGID)
@@ -330,7 +331,7 @@ fn output_filename_for(request_id: String) -> String {
 async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<String>>, l10n: Data<Mutex<Box<dyn l10n::Translations>>>) -> impl Responder {
     let l10n_ref = l10n.lock().unwrap();
 
-    let langid = if let Some(req_language) = req.headers().get("Accept-Language") {
+    let langid = if let Some(req_language) = req.headers().get(header::ACCEPT_LANGUAGE) {
         parse_accept_language(req_language, l10n_ref.langid())
     } else {
         l10n_ref.langid()
@@ -507,9 +508,9 @@ async fn run_entrusted(
         "--container-image-name".to_string(),
         conversion_options.ci_image_name,
         "--output-filename".to_string(),
-        format!("{}", output_path.display()),
+        output_path.display().to_string(),
         "--input-filename".to_string(),
-        format!("{}", input_path.display()),
+        input_path.display().to_string()
     ];
 
     if let Some(ocr_lang) = conversion_options.opt_ocr_lang {
@@ -533,40 +534,71 @@ async fn run_entrusted(
         env_map.insert("ENTRUSTED_AUTOMATED_PASSWORD_ENTRY".to_string(), doc_passwd);
     }
 
-    let mut cmd = Command::new("sh")
+    let mut child = Command::new("sh")
         .envs(env_map)
         .arg("-c")
         .arg(cmdline.join(" "))
-        .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .kill_on_drop(true)
         .spawn()?;
 
     let mut counter = 1;
-    let stream = cmd.stdout.take().unwrap();
-    let mut reader = BufReader::new(stream).lines();
 
-    while let Some(ndata) = reader.next_line().await? {
-        progress_made(refid.clone(), "processing_update", ndata, counter, err_find_notif.clone(), err_notif_handle.clone())?;
-        counter += 1;
-    }
+    let stdout = child.stdout.take().expect("child is missing stdout handle");
+    let stderr = child.stderr.take().expect("child is missing stderr handle");
 
-    if let Ok(cmd_exit_status_opt) = cmd.try_wait() {
-        if let Some(cmd_exit_status) = cmd_exit_status_opt {
-            if cmd_exit_status.success() {
-                let msg = model::CompletionMessage::new(format!("/downloads/{}", refid.clone()));
-                let msg_json = serde_json::to_string(&msg).unwrap();
-                progress_made(refid.clone(), "processing_success", msg_json, counter, err_find_notif, err_notif_handle)?;
-                let _ = std::fs::remove_file(input_path);
+    let mut stdout_reader = BufReader::new(stdout).lines();
+    let mut stderr_reader = BufReader::new(stderr).lines();
 
-                return Ok(());
+    let mut success = false;
+
+    loop {
+        tokio::select! {
+            result = stdout_reader.next_line() => {
+                match result {
+                    Ok(Some(line)) => {
+                        progress_made(refid.clone(), "processing_update", line, counter, err_find_notif.clone(), err_notif_handle.clone())?;
+                        counter += 1;
+                    }, Err(_) => break,
+                    _ => (),
+                }
             }
-        }
+            result = stderr_reader.next_line() => {
+                match result {
+                    Ok(Some(line)) => {
+                        progress_made(refid.clone(), "processing_update", line, counter, err_find_notif.clone(), err_notif_handle.clone())?;
+                        counter += 1;
+                    }, Err(_) => break,
+                    _ => (),
+                }
+            }
+            result = child.wait() => {
+                match result {
+                    Ok(exit_code) => {
+                        success = exit_code.success();
+                    },
+                    _ => (),
+                }
+                break // child process exited
+            }
+        };
+
+    };
+    
+    if success {
+        let msg = model::CompletionMessage::new(format!("/downloads/{}", refid.clone()));
+        let msg_json = serde_json::to_string(&msg).unwrap();
+        progress_made(refid.clone(), "processing_success", msg_json, counter, err_find_notif, err_notif_handle)?;
+        let _ = std::fs::remove_file(input_path);
+
+        Ok(())
+    } else {
+        let msg = model::CompletionMessage::new("failure".to_string());
+        let msg_json = serde_json::to_string(&msg).unwrap();
+        progress_made(refid.clone(), "processing_failure", msg_json, counter, err_find_notif, err_notif_handle)?;
+        let _ = std::fs::remove_file(input_path);
+
+        Err(l10n.gettext("Processing failure").into())
     }
-
-    let msg = model::CompletionMessage::new("failure".to_string());
-    let msg_json = serde_json::to_string(&msg).unwrap();
-    progress_made(refid.clone(), "processing_failure", msg_json, counter, err_find_notif, err_notif_handle)?;
-    let _ = std::fs::remove_file(input_path);
-
-    Err(l10n.gettext("Processing failure").into())
 }

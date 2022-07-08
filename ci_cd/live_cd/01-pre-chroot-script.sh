@@ -46,7 +46,7 @@ cp "${THIS_SCRIPTS_DIR}"/../../artifacts/entrusted-linux*/entrusted-webserver /t
 
 test -f /tmp/live-entrusted-container.tar && rm /tmp/live-entrusted-container.tar
 
-podman build --squash -t "docker.io/uycyjnzgntrn/entrusted_container:${ENTRUSTED_VERSION}" "${THIS_SCRIPTS_DIR}/../../" -f "${THIS_SCRIPTS_DIR}/../../entrusted_container/Dockerfile"
+podman build -t "docker.io/uycyjnzgntrn/entrusted_container:${ENTRUSTED_VERSION}" "${THIS_SCRIPTS_DIR}/../../" -f "${THIS_SCRIPTS_DIR}/../../entrusted_container/Dockerfile"
 
 retVal=$?
 if [ $retVal -ne 0 ]; then

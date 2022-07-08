@@ -835,9 +835,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             let (w, h) = draw::measure("H", true);
             let widx = wid.x() + wid.w() - WIDGET_GAP;
             let widy = wid.y() + 2;
+            let old_color = draw::get_color();
             draw::draw_rect_fill(widx, widy, WIDGET_GAP, WIDGET_GAP, enums::Color::Blue);
             draw::set_draw_color(enums::Color::White);
             draw::draw_text("H", (widx + WIDGET_GAP/2) - w/2, wid.y() + h);
+            draw::set_draw_color(old_color);
         }
     });
 

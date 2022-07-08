@@ -26,7 +26,8 @@ mod container;
 const WIDGET_GAP: i32 = 20;
 const ELLIPSIS: &str = "...";
 
-const ICON_SAVE: &[u8]    =  include_bytes!("../../images/Save_icon.png");
+const ICON_HELP_TEXT: &str = "?";
+const ICON_SAVE: &[u8]     =  include_bytes!("../../images/Save_icon.png");
 const ICON_FRAME: &[u8]    = include_bytes!("../../images/Entrusted_icon.png");
 const ICON_PASSWORD: &[u8] = include_bytes!("../../images/Password_icon.png");
 
@@ -832,13 +833,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     helpinfo_frame.draw({
         move |wid| {
-            let (w, h) = draw::measure("H", true);
+            let (w, h) = draw::measure(ICON_HELP_TEXT, true);
             let widx = wid.x() + wid.w() - WIDGET_GAP;
             let widy = wid.y() + 2;
             let old_color = draw::get_color();
             draw::draw_rect_fill(widx, widy, WIDGET_GAP, WIDGET_GAP, enums::Color::Blue);
             draw::set_draw_color(enums::Color::White);
-            draw::draw_text("H", (widx + WIDGET_GAP/2) - w/2, wid.y() + h);
+            draw::draw_text(ICON_HELP_TEXT, (widx + WIDGET_GAP/2) - w/2, wid.y() + h);
             draw::set_draw_color(old_color);
         }
     });
@@ -1487,7 +1488,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     let opt_passwd_value  = opt_passwd.to_owned();
                     let convert_options = common::ConvertOptions::new(
                         active_ociimage_option,
-                        String::from("json"),
+                        common::LOG_FORMAT_JSON.to_string(),
                         active_ocrlang_option,
                         opt_passwd_value);
 
@@ -1883,7 +1884,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut messages_frame_ref = messages_frame.clone();
 
         move |w, ev| match ev {
-            enums::Event::Move => {
+            enums::Event::Move => {               
                 w.redraw();
                 true
             },

@@ -3,30 +3,30 @@
 * Next steps
 
 - [-] Code maintenance
+  - [X] Eliminate shell commands inside the container image
   - [ ] Add automated tests (unit & integration)
   - [ ] Code cleanup and refactoring
   - [ ] More idiomatic Rust code
   - [ ] Simplify and clarify the code
-  - [X] Eliminate shell commands inside the container image
 - [ ] Online Web Service
   - [ ] Serve Web UI translations at once, instead of a second request on page load
   - [ ] Use the =Content-Language= header in response (translations)
   - [ ] Revisit notifications SSE + HTTP2, for the "Online Service"
 - [ ] Investigate if specific support is required for Tails Linux
 - [-] CI/CD
-  - [ ] Transition CI/CD scripts to Github actions or TravisCI or something else?
   - [X] Adopt Git flow and delete all the previous spiral branches
+  - [ ] Transition CI/CD scripts to Github actions or TravisCI or something else?
   - [ ] Create few specific packages (DEB, RPM)
 - [ ] Hardening
   - [ ] Review container execution options (podman v.s podman-remote, security options, etc.)
   - [ ] Revisit Flatpak support requirements and =flatpak-spawn=
   - [ ] Review some of the code and read few security-related articles
 - [-] Improved conversions
-  - [ ] Parallel conversions
-  - [ ] Minimal resources management to avoid exhausting computer CPU and memory
-  - [ ] Cancellable conversions for those that haven't started yet
   - [X] Custom output location for individual documents in the conversion queue
   - [X] Support for password-protected documents
+  - [ ] Cancellable conversions for those that haven't started yet
+  - [ ] Parallel conversions
+  - [ ] Minimal resources management to avoid exhausting computer CPU and memory
 - [ ] Performance
   - [ ] Mime-type detection
     - [ ] Avoid reading entire files for mime type detection, just what is required...

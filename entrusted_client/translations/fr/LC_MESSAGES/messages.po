@@ -254,8 +254,8 @@ msgstr "Veuillez installer Docker."
 msgid "Please install Docker or Lima."
 msgstr "Veuillez installer Docker ou Lima."
 
-msgid "Please install Podman."
-msgstr "Veuillez installer Podman."
+msgid "Please install Docker or Podman."
+msgstr "Veuillez installer Docker ou Podman."
 
 msgid "Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English."
 msgstr "Code de langue inconnu pour le paramètre ocr-lang: {0}. Astuce: Essayez 'eng' pour l'Anglais."

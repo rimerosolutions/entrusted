@@ -422,7 +422,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
 
                     let mut office = Office::new(LOCATION_LIBREOFFICE_PROGRAM)?;
                     let input_uri = urls::local_into_abs(&new_input_path.display().to_string())?;
-                    let password_was_set =AtomicBool::new(false);
+                    let password_was_set = AtomicBool::new(false);
                     let failed_password_input = Arc::new(AtomicBool::new(false));
 
                     if let Some(passwd) = opt_passwd {

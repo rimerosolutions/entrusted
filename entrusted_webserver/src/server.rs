@@ -41,7 +41,7 @@ use crate::config;
 use crate::model;
 use crate::uil10n;
 
-const SPA_INDEX_HTML: &str = include_str!("../web-assets/index.html");
+const SPA_INDEX_HTML: &[u8] = include_bytes!("../web-assets/index.html");
 
 static NOTIFICATIONS_PER_REFID: Lazy<Mutex<HashMap<String, Arc<Mutex<Vec<model::Notification>>>>>> = Lazy::new(|| {
     Mutex::new(HashMap::<String, Arc<Mutex<Vec<model::Notification>>>>::new())
@@ -235,12 +235,9 @@ async fn uitranslations(req: HttpRequest) -> impl Responder {
 }
 
 async fn index() -> impl Responder {
-    let app_version = option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown");
-    let html_data = SPA_INDEX_HTML.replace("_APPVERSION_", app_version);
-
     HttpResponse::Ok()
         .append_header((header::CONTENT_TYPE, "text/html"))
-        .body(html_data)
+        .body(SPA_INDEX_HTML)
 }
 
 async fn downloads(info: actix_web::web::Path<String>, req: HttpRequest, l10n: Data<Mutex<Box<dyn l10n::Translations>>>) -> impl Responder {

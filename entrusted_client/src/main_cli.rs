@@ -16,7 +16,6 @@ mod config;
 mod container;
 
 const LOG_FORMAT_PLAIN: &str = "plain";
-const LOG_FORMAT_JSON: &str  = "json";
 
 fn main() -> Result<(), Box<dyn Error>> {
     l10n::load_translations(incl_gettext_files!("en", "fr"));
@@ -77,7 +76,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             Arg::with_name("log-format")
                 .long("log-format")
                 .help(&help_log_format)
-                .possible_values(&[LOG_FORMAT_JSON, LOG_FORMAT_PLAIN])
+                .possible_values(&[common::LOG_FORMAT_JSON, LOG_FORMAT_PLAIN])
                 .default_value(LOG_FORMAT_PLAIN)
                 .required(false)
                 .takes_value(true)
@@ -120,7 +119,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let supported_ocr_languages = l10n::ocr_lang_key_by_name(trans.clone_box());
 
         if supported_ocr_languages.contains_key(proposed_ocr_lang) {
-            ocr_lang = Some(format!("{}", proposed_ocr_lang));
+            ocr_lang = Some(proposed_ocr_lang.to_string());
         } else {
             let mut ocr_lang_err = String::new();
             ocr_lang_err.push_str(&trans.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![proposed_ocr_lang]));
@@ -156,7 +155,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let container_image_name = match &run_matches.value_of("container-image-name") {
-        Some(img) => format!("{}", img),
+        Some(img) => img.to_string(),
         None => if let Some(container_image_name_saved) = app_config.container_image_name {
             container_image_name_saved.clone()
         } else {
@@ -165,8 +164,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let log_format = match &run_matches.value_of("log-format") {
-        Some(fmt) => fmt.to_string(),
-        None => LOG_FORMAT_PLAIN.to_string()
+        Some(fmt) => fmt,
+        None => LOG_FORMAT_PLAIN
     };
 
     let opt_passwd = if run_matches.is_present("passwd-prompt") {
@@ -175,8 +174,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             Some(env_passwd)
         } else {
             println!("{}", trans.gettext("Please enter the password for the document"));
-            if let Ok(password) = rpassword::read_password() {
-                Some(password)
+
+            if let Ok(passwd) = rpassword::read_password() {
+                Some(passwd)
             } else {
                 return Err(trans.gettext("Failed to read password!").into());
             }            
@@ -188,16 +188,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     let (tx, rx) = channel();
 
     let exec_handle = thread::spawn(move || {
-        let convert_options = common::ConvertOptions::new(container_image_name, String::from(LOG_FORMAT_JSON), ocr_lang, opt_passwd);
+        let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), ocr_lang, opt_passwd);
         match container::convert(src_path_copy, output_filename, convert_options, tx, trans.clone_box()) {
-            Ok(_) => None,
-            Err(ex) => Some(format!("{}", ex))
+            Ok(_)   => None,
+            Err(ex) => Some(ex.to_string())
         }
     });
 
     // Rendering a progressbar in plain mode
-    if log_format == LOG_FORMAT_PLAIN.to_string() {
+    if log_format == LOG_FORMAT_PLAIN {
         let pb = ProgressBar::new(100);
+
         for line in rx {
             let log_msg_ret: serde_json::Result<common::LogMessage> = serde_json::from_slice(line.as_bytes());
 
@@ -215,7 +216,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let exit_code = {
         match exec_handle.join() {
             Ok(exec_result) => match exec_result {
-                None => 0,
+                None    => 0,
                 Some(_) => 1
             },
             _ => 1

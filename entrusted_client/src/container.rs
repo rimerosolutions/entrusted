@@ -79,7 +79,7 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str
             // mitigate apparent 139 exit codes that don't happen with Debian bullseye
             // Sadly it's a much bigger image than with Alpine so we decide to mitigate the issue
             // Apparently a vsyscall=emulate argument needs to be added to /proc/cmdline depending on the kernel version
-            // Essentially not mitigating the issue would be a problem in a non-controlled environment (i.e. Web Server running outside the Live CD ISO)
+            // Essentially not mitigating the issue would be a problem in a non-controlled environment (i.e. Live CD ISO)
             if let Some(exit_code) = exit_status.code() {
                 if exit_code == 139 {
                     return Ok(());
@@ -138,9 +138,9 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
     }
 
     let printer: Box<dyn LogPrinter> = if convert_options.log_format == "plain".to_string() {
-        Box::new(PlainLogPrinter {})
+        Box::new(PlainLogPrinter)
     } else {
-        Box::new(JsonLogPrinter {})
+        Box::new(JsonLogPrinter)
     };
 
     tx.send(printer.print(1, format!("{} {}.", trans.gettext("Converting"), input_path.display())))?;
@@ -305,8 +305,8 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             err_msg.push_str(&trans.gettext("Please install Docker."));
         } else if cfg!(any(target_os="macos")) {
             err_msg.push_str(&trans.gettext("Please install Docker or Lima."));
-        } else {
-            err_msg.push_str(&trans.gettext("Please install Podman."));
+        } else { // Linux and others
+            err_msg.push_str(&trans.gettext("Please install Docker or Podman."));
         }
     }
 

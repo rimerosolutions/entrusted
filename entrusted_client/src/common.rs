@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 
 pub const CONTAINER_IMAGE_EXE: &str = "/usr/local/bin/entrusted-container";
 pub const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str = "ENTRUSTED_DOC_PASSWD";
+pub const LOG_FORMAT_JSON: &str = "json";
 
 #[macro_export]
 macro_rules! incl_gettext_files {
@@ -97,9 +98,10 @@ pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
             ContainerProgramStub::Podman(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) |
             ContainerProgramStub::Lima(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) => {
                 if let Some(path_container_exe) = executable_find(cmd) {
-                    let suggested_tmp_dir = match tmp_dir_opt {
-                        None => None,
-                        Some(tmp_dir) => Some(PathBuf::from(tmp_dir))
+                    let suggested_tmp_dir = if let Some(tmp_dir) = tmp_dir_opt {
+                        Some(PathBuf::from(tmp_dir))
+                    } else {
+                        None
                     };
                     return Some(ContainerProgram::new(path_container_exe, sub_cmd_args.clone(), cmd_args.clone(), suggested_tmp_dir));
                 }
@@ -115,7 +117,7 @@ pub fn default_output_path(input: PathBuf, file_suffix: String) -> Result<PathBu
     let output_filename_opt = input.parent().map(|i| i.to_path_buf());
 
     if let (Some(input_name), Some(mut output_filename)) = (input_name_opt, output_filename_opt) {
-        let filename = format!("{}-{}.pdf", input_name.to_owned(), file_suffix);
+        let filename = format!("{}-{}.pdf", &input_name, &file_suffix);
         output_filename.push(filename);
         Ok(output_filename)
     } else {

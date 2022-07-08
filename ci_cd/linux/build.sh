@@ -29,34 +29,18 @@ if [ $retVal -ne 0 ]; then
   exit 1
 fi
 
-echo "Building entrusted_client (entrusted-cli)"
+echo "Building other Linux binaries"
 cd ${PROJECTDIR}
-podman run --rm --volume "${PWD}":/root/src --workdir /root/src docker.io/joseluisq/rust-linux-darwin-builder:1.60.0 sh -c "RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /root/src/entrusted_client/Cargo.toml --bin entrusted-cli"
+podman run --rm --volume "${PWD}":/root/src --workdir /root/src docker.io/joseluisq/rust-linux-darwin-builder:1.60.0 sh -c "RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /root/src/entrusted_client/Cargo.toml --bin entrusted-cli && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /root/src/entrusted_webserver/Cargo.toml && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /root/src/entrusted_webclient/Cargo.toml"
+
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Failure"
   exit 1
 fi
+
 cp ${PROJECTDIR}/entrusted_client/target/x86_64-unknown-linux-musl/release/entrusted-cli ${ARTIFACTSDIR}
-
-echo "Building entrusted_webserver"
-cd ${PROJECTDIR}
-podman run --rm --volume "${PWD}":/root/src --workdir /root/src docker.io/joseluisq/rust-linux-darwin-builder:1.60.0 sh -c "RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /root/src/entrusted_webserver/Cargo.toml"
-retVal=$?
-if [ $retVal -ne 0 ]; then
-	echo "Failure"
-  exit 1
-fi
 cp ${PROJECTDIR}/entrusted_webserver/target/x86_64-unknown-linux-musl/release/entrusted-webserver ${ARTIFACTSDIR}
-
-echo "Building entrusted_webclient"
-cd ${PROJECTDIR}
-podman run --rm --volume "${PWD}":/root/src --workdir /root/src docker.io/joseluisq/rust-linux-darwin-builder:1.60.0 sh -c "RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /root/src/entrusted_webclient/Cargo.toml"
-retVal=$?
-if [ $retVal -ne 0 ]; then
-	echo "Failure"
-  exit 1
-fi
 cp ${PROJECTDIR}/entrusted_webclient/target/x86_64-unknown-linux-musl/release/entrusted-webclient ${ARTIFACTSDIR}
 
 cp ${SCRIPTDIR}/release_README.txt ${ARTIFACTSDIR}/README.txt

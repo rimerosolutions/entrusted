@@ -54,7 +54,7 @@ if [ $retVal -ne 0 ]; then
   exit 1
 fi
 
-podman image prune --filter label=stage=entrusted_container_builder
+podman image prune -f --filter label=stage=entrusted_container_builder
 
 podman save -o /tmp/live-entrusted-container.tar "docker.io/uycyjnzgntrn/entrusted_container:${ENTRUSTED_VERSION}"
 

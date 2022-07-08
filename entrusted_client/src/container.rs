@@ -75,7 +75,19 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str
 
     match exit_status.success() {
         true => Ok(()),
-        false => Err(trans.gettext("Command failed!").into())
+        false => {
+            // mitigate apparent 139 exit codes that don't happen with Debian bullseye
+            // Sadly it's a much bigger image than with Alpine so we decide to mitigate the issue
+            // Apparently a vsyscall=emulate argument needs to be added to /proc/cmdline depending on the kernel version
+            // Essentially not mitigating the issue would be a problem in a non-controlled environment (i.e. Web Server running outside the Live CD ISO)
+            if let Some(exit_code) = exit_status.code() {
+                if exit_code == 139 {
+                    return Ok(());
+                }
+            }
+
+            Err(trans.gettext("Command failed!").into())
+        }
     }
 }
 

@@ -2,14 +2,14 @@
 
 * What is this?
 
-This repository provides a command-line client for the =entrusted-webserver= component. It also acts a concrete tutorial of the =entrusted-webserver= API usage.
+This repository provides a command-line client for the =entrusted-webserver= component. It also provides a concrete usage of the =entrusted-webserver= API.
 
 There are few reasons to run the =entrusted-webclient= binary:
-- You opted to install the =entrusted-webserver= instead of the default clients (GUI or CLI)
-- You do not want your Web browser to use more resources (Nowadays, most browsers require ~1GB of RAM just with few tabs open!)
+- You opted to install the =entrusted-webserver= on a remote machine
+- You do not have a Web browser installed on your local machine (i.e. old computer with limited resources)
 - Occasionally you want to run automation scripts ([[https://unix.stackexchange.com/questions/12902/how-to-run-find-exec][find and exec]]).
-  - This can be use for recursive conversions
-  - This can supplement existing workflows driven from shell scripts
+  - This can be suitable for batch conversions
+  - This can supplement existing workflows driven from shell scripts or other programs
 
 * How does it works?
 

@@ -6,9 +6,8 @@ This is an application (command-line & desktop GUI), that converts /potentially 
 
 * What is required?
 
-This application relies on common Rust tooling for builds and a container engine solution for execution:
+- For execution, it is assumed that the [[../entrusted_container][entrusted_container]] component is deployed (under [[https://www.docker.com/][Docker]] or [[https://podman.io/][Podman]] or [[https://github.com/lima-vm/lima][Lima]])
 - For compilation, you need a recent version of the Rust toolchain ([[https://www.rust-lang.org/tools/install][rustc]] compiler and [[https://doc.rust-lang.org/cargo/][cargo]]).
-- For execution, it is assumed that the =entrusted-container= application is deployed under [[https://www.docker.com/][Docker]] or [[https://podman.io/][Podman]] or [[https://github.com/lima-vm/lima][Lima]].
 
 * What does it look like?
 
@@ -99,6 +98,7 @@ The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to
   # Only if the conversion is successful each document will be opened automatically
   # "AcruBOT_ReadAZ" is the name of the PDF viewer as "identified" in the GUI client
   # That name isn't just random: the name, spacing and case all matter...
+  # Only configure this manually if you know what you're doing
   # preview-result-appname=AcruBOT_ReadAZ
 #+end_src
 

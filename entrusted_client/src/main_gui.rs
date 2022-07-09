@@ -800,11 +800,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         .center_screen()
         .with_label(&wind_title);
 
-    wind.draw({
-        move |wid| {
-            draw::draw_rect_fill(wid.x() + wid.w() - WIDGET_GAP, wid.y(), WIDGET_GAP, WIDGET_GAP, enums::Color::Red);
-        }
-    });
     wind.set_xclass("entrusted");
 
     if let Ok(frame_icon) = image::PngImage::from_data(ICON_FRAME) {

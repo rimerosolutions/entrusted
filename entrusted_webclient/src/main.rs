@@ -133,7 +133,7 @@ async fn main() {
     }
 }
 
-async fn handle_args() -> Result<(), Box<dyn Error + Send + Sync>> {    
+async fn handle_args() -> Result<(), Box<dyn Error + Send + Sync>> {
     let locale = match env::var(l10n::ENV_VAR_ENTRUSTED_LANGID) {
         Ok(selected_locale) => selected_locale,
         Err(_) => l10n::sys_locale()
@@ -143,7 +143,7 @@ async fn handle_args() -> Result<(), Box<dyn Error + Send + Sync>> {
     let appconfig_ret = load_config();
     let appconfig = appconfig_ret.unwrap_or(AppConfig::default());
     let port_number_text = format!("{}", appconfig.port);
-    
+
     let help_host = trans.gettext("Server host or IP address");
     let help_port = trans.gettext("Server port number");
     let help_output_filename = trans.gettext("Output filename");
@@ -151,14 +151,14 @@ async fn handle_args() -> Result<(), Box<dyn Error + Send + Sync>> {
     let help_ocr_lang = trans.gettext("Optional language for OCR (i.e. 'eng' for English)");
     let help_file_suffix = trans.gettext("Default file suffix (entrusted)");
     let help_password_prompt = trans.gettext("Prompt for document password");
-    
+
     let app = App::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
         .author(option_env!("CARGO_PKG_AUTHORS").unwrap_or("Unknown"))
         .about(option_env!("CARGO_PKG_DESCRIPTION").unwrap_or("Unknown"))
         .arg(
             Arg::with_name("host")
-                .long("host")                
+                .long("host")
                 .help(&help_host)
                 .required(true)
                 .default_value(&appconfig.host)
@@ -174,7 +174,7 @@ async fn handle_args() -> Result<(), Box<dyn Error + Send + Sync>> {
         )
         .arg(
             Arg::with_name("ocr-lang")
-                .long("ocr-lang")                
+                .long("ocr-lang")
                 .help(&help_ocr_lang)
                 .required(false)
                 .takes_value(true)
@@ -218,12 +218,12 @@ async fn handle_args() -> Result<(), Box<dyn Error + Send + Sync>> {
     if let Some(proposed_ocr_lang) = &opt_ocr_lang {
         let supported_ocr_languages = l10n::ocr_lang_key_by_name(trans.clone_box());
         let proposed_ocr_lang_str = proposed_ocr_lang.as_str();
-        
+
         if !supported_ocr_languages.contains_key(&proposed_ocr_lang_str) {
             let mut ocr_lang_err = String::new();
             ocr_lang_err.push_str(&trans.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![proposed_ocr_lang]));
 
-            ocr_lang_err.push_str(" => ");            
+            ocr_lang_err.push_str(" => ");
             let mut prev = false;
 
             for (lang_code, language) in supported_ocr_languages {
@@ -272,14 +272,14 @@ async fn handle_args() -> Result<(), Box<dyn Error + Send + Sync>> {
                 Some(password)
             } else {
                 return Err(trans.gettext("Failed to read password!").into());
-            }            
+            }
         } else {
             None
         };
 
         if let Some(output_dir) = p.parent() {
             let filename = p.file_name().unwrap().to_str().unwrap();
-            
+
             let conversion_options = ConversionOptions {
                 host:host.to_string(), port:port.to_string(), opt_ocr_lang, opt_passwd, file_suffix,
             };
@@ -322,7 +322,7 @@ async fn convert_file (
     }
 
     let client = Client::new();
-    
+
     let resp = client
         .post(format!("http://{}/upload", addr.clone()))
         .header("Accept-Language", l10n.langid())
@@ -353,7 +353,7 @@ async fn convert_file (
             return Err(l10n.gettext("Could not determine input file base name!").into());
         }
     };
-    
+
     let mut output_file = File::create(output_path).await?;
     output_file.write_all(&download_data).await?;
 
@@ -364,7 +364,7 @@ async fn process_notifications(tracking_url: String,
     l10n: &Box<dyn l10n::Translations>) -> Result<String, Box<dyn Error + Send + Sync>> {
     let mut es = EventSource::get(format!("{}", tracking_url));
     let pb = ProgressBar::new(100);
-    
+
     let processing_status: Result<String, Box<dyn Error>> = {
         let mut download_uri = String::new();
 
@@ -379,30 +379,28 @@ async fn process_notifications(tracking_url: String,
                             pb.set_position(log_msg.percent_complete as u64);
                             pb.println(&log_msg.data);
                         }
-                    } else {
-                        if msg.event == "processing_success" {
-                            let log_msg_ret: serde_json::Result<LogMessage> = serde_json::from_str(&msg.data);
+                    } else if msg.event == "processing_success" {
+                        let log_msg_ret: serde_json::Result<LogMessage> = serde_json::from_str(&msg.data);
 
-                            if let Ok(log_msg) = log_msg_ret {
-                                download_uri = log_msg.data.clone();
-                                pb.set_position(log_msg.percent_complete as u64);
-                                println!("{}", l10n.gettext("Conversion completed successfully!"));
-                            }
-
-                            es.close();
-                            
-                            return Ok(download_uri);
-                        } else if msg.event == "processing_failure" {
-                            let log_msg_ret: serde_json::Result<LogMessage> = serde_json::from_str(&msg.data);
-
-                            if let Ok(log_msg) = log_msg_ret {
-                                pb.set_position(log_msg.percent_complete as u64);
-                            }
-                            
-                            es.close();
-
-                            return Err(l10n.gettext("Conversion failed!").into());
+                        if let Ok(log_msg) = log_msg_ret {
+                            download_uri = log_msg.data.clone();
+                            pb.set_position(log_msg.percent_complete as u64);
+                            println!("{}", l10n.gettext("Conversion completed successfully!"));
                         }
+
+                        es.close();
+
+                        return Ok(download_uri);
+                    } else if msg.event == "processing_failure" {
+                        let log_msg_ret: serde_json::Result<LogMessage> = serde_json::from_str(&msg.data);
+
+                        if let Ok(log_msg) = log_msg_ret {
+                            pb.set_position(log_msg.percent_complete as u64);
+                        }
+
+                        es.close();
+
+                        return Err(l10n.gettext("Conversion failed!").into());
                     }
                 },
                 Err(err) => {

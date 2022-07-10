@@ -31,7 +31,7 @@ where
         })
 }
 
-fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str>, tx: Sender<String>, capture_output: bool, printer: Box<dyn LogPrinter>, trans: Box<dyn l10n::Translations>) -> Result<(), Box<dyn Error>> {
+fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str>, tx: Sender<String>, capture_output: bool, printer: Box<dyn LogPrinter>, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
     let rt_path = container_program.exec_path;
     let sub_commands = container_program.sub_commands;
     let rt_executable: &str = &format!("{}", rt_path.display());
@@ -132,7 +132,7 @@ impl LogPrinter for JsonLogPrinter {
     }
 }
 
-pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: common::ConvertOptions, tx: Sender<String>, trans: Box<dyn l10n::Translations>) -> Result<bool, Box<dyn Error>> {
+pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: common::ConvertOptions, tx: Sender<String>, trans: l10n::Translations) -> Result<bool, Box<dyn Error>> {
     if !input_path.exists() {
         return Err(trans.gettext_fmt("The selected file does not exists: {0}!", vec![&input_path.display().to_string()]).into());
     }
@@ -158,7 +158,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         None => String::new()
     };
 
-    fn mkdirp(p: PathBuf, trans: Box<dyn l10n::Translations>) -> Result<(), Box<dyn Error>> {
+    fn mkdirp(p: PathBuf, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
         if !p.exists() {
             let dir_created = fs::create_dir(&p);
 

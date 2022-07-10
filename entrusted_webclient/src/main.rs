@@ -216,7 +216,7 @@ async fn handle_args() -> Result<(), Box<dyn Error + Send + Sync>> {
     };
 
     if let Some(proposed_ocr_lang) = &opt_ocr_lang {
-        let supported_ocr_languages = l10n::ocr_lang_key_by_name(trans.clone_box());
+        let supported_ocr_languages = l10n::ocr_lang_key_by_name(&trans);
         let proposed_ocr_lang_str = proposed_ocr_lang.as_str();
 
         if !supported_ocr_languages.contains_key(&proposed_ocr_lang_str) {
@@ -283,7 +283,7 @@ async fn handle_args() -> Result<(), Box<dyn Error + Send + Sync>> {
             let conversion_options = ConversionOptions {
                 host:host.to_string(), port:port.to_string(), opt_ocr_lang, opt_passwd, file_suffix,
             };
-            convert_file(conversion_options, output_dir.to_path_buf(), p.clone(), filename.to_string(), output_path_opt, trans.clone_box()).await
+            convert_file(conversion_options, output_dir.to_path_buf(), p.clone(), filename.to_string(), output_path_opt, trans.clone()).await
         } else {
             Err(trans.gettext("Could not determine input directory!").into())
         }
@@ -298,7 +298,7 @@ async fn convert_file (
     input_path: PathBuf,
     filename: String,
     output_path_opt: Option<PathBuf>,
-    l10n: Box<dyn l10n::Translations>
+    l10n: l10n::Translations
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     println!("{}: {}", l10n.gettext("Converting file"), input_path.display());
 
@@ -361,7 +361,7 @@ async fn convert_file (
 }
 
 async fn process_notifications(tracking_url: String,
-    l10n: &Box<dyn l10n::Translations>) -> Result<String, Box<dyn Error + Send + Sync>> {
+    l10n: &l10n::Translations) -> Result<String, Box<dyn Error + Send + Sync>> {
     let mut es = EventSource::get(format!("{}", tracking_url));
     let pb = ProgressBar::new(100);
 

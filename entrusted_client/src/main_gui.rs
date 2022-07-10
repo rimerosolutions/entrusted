@@ -82,7 +82,7 @@ struct FileListWidget {
     container: group::Pack,
     selected_indices: Rc<RefCell<Vec<usize>>>,
     rows: Rc<RefCell<Vec<FileListRow>>>,
-    trans: Box<dyn l10n::Translations>
+    trans: l10n::Translations
 }
 
 impl Deref for FileListWidget {
@@ -125,7 +125,7 @@ fn clip_text<S: Into<String>>(txt: S, max_width: i32) -> String {
     text
 }
 
-fn show_info_dialog(parent_window_bounds: (i32, i32, i32, i32), trans: Box<dyn l10n::Translations>) {
+fn show_info_dialog(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Translations) {
     let wind_w = 450;
     let wind_h = 300;
     let wind_x = parent_window_bounds.0 + (parent_window_bounds.2 / 2) - (wind_w / 2);
@@ -198,7 +198,7 @@ fn filelist_column_widths(w: i32) -> (i32, i32, i32, i32, i32, i32) {
 }
 
 impl <'a> FileListWidget {
-    pub fn new(translations: Box<dyn l10n::Translations>) -> Self {
+    pub fn new(translations: l10n::Translations) -> Self {
         let mut container = group::Pack::default().with_type(group::PackType::Vertical).with_size(300, 300);
         container.set_spacing(WIDGET_GAP);
         container.end();
@@ -416,7 +416,7 @@ impl <'a> FileListWidget {
 
         output_file_button.set_callback({
             let opt_output_file = file_list_row.opt_output_file.clone();
-            let trans = trans.clone_box();
+            let trans = trans.clone();
 
             move|_| {
                 if let Some(current_wind) = app::first_window() {
@@ -779,7 +779,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let trans = l10n::new_translations(locale);
-    let trans_ref = trans.clone_box();
+    let trans_ref = trans.clone();
 
     let selectfiles_dialog_title = trans.gettext("Select 'potentially suspicious' file(s)").clone();
     let appconfig_ret = config::load_config();
@@ -850,7 +850,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let widy = wid.y() + 2;
 
                 if x >= widx && x <= widx + WIDGET_GAP && y >= widy && y <= widy + WIDGET_GAP {
-                    show_info_dialog((wind.x(), wind.y(), wind.w(), wind.h()), trans_ref.clone_box());
+                    show_info_dialog((wind.x(), wind.y(), wind.w(), wind.h()), trans_ref.clone());
                 }
 
                 true
@@ -926,7 +926,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let ocrlang_holdbrowser_rc = Rc::new(RefCell::new(
         browser::HoldBrowser::default().with_size(240, 60),
     ));
-    let ocr_languages_by_name = l10n::ocr_lang_key_by_name(trans_ref.clone_box());
+    let ocr_languages_by_name = l10n::ocr_lang_key_by_name(&trans_ref);
     let ocr_languages_by_name_ref = ocr_languages_by_name.clone();
     let mut ocr_languages_by_lang = HashMap::with_capacity(ocr_languages_by_name.len());
     let mut ocr_languages: Vec<String> = Vec::with_capacity(ocr_languages_by_name.len());
@@ -1298,7 +1298,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     columns_frame.set_frame(enums::FrameType::NoBox);
 
     let filelist_scroll = group::Scroll::default().with_size(580, 200);
-    let mut filelist_widget = FileListWidget::new(trans.clone_box());
+    let mut filelist_widget = FileListWidget::new(trans.clone());
 
     let col_label_password   = String::new();
     let col_label_outputfile = String::new();
@@ -1387,7 +1387,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let selectall_frame_rc_ref = selectall_frame_rc.clone();
         let deselectall_frame_rc_ref = deselectall_frame_rc.clone();
         let mut filelist_scroll_ref = filelist_scroll.clone();
-        let trans_ref = trans_ref.clone_box();
+        let trans_ref = trans_ref.clone();
         let app_config_ref = appconfig.clone();
 
         move |b| {
@@ -1475,7 +1475,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 active_row.status.set_label(FILELIST_ROW_STATUS_INPROGRESS);
                 active_row.checkbox.deactivate();
                 active_row.status.set_label_color(enums::Color::DarkYellow);
-                let trans_ref = trans_ref.clone_box();
+                let trans_ref = trans_ref.clone();
                 let opt_row_passwd = active_row.opt_passwd.clone();
                 let opt_passwd = opt_row_passwd.borrow().clone();
 
@@ -1591,7 +1591,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         menu::mac_set_about({
             let current_wind = wind.clone();
-            let trans_ref = trans_ref.clone_box();
+            let trans_ref = trans_ref.clone();
 
             move || {
                 let logo_image_bytes = include_bytes!("../../images/Entrusted.png");

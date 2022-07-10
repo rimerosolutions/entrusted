@@ -39,29 +39,9 @@ pub fn load_translations(locale_data: HashMap<&str, &[u8]>) {
 }
 
 #[derive(Clone)]
-struct GettextTranslations {
+pub struct Translations {
     locale: String,
     catalog: Catalog,
-}
-
-pub trait Translations: Send + Sync {
-    fn langid(&self, ) -> String;
-
-    fn gettext(&self, msg: &str) -> String;
-
-    fn gettext_fmt(&self, template: &str, params: Vec<&str>) -> String;
-
-    fn ngettext(&self, msgid: &str, msgid_plural: &str, n: u64) -> String;
-
-    fn ngettext_fmt(&self, msgid: &str, msgid_plural: &str, n: u64, params: Vec<&str>) -> String;
-
-    fn clone_box(&self) -> Box<dyn Translations>;
-}
-
-impl Clone for Box<dyn Translations> {
-    fn clone(&self) -> Box<dyn Translations> {
-        self.clone_box()
-    }
 }
 
 pub fn negotiate_langid(requested_locale: String, keys: Vec<String>) -> String {    
@@ -81,30 +61,26 @@ pub fn negotiate_langid(requested_locale: String, keys: Vec<String>) -> String {
     locale
 }
 
-pub fn new_translations(requested_locale: String) -> Box<dyn Translations + Send + Sync> {
+pub fn new_translations(requested_locale: String) -> Translations {
     let catalog_per_langid = CATALOG_PER_LOCALE.lock().unwrap();
     let keys: Vec<String> = catalog_per_langid.keys().cloned().collect();
     let locale = negotiate_langid(requested_locale, keys);
     let catalog = catalog_per_langid[&locale].clone();
 
-    Box::new(GettextTranslations { locale, catalog })
+    Translations { locale, catalog }
 }
 
-impl Translations for GettextTranslations {
+impl Translations {
 
-    fn langid(&self) -> String {
+    pub fn langid(&self) -> String {
         self.locale.clone()
     }
 
-    fn clone_box(&self) -> Box<dyn Translations> {
-        Box::new(self.clone())
-    }
-
-    fn gettext(&self, msg: &str) -> String {
+    pub fn gettext(&self, msg: &str) -> String {
         self.catalog.gettext(msg).to_string()
     }
 
-    fn gettext_fmt(&self, template: &str, params: Vec<&str>) -> String {
+    pub fn gettext_fmt(&self, template: &str, params: Vec<&str>) -> String {
         match params.len() {
             0 => self.gettext(template),
             1 => runtime_format!(self.gettext(template), params[0]),
@@ -115,11 +91,11 @@ impl Translations for GettextTranslations {
         }
     }
 
-    fn ngettext(&self, msgid: &str, msgid_plural: &str, n: u64) -> String {
+    pub fn ngettext(&self, msgid: &str, msgid_plural: &str, n: u64) -> String {
         crate::runtime_format!(self.catalog.ngettext(msgid, msgid_plural, n).to_string(), n)
     }
 
-    fn ngettext_fmt(&self, msgid: &str, msgid_plural: &str, n: u64, params: Vec<&str>) -> String {
+    pub fn ngettext_fmt(&self, msgid: &str, msgid_plural: &str, n: u64, params: Vec<&str>) -> String {
         match params.len() {
             0 => crate::runtime_format!(self.catalog.ngettext(msgid, msgid_plural, n).to_string(), n),
             1 => crate::runtime_format!(self.catalog.ngettext(msgid, msgid_plural, n).to_string(), n, params[0]),
@@ -131,7 +107,7 @@ impl Translations for GettextTranslations {
     }
 }
 
-pub fn ocr_lang_key_by_name(trans: Box<dyn Translations>) -> HashMap<&'static str, String> {
+pub fn ocr_lang_key_by_name(trans: &Translations) -> HashMap<&'static str, String> {
     [
         ("Afrikaans", "ar"),
         ("Albanian", "sqi"),

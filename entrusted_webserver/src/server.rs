@@ -157,7 +157,7 @@ impl Stream for Client {
     }
 }
 
-async fn notfound(l10n: Data<Mutex<Box<dyn l10n::Translations>>>) -> impl Responder {
+async fn notfound(l10n: Data<Mutex<l10n::Translations>>) -> impl Responder {
     HttpResponse::NotFound().body(l10n.lock().unwrap().gettext("Resource not found"))
 }
 
@@ -187,7 +187,7 @@ fn parse_accept_language(req_language: &HeaderValue, fallback_lang: String) -> S
     }
 }
 
-pub async fn serve(host: &str, port: &str, ci_image_name: String, l10n: Box<dyn l10n::Translations>) -> std::io::Result<()> {
+pub async fn serve(host: &str, port: &str, ci_image_name: String, l10n: l10n::Translations) -> std::io::Result<()> {
     let addr = format!("{}:{}", host, port);
     println!("{}: {}", l10n.gettext("Starting server at address"), &addr);
 
@@ -240,7 +240,7 @@ async fn index() -> impl Responder {
         .body(SPA_INDEX_HTML)
 }
 
-async fn downloads(info: actix_web::web::Path<String>, req: HttpRequest, l10n: Data<Mutex<Box<dyn l10n::Translations>>>) -> impl Responder {
+async fn downloads(info: actix_web::web::Path<String>, req: HttpRequest, l10n: Data<Mutex<l10n::Translations>>) -> impl Responder {
     let l10n_ref = l10n.lock().unwrap();
     println!("{}: {}", l10n_ref.gettext("Download from"), req.uri());
 
@@ -305,7 +305,7 @@ async fn downloads(info: actix_web::web::Path<String>, req: HttpRequest, l10n: D
     }
 }
 
-async fn events(info: actix_web::web::Path<String>, broadcaster: Data<Mutex<Broadcaster>>, l10n: Data<Mutex<Box<dyn l10n::Translations>>>) -> impl Responder {
+async fn events(info: actix_web::web::Path<String>, broadcaster: Data<Mutex<Broadcaster>>, l10n: Data<Mutex<l10n::Translations>>) -> impl Responder {
     let ref_id = format!("{}", info.into_inner());
     let notifications_per_refid = NOTIFICATIONS_PER_REFID.lock().unwrap();
 
@@ -325,7 +325,7 @@ fn output_filename_for(request_id: String) -> String {
     [basename, "-".to_string(), config::DEFAULT_FILE_SUFFIX.to_string(), ".pdf".to_string()].concat()
 }
 
-async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<String>>, l10n: Data<Mutex<Box<dyn l10n::Translations>>>) -> impl Responder {
+async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<String>>, l10n: Data<Mutex<l10n::Translations>>) -> impl Responder {
     let l10n_ref = l10n.lock().unwrap();
 
     let langid = if let Some(req_language) = req.headers().get(header::ACCEPT_LANGUAGE) {
@@ -392,7 +392,7 @@ async fn upload(req: HttpRequest, payload: Multipart, ci_image_name: Data<Mutex<
 pub async fn save_file(
     mut payload: Multipart,
     tmpdir: PathBuf,
-    l10n: Box<dyn l10n::Translations>
+    l10n: l10n::Translations
 ) -> Result<model::UploadedFile, Box<dyn std::error::Error>> {
     let mut buf         = Vec::<u8>::new();
     let mut filename    = String::new();
@@ -487,11 +487,11 @@ async fn run_entrusted(
     input_path: PathBuf,
     output_path: PathBuf,
     conversion_options: model::ConversionOptions,
-    l10n: Box<dyn l10n::Translations>,
+    l10n: l10n::Translations,
     langid: String
 ) -> Result<(), Box<dyn std::error::Error>> {
     if let Some(proposed_ocr_lang) = conversion_options.opt_ocr_lang.clone() {
-        let ocr_lang_by_code = l10n::ocr_lang_key_by_name(l10n.clone_box());
+        let ocr_lang_by_code = l10n::ocr_lang_key_by_name(&l10n);
 
         if !ocr_lang_by_code.contains_key(&*proposed_ocr_lang) {
             return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![&proposed_ocr_lang]).into());

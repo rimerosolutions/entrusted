@@ -81,7 +81,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
             return Err(format!("{}: {}. {}", l10n.gettext("Invalid port number"), port, ex.to_string()).into());
         }
 
-        match server::serve(host, port, ci_image_name, l10n.clone_box()).await {
+        match server::serve(host, port, ci_image_name, l10n.clone()).await {
             Ok(_) => Ok(()),
             Err(ex) => Err(ex.into()),
         }

@@ -116,7 +116,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut ocr_lang = None;
 
     if let Some(proposed_ocr_lang) = &run_matches.value_of("ocr-lang") {
-        let supported_ocr_languages = l10n::ocr_lang_key_by_name(trans.clone_box());
+        let supported_ocr_languages = l10n::ocr_lang_key_by_name(&trans);
 
         if supported_ocr_languages.contains_key(proposed_ocr_lang) {
             ocr_lang = Some(proposed_ocr_lang.to_string());
@@ -189,7 +189,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let exec_handle = thread::spawn(move || {
         let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), ocr_lang, opt_passwd);
-        match container::convert(src_path_copy, output_filename, convert_options, tx, trans.clone_box()) {
+        match container::convert(src_path_copy, output_filename, convert_options, tx, trans.clone()) {
             Ok(_)   => None,
             Err(ex) => Some(ex.to_string())
         }

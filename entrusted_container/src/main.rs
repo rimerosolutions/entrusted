@@ -128,7 +128,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         // step 2 (20%)
         progress_range = ProgressRange::new(20, 45);
-        split_pdf_pages_into_images(&logger, progress_range, doc, &output_dir_path, l10n.clone())?;
+        split_pdf_pages_into_images(&logger, progress_range, page_count, doc, &output_dir_path, l10n.clone())?;
 
         // step 3 (40%)
         progress_range = ProgressRange::new(45, 90);
@@ -647,13 +647,12 @@ impl ProgressRange {
     }
 }
 
-fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, doc: Document, dest_folder: &PathBuf, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
-    let page_num = doc.n_pages();
+fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, doc: Document, dest_folder: &PathBuf, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
     let mut progress_value: usize = progress_range.min;
 
     logger.log(progress_value, l10n.ngettext("Extract PDF file into one image",
                                              "Extract PDF file into few images",
-                                             page_num as u64));
+                                             page_count as u64));
 
     let antialias_setting = cairo::Antialias::Fast;
     let mut font_options = cairo::FontOptions::new()?;
@@ -663,15 +662,15 @@ fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_rang
 
     let progress_delta = progress_range.delta();
 
-    for i in 0..page_num {
-        let page_num = i + 1;
+    for i in 0..page_count {
+        let idx = i + 1;
 
-        if let Some(page) = doc.page(i) {
-            let page_num_text = page_num.to_string();
-            progress_value = progress_range.min + (page_num * progress_delta as i32 / page_num) as usize;
-            logger.log(progress_value, l10n.gettext_fmt("Extracting page {0} into a PNG image", vec![&page_num_text]));
+        if let Some(page) = doc.page(i as i32) {
+            let idx_text = idx.to_string();
+            progress_value = progress_range.min + (idx * progress_delta / page_count) as usize;
+            logger.log(progress_value, l10n.gettext_fmt("Extracting page {0} into a PNG image", vec![&idx_text]));
 
-            let dest_path = dest_folder.join(format!("page-{}.png", page_num));
+            let dest_path = dest_folder.join(format!("page-{}.png", idx));
             let (w, h) = page.size();
             let sw = (w * ZOOM_RATIO) as i32;
             let sh = (h * ZOOM_RATIO) as i32;

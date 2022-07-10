@@ -748,7 +748,7 @@ impl <'a> FileListWidget {
                     if b.is_checked() {
                         selfie.selected_indices.borrow_mut().push(idx as usize);
                     } else {
-                        selfie.selected_indices.borrow_mut().remove(idx as usize);
+                        selfie.selected_indices.borrow_mut().retain( |x| *x != idx as usize);
                     }
 
                     let _ = app::handle_main(FileListWidgetEvent::SELECTION_CHANGED);
@@ -1358,9 +1358,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     delete_button.set_callback({
         let mut filelist_widget_ref = filelist_widget.clone();
+        let mut filelist_scroll_ref = filelist_scroll.clone();
 
         move |_| {
             filelist_widget_ref.delete_selection();
+            filelist_scroll_ref.scroll_to(0, 0);
         }
     });
 
@@ -1451,6 +1453,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             let failure_message = &trans_ref.gettext("Conversion failed!");
             let logs_title_button_label = &trans_ref.gettext("Logs");
 
+            filelist_scroll_ref.scroll_to(0, 0);
+            filelist_scroll_ref.redraw();
+
             for current_row in filelist_widget_ref.rows.borrow_mut().iter() {
                 let result = Arc::new(AtomicBool::new(false));
                 let mut active_row = current_row.clone();
@@ -1461,6 +1466,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let active_file_suffix = file_suffix.clone();
 
                 filelist_scroll_ref.scroll_to(0, active_row.checkbox.y() - filelist_scroll_ref.y());
+                filelist_scroll_ref.redraw();
 
                 let (tx, rx) = mpsc::channel();
 
@@ -1574,6 +1580,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             convert_frame_ref.activate();
 
             filelist_scroll_ref.scroll_to(0, 0);
+            filelist_scroll_ref.redraw();
         }
     });
 
@@ -1879,7 +1886,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut messages_frame_ref = messages_frame.clone();
 
         move |w, ev| match ev {
-            enums::Event::Move => {               
+            enums::Event::Move => {
                 w.redraw();
                 true
             },

@@ -9,10 +9,9 @@
   - [ ] More idiomatic Rust code
   - [ ] Simplify and clarify the code
 - [ ] Online Web Service
-  - [ ] Serve Web UI translations at once, instead of a second request on page load
+  - [ ] Evaluate [[https://github.com/tokio-rs/axum][axum]] as a replacement of [[https://github.com/actix/actix-web][actix_web]] ([[https://ordina-jworks.github.io/event-driven/2021/04/23/SSE-with-HTTP2.html#http11-vs-http2][HTTP2 support + SSE]] + browsers)
   - [ ] Use the =Content-Language= header in response (translations)
-  - [ ] Revisit notifications SSE + HTTP2, for the "Online Service"
-- [ ] Investigate if specific support is required for Tails Linux
+- [ ] Investigate if specific support is required for Tails Linux (proxy, etc.)
 - [-] CI/CD
   - [X] Adopt Git flow and delete all the previous spiral branches
   - [ ] Transition CI/CD scripts to Github actions or TravisCI or something else?
@@ -27,10 +26,9 @@
   - [ ] Cancellable conversions for those that haven't started yet
   - [ ] Parallel conversions
   - [ ] Minimal resources management to avoid exhausting computer CPU and memory
-- [ ] Performance
-  - [ ] Mime-type detection
-    - [ ] Avoid reading entire files for mime type detection, just what is required...
-    - [ ] Consider switching mime type libraries, but is there anything better?
+- [ ] Mime-type detection
+  - [ ] Avoid reading entire files for mime type detection, just what is required...
+  - [ ] Consider switching mime type libraries, but is there anything better?
 - User Interface
   - [ ] There're probably too many redraw operations in the Desktop UI
   - [ ] Improve scrolling behavior during conversions ("smooth-scrolling")

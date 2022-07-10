@@ -176,6 +176,7 @@ fn server_problem(reason: String, uri: &Uri) -> HttpApiProblem {
 fn parse_accept_language(req_language: &HeaderValue, fallback_lang: String) -> String {
     if let Ok(req_language_str) = req_language.to_str() {
         let language_list = req_language_str.split(",").collect::<Vec<&str>>();
+
         if !language_list.is_empty() {
             let first_language = language_list[0].split(";").collect::<Vec<&str>>();
             String::from(first_language[0])

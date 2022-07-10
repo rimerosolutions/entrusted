@@ -127,19 +127,19 @@ fn main() -> Result<(), Box<dyn Error>> {
         let page_count = doc.n_pages() as usize;
 
         // step 2 (20%)
-        progress_range = ProgressRange::new(15, 45);
-        split_pdf_pages_into_images(&logger, progress_range, doc, &output_dir_path, l10n.clone_box())?;
+        progress_range = ProgressRange::new(20, 45);
+        split_pdf_pages_into_images(&logger, progress_range, doc, &output_dir_path, l10n.clone())?;
 
         // step 3 (40%)
         progress_range = ProgressRange::new(45, 90);
 
         if skip_ocr {
-            imgs_to_pdf(&logger, progress_range, page_count, &output_dir_path, &output_dir_path, l10n.clone_box())?;
+            imgs_to_pdf(&logger, progress_range, page_count, &output_dir_path, &output_dir_path, l10n.clone())?;
         } else {
             let ocr_lang = env::var(ENV_VAR_OCR_LANGUAGE)?;
             let ocr_lang_text = ocr_lang.as_str();
 
-            if !l10n::ocr_lang_key_by_name(l10n.clone_box()).contains_key(&ocr_lang_text) {
+            if !l10n::ocr_lang_key_by_name(&l10n).contains_key(&ocr_lang_text) {
                 return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![ocr_lang_text]).into());
             }
 
@@ -148,12 +148,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                 data_dir: TESS_DATA_DIR,
             };
 
-            ocr_imgs_to_pdf(&logger, progress_range, page_count, tess_settings, &output_dir_path, &output_dir_path, l10n.clone_box())?;
+            ocr_imgs_to_pdf(&logger, progress_range, page_count, tess_settings, &output_dir_path, &output_dir_path, l10n.clone())?;
         }
 
         // step 4 (60%)
         progress_range = ProgressRange::new(90, 98);
-        pdf_combine_pdfs(&logger, progress_range, page_count, &output_dir_path, &output_file_path, l10n.clone_box())?;
+        pdf_combine_pdfs(&logger, progress_range, page_count, &output_dir_path, &output_file_path, l10n.clone())?;
 
         // step 5 (80%)
         move_file_to_dir(&output_file_path, &safe_dir_path)

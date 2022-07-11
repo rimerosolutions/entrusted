@@ -198,7 +198,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
     ];
 
     let input_file_volume = &format!("{}:/tmp/input_file", input_path.display());
-    let mut err_msg = "".to_string();
+    let mut err_msg = String::new();
 
     // TODO for Lima we assume the default VM instance, that might not be true all the time...
     if let Some(container_rt) = common::container_runtime_path() {

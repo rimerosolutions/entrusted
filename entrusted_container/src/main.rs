@@ -67,7 +67,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let locale = match env::var(l10n::ENV_VAR_ENTRUSTED_LANGID) {
         Ok(selected_locale) => selected_locale,
-        Err(_) => l10n::sys_locale()
+        Err(_)              => l10n::sys_locale()
     };
     let l10n = l10n::new_translations(locale);
 
@@ -75,7 +75,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Ok(ocr_set_value) => {
             match ocr_set_value.as_str() {
                 "1" => false,
-                _ => true
+                _   => true
             }
         },
         Err(_) => {
@@ -114,7 +114,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut progress_range = ProgressRange::new(0, 20);
         let input_file_path = input_as_pdf_to_pathbuf_uri(&logger, progress_range, raw_input_path, document_password.clone(), l10n.clone())?;
 
-        let input_file_param = format!("{}", input_file_path.display());
+        let input_file_param = input_file_path.display().to_string();
         let doc = if let Some(passwd) = document_password {
             // We only care about originally encrypted PDF files
             // If the document was in another format, then it's already decrypted at this stage
@@ -901,8 +901,8 @@ fn imgs_to_pdf(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange
         let idx_text = idx.to_string();
         progress_value = progress_range.min + (idx * progress_delta / page_count) as usize;
         logger.log(progress_value, l10n.gettext_fmt("Saving PNG image {0} to PDF", vec![&idx_text]));
-        let src = input_path.join(format!("page-{}.png", idx));
-        let dest = output_path.join(format!("page-{}.pdf", idx));
+        let src = input_path.join(format!("page-{}.png", &idx));
+        let dest = output_path.join(format!("page-{}.pdf", &idx));
         img_to_pdf(image::ImageFormat::Png, &src, &dest)?;
     }
 
@@ -920,8 +920,8 @@ fn img_to_pdf(src_format: image::ImageFormat, src_path: &PathBuf, dest_path: &Pa
 
     let mut c = Cursor::new(buffer);
     let surface_png = ImageSurface::create_from_png(&mut c)?;
-    let (w, h) = (surface_png.width(), surface_png.height());
-    let surface_pdf = PdfSurface::new(w as f64, h as f64, dest_path)?;
+    let (w, h) = (surface_png.width() as f64, surface_png.height() as f64);
+    let surface_pdf = PdfSurface::new(w, h, &dest_path)?;
     let ctx = Context::new(&surface_pdf)?;
 
     ctx.set_source_rgb(1.0, 1.0, 1.0);

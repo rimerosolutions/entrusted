@@ -81,7 +81,7 @@ impl Broadcaster {
 
     fn remove_stale_clients(&mut self) {
         let msg = Bytes::from("data: ping\n\n".to_string());
-        let mut ok_clients = Vec::new();
+        let mut ok_clients = Vec::with_capacity(self.clients.len());
 
         for client in self.clients.iter() {
             let result = client.try_send(msg.clone());
@@ -96,11 +96,8 @@ impl Broadcaster {
 
     fn new_client(&mut self, refid: String) -> Client {
         let (tx, _rx) = channel(100);
-
         tx.try_send(Bytes::from("data: connected\n\n")).unwrap();
-
         self.clients.push(tx);
-
         let done = false;
         let idx = 0;
 
@@ -258,13 +255,12 @@ async fn downloads(info: actix_web::web::Path<String>, req: HttpRequest, l10n: D
                 let fileid_data   = base64_lib::decode(&file_data_parts[0]);
                 let filename_data = base64_lib::decode(&file_data_parts[1]);
 
-
-                if let (Ok(fileid_value), Ok(filename_value)) = (std::str::from_utf8(&fileid_data), std::str::from_utf8(&filename_data)) {
+                if let (Ok(fileid_value),
+                        Ok(filename_value)) = (std::str::from_utf8(&fileid_data), std::str::from_utf8(&filename_data)) {
                     fileid.push_str(&output_filename_for(fileid_value.to_string()));
                     filename.push_str(&output_filename_for(filename_value.to_string()));
                     request_err_found = false;
                 }
-
             }
         }
     }
@@ -284,7 +280,7 @@ async fn downloads(info: actix_web::web::Path<String>, req: HttpRequest, l10n: D
     } else {
         match fs::read(filepath_buf.clone()) {
             Ok(data) => {
-                let _ = std::fs::remove_file(filepath_buf);
+                let _ = fs::remove_file(filepath_buf);
                 NOTIFICATIONS_PER_REFID.lock().unwrap().remove(&request_id.to_string());
                 HttpResponse::Ok()
                     .append_header((header::CONTENT_TYPE, "application/pdf"))
@@ -295,7 +291,7 @@ async fn downloads(info: actix_web::web::Path<String>, req: HttpRequest, l10n: D
             Err(ex) => {
                 eprintln!("{} {}.", l10n_ref.gettext("Could not read input file"), ex.to_string());
 
-                if let Err(ioe) = std::fs::remove_file(&filepath_buf) {
+                if let Err(ioe) = fs::remove_file(&filepath_buf) {
                     eprintln!("{} {}. {}.", l10n_ref.gettext("Could not delete file"), &filepath_buf.display(), ioe.to_string());
                 }
 
@@ -410,23 +406,15 @@ pub async fn save_file(
             }
         } else if fname == "filename" {
             while let Some(chunk) = field.next().await {
-                filename.push_str(&String::from_utf8(chunk?.to_vec())?);
+                filename.push_str(std::str::from_utf8(&chunk?.to_vec())?);
             }
         } else if fname == "ocrlang" {
             while let Some(chunk) = field.next().await {
-                let data = &String::from_utf8(chunk?.to_vec())?;
-
-                if !data.trim().is_empty() {
-                    ocrlang.push_str(data);
-                }
+                ocrlang.push_str(std::str::from_utf8(&chunk?.to_vec())?);
             }
         } else if fname == "docpasswd" {
             while let Some(chunk) = field.next().await {
-                let data = &String::from_utf8(chunk?.to_vec())?;
-
-                if !data.trim().is_empty() {
-                    docpassword.push_str(data);
-                }
+                docpassword.push_str(std::str::from_utf8(&chunk?.to_vec())?);
             }
         }
     }
@@ -440,7 +428,9 @@ pub async fn save_file(
     }
 
     let file_uuid = Uuid::new_v4().to_string();
-    let id_token = format!("{};{}", base64_lib::encode(&file_uuid.clone().into_bytes()), base64_lib::encode(&filename.clone().into_bytes()));
+    let id_token = format!("{};{}",
+                           base64_lib::encode(&file_uuid.clone().into_bytes()),
+                           base64_lib::encode(&filename.clone().into_bytes()));
     let id = id_token.as_bytes().to_base58();
 
     let p = std::path::Path::new(&filename);
@@ -588,14 +578,14 @@ async fn run_entrusted(
         let msg = model::CompletionMessage::new(format!("/downloads/{}", refid.clone()));
         let msg_json = serde_json::to_string(&msg).unwrap();
         progress_made(refid.clone(), "processing_success", msg_json, counter, err_find_notif, err_notif_handle)?;
-        let _ = std::fs::remove_file(input_path);
+        let _ = fs::remove_file(input_path);
 
         Ok(())
     } else {
         let msg = model::CompletionMessage::new("failure".to_string());
         let msg_json = serde_json::to_string(&msg).unwrap();
         progress_made(refid.clone(), "processing_failure", msg_json, counter, err_find_notif, err_notif_handle)?;
-        let _ = std::fs::remove_file(input_path);
+        let _ = fs::remove_file(input_path);
 
         Err(l10n.gettext("Processing failure").into())
     }

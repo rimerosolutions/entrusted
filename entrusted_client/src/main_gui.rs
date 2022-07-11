@@ -24,7 +24,7 @@ mod config;
 mod container;
 
 const WIDGET_GAP: i32 = 20;
-const ELLIPSIS: &str = "...";
+const ELLIPSIS: &str  = "...";
 
 const ICON_HELP_TEXT: &str = "?";
 const ICON_SAVE: &[u8]     =  include_bytes!("../../images/Save_icon.png");
@@ -329,7 +329,9 @@ impl <'a> FileListWidget {
         while !self.selected_indices.borrow().is_empty() {
             if let Some(idx) = self.selected_indices.borrow_mut().pop() {
                 let row = self.rows.borrow_mut().remove(idx);
-                self.container.remove(&row.checkbox.parent().unwrap());
+                if let Some(row_parent) = row.checkbox.parent() {
+                    self.container.remove(&row_parent);
+                }
             }
         }
 
@@ -522,7 +524,6 @@ impl <'a> FileListWidget {
                     });
 
                     buttons_pack.end();
-
                     container_pack.end();
 
                     win.end();
@@ -575,6 +576,7 @@ impl <'a> FileListWidget {
                         enums::Color::Yellow
                     };
                     draw::set_draw_color(current_color);
+
                     let stroke = 2;
                     for i in 1..(stroke + 1) {
                         draw::draw_rect(wid.x() + i, wid.y() + i, wid.w() - i - i, wid.h() - i - i);

@@ -2441,7 +2441,9 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
                                         } else {
                                             if let Some(basename_ostr) = std::path::Path::new(&app_url).file_stem() {
                                                 if let Some(basename) = &basename_ostr.to_str() {
-                                                    if let Ok(r_app_name_decoded)= percent_decode(basename.as_bytes()).decode_utf8() {
+                                                    let implied_app_name = percent_decode(basename.as_bytes());
+
+                                                    if let Ok(r_app_name_decoded)= implied_app_name.decode_utf8() {
                                                         app_name.push_str(&r_app_name_decoded);
                                                     }
                                                 }

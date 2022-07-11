@@ -207,7 +207,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         tx.send(printer.print(1, trans.gettext("Checking if container image exists")))?;
 
         if let Err(ex) = exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone(), false, printer.clone_box(), trans.clone()) {
-            tx.send(printer.print(1, trans.gettext_fmt("The container image was not found. {0}.", vec![&ex.to_string()])))?;
+            tx.send(printer.print(1, trans.gettext_fmt("The container image was not found. {0}", vec![&ex.to_string()])))?;
             ensure_image_args = vec!["pull", &convert_options.container_image_name];
             tx.send(printer.print(1, trans.gettext("Please wait, downloading image (roughly 600 MB).")))?;
 

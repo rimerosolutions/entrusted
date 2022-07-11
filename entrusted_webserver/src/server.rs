@@ -164,13 +164,13 @@ async fn notfound(l10n: Data<Mutex<l10n::Translations>>) -> impl Responder {
 fn request_problem(reason: String, uri: &Uri) -> HttpApiProblem {
     HttpApiProblem::with_title_and_type_from_status(StatusCode::BAD_REQUEST)
         .set_detail(reason)
-        .set_instance(format!("{}", uri))
+        .set_instance(uri.to_string())
 }
 
 fn server_problem(reason: String, uri: &Uri) -> HttpApiProblem {
     HttpApiProblem::with_title_and_type_from_status(StatusCode::INTERNAL_SERVER_ERROR)
         .set_detail(reason)
-        .set_instance(format!("{}", uri))
+        .set_instance(uri.to_string())
 }
 
 fn parse_accept_language(req_language: &HeaderValue, fallback_lang: String) -> String {
@@ -289,7 +289,7 @@ async fn downloads(info: actix_web::web::Path<String>, req: HttpRequest, l10n: D
                 HttpResponse::Ok()
                     .append_header((header::CONTENT_TYPE, "application/pdf"))
                     .append_header((header::CONTENT_DISPOSITION, format!("attachment; filename={}", filename)))
-                    .append_header((header::CONTENT_LENGTH, format!("{}", data.len())))
+                    .append_header((header::CONTENT_LENGTH, data.len().to_string()))
                     .body(data)
             }
             Err(ex) => {
@@ -307,7 +307,7 @@ async fn downloads(info: actix_web::web::Path<String>, req: HttpRequest, l10n: D
 }
 
 async fn events(info: actix_web::web::Path<String>, broadcaster: Data<Mutex<Broadcaster>>, l10n: Data<Mutex<l10n::Translations>>) -> impl Responder {
-    let ref_id = format!("{}", info.into_inner());
+    let ref_id = info.into_inner();
     let notifications_per_refid = NOTIFICATIONS_PER_REFID.lock().unwrap();
 
     if !notifications_per_refid.contains_key(&ref_id.clone()) {

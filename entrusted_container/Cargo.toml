@@ -17,10 +17,10 @@ image = "0.23.14"
 poppler-rs = "0.18.0"
 cairo-rs = { version = "0.14.9", features = ["png", "pdf"] }
 tesseract-plumbing = "0.6.1"
-lopdf = "0.27.0"
+lopdf = { version = "0.27.0", default-features = false, features = ["chrono_time", "nom_parser"] }
 infer = "0.5.0"
 cfb = "0.6.1"
-zip = "0.5"
+zip = { version = "0.6.2", default-features = false }
 serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.79"
 libreoffice-rs = "0.3.1"

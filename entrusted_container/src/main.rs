@@ -736,7 +736,7 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: Progress
                 .into_iter()
                 .map(|(_, object_id)| {
                     if !first {
-                        let bookmark = lopdf::Bookmark::new(String::from(format!("Page_{}", pagenum)), [0.0, 0.0, 1.0], 0, object_id);
+                        let bookmark = lopdf::Bookmark::new(format!("Page_{}", pagenum), [0.0, 0.0, 1.0], 0, object_id);
                         document.add_bookmark(bookmark, None);
                         first = true;
                         pagenum += 1;

@@ -223,7 +223,6 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         pixels_to_pdf_args.append(&mut run_args.clone());
         pixels_to_pdf_args.append(&mut container_rt.suggested_run_args.clone());
 
-
         // TODO potentially this needs to be configurable
         // i.e. for Lima with assume that /tmp/lima is the configured writable folder...
         let mut dz_tmp = match container_rt.suggested_tmp_dir {

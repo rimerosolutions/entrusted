@@ -1,0 +1,16 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: entrusted-gui
+Upstream-Contact: Yves Zoundi <yves_zoundi@hotmail.com>
+Source: https://github.com/rimerosolutions/entrusted/releases
+ https://github.com/rimerosolutions/entrusted.git
+License: GPL-3+
+
+Files: *
+Copyright:
+  Copyright: 2022-2023, Yves Zoundi <yves_zoundi@hotmail.com>
+License-Grant:
+ This file is free software; you can redistribute it and/or modify it
+ under the terms of the GNU General Public License as published by the
+ Free Software Foundation; either version 3, or (at your option) any
+ later version.
+License: GPL-3+

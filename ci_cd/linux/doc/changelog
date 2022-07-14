@@ -1,0 +1,7 @@
+entrusted (0.2.2) stable; urgency=medium
+
+  * Debian packaging is available
+  * Fix file selection bug in the graphical user interface
+  * Fix bug in conversion progress information
+
+ -- Yves Zoundi <yves_zoundi@hotmail.com>  Wed, 13 Jul 2022 09:38:25 -0400

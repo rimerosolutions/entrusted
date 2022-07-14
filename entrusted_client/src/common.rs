@@ -80,7 +80,8 @@ impl<'a> ContainerProgram<'a> {
 enum ContainerProgramStub<'a> {
     Docker(&'a str, Vec<&'a str>, Vec<&'a str>, Option<&'a str>),
     Podman(&'a str, Vec<&'a str>, Vec<&'a str>, Option<&'a str>),
-    Lima(&'a str, Vec<&'a str>, Vec<&'a str>, Option<&'a str>)
+    Lima(&'a str, Vec<&'a str>, Vec<&'a str>, Option<&'a str>),
+    Nerdctl(&'a str, Vec<&'a str>, Vec<&'a str>, Option<&'a str>)
 }
 
 // TODO this is not good enough, ideally subcommands should be captured at a higher level
@@ -90,13 +91,15 @@ pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
         ContainerProgramStub::Docker("docker", vec![], vec![], None),
         ContainerProgramStub::Podman("podman", vec![], vec!["--userns", "keep-id"], None),
         ContainerProgramStub::Lima("lima", vec!["nerdctl"], vec![], Some("/tmp/lima")),
+        ContainerProgramStub::Nerdctl("nerdctl", vec!["nerdctl"], vec![], None),
     ];
 
     for i in 0..container_program_stubs.len() {
         match &container_program_stubs[i] {
             ContainerProgramStub::Docker(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) |
             ContainerProgramStub::Podman(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) |
-            ContainerProgramStub::Lima(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) => {
+            ContainerProgramStub::Lima(cmd, sub_cmd_args, cmd_args, tmp_dir_opt)   |
+            ContainerProgramStub::Nerdctl(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) => {
                 if let Some(path_container_exe) = executable_find(cmd) {
                     let suggested_tmp_dir = if let Some(tmp_dir) = tmp_dir_opt {
                         Some(PathBuf::from(tmp_dir))

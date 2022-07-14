@@ -23,7 +23,7 @@
 - [-] Improved conversions
   - [X] Custom output location for individual documents in the conversion queue
   - [X] Support for password-protected documents
-  - [ ] Cancellable conversions for those that haven't started yet
+  - [X] Cancellable conversions for those that haven't started yet
   - [ ] Parallel conversions
   - [ ] Minimal resources management to avoid exhausting computer CPU and memory
 - [ ] Mime-type detection

@@ -1,6 +1,6 @@
 [package]
 name = "entrusted_l10n"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2018"
 description = "Entrusted l10n library" 
 keywords = ["entrusted", "l10n"]

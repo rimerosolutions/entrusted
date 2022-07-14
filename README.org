@@ -41,23 +41,25 @@ There are 3 user interfaces ([[./entrusted_client][Desktop and CLI]], [[./entrus
   - The Web UI is available at =http://localhost:13000=
   - Replace =localhost= by the IP address of your virtual machine in the above-mentioned link
 
-** Download artifacts
+** Downloads
 
-For downloads, please visit the [[https://github.com/rimerosolutions/entrusted/releases][releases page]] (64 bit operating systems).
+Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releases page]] (downloads for 64 bit operating systems).
 
-|------------------+-----------------------------------------+--------------------------------------------|
-| Operating System | Artifact                                | Description                                |
-|------------------+-----------------------------------------+--------------------------------------------|
-| =Linux=          | =entrusted-linux-amd64-<version>.tar=   | Archive with all the programs              |
-|------------------+-----------------------------------------+--------------------------------------------|
-| =Mac OS=         | =entrusted-macos-amd64-<version>.dmg=   | Installer with the Desktop and CLI clients |
-|                  | =entrusted-macos-amd64-<version>.zip=   | Archive with all programs                  |
-|------------------+-----------------------------------------+--------------------------------------------|
-| =MS Windows=     | =entrusted-windows-amd64-<version>.exe= | Installer with the Desktop and CLI clients |
-|                  | =entrusted-windows-amd64-<version>.zip= | Archive with all the programs              |
-|------------------+-----------------------------------------+--------------------------------------------|
-| =Live CD=        | =entrusted-livecd-amd64-<version>.iso=  | Web interface Live CD                      |
-|------------------+-----------------------------------------+--------------------------------------------|
+|------------------+-----------------------------------------+-------------------------------------------------|
+| Operating System | Artifact                                | Description                                     |
+|------------------+-----------------------------------------+-------------------------------------------------|
+| =Linux=          | =entrusted-linux-amd64-<version>.tar=   | Archive with all the programs                   |
+|                  | =entrusted-linux-amd64-<version>.deb=   | Debian package with the Desktop and CLI clients |
+|                  | =entrusted-linux-amd64-<version>.rpm=   | Redhat package with the Desktop and CLI clients |
+|------------------+-----------------------------------------+-------------------------------------------------|
+| =Mac OS=         | =entrusted-macos-amd64-<version>.dmg=   | Installer with the Desktop and CLI clients      |
+|                  | =entrusted-macos-amd64-<version>.zip=   | Archive with all programs                       |
+|------------------+-----------------------------------------+-------------------------------------------------|
+| =MS Windows=     | =entrusted-windows-amd64-<version>.exe= | Installer with the Desktop and CLI clients      |
+|                  | =entrusted-windows-amd64-<version>.zip= | Archive with all the programs                   |
+|------------------+-----------------------------------------+-------------------------------------------------|
+| =Live CD=        | =entrusted-livecd-amd64-<version>.iso=  | Web interface Live CD for virtual machines      |
+|------------------+-----------------------------------------+-------------------------------------------------|
 
 ** Key software components
 

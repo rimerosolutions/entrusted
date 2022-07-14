@@ -42,6 +42,8 @@ cp ${ROOT_SCRIPTDIR}/../artifacts/*.iso \
    ${ROOT_SCRIPTDIR}/../artifacts/*.zip \
    ${ROOT_SCRIPTDIR}/../artifacts/*.dmg \
    ${ROOT_SCRIPTDIR}/../artifacts/*.tar \
+   ${ROOT_SCRIPTDIR}/../artifacts/*.rpm \
+   ${ROOT_SCRIPTDIR}/../artifacts/*.deb \
    ${ROOT_SCRIPTDIR}/../packages/
 
 cd ${PREVIOUSDIR}

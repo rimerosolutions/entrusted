@@ -26,9 +26,9 @@ It is a single page application that interacts with a backend service via HTTP c
 
 * What is the current use-case?
 
-This is used for a single workstation, in a multi virtual machines scenario (several virtual machines: VMs):
-- There are several VMS for specific purposes ("entrusted VM", "programming VM", "socials VM", etc.)
-- Inside some of the VMS, there's a need to open safely documents (ebooks, emails attachments, etc.)
+This is used for a single workstation, in a multi virtual machines scenario (several virtual machines: /VMs/):
+- There are several /VMs/ for specific purposes ("entrusted VM", "programming VM", "socials VM", etc.)
+- Inside some of the /VMs/, there's a need to open safely documents (ebooks, emails attachments, etc.)
   - The "Entrusted VM" performing document conversions has no internet connectivity.
   - The "Entrusted VM" only allows SSH and "document conversion requests"
   - The "Entrusted VM" has limited resources (1GB of RAM allocated).

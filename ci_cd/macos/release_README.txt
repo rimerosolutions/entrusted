@@ -12,7 +12,7 @@ The binaries are NOT signed under MacOS, so you might get a warning about the ap
 Most users only care about the Entrusted Desktop GUI application (dmg installer).
 The dmg installer can be found at https://github.com/rimerosolutions/entrusted/releases
 
-Other application binaries:
+Executables:
 - "Entrusted.app" is the graphical user interface (GUI)
 - "entrusted-cli" is a CLI program that is the equivalent of the GUI in command-line mode
 - "entrusted-webserver" is a CLI program that provides a shared service for document conversions, it has a minimal Web interface

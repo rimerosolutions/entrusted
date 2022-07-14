@@ -27,7 +27,7 @@ const WIDGET_GAP: i32 = 20;
 const ELLIPSIS: &str  = "...";
 
 const ICON_HELP_TEXT: &str = "?";
-const ICON_SAVE: &[u8]     =  include_bytes!("../../images/Save_icon.png");
+const ICON_SAVE: &[u8]     = include_bytes!("../../images/Save_icon.png");
 const ICON_FRAME: &[u8]    = include_bytes!("../../images/Entrusted_icon.png");
 const ICON_PASSWORD: &[u8] = include_bytes!("../../images/Password_icon.png");
 
@@ -1404,10 +1404,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             is_converting_ref.store(true, Ordering::Relaxed);
             let file_suffix = filesuffix_input_rc_ref.borrow().value();
-            let mut file_suffix = String::from(file_suffix.clone().trim());
+            let mut file_suffix = file_suffix.clone().trim().to_owned();
 
             if file_suffix.is_empty() {
-                file_suffix = String::from(&app_config_ref.file_suffix);
+                file_suffix = app_config_ref.file_suffix.to_owned();
             }
 
             let viewer_app_name = pdf_viewer_list_ref.borrow_mut().input().value();
@@ -1415,7 +1415,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if let Some(viewer_app_path) = pdf_apps_by_name.get(&viewer_app_name) {
                     Some(viewer_app_path.clone())
                 } else {
-                    Some(String::from(viewer_app_name.trim()))
+                    Some(viewer_app_name.trim().to_owned())
                 }
             } else {
                 None
@@ -1576,6 +1576,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 }
 
+                app::sleep(0.05);
             }
 
             tabsettings_button_ref.activate();

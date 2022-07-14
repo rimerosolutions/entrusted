@@ -1,0 +1,44 @@
+Summary: Document sanitizer Desktop client
+Name: entrusted
+Version: _APPVERSION_
+Release: 1
+BuildArch: x86_64
+License: GPL v3
+Source: _RPMBUILD_SOURCE_
+BuildRoot: _RPMBUILD_BUILDROOT_
+Requires: (docker or docker-ce or podman), fuse
+
+%description
+Conversion of potentially suspicious documents to trusted PDFs files
+
+%prep
+rm -rf $RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT/usr/share/doc/entrusted
+mkdir -p $RPM_BUILD_ROOT/usr/share/man/man1/
+mkdir -p $RPM_BUILD_ROOT/usr/share/applications
+mkdir -p $RPM_BUILD_ROOT/usr/share/icons
+mkdir -p $RPM_BUILD_ROOT/usr/bin
+cd $RPM_BUILD_ROOT
+cp %{SOURCEURL0}/usr/share/doc/entrusted/* ./usr/share/doc/entrusted/
+cp %{SOURCEURL0}/usr/share/man/man1/* ./usr/share/man/man1/
+cp %{SOURCEURL0}/usr/share/applications/* ./usr/share/applications/
+cp %{SOURCEURL0}/usr/share/icons/* ./usr/share/icons/
+cp %{SOURCEURL0}/usr/bin/* ./usr/bin/
+
+%clean
+echo "Nothing to clean"
+
+%files
+%defattr(644,root,root)
+%config(noreplace) %{_datadir}/doc/entrusted/copyright
+%config(noreplace) %{_datadir}/doc/entrusted/changelog.gz
+%config(noreplace) %{_mandir}/man1/entrusted-cli.1.gz
+%config(noreplace) %{_mandir}/man1/entrusted-gui.1.gz
+%config(noreplace) %{_datadir}/applications/entrusted-gui.desktop
+%config(noreplace) %{_datadir}/icons/entrusted-gui.png
+%defattr(755,root,root)
+%{_bindir}/entrusted-cli
+%{_bindir}/entrusted-gui
+
+%post
+if [ -x "$(command -v "update-desktop-database")" ]; then update-desktop-database; fi

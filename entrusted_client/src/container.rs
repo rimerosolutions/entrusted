@@ -195,6 +195,8 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         "run",
         "--network",
         "none",
+        "--security-opt",
+        "label:disable"
     ];
 
     let input_file_volume = &format!("{}:/tmp/input_file", input_path.display());
@@ -222,7 +224,6 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         let mut pixels_to_pdf_args = vec![];
         pixels_to_pdf_args.append(&mut run_args.clone());
         pixels_to_pdf_args.append(&mut container_rt.suggested_run_args.clone());
-
 
         // TODO potentially this needs to be configurable
         // i.e. for Lima with assume that /tmp/lima is the configured writable folder...

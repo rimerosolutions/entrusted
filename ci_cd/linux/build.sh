@@ -48,6 +48,17 @@ cp ${SCRIPTDIR}/release_README.txt ${ARTIFACTSDIR}/README.txt
 cd ${ARTIFACTSDIR}/.. && tar cvf entrusted-linux-amd64-${APPVERSION}.tar entrusted-linux-amd64-${APPVERSION}
 
 ${SCRIPTDIR}/debian.sh ${APPVERSION} ${PKG_FILE_DEB} ${PROJECTDIR}/images ${ARTIFACTSDIR}
+retVal=$?
+if [ $retVal -ne 0 ]; then
+	echo "Failure to create Linux DEB package"
+  exit 1
+fi
+
 ${SCRIPTDIR}/redhat.sh ${APPVERSION} ${PKG_FILE_RPM} ${PROJECTDIR}/images ${ARTIFACTSDIR}
+retVal=$?
+if [ $retVal -ne 0 ]; then
+	echo "Failure to create Linux RPM package"
+  exit 1
+fi
 
 cd ${SCRIPTDIR}

@@ -15,7 +15,7 @@
 - [-] CI/CD
   - [X] Adopt Git flow and delete all the previous spiral branches
   - [ ] Transition CI/CD scripts to Github actions or TravisCI or something else?
-  - [ ] Create few specific packages (DEB, RPM)
+  - [X] Create few specific packages (DEB, RPM)
 - [ ] Hardening
   - [ ] Review container execution options (podman v.s podman-remote, security options, etc.)
   - [ ] Revisit Flatpak support requirements and =flatpak-spawn=
@@ -23,10 +23,11 @@
 - [-] Improved conversions
   - [X] Custom output location for individual documents in the conversion queue
   - [X] Support for password-protected documents
-  - [X] Cancellable conversions for those that haven't started yet
+  - [ ] Cancellable conversions for those that haven't started yet (Additional screen?)
   - [ ] Parallel conversions
   - [ ] Minimal resources management to avoid exhausting computer CPU and memory
-- [ ] Mime-type detection
+- [-] Mime-type detection and file associations
+  - [X] Register file associations with supported document types
   - [ ] Avoid reading entire files for mime type detection, just what is required...
   - [ ] Consider switching mime type libraries, but is there anything better?
 - User Interface

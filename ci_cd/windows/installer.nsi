@@ -43,7 +43,7 @@ Section "Install Entrusted"
   File LICENSE.txt
 
   ; Write the installation path into the registry
-  WriteRegStr HKLM SOFTWARE\YOURPROGRAM "Install_Dir" "$INSTDIR"
+  WriteRegStr HKLM SOFTWARE\Entrusted "Install_Dir" "$INSTDIR"
 
   ; Write the uninstall keys for Windows
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Entrusted" "DisplayName" "Entrusted"

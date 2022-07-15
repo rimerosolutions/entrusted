@@ -243,7 +243,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         dz_tmp_pixels.push("pixels");
         mkdirp(dz_tmp_pixels.clone(), trans.clone())?;
 
-        let safedir_volume = &format!("{}:/safezone:z", dz_tmp_safe.display());
+        let safedir_volume = &format!("{}:/safezone", dz_tmp_safe.display());
         let ocr_env = &format!("OCR={}", ocr);
         let ocr_language_env = &format!("OCR_LANGUAGE={}", ocr_language);
         let locale_language_env = &format!("{}={}", l10n::ENV_VAR_ENTRUSTED_LANGID, trans.langid());

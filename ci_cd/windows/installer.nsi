@@ -18,7 +18,7 @@ Var SMDir
 !define ProgramNameGUI   "entrusted-gui"
 !define ProgramNameCLI   "entrusted-cli"
 !define ProgramPublisher "Rimero Solutions Inc."
-!define ProgramVersion   _APPVERSION_
+!define ProgramVersion   _APPVERSION_.0
 
 VIProductVersion ${ProgramVersion}
 VIAddVersionKey  "ProductVersion"  "${ProgramVersion}"

@@ -196,7 +196,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         "--network",
         "none",
         "--security-opt",
-        "label:disable"
+        "label=disable"
     ];
 
     let input_file_volume = &format!("{}:/tmp/input_file", input_path.display());

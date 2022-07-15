@@ -38,11 +38,14 @@ perl -pi -e "s/_RPMBUILD_BUILDROOT_/${RPMBUILD_BUILDROOT_SED}/g" ${RPMBUILD_SOUR
 
 gzip -9 -n ${RPMBUILD_SOURCE}/usr/share/doc/${APPNAME}/changelog
 
-pandoc --standalone --to man ${SCRIPTDIR}/manpages/${APPNAME}-gui.1.md -o  ${RPMBUILD_SOURCE}/usr/share/man/man1/${APPNAME}-gui.1
+cp ${SCRIPTDIR}/manpages/*.md ${RPMBUILD_SOURCE}/usr/share/man/man1/
+perl -pi -e "s/_APPVERSION_/${APPVERSION}/g" ${RPMBUILD_SOURCE}/usr/share/man/man1/${APPNAME}-gui.1.md
+perl -pi -e "s/_APPVERSION_/${APPVERSION}/g" ${RPMBUILD_SOURCE}/usr/share/man/man1/${APPNAME}-cli.1.md
+pandoc --standalone --to man ${RPMBUILD_SOURCE}/usr/share/man/man1/${APPNAME}-gui.1.md -o  ${RPMBUILD_SOURCE}/usr/share/man/man1/${APPNAME}-gui.1
+pandoc --standalone --to man ${RPMBUILD_SOURCE}/usr/share/man/man1/${APPNAME}-cli.1.md -o  ${RPMBUILD_SOURCE}/usr/share/man/man1/${APPNAME}-cli.1
 gzip -9 -n ${RPMBUILD_SOURCE}/usr/share/man/man1/${APPNAME}-gui.1
-pandoc --standalone --to man ${SCRIPTDIR}/manpages/${APPNAME}-cli.1.md -o ${RPMBUILD_SOURCE}/usr/share/man/man1/${APPNAME}-cli.1
 gzip -9 -n ${RPMBUILD_SOURCE}/usr/share/man/man1/${APPNAME}-cli.1
-
+rm -rf ${RPMBUILD_SOURCE}/usr/share/man/man1/*.md
 
 rpmbuild --define "_topdir ${RPMBUILD_TOPDIR}" -v --buildroot="${RPMBUILD_BUILDROOT}" -bb ${RPMBUILD_SOURCE}/entrusted.spec
 

@@ -1,4 +1,4 @@
-% ENTRUSTED-CLI(1) Version 0.2.2 | Document Sanitizer Tool CLI
+% ENTRUSTED-CLI(1) Version _APPVERSION_ | Document Sanitizer Tool CLI
 
 NAME
 ====

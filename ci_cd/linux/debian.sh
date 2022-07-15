@@ -30,10 +30,14 @@ cp -f ${SCRIPTDIR}/doc/changelog ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/doc
 perl -pi -e "s/_APPVERSION_/${APPVERSION}/g" ${BUILDTOPDIR}/${BUILDFOLDERNAME}/DEBIAN/control
 gzip -9 -n ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/doc/${APPNAME}/changelog
 
-pandoc --standalone --to man ${SCRIPTDIR}/manpages/${APPNAME}-gui.1.md -o ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/man/man1/${APPNAME}-gui.1
+cp ${SCRIPTDIR}/manpages/${APPNAME}*.md ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/man/man1/
+perl -pi -e "s/_APPVERSION_/${APPVERSION}/g" ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/man/man1/${APPNAME}-cli.1.md
+perl -pi -e "s/_APPVERSION_/${APPVERSION}/g" ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/man/man1/${APPNAME}-gui.1.md
+pandoc --standalone --to man ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/man/man1/${APPNAME}-cli.1.md -o ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/man/man1/${APPNAME}-cli.1
+pandoc --standalone --to man ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/man/man1/${APPNAME}-gui.1.md -o ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/man/man1/${APPNAME}-gui.1
 gzip -9 -n ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/man/man1/${APPNAME}-gui.1
-pandoc --standalone --to man ${SCRIPTDIR}/manpages/${APPNAME}-cli.1.md -o ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/man/man1/${APPNAME}-cli.1
 gzip -9 -n ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/man/man1/${APPNAME}-cli.1
+rm ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/man/man1/*.md
 
 SIZE_IN_KB="$(du -s ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/ | awk '{print $1;}')"
 echo "Installed-Size: ${SIZE_IN_KB}" >> ${BUILDTOPDIR}/${BUILDFOLDERNAME}/DEBIAN/control

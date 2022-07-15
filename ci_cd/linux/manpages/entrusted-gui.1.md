@@ -1,4 +1,4 @@
-% ENTRUSTED-GUI(1) Version 0.2.2 | Document Sanitizer Tool GUI
+% ENTRUSTED-GUI(1) Version _APPVERSION_ | Document Sanitizer Tool GUI
 
 NAME
 ====

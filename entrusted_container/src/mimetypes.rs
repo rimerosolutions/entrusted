@@ -3,7 +3,6 @@ use std::error::Error;
 use std::path::PathBuf;
 use std::fs;
 
-use hex;
 use cfb;
 
 pub fn detect_from_path (path: &PathBuf) -> Result<Option<String>, Box<dyn Error>> {
@@ -44,13 +43,24 @@ fn bytes_range(data: &[u8], lo: usize, hi: usize) -> Vec<u8> {
     ret
 }
 
+fn hex_encode_upper(data: &[u8]) -> String {
+    let mut hex_vec = Vec::with_capacity(data.len() * 2);
+
+    for i in 0..data.len() {
+        let hex = format!("{:02x}", data[i]);
+        hex_vec.push(hex);
+    }
+
+    hex_vec.join("").to_uppercase()
+}
+
 fn byte_range_matches(data: &[u8], lo: usize, hi: usize, sig: &str) -> bool {
     if data.len() < hi {
         return false;
     }
 
     let file_sig = bytes_range(data, lo, hi);
-    let hex_file_sig = hex::encode_upper(&file_sig);
+    let hex_file_sig = hex_encode_upper(&file_sig);
     let sig_trimmed = sig.replace(" ", "");
 
     return hex_file_sig == sig_trimmed

@@ -6,7 +6,6 @@ RUN apk -U upgrade && \
     leptonica-dev \
     icu-data-full \
     tesseract-ocr-dev \
-    tesseract-ocr-dev \
     libreofficekit \
     poppler-dev \
     cairo-dev \
@@ -40,12 +39,11 @@ RUN apk -U upgrade && \
     apk add \
     leptonica-dev \
     icu-data-full \
-    libreoffice \
+    libreofficekit \
     tesseract-ocr-dev \
     poppler-dev \
     cairo-dev \
     terminus-font ttf-inconsolata ttf-dejavu \
-    tesseract-ocr \
     tesseract-ocr-data-afr \
     tesseract-ocr-data-ara \
     tesseract-ocr-data-aze \

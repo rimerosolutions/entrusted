@@ -1,26 +1,24 @@
 use cairo::{Context, Format, ImageSurface, PdfSurface};
 use std::env;
 use image;
-use infer;
+
 use lopdf;
 use poppler::Document;
 use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
 use std::ffi::CString;
 use std::fs;
-use cfb;
 use serde::{Deserialize, Serialize};
 use std::io::{BufReader, Cursor};
-use std::io::prelude::*;
 use std::path::PathBuf;
 use std::time::Instant;
-use zip;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use libreoffice_rs::{Office, LibreOfficeKitOptionalFeatures, urls};
 use entrusted_l10n as l10n;
 
-const SIG_LEGACY_OFFICE: [u8; 8] = [ 208, 207, 17, 224, 161, 177, 26, 225 ];
+mod mimetypes;
+
 const LOCATION_LIBREOFFICE_PROGRAM: &str = "/usr/lib/libreoffice/program";
 
 const IMAGE_DPI: f64   = 150.0;
@@ -246,239 +244,109 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
         return Err(l10n.gettext_fmt("Cannot find file at {0}", vec![&raw_input_path.display().to_string()]).into());
     }
 
-    let kind = infer::get_from_path(&raw_input_path)?;
-    let mut mime_type: &str;
-
-    fn of_interest_openxml(name: &str) -> bool {
-        name == "_rels/.rels" || name == "[Content_Types].xml"
-    }
-
-    fn of_interest_opendocument(name: &str) -> bool {
-        name == "mimetype" || name == "content.xml"
-    }
-
-    fn office_file_of_interest(name: &str) -> bool {
-        of_interest_opendocument(name) || of_interest_openxml(name)
-    }
-
-    fn probe_mimetype_zip <'a>(reader: &mut BufReader<fs::File>) -> Result<&'a str, Box<dyn Error>> {
-        let mut zip = zip::ZipArchive::new(reader)?;
-        let probe_count_expected = 2;
-        let mut probe_count_odt = 0;
-        let mut probe_count_ooxml = 0;
-        let mut ret_odt  = "";
-        let mut ret_ooxml  = "";
-
-        // Lots of ownership annoyances with the 'zip' crate dependency
-        // Otherwise we would look directly for specific files of interest
-        for i in 0..zip.len() {
-            if let Ok(zipfile) = zip.by_index(i) {
-                let zipfile_name: &str = zipfile.name();
-
-                if office_file_of_interest(zipfile_name) {
-                    if of_interest_opendocument(zipfile_name) {
-                        if zipfile.name() == "mimetype" {
-                            let mut zip_reader = BufReader::new(zipfile);
-                            let mut tmp_buf = String::new();
-                            zip_reader.read_to_string(&mut tmp_buf)?;
-
-                            if tmp_buf.find("application/vnd.oasis.opendocument.text").is_some() {
-                                ret_odt = "application/vnd.oasis.opendocument.text";
-                            } else if tmp_buf.find("application/vnd.oasis.opendocument.spreadsheet").is_some() {
-                                ret_odt = "application/vnd.oasis.opendocument.spreadsheet";
-                            } else if tmp_buf.find("application/vnd.oasis.opendocument.presentation").is_some() {
-                                ret_odt = "application/vnd.oasis.opendocument.presentation";
-                            } else if tmp_buf.find("application/vnd.oasis.opendocument.graphics").is_some() {
-                                ret_odt = "application/vnd.oasis.opendocument.graphics";
-                            } 
-                        }
-
-                        probe_count_odt += 1;
-                    } else if of_interest_openxml(zipfile_name) {
-                        if zipfile_name == "_rels/.rels" {
-                            let mut zip_reader = BufReader::new(zipfile);
-                            let mut tmp_buf = String::new();
-                            zip_reader.read_to_string(&mut tmp_buf)?;
-
-                            if tmp_buf.find("ppt/presentation.xml").is_some() {
-                                ret_ooxml = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-                            } else if tmp_buf.find("word/document.xml").is_some() {
-                                ret_ooxml = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-                            } else if tmp_buf.find("xl/workbook.xml").is_some() {
-                                ret_ooxml = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                            }
-                        }
-
-                        probe_count_ooxml += 1;
-                    }
-                }
-
-                if probe_count_odt == probe_count_expected {
-                    return Ok(ret_odt);
-                } else if probe_count_ooxml == probe_count_expected {
-                    return Ok(ret_ooxml);
-                }
-            }
-        }
-
-        Ok("application/zip")
-    }
-
-    fn probe_mimetype_ole <'a>(buffer: &Vec<u8>) -> &'a str {
-        if bytecomp(buffer.to_vec(), SIG_LEGACY_OFFICE.iter().collect()) {
-            if let Ok(file) = cfb::CompoundFile::open(Cursor::new(buffer)) {
-                return match file.root_entry().clsid().to_string().as_str() {
-                    "00020810-0000-0000-c000-000000000046" | "00020820-0000-0000-c000-000000000046" => {
-                        "application/vnd.ms-excel"
-                    },
-                    "00020906-0000-0000-c000-000000000046" => "application/msword",
-                    "64818d10-4f9b-11cf-86ea-00aa00b929e8" => "application/vnd.ms-powerpoint",
-                    _ => "application/x-ole-storage",
-                };
-            }
-        }
-
-        "application/x-ole-storage"
-    }
-
-    fn bytecomp(input: Vec<u8>, sig: Vec<&u8>) -> bool {
-        let input_len = input.len();
-
-        for i in 0..sig.len() {
-            if i > input_len || input[i] != *sig[i] {
-                return false;
-            }
-        }
-
-        true
-    }
-
-    if let Some(kind) = kind {
-        mime_type = kind.mime_type();
-
-        if mime_type == "application/zip" || mime_type == "application/x-ole-storage" {
-            if let Ok(f) = fs::File::open(&raw_input_path) {
-                let file_len = raw_input_path.metadata()?.len() as usize;
-                let mut reader = BufReader::new(f);
-                let mut buffer: Vec<u8> = Vec::with_capacity(file_len);
-                reader.read_to_end(&mut buffer)?;
-
-                if mime_type == "application/zip" {
-                    if let Ok(new_mime_type) = probe_mimetype_zip(&mut reader) {
-                        mime_type = new_mime_type;
-                    }
-                } else if mime_type == "application/x-ole-storage" {
-                    mime_type = probe_mimetype_ole(&buffer);
-                }
-            } else {
-                return Err(l10n.gettext_fmt("Cannot find file at {0}", vec![&raw_input_path.display().to_string()]).into());
-            }
-        }
-    } else {
-        return Err(l10n.gettext("Mime type error! Does the input have a 'known' file extension?").into());
-    }
-
-    if !conversion_by_mimetype.contains_key(mime_type) {
-        return Err(l10n.gettext_fmt("Unsupported mime type: {0}", vec![mime_type]).into());
-    }
-
     let filename_pdf: String;
 
-    if let Some(conversion_type) = conversion_by_mimetype.get(mime_type) {
-        if let Some(parent_dir) = raw_input_path.parent() {
-            if let Some(basename_opt) = raw_input_path.file_stem() {
-                if let Some(basename) = basename_opt.to_str() {
-                    let input_name = format!("{}_input.pdf", basename);
-                    filename_pdf = format!("{}", parent_dir.join(input_name.as_str()).display());
+    if let Some(mime_type_text) = mimetypes::detect_from_path(&raw_input_path)? {
+        let mime_type = mime_type_text.as_str();
+
+        if let Some(conversion_type) = conversion_by_mimetype.get(mime_type) {
+            if let Some(parent_dir) = raw_input_path.parent() {
+                if let Some(basename_opt) = raw_input_path.file_stem() {
+                    if let Some(basename) = basename_opt.to_str() {
+                        let input_name = format!("{}_input.pdf", basename);
+                        filename_pdf = format!("{}", parent_dir.join(input_name.as_str()).display());
+                    } else {
+                        return Err(l10n.gettext_fmt("Could not determine basename for file {0}", vec![&raw_input_path.display().to_string()]).into());
+                    }
                 } else {
                     return Err(l10n.gettext_fmt("Could not determine basename for file {0}", vec![&raw_input_path.display().to_string()]).into());
                 }
-            } else {
-                return Err(l10n.gettext_fmt("Could not determine basename for file {0}", vec![&raw_input_path.display().to_string()]).into());
-            }
 
-            match conversion_type {
-                ConversionType::None => {
-                    logger.log(5, l10n.gettext_fmt("Copying PDF input to {0}", vec![&filename_pdf]));
-                    fs::copy(&raw_input_path, PathBuf::from(&filename_pdf))?;
-                }
-                ConversionType::Convert => {
-                    logger.log(5, l10n.gettext("Converting input image to PDF"));
+                match conversion_type {
+                    ConversionType::None => {
+                        logger.log(5, l10n.gettext_fmt("Copying PDF input to {0}", vec![&filename_pdf]));
+                        fs::copy(&raw_input_path, PathBuf::from(&filename_pdf))?;
+                    }
+                    ConversionType::Convert => {
+                        logger.log(5, l10n.gettext("Converting input image to PDF"));
 
-                    let img_format = match mime_type {
-                        "image/png"    => Ok(image::ImageFormat::Png),
-                        "image/jpeg"   => Ok(image::ImageFormat::Jpeg),
-                        "image/gif"    => Ok(image::ImageFormat::Gif),
-                        "image/tiff"   => Ok(image::ImageFormat::Tiff),
-                        "image/x-tiff" => Ok(image::ImageFormat::Tiff),
-                        unknown_img_t  => Err(l10n.gettext_fmt("Unsupported image type {0}", vec![unknown_img_t])),
-                    }?;
-                    img_to_pdf(img_format, &raw_input_path, &PathBuf::from(&filename_pdf))?;
-                }
-                ConversionType::LibreOffice(output_filter, fileext) => {
-                    logger.log(5, l10n.gettext_fmt("Converting to PDF using LibreOffice with filter: {0}", vec![&output_filter]));
-                    let new_input_path = PathBuf::from(format!("/tmp/input.{}", fileext));
-                    fs::copy(&raw_input_path, &new_input_path)?;
+                        let img_format = match mime_type {
+                            "image/png"    => Ok(image::ImageFormat::Png),
+                            "image/jpeg"   => Ok(image::ImageFormat::Jpeg),
+                            "image/gif"    => Ok(image::ImageFormat::Gif),
+                            "image/tiff"   => Ok(image::ImageFormat::Tiff),
+                            "image/x-tiff" => Ok(image::ImageFormat::Tiff),
+                            unknown_img_t  => Err(l10n.gettext_fmt("Unsupported image type {0}", vec![unknown_img_t])),
+                        }?;
+                        img_to_pdf(img_format, &raw_input_path, &PathBuf::from(&filename_pdf))?;
+                    }
+                    ConversionType::LibreOffice(output_filter, fileext) => {
+                        logger.log(5, l10n.gettext_fmt("Converting to PDF using LibreOffice with filter: {0}", vec![&output_filter]));
+                        let new_input_path = PathBuf::from(format!("/tmp/input.{}", fileext));
+                        fs::copy(&raw_input_path, &new_input_path)?;
 
-                    let mut office = Office::new(LOCATION_LIBREOFFICE_PROGRAM)?;
-                    let input_uri = urls::local_into_abs(&new_input_path.display().to_string())?;
-                    let password_was_set = AtomicBool::new(false);
-                    let failed_password_input = Arc::new(AtomicBool::new(false));
+                        let mut office = Office::new(LOCATION_LIBREOFFICE_PROGRAM)?;
+                        let input_uri = urls::local_into_abs(&new_input_path.display().to_string())?;
+                        let password_was_set = AtomicBool::new(false);
+                        let failed_password_input = Arc::new(AtomicBool::new(false));
 
-                    if let Some(passwd) = opt_passwd {
-                        if let Err(ex) = office.set_optional_features([LibreOfficeKitOptionalFeatures::LOK_FEATURE_DOCUMENT_PASSWORD]) {
-                            return Err(l10n.gettext_fmt("Failed to enable password-protected Office document features! {0}", vec![&ex.to_string()]).into());
-                        }
+                        if let Some(passwd) = opt_passwd {
+                            if let Err(ex) = office.set_optional_features([LibreOfficeKitOptionalFeatures::LOK_FEATURE_DOCUMENT_PASSWORD]) {
+                                return Err(l10n.gettext_fmt("Failed to enable password-protected Office document features! {0}", vec![&ex.to_string()]).into());
+                            }
 
-                        if let Err(ex) = office.register_callback({
-                            let mut office = office.clone();
-                            let failed_password_input = failed_password_input.clone();
-                            let input_uri = input_uri.clone();
+                            if let Err(ex) = office.register_callback({
+                                let mut office = office.clone();
+                                let failed_password_input = failed_password_input.clone();
+                                let input_uri = input_uri.clone();
 
-                            move |_, _| {
-                                if !password_was_set.load(Ordering::Acquire) {
-                                    let _ = office.set_document_password(input_uri.clone(), &passwd);
-                                    password_was_set.store(true, Ordering::Release);
-                                } else {
-                                    if !failed_password_input.load(Ordering::Acquire) {
-                                        failed_password_input.store(true, Ordering::Release);
-                                        let _ = office.unset_document_password(input_uri.clone());
+                                move |_, _| {
+                                    if !password_was_set.load(Ordering::Acquire) {
+                                        let _ = office.set_document_password(input_uri.clone(), &passwd);
+                                        password_was_set.store(true, Ordering::Release);
+                                    } else {
+                                        if !failed_password_input.load(Ordering::Acquire) {
+                                            failed_password_input.store(true, Ordering::Release);
+                                            let _ = office.unset_document_password(input_uri.clone());
+                                        }
                                     }
                                 }
+                            }) {
+                                return Err(l10n.gettext_fmt("Failed to handle password-protected Office document features! {0}", vec![&ex.to_string()]).into());
                             }
-                        }) {
-                            return Err(l10n.gettext_fmt("Failed to handle password-protected Office document features! {0}", vec![&ex.to_string()]).into());
                         }
-                    }
 
-                    let res_document_saved: Result<(), Box<dyn Error>> = match office.document_load(input_uri) {
-                        Ok(mut doc) => {
-                            if doc.save_as(&filename_pdf, "pdf", None) {
-                                Ok(())
-                            } else {
-                                Err(l10n.gettext_fmt("Could not save document as PDF: {0}", vec![&office.get_error()]).into())
+                        let res_document_saved: Result<(), Box<dyn Error>> = match office.document_load(input_uri) {
+                            Ok(mut doc) => {
+                                if doc.save_as(&filename_pdf, "pdf", None) {
+                                    Ok(())
+                                } else {
+                                    Err(l10n.gettext_fmt("Could not save document as PDF: {0}", vec![&office.get_error()]).into())
+                                }
+                            },
+                            Err(ex) =>  {
+                                let err_reason = if failed_password_input.load(Ordering::Relaxed) {
+                                    l10n.gettext("Password input failed!")
+                                } else {
+                                    ex.to_string()
+                                };
+                                Err(err_reason.into())
                             }
-                        },
-                        Err(ex) =>  {
-                            let err_reason = if failed_password_input.load(Ordering::Relaxed) {
-                                l10n.gettext("Password input failed!")
-                            } else {
-                                ex.to_string()
-                            };
-                            Err(err_reason.into())
-                        }
-                    };
+                        };
 
-                    if let Err(ex) = res_document_saved {
-                        return Err(l10n.gettext_fmt("Could not export input document as PDF! {0}", vec![&ex.to_string()]).into());
+                        if let Err(ex) = res_document_saved {
+                            return Err(l10n.gettext_fmt("Could not export input document as PDF! {0}", vec![&ex.to_string()]).into());
+                        }
                     }
                 }
+            } else {
+                return Err(l10n.gettext("Cannot find input parent directory!").into());
             }
         } else {
-            return Err(l10n.gettext("Cannot find input parent directory!").into());
+            return Err(l10n.gettext_fmt("Unsupported mime type: {0}", vec![mime_type]).into());
         }
     } else {
-        return Err(l10n.gettext_fmt("Unsupported mime type: {0}", vec![mime_type]).into());
+        return Err(l10n.gettext("Mime type error! Does the input have a 'known' file extension?").into());
     }
 
     Ok(PathBuf::from(format!("file://{}", filename_pdf)))

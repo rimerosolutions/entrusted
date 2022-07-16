@@ -2,37 +2,33 @@
 
 * Next steps
 
+- [-] Improved conversions
+  - [X] Custom output location for individual documents in the conversion queue
+  - [X] Support for password-protected documents
+  - [ ] Cancellable conversions for those that haven't started yet (minor UI redesign needed)
+  - [ ] Parallel conversions
+  - [ ] Minimal resources management to avoid exhausting computer CPU and memory
+- [ ] Investigate if specific support is required for Tails Linux (proxy, etc.)
+- User Interface
+  - [ ] There're probably too many redraw operations in the Desktop UI
+  - [ ] Improve scrolling behavior during conversions ("smooth-scrolling")
 - [-] Code maintenance
   - [X] Eliminate shell commands inside the container image
-  - [ ] Add automated tests (unit & integration)
-  - [ ] Code cleanup and refactoring
-  - [ ] More idiomatic Rust code
-  - [ ] Simplify and clarify the code
-- [ ] Online Web Service
-  - [ ] Evaluate [[https://github.com/tokio-rs/axum][axum]] as a replacement of [[https://github.com/actix/actix-web][actix_web]] ([[https://ordina-jworks.github.io/event-driven/2021/04/23/SSE-with-HTTP2.html#http11-vs-http2][HTTP2 support + SSE]] + browsers)
-  - [ ] Use the =Content-Language= header in response (translations)
-- [ ] Investigate if specific support is required for Tails Linux (proxy, etc.)
-- [-] CI/CD
-  - [X] Adopt Git flow and delete all the previous spiral branches
-  - [ ] Transition CI/CD scripts to Github actions or TravisCI or something else?
-  - [X] Create few specific packages (DEB, RPM)
+  - [ ] Add automated tests (unit & integration
 - [ ] Hardening
   - [ ] Review container execution options (podman v.s podman-remote, security options, etc.)
   - [ ] Revisit Flatpak support requirements and =flatpak-spawn=
   - [ ] Review some of the code and read few security-related articles
-- [-] Improved conversions
-  - [X] Custom output location for individual documents in the conversion queue
-  - [X] Support for password-protected documents
-  - [ ] Cancellable conversions for those that haven't started yet (Additional screen?)
-  - [ ] Parallel conversions
-  - [ ] Minimal resources management to avoid exhausting computer CPU and memory
-- [-] Mime-type detection and file associations
+- [ ] Online Web Service
+  - [ ] Evaluate [[https://github.com/tokio-rs/axum][axum]] as a replacement of [[https://github.com/actix/actix-web][actix_web]] ([[https://ordina-jworks.github.io/event-driven/2021/04/23/SSE-with-HTTP2.html#http11-vs-http2][HTTP2 support + SSE]] + browsers)
+  - [ ] Use the =Content-Language= header in response (translations)
+- [-] CI/CD
+  - [X] Adopt Git flow and delete all the previous spiral branches
+  - [X] Create few specific packages (DEB, RPM)
+  - [ ] Transition CI/CD scripts to Github actions or TravisCI or something else?
+- [X] Mime-type detection and file associations
   - [X] Register file associations with supported document types
-  - [ ] Avoid reading entire files for mime type detection, just what is required...
-  - [ ] Consider switching mime type libraries, but is there anything better?
-- User Interface
-  - [ ] There're probably too many redraw operations in the Desktop UI
-  - [ ] Improve scrolling behavior during conversions ("smooth-scrolling")
+  - [X] For now, roll custom mime-type detection system until there is something better available
 
 * Initial plan
 

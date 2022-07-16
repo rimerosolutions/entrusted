@@ -77,7 +77,7 @@ Section "Add to Windows Programs & Features"
 SectionEnd
 
 ; Optional section (can be disabled by the user)
-Section "Start Menu Shortcusts"
+Section "Start Menu Shortcuts"
   !insertmacro MUI_STARTMENU_WRITE_BEGIN 0 ;This macro sets $SMDir and skips to MUI_STARTMENU_WRITE_END if the "Don't create shortcuts" checkbox is checked...
 
   CreateDirectory "$SMPROGRAMS\${ProgramName}"

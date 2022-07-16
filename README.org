@@ -48,7 +48,7 @@ Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releas
 |---------------+-----------------------------------------+-----------------------------------------------|
 | "System" (OS) | Artifact                                | Description                                   |
 |---------------+-----------------------------------------+-----------------------------------------------|
-| =Linux=       | =entrusted-linux-amd64-<version>.tar=   | Archive with all the programs                 |
+| =Linux=       | =entrusted-linux-amd64-<version>.tar=   | Archive with all programs                     |
 |               | =entrusted-linux-amd64-<version>.deb=   | Desktop and CLI clients (Debian-Like distros) |
 |               | =entrusted-linux-amd64-<version>.rpm=   | Desktop and CLI clients (Redhat-Like distros) |
 |---------------+-----------------------------------------+-----------------------------------------------|
@@ -56,7 +56,7 @@ Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releas
 |               | =entrusted-macos-amd64-<version>.zip=   | Archive with all programs                     |
 |---------------+-----------------------------------------+-----------------------------------------------|
 | =MS Windows=  | =entrusted-windows-amd64-<version>.exe= | Installer with the Desktop and CLI clients    |
-|               | =entrusted-windows-amd64-<version>.zip= | Archive with all the programs                 |
+|               | =entrusted-windows-amd64-<version>.zip= | Archive with all programs                     |
 |---------------+-----------------------------------------+-----------------------------------------------|
 | =Live CD=     | =entrusted-livecd-amd64-<version>.iso=  | Web interface Live CD for virtual machines    |
 |---------------+-----------------------------------------+-----------------------------------------------|

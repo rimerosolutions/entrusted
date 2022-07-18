@@ -11,7 +11,7 @@
 
 *NOTE*: Unless you use the live CD, you MUST install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior running the program.
 
-Below are some screenshots of the graphical Desktop client running on Mac OS.
+Below are some screenshots of the graphical Desktop client running on Linux.
 
 [[./images/ui-screenshot-settings.png]]
 

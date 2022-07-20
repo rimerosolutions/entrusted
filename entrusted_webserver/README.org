@@ -2,21 +2,11 @@
 
 * What is this?
 
-This repository provides an online shared service for [[https://github.com/rimerosolutions/entrusted][suspicious documents conversion to trusted PDFs]].
-- The client sends documents to the =server= via HTTP (images, PDF or office documents): Web interface.
-- The server sanitizes the original documents and transforms them to PDFs (=entrusted-cli= command-line invocation).
-
-  The high-level architecture is described below.
-
-  [[./images/architecture.png]]
-
-* General principles
-
-- Strive for balance between minimalism and convenience, but focus on performance
-- Keep a general common look and feel for user interfaces (Web or Desktop interfaces)
-- Avoid large feature gaps with the Desktop interface, based on what is possible in the browser (among other considerations)
-- Delete automatically files from the server upon download for both privacy and free disk space purposes
-
+This module allows document conversions from the comfort of your Web browser
+- From the Web interface, the user uploads documents to the =server= via HTTP (images, PDF or office documents)
+- The server sanitizes the original documents and transforms them to PDFs (=entrusted-cli= command-line invocation)
+- Once the processing is completed successfully, resulting PDF documents can be downloaded
+  
 * What does it look like?
 
 There's a basic Web interface that can be accessed from the server root URL (i.e. [[http://localhost:13000]]).
@@ -33,6 +23,17 @@ This is used for a single workstation, in a multi virtual machines scenario (sev
   - The "Entrusted VM" only allows SSH and "document conversion requests"
   - The "Entrusted VM" has limited resources (1GB of RAM allocated).
 
+* What is the overall architecture?
+
+- Strive for balance between minimalism and convenience, but focus on performance
+- Keep a general common look and feel for user interfaces (Web or Desktop interfaces)
+- Avoid large feature gaps with the Desktop interface, based on what is possible in the browser (among other considerations)
+- Delete automatically files from the server upon download for both privacy and free disk space purposes
+  
+  The high-level architecture is described below.
+
+  [[./images/architecture.png]]
+  
 * What is required?
 
 ** Runtime requirements
@@ -53,11 +54,12 @@ You need to have the [[https://www.rust-lang.org/tools/install][rust compiler to
 
 ** Linux
 
-It's possible to produce standalone binaries on Linux, with no runtime dependencies (for both server and CLI client).
+It's possible to produce standalone binaries on Linux, with no runtime dependencies.
 - You can either build with a [[https://wiki.musl-libc.org/projects-using-musl.html#name=Linux_distributions_using_musl][Musl Linux distribution]] ([[https://www.alpinelinux.org/][Alpine Linux]], [[https://voidlinux.org/][Void Linux]], etc.)
-- Or you can ensure that the Musl target is installed =rustup target add x86_64-unknown-linux-musl=
+- Or you can ensure that the Musl target is installed, along with Musl tools
 
   #+begin_src sh
+    rustup target add x86_64-unknown-linux-musl
     RUSTFLAGS="-C target-feature=+crt-static" cargo build --release --target=x86_64-unknown-linux-musl
   #+end_src
   

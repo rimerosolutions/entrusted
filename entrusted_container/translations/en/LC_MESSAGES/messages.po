@@ -1,4 +1,4 @@
-ping# POT Template for the entrusted_container module.
+# POT Template for the entrusted_container module.
 # Copyright (C) 2020 Rimero Solutions Inc.
 # This file is distributed under the same GPL-3.0 License, same as Entrusted.
 # Yves Zoundi <yves_zoundi@hotmail.com>, 2022

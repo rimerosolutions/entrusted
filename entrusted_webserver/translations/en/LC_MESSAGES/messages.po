@@ -78,5 +78,5 @@ msgstr ""
 msgid "Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English."
 msgstr ""
 
-msgid "Invalid request identifier"
+msgid "Invalid request identifier. Is the file name atrociously long?"
 msgstr ""

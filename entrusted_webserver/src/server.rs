@@ -33,7 +33,7 @@ use futures::TryStreamExt;
 use http_api_problem::{HttpApiProblem, StatusCode};
 use tokio::io::AsyncWriteExt;
 
-use pi_base58::{FromBase58, ToBase58};
+use bs58;
 
 use entrusted_l10n as l10n;
 
@@ -246,28 +246,36 @@ async fn downloads(info: actix_web::web::Path<String>, req: HttpRequest, l10n: D
     let mut fileid = String::new();
     let mut filename = String::new();
     let mut request_err_found = true;
+    let request_id_bytes_ret = bs58::decode(request_id.clone()).into_vec();
 
-    if let Ok(request_id_inner_bytes) = request_id.from_base58() {
-        if let Ok(request_id_inner) = std::str::from_utf8(&request_id_inner_bytes) {
-            let file_data_parts = request_id_inner.split(";").map(|i| i.to_string()).collect::<Vec<String>>();
+    match request_id_bytes_ret {
+        Ok(request_id_inner_bytes) =>  {
+            if let Ok(request_id_inner) = std::str::from_utf8(&request_id_inner_bytes) {
+                let file_data_parts = request_id_inner.split(";").map(|i| i.to_string()).collect::<Vec<String>>();
 
-            if file_data_parts.len() == 2 {
-                let fileid_data   = base64_lib::decode(&file_data_parts[0]);
-                let filename_data = base64_lib::decode(&file_data_parts[1]);
+                if file_data_parts.len() == 2 {
+                    let fileid_data   = base64_lib::decode(&file_data_parts[0]);
+                    let filename_data = base64_lib::decode(&file_data_parts[1]);
 
-                if let (Ok(fileid_value),
-                        Ok(filename_value)) = (std::str::from_utf8(&fileid_data), std::str::from_utf8(&filename_data)) {
-                    fileid.push_str(&output_filename_for(fileid_value.to_string()));
-                    filename.push_str(&output_filename_for(filename_value.to_string()));
-                    request_err_found = false;
+                    if let (Ok(fileid_value),
+                            Ok(filename_value)) = (std::str::from_utf8(&fileid_data), std::str::from_utf8(&filename_data)) {
+                        fileid.push_str(&output_filename_for(fileid_value.to_string()));
+                        filename.push_str(&output_filename_for(filename_value.to_string()));
+                        request_err_found = false;
+                    } else {
+                        eprintln!("An error was found: {:?}, {:?}", fileid_data, filename_data);
+                    }
                 }
             }
+        },
+        Err(ex) => {
+            eprintln!("An error occurred: {:?}", ex);
         }
     }
 
     if request_err_found {
         return HttpResponse::BadRequest().json(request_problem(
-            l10n_ref.gettext("Invalid request identifier"),
+            l10n_ref.gettext("Invalid request identifier. Is the file name atrociously long?"),
             req.uri(),
         ));
     }
@@ -431,7 +439,7 @@ pub async fn save_file(
     let id_token = format!("{};{}",
                            base64_lib::encode(&file_uuid.clone().into_bytes()),
                            base64_lib::encode(&filename.clone().into_bytes()));
-    let id = id_token.as_bytes().to_base58();
+    let id = bs58::encode(id_token).into_string();
 
     let p = std::path::Path::new(&filename);
 
@@ -573,7 +581,7 @@ async fn run_entrusted(
         };
 
     };
-    
+
     if success {
         let msg = model::CompletionMessage::new(format!("/downloads/{}", refid.clone()));
         let msg_json = serde_json::to_string(&msg).unwrap();

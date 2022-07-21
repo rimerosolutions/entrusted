@@ -1,53 +1,49 @@
 #+TITLE: CONTRIBUTING
 
-All the bugs reports, questions or suggestions are welcome and appreciated:
-- Please note that the best way to contribute is via pull requests
-- This is more of a hobby project than anything else at this time.
-
   There are plenty of ways to help.  
 
 * Bug reports and comments
-  
+
+All the bugs reports, questions or suggestions are welcome and appreciated:
+- Please note that the best way to contribute is via pull requests
+- This is more of a hobby project than anything else at this time
+
+* Documentation
+
+Clear and concise communication is always a goal.  
+
 * Research & Development
 
-There are couple of areas to explore at multiple levels (CI/CD, security, libraries, etc.).
-I'm reasonably capable in some areas, but I'm also aware of my limitations
-I think that while not impossible, it's difficult to be both creative and achieve a lot when you're not an expert in a domain:
-- There are important considerations that you'll miss, sometimes those details matter either in the short or long run
-
+There are always multiple areas to explore (CI/CD, security, sandboxing approaches, new features development, etc.).
   
 * Coding
-I'm 'exploring' Rust and I'm probably never reach the same level of comfort with it as in Java.
-I have 20+ years of experience with Java, I'm not a programming god, but I know the Java ecosystem very well
 
-Using a programming language that you don't really know means
-- You work slower at least at the beginning
-- There are libraries that you're used too that sometimes don't exist in a given programming language
+There are several opportunities to refactor the code. The application was written in Rust for the following reasons.
+- It can target multiple operating systems including Linux/Unix (minimal requirement for me)
+- It's a great learning experience
+  - I would literally have learned almost nothing at all with let's say Java
+  - I don't have much interest in other programming languages or 
+- It's resources efficient and not garbage collected
+- It's reasonably high-level
+- It's evolving fast even though I wish that more mature and complete libraries were available sometimes
   
-* Artwork
-Both the UI and the logos/images have been created
-- This my second user interface in Rust and I think that I experimented briefly with FLTK a very long time ago.
-  - I can do fancy things in Java including custom themes
-  - My equivalent Rust or FLTK knowledge is quiet limited in comparison to Java
-  
-* Documentation
-Clear and concise communication is always a goal
-- Maybe some of the content should be moved to Wiki pages
-- Maybe GitHub shouldn't be used at all for any user facing documentation
-- Maybe all the documentation should be rewritten from a technical writer perspective
+* User interfaces and artwork
+
+The logos and images have been created with Gimp and similar tools (minimal time investment).
+
+The goal is to keep user interfaces very lightweight (fast, responsive, resources efficient), which requires more work
+- FLTK is the Desktop graphical toolkit for this application, it's a small and fast library that is easy to use
+- The Web user interface is built with plain HTML and JavaScript at this time
 
 * Testing
 
 There will always be software bugs and annoyances, but "we try our best" (time, required effort & skills compromise):
-- There are no tests, and yes you got it right (unit or integration tests). It's not lots of code to deal with either...
-- It's also time consuming to test all the programs and futures for all supported Operating systems and environments
+- Manual testing is performed prior each release at this time
+- It's time consuming to test all the programs and features, for all supported Operating systems and environments
 
 * Translations
 
-I can manage English and French translations reasonably well, even though my French is fading a little bit.
+[[https://www.gnu.org/software/gettext/][GNU Gettext]] is currently leveraged for translations, because it's reasonably good.
 
-For other languages, I can only ressort to online translation tools:
-- The meaning and context isn't always great
-- I would prefer automation but most of the tools are not free
-  - Maybe in the future LibreTranslate can be self-hosted to accelerate/facilitate automated translations
-  - Then with the LibreTranslate API and shell scripts, maybe the only thing to do is just review and just few messages?
+- Translations are only available in English and French so far
+- Each application component has a =translations= folder with translation files (=messages.po=)

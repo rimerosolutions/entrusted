@@ -24,6 +24,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Ok(selected_locale) => selected_locale,
         Err(_) => l10n::sys_locale()
     };
+
     let trans = l10n::new_translations(locale);
 
     let app_config_ret = config::load_config();

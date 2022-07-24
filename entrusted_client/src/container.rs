@@ -44,7 +44,7 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str
         .iter()
         .map(|i| {
             if i.contains(common::ENV_VAR_ENTRUSTED_DOC_PASSWD) {
-                "******"
+                "***"
             } else {
                 i
             }
@@ -147,12 +147,6 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
 
     let mut success = false;
 
-    let ocr = if convert_options.opt_ocr_lang.is_some() {
-        "1"
-    } else {
-        "0"
-    };
-
     let ocr_language = match convert_options.opt_ocr_lang {
         Some(ocr_lang_val) => ocr_lang_val,
         None => String::new()
@@ -239,12 +233,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         dz_tmp_safe.push("safe");
         mkdirp(dz_tmp_safe.clone(), trans.clone())?;
 
-        let mut dz_tmp_pixels:PathBuf = dz_tmp.clone();
-        dz_tmp_pixels.push("pixels");
-        mkdirp(dz_tmp_pixels.clone(), trans.clone())?;
-
         let safedir_volume = &format!("{}:/safezone", dz_tmp_safe.display());
-        let ocr_env = &format!("OCR={}", ocr);
         let ocr_language_env = &format!("OCR_LANGUAGE={}", ocr_language);
         let locale_language_env = &format!("{}={}", l10n::ENV_VAR_ENTRUSTED_LANGID, trans.langid());
         let logformat_env = &format!("LOG_FORMAT={}", convert_options.log_format);
@@ -256,7 +245,6 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         ]);
 
         pixels_to_pdf_args.append(&mut vec![
-            "-e", ocr_env,
             "-e", logformat_env,
             "-e", ocr_language_env,
             "-e", locale_language_env
@@ -311,8 +299,9 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         }
     }
 
-    match success {
-        true => Ok(success),
-        _ => Err(err_msg.into())
+    if success {
+        Ok(success)
+    } else {
+        Err(err_msg.into())
     }
 }

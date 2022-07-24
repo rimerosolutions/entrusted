@@ -76,11 +76,8 @@ where T: Default + DeserializeOwned {
             let config_path = config_dir_dgz.join(CFG_FILENAME);
 
             if config_path.exists() {
-                let mut f = fs::File::open(config_path.clone())?;
-                let mut config_data = Vec::new();
-
                 let ret = {
-                    f.read_to_end(&mut config_data)?;
+                    let config_data = fs::read(&config_path)?;
                     toml::from_slice(&config_data)
                 };
 
@@ -416,6 +413,6 @@ async fn process_notifications(tracking_url: String,
 
     match processing_status {
         Ok(download_uri) => Ok(download_uri),
-        Err(ex) => Err(ex.to_string().into()),
+        Err(ex)          => Err(ex.to_string().into()),
     }
 }

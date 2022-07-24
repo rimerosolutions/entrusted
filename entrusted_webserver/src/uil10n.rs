@@ -26,7 +26,7 @@ fn load_ui_translations() -> HashMap::<String, Vec<u8>> {
 
     let locale_data = incl_ui_json_files!("en", "fr");
 
-    for (locale_id, locale_translation_bytes)  in locale_data {
+    for (locale_id, locale_translation_bytes) in locale_data {
         ret.insert(locale_id.to_string(), locale_translation_bytes.to_vec());
     }
 

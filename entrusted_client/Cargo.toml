@@ -1,7 +1,7 @@
 [package]
 name = "entrusted-client"
-version = "0.2.3"
-edition = "2018"
+version = "0.2.4"
+edition = "2021"
 description = "Entrusted client" 
 keywords = ["entrusted", "client"]
 license = "GPL"

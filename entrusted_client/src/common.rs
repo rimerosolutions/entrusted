@@ -91,7 +91,7 @@ pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
         ContainerProgramStub::Docker("docker", vec![], vec![], None),
         ContainerProgramStub::Podman("podman", vec![], vec!["--userns", "keep-id"], None),
         ContainerProgramStub::Lima("lima", vec!["nerdctl"], vec![], Some("/tmp/lima")),
-        ContainerProgramStub::Nerdctl("nerdctl", vec!["nerdctl"], vec![], None),
+        ContainerProgramStub::Nerdctl("nerdctl", vec![], vec![], None),
     ];
 
     for i in 0..container_program_stubs.len() {

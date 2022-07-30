@@ -43,7 +43,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let help_log_format = trans.gettext("Log format (json or plain)");
     let help_file_suffix = trans.gettext("Default file suffix (entrusted)");
     let help_password_prompt = trans.gettext("Prompt for document password");
-    
+
     let app = App::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
         .author(option_env!("CARGO_PKG_AUTHORS").unwrap_or("Unknown"))
@@ -95,7 +95,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .required(false)
                 .takes_value(false)
         );
-    
+
 
     let run_matches= app.to_owned().get_matches();
 
@@ -148,7 +148,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     } else {
         String::from(app_config.file_suffix.clone())
     };
-    
+
     let abs_output_filename = common::default_output_path(src_path?, file_suffix)?;
 
     if output_filename.file_name().is_none() {
@@ -180,7 +180,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 Some(passwd)
             } else {
                 return Err(trans.gettext("Failed to read password!").into());
-            }            
+            }
         }
     }  else {
             None
@@ -201,16 +201,20 @@ fn main() -> Result<(), Box<dyn Error>> {
         let pb = ProgressBar::new(100);
 
         for line in rx {
-            let log_msg_ret: serde_json::Result<common::LogMessage> = serde_json::from_slice(line.as_bytes());
+            if let common::AppEvent::ConversionProgressEvent(msg) = line {
+                let log_msg_ret: serde_json::Result<common::LogMessage> = serde_json::from_slice(msg.as_bytes());
 
-            if let Ok(log_msg) = log_msg_ret {
-                pb.set_position(log_msg.percent_complete as u64);
-                pb.println(&log_msg.data);
+                if let Ok(log_msg) = log_msg_ret {
+                    pb.set_position(log_msg.percent_complete as u64);
+                    pb.println(&log_msg.data);
+                }
             }
         }
     } else {
         for line in rx {
-            println!("{}", line);
+            if let common::AppEvent::ConversionProgressEvent(msg) = line {
+                println!("{}", msg);
+            }
         }
     }
 

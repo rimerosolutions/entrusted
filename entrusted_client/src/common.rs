@@ -23,6 +23,15 @@ macro_rules! incl_gettext_files {
     };
 }
 
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub enum AppEvent {
+    FileOpenEvent(String),
+    ConversionProgressEvent(String),
+    ConversionStartEvent(usize),
+    ConversionSuccessEvent(usize, Option<String>, PathBuf),
+    ConversionFailureEvent(usize),
+}
+
 pub fn executable_find(exe_name: &str) -> Option<PathBuf> {
     match which::which(exe_name) {
         Err(_) => None,

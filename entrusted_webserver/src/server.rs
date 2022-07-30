@@ -291,7 +291,7 @@ async fn downloads(info: actix_web::web::Path<String>, req: HttpRequest, l10n: D
                 NOTIFICATIONS_PER_REFID.lock().unwrap().remove(&request_id.to_string());
                 HttpResponse::Ok()
                     .append_header((header::CONTENT_TYPE, "application/pdf"))
-                    .append_header((header::CONTENT_DISPOSITION, "attachment; filename=".to_string() + &filename))
+                    .append_header((header::CONTENT_DISPOSITION, format!("attachment; filename={}", &filename)))
                     .append_header((header::CONTENT_LENGTH, data.len().to_string()))
                     .body(data)
             }

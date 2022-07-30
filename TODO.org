@@ -8,13 +8,10 @@
   - [ ] Cancellable conversions for those that haven't started yet (minor UI redesign needed)
   - [ ] Parallel conversions
   - [ ] Minimal resources management to avoid exhausting computer CPU and memory
-- [ ] Investigate if specific support is required for Tails Linux (proxy, etc.)
 - User Interface
+  - [X] Responsiveness issues during conversions
   - [ ] There're probably too many redraw operations in the Desktop UI
   - [ ] Improve scrolling behavior during conversions ("smooth-scrolling")
-- [-] Code maintenance
-  - [X] Eliminate shell commands inside the container image
-  - [ ] Add automated tests (unit & integration
 - [ ] Hardening
   - [ ] Review container execution options (podman v.s podman-remote, security options, etc.)
   - [ ] Revisit Flatpak support requirements and =flatpak-spawn=
@@ -22,6 +19,10 @@
 - [ ] Online Web Service
   - [ ] Evaluate [[https://github.com/tokio-rs/axum][axum]] as a replacement of [[https://github.com/actix/actix-web][actix_web]] ([[https://ordina-jworks.github.io/event-driven/2021/04/23/SSE-with-HTTP2.html#http11-vs-http2][HTTP2 support + SSE]] + browsers)
   - [ ] Use the =Content-Language= header in response (translations)
+- [ ] Investigate if specific support is required for Tails Linux (proxy, etc.)
+- [-] Code maintenance
+  - [X] Eliminate shell commands inside the container image
+  - [ ] Add automated tests (unit & integration)
 - [-] CI/CD
   - [X] Adopt Git flow and delete all the previous spiral branches
   - [X] Create few specific packages (DEB, RPM)

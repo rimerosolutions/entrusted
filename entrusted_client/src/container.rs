@@ -2,6 +2,7 @@ use serde_json;
 use std::error::Error;
 use std::fs;
 use std::io;
+use std::process::Child;
 use filetime::FileTime;
 use std::path::PathBuf;
 use std::env;
@@ -14,7 +15,7 @@ use std::thread;
 use entrusted_l10n as l10n;
 use crate::common;
 
-fn read_output<R>(thread_name: &str, stream: R, tx: Sender<String>) -> Result<JoinHandle<Result<(), Box<dyn Error + Send + Sync>>>, io::Error>
+fn read_output<R>(thread_name: &str, stream: R, tx: Sender<common::AppEvent>) -> Result<JoinHandle<Result<(), Box<dyn Error + Send + Sync>>>, io::Error>
 where
     R: Read + Send + 'static {
     thread::Builder::new()
@@ -23,15 +24,35 @@ where
             let reader = BufReader::new(stream);
             reader.lines()
                 .try_for_each(|line| {
-                    match tx.send(line?) {
-                        Ok(_)   => Ok(()),
+                    match tx.send(common::AppEvent::ConversionProgressEvent(line?)) {
+                        Ok(())  => Ok(()),
                         Err(ex) => Err(ex.into())
                     }
                 })
         })
 }
 
-fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str>, tx: Sender<String>, capture_output: bool, printer: Box<dyn LogPrinter>, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
+#[cfg(not(any(target_os = "windows")))]
+fn spawn_command(executable: &str, cmd: Vec<&str>) -> std::io::Result<Child> {    
+    Command::new(executable)
+        .args(cmd)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+}
+
+#[cfg(target_os = "windows")]
+fn spawn_command(executable: &str, cmd: Vec<&str>) -> std::io::Result<Child> {
+    use std::os::windows::process::CommandExt;
+    Command::new(executable)
+        .args(cmd)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .creation_flags(0x08000000)
+        .spawn()
+}
+
+fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str>, tx: Sender<common::AppEvent>, capture_output: bool, printer: Box<dyn LogPrinter>, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
     let rt_path = container_program.exec_path;
     let sub_commands = container_program.sub_commands;
     let rt_executable: &str = &format!("{}", rt_path.display());
@@ -44,24 +65,22 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str
         .iter()
         .map(|i| {
             if i.contains(common::ENV_VAR_ENTRUSTED_DOC_PASSWD) {
-                "******"
+                "***"
             } else {
                 i
             }
         }).collect();
 
-    tx.send(printer.print(1, trans.gettext_fmt("Running command: {0}", vec![&format!("{} {}", rt_executable, cmd_masked.join(" "))])))?;
+    let masked_cmd = cmd_masked.join(" ");
 
-    let mut child = Command::new(rt_executable)
-        .args(cmd)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()?;
+    tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, trans.gettext_fmt("Running command: {0}", vec![&format!("{} {}", rt_executable, masked_cmd)]))))?;
+
+    let mut cmd = spawn_command(rt_executable, cmd)?;
 
     if capture_output {
         let stdout_handles = vec![
-            read_output("entrusted.stdout",  child.stdout.take().expect("!stdout"), tx.clone()),
-            read_output("entrusted.stderr" , child.stderr.take().expect("!stderr"), tx.clone()),
+            read_output("entrusted.stdout",  cmd.stdout.take().expect("!stdout"), tx.clone()),
+            read_output("entrusted.stderr" , cmd.stderr.take().expect("!stderr"), tx.clone()),
         ];
 
         for stdout_handle in stdout_handles {
@@ -71,22 +90,26 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str
         }
     }
 
-    let exit_status = child.wait()?;
-
-    match exit_status.success() {
-        true => Ok(()),
-        false => {
-            // mitigate apparent 139 exit codes that don't happen with Debian bullseye
-            // Sadly it's a much bigger image than with Alpine so we decide to mitigate the issue
-            // Apparently a vsyscall=emulate argument needs to be added to /proc/cmdline depending on the kernel version
-            // Essentially not mitigating the issue would be a problem in a non-controlled environment (i.e. Live CD ISO)
-            if let Some(exit_code) = exit_status.code() {
-                if exit_code == 139 {
-                    return Ok(());
+    loop {
+        match cmd.try_wait() {
+            Ok(Some(exit_status)) => {                
+                if let Some(exit_code) = exit_status.code() {
+                    // Mitigate container segfaults with the Alpine Docker image
+                    // This didn't seem to happen with Debian, but the application Docker image was way bigger
+                    // Apparently a vsyscall=emulate argument needs to be added to /proc/cmdline depending on the kernel version
+                    if exit_code == 139 || exit_code == 0 {
+                        return Ok(());
+                    } else {
+                        return Err("Failure".into());
+                    }
                 }
+            },
+            Ok(None) => {
+                thread::yield_now();
+            },
+            Err(_) => {
+                return Err("Failure".into());
             }
-
-            Err(trans.gettext("Command failed!").into())
         }
     }
 }
@@ -132,7 +155,7 @@ impl LogPrinter for JsonLogPrinter {
     }
 }
 
-pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: common::ConvertOptions, tx: Sender<String>, trans: l10n::Translations) -> Result<bool, Box<dyn Error>> {
+pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: common::ConvertOptions, tx: Sender<common::AppEvent>, trans: l10n::Translations) -> Result<bool, Box<dyn Error>> {
     if !input_path.exists() {
         return Err(trans.gettext_fmt("The selected file does not exists: {0}!", vec![&input_path.display().to_string()]).into());
     }
@@ -143,15 +166,9 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         Box::new(JsonLogPrinter)
     };
 
-    tx.send(printer.print(1, format!("{} {}.", trans.gettext("Converting"), input_path.display())))?;
+    tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, format!("{} {}.", trans.gettext("Converting"), input_path.display()))))?;
 
     let mut success = false;
-
-    let ocr = if convert_options.opt_ocr_lang.is_some() {
-        "1"
-    } else {
-        "0"
-    };
 
     let ocr_language = match convert_options.opt_ocr_lang {
         Some(ocr_lang_val) => ocr_lang_val,
@@ -206,24 +223,24 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
     if let Some(container_rt) = common::container_runtime_path() {
         let mut ensure_image_args = vec!["inspect", &convert_options.container_image_name];
 
-        tx.send(printer.print(1, trans.gettext("Checking if container image exists")))?;
+        tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, trans.gettext("Checking if container image exists"))))?;
 
         if let Err(ex) = exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone(), false, printer.clone_box(), trans.clone()) {
-            tx.send(printer.print(1, trans.gettext_fmt("The container image was not found. {0}", vec![&ex.to_string()])))?;
+            tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, trans.gettext_fmt("The container image was not found. {0}", vec![&ex.to_string()]))))?;
             ensure_image_args = vec!["pull", &convert_options.container_image_name];
-            tx.send(printer.print(1, trans.gettext("Please wait, downloading image (roughly 600 MB).")))?;
+            tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, trans.gettext("Please wait, downloading image (roughly 600 MB)."))))?;
 
             if let Err(exe) = exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone(), false, printer.clone_box(), trans.clone()) {
-                tx.send(printer.print(1, trans.gettext("Couldn't download container image!")))?;
+                tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, trans.gettext("Couldn't download container image!"))))?;
                 return Err(exe.into());
             }
 
-            tx.send(printer.print(5, trans.gettext("Container image download completed...")))?;
+            tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext("Container image download completed..."))))?;
         }
 
-        let mut pixels_to_pdf_args = vec![];
-        pixels_to_pdf_args.append(&mut run_args.clone());
-        pixels_to_pdf_args.append(&mut container_rt.suggested_run_args.clone());
+        let mut convert_args = vec![];
+        convert_args.append(&mut run_args.clone());
+        convert_args.append(&mut container_rt.suggested_run_args.clone());
 
         // TODO potentially this needs to be configurable
         // i.e. for Lima with assume that /tmp/lima is the configured writable folder...
@@ -239,24 +256,18 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         dz_tmp_safe.push("safe");
         mkdirp(dz_tmp_safe.clone(), trans.clone())?;
 
-        let mut dz_tmp_pixels:PathBuf = dz_tmp.clone();
-        dz_tmp_pixels.push("pixels");
-        mkdirp(dz_tmp_pixels.clone(), trans.clone())?;
-
         let safedir_volume = &format!("{}:/safezone", dz_tmp_safe.display());
-        let ocr_env = &format!("OCR={}", ocr);
         let ocr_language_env = &format!("OCR_LANGUAGE={}", ocr_language);
         let locale_language_env = &format!("{}={}", l10n::ENV_VAR_ENTRUSTED_LANGID, trans.langid());
         let logformat_env = &format!("LOG_FORMAT={}", convert_options.log_format);
         let passwd_env = &format!("{}={}", common::ENV_VAR_ENTRUSTED_DOC_PASSWD, convert_options.opt_passwd.clone().unwrap_or_default());
 
-        pixels_to_pdf_args.append(&mut vec![
+        convert_args.append(&mut vec![
             "-v", input_file_volume,
             "-v", safedir_volume,
         ]);
 
-        pixels_to_pdf_args.append(&mut vec![
-            "-e", ocr_env,
+        convert_args.append(&mut vec![
             "-e", logformat_env,
             "-e", ocr_language_env,
             "-e", locale_language_env
@@ -264,18 +275,18 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
 
         if let Some(passwd) = convert_options.opt_passwd {
             if !passwd.is_empty() {
-                pixels_to_pdf_args.append(&mut vec![
+                convert_args.append(&mut vec![
                     "-e", passwd_env
                 ]);
             }
         }
 
-        pixels_to_pdf_args.append(&mut vec![
+        convert_args.append(&mut vec![
             &convert_options.container_image_name,
             common::CONTAINER_IMAGE_EXE
         ]);
 
-        if let Ok(_) = exec_crt_command(container_rt, pixels_to_pdf_args, tx.clone(), true, printer.clone_box(), trans.clone()) {
+        if let Ok(_) = exec_crt_command(container_rt, convert_args, tx.clone(), true, printer.clone_box(), trans.clone()) {
             if output_path.exists() {
                 fs::remove_file(output_path.clone())?;
             }
@@ -292,7 +303,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             filetime::set_file_handle_times(&output_file, Some(atime), Some(atime))?;
 
             if let Err(ex) = cleanup_dir(dz_tmp.clone().to_path_buf()) {
-                tx.send(printer.print(100, trans.gettext_fmt("Failed to cleanup temporary folder: {0}. {1}.", vec![&dz_tmp.clone().display().to_string(), &ex.to_string()])))?;
+                tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, trans.gettext_fmt("Failed to cleanup temporary folder: {0}. {1}.", vec![&dz_tmp.clone().display().to_string(), &ex.to_string()]))))?;
             }
             success = true;
         } else {
@@ -311,8 +322,10 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         }
     }
 
-    match success {
-        true => Ok(success),
-        _ => Err(err_msg.into())
+    if success {
+        Ok(success)
+    } else {
+        tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, err_msg.clone())))?;
+        Err(err_msg.into())
     }
 }

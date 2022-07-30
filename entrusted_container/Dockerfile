@@ -24,14 +24,14 @@ RUN LO_INCLUDE_PATH=/usr/include/LibreOfficeKit cargo install --path entrusted_c
 
 FROM docker.io/alpine:latest
 
-LABEL maintainer="Yves Zoundi, Rimero Solutions Inc."
+LABEL maintainer="Rimero Solutions Inc."
 LABEL org.opencontainers.image.title="Entrusted document sanitizer container image"
 LABEL org.opencontainers.image.description="Conversion of potentially suspicious documents to trusted PDFs, inside a container"
 LABEL org.opencontainers.image.authors="Yves Zoundi"
 LABEL org.opencontainers.image.vendor="Rimero Solutions Inc."
 LABEL org.opencontainers.image.documentation="https://github.com/rimerosolutions/entrusted/tree/main/entrusted_container"
 LABEL org.opencontainers.image.licenses="GPLv3"
-LABEL org.opencontainers.image.version="0.2.3"
+LABEL org.opencontainers.image.version="0.2.4"
 LABEL org.opencontainers.image.url="https://github.com/rimerosolutions/entrusted/tree/main/entrusted_container"
 LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrusted.git"
 
@@ -121,4 +121,4 @@ USER entrusted
 # /entrusted is where the second script expects files to be put by the first one
 #
 # /safezone is where the wrapper eventually moves the sanitized files.
-VOLUME /entrusted /tmp/input_file /safezone
+VOLUME /tmp/input_file /safezone

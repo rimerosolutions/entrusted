@@ -2,7 +2,7 @@ use serde::de::DeserializeOwned;
 use std::error::Error;
 use serde::{Serialize, Deserialize};
 use std::fs;
-use std::io::{Read, Write};
+use std::io::Write;
 use dirs;
 
 pub const PROGRAM_GROUP: &str = "com.rimerosolutions.entrusted.entrusted_client";
@@ -49,12 +49,9 @@ where T: Default + DeserializeOwned {
         if config_dir_dgz.exists() {
             let config_path = config_dir_dgz.join(CFG_FILENAME);
 
-            if config_path.exists() {
-                let mut f = fs::File::open(config_path.clone())?;
-                let mut config_data = Vec::new();
-
+            if config_path.exists() {                
                 let ret = {
-                    f.read_to_end(&mut config_data)?;
+                    let config_data = fs::read(&config_path)?;
                     toml::from_slice(&config_data)
                 };
 
@@ -87,9 +84,10 @@ where T: Default + Serialize {
 
         let config_path = config_dir_dgz.join(CFG_FILENAME);
         let mut f = fs::OpenOptions::new().create(true).write(true).truncate(true).open(config_path.clone())?;
-        let toml: String = toml::to_string(&config_instance)?;
+        
+        let config_data = toml::to_vec(&config_instance)?;
 
-        if let Err(e) = f.write(toml.as_bytes()) {
+        if let Err(e) = f.write(&config_data) {
             Err(format!("Could not save configuration! {}", e.to_string()).into())
         } else {
             Ok(())

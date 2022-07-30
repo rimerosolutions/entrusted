@@ -27,7 +27,6 @@ const ZOOM_RATIO: f64  = IMAGE_DPI / TARGET_DPI;
 
 const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str = "ENTRUSTED_DOC_PASSWD";
 const ENV_VAR_LOG_FORMAT: &str           = "LOG_FORMAT";
-const ENV_VAR_OCR: &str                  = "OCR";
 const ENV_VAR_OCR_LANGUAGE: &str         = "OCR_LANGUAGE";
 
 macro_rules! incl_gettext_files {
@@ -68,18 +67,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         Err(_)              => l10n::sys_locale()
     };
     let l10n = l10n::new_translations(locale);
-
-    let skip_ocr = match env::var(ENV_VAR_OCR) {
-        Ok(ocr_set_value) => {
-            match ocr_set_value.as_str() {
-                "1" => false,
-                _   => true
-            }
-        },
-        Err(_) => {
-            true
-        }
-    };
 
     let document_password = if let Ok(passwd) = env::var(ENV_VAR_ENTRUSTED_DOC_PASSWD) {
         if !passwd.is_empty() {
@@ -131,22 +118,24 @@ fn main() -> Result<(), Box<dyn Error>> {
         // step 3 (40%)
         progress_range = ProgressRange::new(45, 90);
 
-        if skip_ocr {
-            imgs_to_pdf(&logger, progress_range, page_count, &output_dir_path, &output_dir_path, l10n.clone())?;
-        } else {
-            let ocr_lang = env::var(ENV_VAR_OCR_LANGUAGE)?;
-            let ocr_lang_text = ocr_lang.as_str();
+        match env::var(ENV_VAR_OCR_LANGUAGE) {
+            Ok(ocr_lang) => {
+                let ocr_lang_text = ocr_lang.as_str();
 
-            if !l10n::ocr_lang_key_by_name(&l10n).contains_key(&ocr_lang_text) {
-                return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![ocr_lang_text]).into());
+                if !l10n::ocr_lang_key_by_name(&l10n).contains_key(&ocr_lang_text) {
+                    return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![ocr_lang_text]).into());
+                }
+
+                let tess_settings = TessSettings {
+                    lang: ocr_lang_text,
+                    data_dir: TESS_DATA_DIR,
+                };
+
+                ocr_imgs_to_pdf(&logger, progress_range, page_count, tess_settings, &output_dir_path, &output_dir_path, l10n.clone())?;
+            },
+            Err(_) => {
+                imgs_to_pdf(&logger, progress_range, page_count, &output_dir_path, &output_dir_path, l10n.clone())?;
             }
-
-            let tess_settings = TessSettings {
-                lang: ocr_lang_text,
-                data_dir: TESS_DATA_DIR,
-            };
-
-            ocr_imgs_to_pdf(&logger, progress_range, page_count, tess_settings, &output_dir_path, &output_dir_path, l10n.clone())?;
         }
 
         // step 4 (60%)

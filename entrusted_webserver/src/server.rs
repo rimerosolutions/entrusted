@@ -280,27 +280,26 @@ async fn downloads(info: actix_web::web::Path<String>, req: HttpRequest, l10n: D
         ));
     }
 
-    let filepath = env::temp_dir().join(config::PROGRAM_GROUP).join(fileid.clone());
-    let filepath_buf = PathBuf::from(filepath);
+    let file_loc = env::temp_dir().join(config::PROGRAM_GROUP).join(fileid.clone());
 
-    if !filepath_buf.exists() {
+    if !file_loc.exists() {
         HttpResponse::NotFound().body(l10n_ref.gettext("Resource not found"))
     } else {
-        match fs::read(filepath_buf.clone()) {
+        match fs::read(file_loc.clone()) {
             Ok(data) => {
-                let _ = fs::remove_file(filepath_buf);
+                let _ = fs::remove_file(file_loc);
                 NOTIFICATIONS_PER_REFID.lock().unwrap().remove(&request_id.to_string());
                 HttpResponse::Ok()
                     .append_header((header::CONTENT_TYPE, "application/pdf"))
-                    .append_header((header::CONTENT_DISPOSITION, format!("attachment; filename={}", filename)))
+                    .append_header((header::CONTENT_DISPOSITION, format!("attachment; filename={}", &filename)))
                     .append_header((header::CONTENT_LENGTH, data.len().to_string()))
                     .body(data)
             }
             Err(ex) => {
                 eprintln!("{} {}.", l10n_ref.gettext("Could not read input file"), ex.to_string());
 
-                if let Err(ioe) = fs::remove_file(&filepath_buf) {
-                    eprintln!("{} {}. {}.", l10n_ref.gettext("Could not delete file"), &filepath_buf.display(), ioe.to_string());
+                if let Err(ioe) = fs::remove_file(&file_loc) {
+                    eprintln!("{} {}. {}.", l10n_ref.gettext("Could not delete file"), &file_loc.display(), ioe.to_string());
                 }
 
                 NOTIFICATIONS_PER_REFID.lock().unwrap().remove(&request_id.to_string());
@@ -326,7 +325,7 @@ async fn events(info: actix_web::web::Path<String>, broadcaster: Data<Mutex<Broa
 }
 
 fn output_filename_for(request_id: String) -> String {
-    let basename = PathBuf::from(&request_id).with_extension("").display().to_string();
+    let basename = std::path::Path::new(&request_id).with_extension("").display().to_string();
     [basename, "-".to_string(), config::DEFAULT_FILE_SUFFIX.to_string(), ".pdf".to_string()].concat()
 }
 

@@ -2,35 +2,35 @@ use std::io::{Cursor, BufReader, Read};
 use std::error::Error;
 use std::path::PathBuf;
 use std::fs;
-
+use zip;
 use cfb;
 
 pub fn detect_from_path (path: &PathBuf) -> Result<Option<String>, Box<dyn Error>> {
-    let data = fs::read(path)?;
+    let mut data = [0u8; 8];
+    let mut f: fs::File = fs::File::open(path)?;    
+    f.read(&mut data)?;
 
-    Ok(detect_from_u8(&data))
-}
-
-pub fn detect_from_u8<'a> (data: &'a [u8]) -> Option<String> {
-    if is_png(data) {
-        return Some("image/png".to_string());
-    } else if is_gif(data) {
-        return Some("image/gif".to_string());
-    } else if is_jpeg(data) {
-        return Some("image/jpeg".to_string());
-    } else if is_tiff(data) {
-        return Some("image/tiff".to_string());
-    } else if is_rtf(data) {
-        return Some("application/rtf".to_string());
-    } else if is_pdf(data) {
-        return Some("application/pdf".to_string());
-    } else if is_zip(data) {
-        return office_mime(data);
-    } else if is_cfb(data) {
-        return legacy_office_mime(data);
+    if is_png(&data) {
+        return Ok(Some("image/png".to_string()));
+    } else if is_gif(&data) {
+        return Ok(Some("image/gif".to_string()));
+    } else if is_jpeg(&data) {
+        return Ok(Some("image/jpeg".to_string()));
+    } else if is_tiff(&data) {
+        return Ok(Some("image/tiff".to_string()));
+    } else if is_rtf(&data) {
+        return Ok(Some("application/rtf".to_string()));
+    } else if is_pdf(&data) {
+        return Ok(Some("application/pdf".to_string()));
+    } else if is_zip(&data) {        
+        let data = fs::read(path)?;
+        return office_mime(&data);
+    } else if is_cfb(&data) {
+        let data = fs::read(path)?;
+        return legacy_office_mime(&data);
     }
 
-    None
+    Ok(None)
 }
 
 fn bytes_range(data: &[u8], lo: usize, hi: usize) -> Vec<u8> {
@@ -44,14 +44,14 @@ fn bytes_range(data: &[u8], lo: usize, hi: usize) -> Vec<u8> {
 }
 
 fn hex_encode_upper(data: &[u8]) -> String {
-    let mut hex_vec = Vec::with_capacity(data.len() * 2);
+    let mut hex_vec = String::with_capacity(data.len() * 2);
 
     for i in 0..data.len() {
         let hex = format!("{:02x}", data[i]);
-        hex_vec.push(hex);
+        hex_vec.push_str(&hex);
     }
 
-    hex_vec.join("").to_uppercase()
+    hex_vec.to_uppercase()
 }
 
 fn byte_range_matches(data: &[u8], lo: usize, hi: usize, sig: &str) -> bool {
@@ -98,14 +98,7 @@ fn is_tiff(data: &[u8]) -> bool {
     byte_range_matches(data, 0, 4, "49 49 2A 00")
 }
 
-fn office_mime(data: &[u8]) -> Option<String> {
-    match probe_office_mimetype_zip(data) {        
-        Ok(ret) => ret,
-        Err(_) => None
-    }
-}
-
-fn probe_office_mimetype_zip (data: &[u8]) -> Result<Option<String>, Box<dyn Error>> {
+fn office_mime(data: &[u8]) -> Result<Option<String>, Box<dyn Error>> {
     let reader = Cursor::new(data);
     let mut zip = zip::ZipArchive::new(reader)?;
     let probe_count_expected = 2;
@@ -181,18 +174,18 @@ fn probe_office_mimetype_zip (data: &[u8]) -> Result<Option<String>, Box<dyn Err
     Ok(None)
 }
 
-fn legacy_office_mime(data: &[u8]) -> Option<String> {
-    if let Ok(file) = cfb::CompoundFile::open(Cursor::new(data)) {
-        return match file.root_entry().clsid().to_string().as_str() {
-            "00020810-0000-0000-c000-000000000046" | "00020820-0000-0000-c000-000000000046" => {
-                Some("application/vnd.ms-excel".to_string())
-            },
-            "00020906-0000-0000-c000-000000000046" => Some("application/msword".to_string()),
-            "64818d10-4f9b-11cf-86ea-00aa00b929e8" => Some("application/vnd.ms-powerpoint".to_string()),
-            _ => None,
-        };
+fn legacy_office_mime(data: &[u8]) -> Result<Option<String>, Box<dyn Error>> {
+    match cfb::CompoundFile::open(Cursor::new(data)) {
+        Ok(file) => {
+            return match file.root_entry().clsid().to_string().as_str() {
+                "00020810-0000-0000-c000-000000000046" | "00020820-0000-0000-c000-000000000046" => {
+                    Ok(Some("application/vnd.ms-excel".to_string()))
+                },
+                "00020906-0000-0000-c000-000000000046" => Ok(Some("application/msword".to_string())),
+                "64818d10-4f9b-11cf-86ea-00aa00b929e8" => Ok(Some("application/vnd.ms-powerpoint".to_string())),
+                _ => Ok(None),
+            };
+        },
+        Err(ex) => Err(ex.into())
     }
-
-
-    None
 }

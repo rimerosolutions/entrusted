@@ -23,6 +23,15 @@ macro_rules! incl_gettext_files {
     };
 }
 
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub enum AppEvent {
+    FileOpenEvent(String),
+    ConversionProgressEvent(String),
+    ConversionStartEvent(usize),
+    ConversionSuccessEvent(usize, Option<String>, PathBuf),
+    ConversionFailureEvent(usize),
+}
+
 pub fn executable_find(exe_name: &str) -> Option<PathBuf> {
     match which::which(exe_name) {
         Err(_) => None,
@@ -91,7 +100,7 @@ pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
         ContainerProgramStub::Docker("docker", vec![], vec![], None),
         ContainerProgramStub::Podman("podman", vec![], vec!["--userns", "keep-id"], None),
         ContainerProgramStub::Lima("lima", vec!["nerdctl"], vec![], Some("/tmp/lima")),
-        ContainerProgramStub::Nerdctl("nerdctl", vec!["nerdctl"], vec![], None),
+        ContainerProgramStub::Nerdctl("nerdctl", vec![], vec![], None),
     ];
 
     for i in 0..container_program_stubs.len() {

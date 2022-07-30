@@ -57,7 +57,7 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str
     let sub_commands = container_program.sub_commands;
     let rt_executable: &str = &format!("{}", rt_path.display());
 
-    let mut cmd = vec![];
+    let mut cmd = Vec::with_capacity(sub_commands.len() + args.len());
     cmd.extend(sub_commands);
     cmd.extend(args.clone());
 
@@ -177,29 +177,24 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
 
     fn mkdirp(p: PathBuf, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
         if !p.exists() {
-            let dir_created = fs::create_dir(&p);
-
-            match dir_created {
-                Err(ex) => {
-                    Err(trans.gettext_fmt("Cannot create directory: {0}! Error: {1}", vec![&p.display().to_string(), &ex.to_string()]).into())
-                },
-                _ => Ok(())
+            if let Err(ex) = fs::create_dir(&p) {
+                return Err(trans.gettext_fmt("Cannot create directory: {0}! Error: {1}", vec![&p.display().to_string(), &ex.to_string()]).into());
             }
-        } else {
-            Ok(())
         }
+
+        Ok(())
     }
 
     pub fn cleanup_dir(dir: PathBuf) -> Result<(), Box<dyn Error>> {
         if dir.exists() && dir.is_dir() {
-            let mut s = vec![dir];
+            let mut files = vec![dir];
 
-            while let Some(f) = s.pop() {
+            while let Some(f) = files.pop() {
                 if f.is_file() && f.exists() {
                     fs::remove_file(f)?;
                 } else {
                     for p in fs::read_dir(&f)? {
-                        s.push(p?.path());
+                        files.push(p?.path());
                     }
                 }
             }
@@ -238,7 +233,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext("Container image download completed..."))))?;
         }
 
-        let mut convert_args = vec![];
+        let mut convert_args = Vec::with_capacity(run_args.len() + container_rt.suggested_run_args.len());
         convert_args.append(&mut run_args.clone());
         convert_args.append(&mut container_rt.suggested_run_args.clone());
 

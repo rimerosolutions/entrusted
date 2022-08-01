@@ -1,8 +1,8 @@
 [package]
 name = "entrusted-client"
 version = "0.2.4"
-edition = "2021"
-description = "Entrusted client" 
+edition = "2018"
+description = "Entrusted client"
 keywords = ["entrusted", "client"]
 license = "GPL"
 repository = "https://github.com/rimerosolutions/entrusted"
@@ -48,3 +48,8 @@ path = "src/main_cli.rs"
 [[bin]]
 name = "entrusted-gui"
 path = "src/main_gui.rs"
+
+[profile.release]
+strip="debuginfo"
+lto = true
+codegen-units = 1

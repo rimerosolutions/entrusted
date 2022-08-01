@@ -31,3 +31,8 @@ polib = "0.1.0"
 [[bin]]
 name = "entrusted-container"
 path = "src/main.rs"
+
+[profile.release]
+strip="debuginfo"
+lto = true
+codegen-units = 1

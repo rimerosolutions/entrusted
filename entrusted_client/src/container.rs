@@ -33,35 +33,37 @@ where
 }
 
 #[cfg(not(any(target_os = "windows")))]
-fn spawn_command(executable: &str, cmd: Vec<&str>) -> std::io::Result<Child> {    
-    Command::new(executable)
-        .args(cmd)
+fn spawn_command(cmd: &str, cmd_args: Vec<String>) -> std::io::Result<Child> {    
+    Command::new(cmd)
+        .args(cmd_args)
+        .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
 }
 
 #[cfg(target_os = "windows")]
-fn spawn_command(executable: &str, cmd: Vec<&str>) -> std::io::Result<Child> {
+fn spawn_command(cmd: &str, cmd_args: Vec<String>) -> std::io::Result<Child> {
     use std::os::windows::process::CommandExt;
-    Command::new(executable)
-        .args(cmd)
+    Command::new(cmd)
+        .args(cmd_args)
+        .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .creation_flags(0x08000000)
         .spawn()
 }
 
-fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str>, tx: Sender<common::AppEvent>, capture_output: bool, printer: Box<dyn LogPrinter>, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
+fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<String>, tx: Sender<common::AppEvent>, capture_output: bool, printer: Box<dyn LogPrinter>, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
     let rt_path = container_program.exec_path;
-    let sub_commands = container_program.sub_commands;
+    let sub_commands = container_program.sub_commands.iter().map(|i| i.to_string());
     let rt_executable: &str = &format!("{}", rt_path.display());
 
     let mut cmd = Vec::with_capacity(sub_commands.len() + args.len());
     cmd.extend(sub_commands);
     cmd.extend(args.clone());
 
-    let cmd_masked: Vec<&str> = cmd.clone()
+    let cmd_masked: Vec<&str> = cmd
         .iter()
         .map(|i| {
             if i.contains(common::ENV_VAR_ENTRUSTED_DOC_PASSWD) {
@@ -92,23 +94,18 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<&str
 
     loop {
         match cmd.try_wait() {
-            Ok(Some(exit_status)) => {                
-                if let Some(exit_code) = exit_status.code() {
-                    // Mitigate container segfaults with the Alpine Docker image
-                    // This didn't seem to happen with Debian, but the application Docker image was way bigger
-                    // Apparently a vsyscall=emulate argument needs to be added to /proc/cmdline depending on the kernel version
-                    if exit_code == 139 || exit_code == 0 {
-                        return Ok(());
-                    } else {
-                        return Err("Failure".into());
-                    }
+            Ok(Some(exit_status)) => {
+                if exit_status.success() {
+                    return Ok(());
+                } else {
+                    return Err(trans.gettext("Command failed!").into());
                 }
             },
             Ok(None) => {
                 thread::yield_now();
             },
             Err(_) => {
-                return Err("Failure".into());
+                return Err(trans.gettext("Command failed!").into());
             }
         }
     }
@@ -170,11 +167,6 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
 
     let mut success = false;
 
-    let ocr_language = match convert_options.opt_ocr_lang {
-        Some(ocr_lang_val) => ocr_lang_val,
-        None => String::new()
-    };
-
     fn mkdirp(p: PathBuf, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
         if !p.exists() {
             if let Err(ex) = fs::create_dir(&p) {
@@ -203,26 +195,26 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         Ok(())
     }
 
-    let run_args:Vec<&str> = vec![
-        "run",
-        "--network",
-        "none",
-        "--security-opt",
-        "label=disable"
+    let run_args:Vec<String> = vec![
+        "run".to_string(),
+        "--network".to_string(),
+        "none".to_string(),
+        "--security-opt".to_string(),
+        "label=disable".to_string()
     ];
 
-    let input_file_volume = &format!("{}:/tmp/input_file", input_path.display());
+    let input_file_volume = format!("{}:/tmp/input_file", input_path.display());
     let mut err_msg = String::new();
 
     // TODO for Lima we assume the default VM instance, that might not be true all the time...
     if let Some(container_rt) = common::container_runtime_path() {
-        let mut ensure_image_args = vec!["inspect", &convert_options.container_image_name];
+        let mut ensure_image_args = vec!["inspect".to_string(), convert_options.container_image_name.to_owned()];
 
         tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, trans.gettext("Checking if container image exists"))))?;
 
         if let Err(ex) = exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone(), false, printer.clone_box(), trans.clone()) {
             tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, trans.gettext_fmt("The container image was not found. {0}", vec![&ex.to_string()]))))?;
-            ensure_image_args = vec!["pull", &convert_options.container_image_name];
+            ensure_image_args = vec!["pull".to_string(), convert_options.container_image_name.to_owned()];
             tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, trans.gettext("Please wait, downloading image (roughly 600 MB)."))))?;
 
             if let Err(exe) = exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone(), false, printer.clone_box(), trans.clone()) {
@@ -235,7 +227,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
 
         let mut convert_args = Vec::with_capacity(run_args.len() + container_rt.suggested_run_args.len());
         convert_args.append(&mut run_args.clone());
-        convert_args.append(&mut container_rt.suggested_run_args.clone());
+        convert_args.append(&mut container_rt.suggested_run_args.iter().map(|i| i.to_string()).collect());
 
         // TODO potentially this needs to be configurable
         // i.e. for Lima with assume that /tmp/lima is the configured writable folder...
@@ -251,34 +243,35 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         dz_tmp_safe.push("safe");
         mkdirp(dz_tmp_safe.clone(), trans.clone())?;
 
-        let safedir_volume = &format!("{}:/safezone", dz_tmp_safe.display());
-        let ocr_language_env = &format!("OCR_LANGUAGE={}", ocr_language);
-        let locale_language_env = &format!("{}={}", l10n::ENV_VAR_ENTRUSTED_LANGID, trans.langid());
-        let logformat_env = &format!("LOG_FORMAT={}", convert_options.log_format);
-        let passwd_env = &format!("{}={}", common::ENV_VAR_ENTRUSTED_DOC_PASSWD, convert_options.opt_passwd.clone().unwrap_or_default());
+        let safedir_volume = format!("{}:/safezone", dz_tmp_safe.display());
 
         convert_args.append(&mut vec![
-            "-v", input_file_volume,
-            "-v", safedir_volume,
+            "-v".to_string(), input_file_volume,
+            "-v".to_string(), safedir_volume,
         ]);
 
         convert_args.append(&mut vec![
-            "-e", logformat_env,
-            "-e", ocr_language_env,
-            "-e", locale_language_env
+            "-e".to_string(), format!("LOG_FORMAT={}", convert_options.log_format),
+            "-e".to_string(), format!("{}={}", l10n::ENV_VAR_ENTRUSTED_LANGID, trans.langid())
         ]);
+
+        if let Some(ocr_language) = convert_options.opt_ocr_lang {
+            convert_args.append(&mut vec![
+                "-e".to_string(), format!("OCR_LANGUAGE={}", ocr_language.to_owned())
+            ]);
+        }
 
         if let Some(passwd) = convert_options.opt_passwd {
             if !passwd.is_empty() {
                 convert_args.append(&mut vec![
-                    "-e", passwd_env
+                    "-e".to_string(), format!("{}={}", common::ENV_VAR_ENTRUSTED_DOC_PASSWD, passwd.to_owned())
                 ]);
             }
         }
 
         convert_args.append(&mut vec![
-            &convert_options.container_image_name,
-            common::CONTAINER_IMAGE_EXE
+            convert_options.container_image_name.to_owned(),
+            common::CONTAINER_IMAGE_EXE.to_string()
         ]);
 
         if let Ok(_) = exec_crt_command(container_rt, convert_args, tx.clone(), true, printer.clone_box(), trans.clone()) {

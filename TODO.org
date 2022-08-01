@@ -10,6 +10,7 @@
   - [ ] Minimal resources management to avoid exhausting computer CPU and memory
 - User Interface
   - [X] Responsiveness issues during conversions
+  - [X] Hide command prompts while running processes on Windows
   - [ ] There're probably too many redraw operations in the Desktop UI
   - [ ] Improve scrolling behavior during conversions ("smooth-scrolling")
 - [ ] Hardening

@@ -16,13 +16,16 @@ The current build server is a virtual machine running [[https://ubuntu.com/][Ubu
 | [[https://podman.io/][podman]]    | Container solution: used to build all artifacts inside containers |
 | [[https://imagemagick.org/script/convert.php][convert]]   | [[https://imagemagick.org/][ImageMagick]] program for scaling images during =Mac OS= packaging  |
 | [[https://dentrassi.de/2014/02/25/creating-mac-os-x-icons-icns-on-linux/][icnsutils]] | Convert PNG icons to icns format, during =Mac OS= packaging       |
+| [[https://pandoc.org/][pandoc]]    | Convert man pages from markdown (DEB and RPM packaging)           |
+| [[https://www.perl.org/][perl]]      | Alternative to sed to avoid UNIX specific differences             |
+| [[https://rpm.org/][rpm]]       | RPM tool on the Ubuntu to build RPM packages                      |
 |-----------+-------------------------------------------------------------------|
 
 * About Installers and Packages
 
-While it could be preferrable on Linux to have a native packages, it's time consuming (build, test & support):
+While it could be preferrable on Linux to have several native distro packages, it's time consuming (build, test & support):
   - How many distributions do you target?
-  - How much testing is required and for which versions of a particular Linux distribution?
+  - How much testing is required and for which versions of a particular Linux distribution? Especially Linux distribution that you don't personally use at all.
   - When you have a /service/, do you provide associated files for any possible [[https://en.wikipedia.org/wiki/Init][init system]]?
   - What about =Flatpak= vs =Snap= vs =AppImage=? =AppImage= was selected only for the purpose of building binaries that will work out of the box for most distributions
 

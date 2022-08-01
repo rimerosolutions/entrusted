@@ -20,7 +20,6 @@ use tokio_util::codec::{BytesCodec, FramedRead};
 use serde::de::DeserializeOwned;
 
 use std::fs;
-use std::io::Read;
 use dirs;
 
 use entrusted_l10n as l10n;
@@ -139,7 +138,7 @@ async fn handle_args() -> Result<(), Box<dyn Error + Send + Sync>> {
 
     let appconfig_ret = load_config();
     let appconfig = appconfig_ret.unwrap_or(AppConfig::default());
-    let port_number_text = format!("{}", appconfig.port);
+    let port_number_text = appconfig.port.to_string();
 
     let help_host = trans.gettext("Server host or IP address");
     let help_port = trans.gettext("Server port number");
@@ -359,7 +358,7 @@ async fn convert_file (
 
 async fn process_notifications(tracking_url: String,
     l10n: &l10n::Translations) -> Result<String, Box<dyn Error + Send + Sync>> {
-    let mut es = EventSource::get(format!("{}", tracking_url));
+    let mut es = EventSource::get(tracking_url);
     let pb = ProgressBar::new(100);
 
     let processing_status: Result<String, Box<dyn Error>> = {

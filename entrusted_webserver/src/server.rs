@@ -529,10 +529,13 @@ async fn run_entrusted(
         env_map.insert("ENTRUSTED_AUTOMATED_PASSWORD_ENTRY".to_string(), doc_passwd);
     }
 
+    let mut shcmd = Vec::with_capacity(2);
+    shcmd.push("-c".to_string());
+    shcmd.push(cmdline.join(" "));
+
     let mut child = Command::new("sh")
         .envs(env_map)
-        .arg("-c")
-        .arg(cmdline.join(" "))
+        .args(shcmd)
         .stderr(std::process::Stdio::piped())
         .stdout(std::process::Stdio::piped())
         .kill_on_drop(true)
@@ -542,7 +545,6 @@ async fn run_entrusted(
 
     let stdout = child.stdout.take().expect("child is missing stdout handle");
     let stderr = child.stderr.take().expect("child is missing stderr handle");
-
     let mut stdout_reader = BufReader::new(stdout).lines();
     let mut stderr_reader = BufReader::new(stderr).lines();
 

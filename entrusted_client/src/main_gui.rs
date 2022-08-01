@@ -365,6 +365,7 @@ impl <'a> FileListWidget {
         while !self.selected_indices.borrow().is_empty() {
             if let Some(idx) = self.selected_indices.borrow_mut().pop() {
                 let row = self.rows.borrow_mut().remove(idx);
+
                 if let Some(row_parent) = row.checkbox.parent() {
                     self.container.remove(&row_parent);
                 }
@@ -580,15 +581,16 @@ impl <'a> FileListWidget {
             move |wid| {
                 if wid.active() {
                     let old_color = draw::get_color();
+
                     let current_color = if opt_current.borrow().is_some() {
                         enums::Color::DarkRed
                     } else {
                         enums::Color::Yellow
                     };
+
                     draw::set_draw_color(current_color);
 
-                    let stroke = 2;
-                    for i in 1..(stroke + 1) {
+                    for i in 1..3 {
                         draw::draw_rect(wid.x() + i, wid.y() + i, wid.w() - i - i, wid.h() - i - i);
                     }
 
@@ -710,6 +712,7 @@ impl <'a> FileListWidget {
                 }
             }
         });
+
         logs_button.set_callback({
             let active_row = file_list_row.clone();
 
@@ -852,7 +855,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Err(_) => l10n::sys_locale()
     };
 
-    let (app_tx, app_rcv) = app::channel::<String>();
+    let (app_tx, app_rx) = app::channel::<String>();
     let trans = l10n::new_translations(locale);
     let trans_ref = trans.clone();
 
@@ -865,7 +868,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let app = app::App::default().with_scheme(app::Scheme::Gleam);
     let (s, r) = {
-        let sender_and_receiver = APP_CHANNEL.lock().unwrap();
+        let sender_and_receiver = APP_CHANNEL.lock()?;
         (sender_and_receiver.0.clone(), sender_and_receiver.1.clone())
     };
 
@@ -1028,10 +1031,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         if let Some(cur_ocrlangname) = ocr_languages_by_name_ref.get(cur_ocrlangcode_str) {
             cur_ocrlangname.to_string()
         } else {
-            String::from(&trans.gettext("English"))
+            trans.gettext("English")
         }
     } else {
-        String::from(&trans.gettext("English"))
+        trans.gettext("English")
     };
 
     if let Some(selected_ocr_language_idx) = ocr_languages.iter().position(|r| r == &selected_ocrlang) {
@@ -1535,7 +1538,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let trans_ref = trans_ref.clone();
                 let tx = s.clone();
                 let mut messages_frame_ref = messages_frame_ref.clone();
-                let app_rcv = app_rcv.clone();
+                let app_rcv = app_rx.clone();
                 let current_row_idx = current_row_idx.clone();
                 let mut tabsettings_button_ref = tabsettings_button_ref.clone();
                 let mut filelist_scroll_ref = filelist_scroll_ref.clone();
@@ -2274,10 +2277,8 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
     use freedesktop_entry_parser::parse_entry;
 
     // See https://wiki.archlinux.org/title/XDG_MIME_Applications for the logic
-
     // TODO is TryExec the best way to get a program name vs 'Exec' and stripping arguments???
     // Exec=someapp -newtab %u => where '%u' could be the file input parameter on top of other defaults '-newtab'
-
     fn parse_desktop_apps(
         apps_dir: PathBuf,
         mime_pdf_desktop_refs: &str,
@@ -2325,8 +2326,7 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
 
     if path_mimeinfo_cache.exists() {
         if let Ok(conf) = parse_entry(path_mimeinfo_cache) {
-            if let Some(mime_pdf_desktop_refs) = conf.section("MIME Cache").attr("application/pdf")
-            {
+            if let Some(mime_pdf_desktop_refs) = conf.section("MIME Cache").attr("application/pdf") {
                 let tmp_result = parse_desktop_apps(
                     path_usr_share_applications_orig.clone(),
                     mime_pdf_desktop_refs,

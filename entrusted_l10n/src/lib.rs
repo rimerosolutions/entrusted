@@ -56,9 +56,7 @@ pub fn negotiate_langid(requested_locale: String, keys: Vec<String>) -> String {
         NegotiationStrategy::Matching
     );
 
-    let locale = supported[0].to_string();
-
-    locale
+    supported[0].to_string()
 }
 
 pub fn new_translations(requested_locale: String) -> Translations {
@@ -67,7 +65,10 @@ pub fn new_translations(requested_locale: String) -> Translations {
     let locale = negotiate_langid(requested_locale, keys);
     let catalog = catalog_per_langid[&locale].clone();
 
-    Translations { locale, catalog }
+    Translations {
+        locale,
+        catalog
+    }
 }
 
 impl Translations {
@@ -274,7 +275,7 @@ pub fn ocr_lang_key_by_name(trans: &Translations) -> HashMap<&'static str, Strin
         .iter().cloned().collect()
 }
 
-// copy paste a subset of https://github.com/woboq/tr/
+// Copied this part of the code from https://github.com/woboq/tr/
 // Need dynamic evaluation for translation placeholder arguments
 mod runtime_format {
     pub struct FormatArg<'a> {

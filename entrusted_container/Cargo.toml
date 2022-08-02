@@ -1,5 +1,3 @@
-cargo-features = ["strip"]
-
 [package]
 name = "entrusted-container"
 version = "0.2.4"
@@ -33,8 +31,3 @@ polib = "0.1.0"
 [[bin]]
 name = "entrusted-container"
 path = "src/main.rs"
-
-[profile.release]
-strip="debuginfo"
-lto = true
-codegen-units = 1

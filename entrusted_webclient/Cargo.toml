@@ -1,5 +1,3 @@
-cargo-features = ["strip"]
-
 [package]
 name = "entrusted-webclient"
 version = "0.2.4"
@@ -36,8 +34,3 @@ polib = "0.1.0"
 [[bin]]
 name = "entrusted-webclient"
 path = "src/main.rs"
-
-[profile.release]
-strip="debuginfo"
-lto = true
-codegen-units = 1

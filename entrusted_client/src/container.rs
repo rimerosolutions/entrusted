@@ -307,8 +307,8 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             fs::copy(&container_output_file_path, output_path)?;
             fs::remove_file(container_output_file_path)?;
 
-            let output_file = fs::File::create(output_path_clone)?;
-            filetime::set_file_handle_times(&output_file, Some(atime), Some(atime))?;
+            let output_file = fs::File::open(output_path_clone)?;
+            let _ = filetime::set_file_handle_times(&output_file, Some(atime), Some(atime));
 
             if let Err(ex) = cleanup_dir(dz_tmp.clone().to_path_buf()) {
                 tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, trans.gettext_fmt("Failed to cleanup temporary folder: {0}. {1}.", vec![&dz_tmp.clone().display().to_string(), &ex.to_string()]))))?;

@@ -39,8 +39,8 @@ const FILELIST_ROW_STATUS_SUCCEEDED  :&str = "Succeeded";
 const FILELIST_ROW_STATUS_FAILED     :&str = "Failed";
 
 static APP_CHANNEL: Lazy<Mutex<(mpsc::Sender<common::AppEvent>, Arc<Mutex<mpsc::Receiver<common::AppEvent>>>)>> = Lazy::new(|| {
-    let (s, r) = mpsc::channel::<common::AppEvent>();
-    Mutex::new((s, Arc::new(Mutex::new(r))))
+    let (tx, rx) = mpsc::channel::<common::AppEvent>();
+    Mutex::new((tx, Arc::new(Mutex::new(rx))))
 });
 
 #[derive(Clone)]
@@ -51,17 +51,13 @@ struct ConversionTask {
     viewer_app_option: Option<String>
 }
 
-
-struct FileListWidgetEvent;
-
-impl FileListWidgetEvent {
-    const SELECTION_CHANGED: i32 = 50;
-    const ALL_SELECTED: i32      = 51;
-    const ALL_DESELECTED: i32    = 52;
-}
+const EVENT_ID_SELECTION_CHANGED: i32 = 50;
+const EVENT_ID_ALL_SELECTED: i32      = 51;
+const EVENT_ID_ALL_DESELECTED: i32    = 52;
 
 #[derive(Clone)]
 struct FileListRow {
+    container: group::Pack,
     file: PathBuf,
     opt_output_file: Rc<RefCell<Option<String>>>,
     password_button: button::Button,
@@ -80,6 +76,7 @@ impl FileListRow {
         self.password_button.deactivate();
         self.output_file_button.deactivate();
     }
+
     pub fn update_progress(&mut self, data: String, percent_complete: usize) {
         self.progressbar.set_value(percent_complete as f64);
         self.progressbar.set_label(&format!("{}%", percent_complete));
@@ -174,13 +171,14 @@ fn show_info_dialog(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Tra
 
     win.begin();
     win.make_resizable(true);
+    win.make_modal(true);
 
     let mut grp = group::Pack::default()
-        .with_pos(WIDGET_GAP, 10)
+        .with_pos(WIDGET_GAP, WIDGET_GAP / 2)
         .with_size(wind_w - (WIDGET_GAP * 2), wind_h - (WIDGET_GAP * 2))
         .center_of(&win)
         .with_type(group::PackType::Vertical);
-    grp.set_spacing(5);
+    grp.set_spacing(WIDGET_GAP / 4);
 
     let label_container_solution = format!("{}{}{}{}",
                                            "The program requires a container solution: \n",
@@ -225,10 +223,12 @@ fn show_info_dialog(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Tra
 fn filelist_column_widths(w: i32) -> (i32, i32, i32, i32, i32, i32) {
     let width_password    = 40;
     let width_output_file = 40;
-    let width_checkbox    = (w as f64 * 0.35) as i32;
-    let width_progressbar = (w as f64 * 0.15) as i32;
-    let width_status      = (w as f64 * 0.15) as i32;
-    let width_logs        = (w as f64 * 0.2)  as i32;
+    let active_w = w - width_password - width_output_file - (WIDGET_GAP * 5);
+
+    let width_checkbox    = (active_w as f64 * 0.4) as i32;
+    let width_progressbar = (active_w as f64 * 0.15) as i32;
+    let width_status      = (active_w as f64 * 0.15) as i32;
+    let width_logs        = (active_w as f64 * 0.3)  as i32;
 
     (width_output_file, width_password, width_checkbox, width_progressbar, width_status, width_logs)
 }
@@ -258,6 +258,8 @@ impl <'a> FileListWidget {
         if let Ok(rows) = self.rows.try_borrow() {
             for row in rows.iter() {
                 let mut active_row = row.clone();
+                active_row.container.resize(active_row.container.x(), active_row.container.y(), w, active_row.container.h());
+                active_row.container.redraw();
 
                 let mut col_widgets: Vec<Box<dyn WidgetExt>> = vec![
                     Box::new(row.password_button.clone()),
@@ -326,14 +328,14 @@ impl <'a> FileListWidget {
         if self.toggle_selection(true) {
             let row_count = self.rows.borrow().len();
             self.selected_indices.borrow_mut().extend(0..row_count);
-            let _ = app::handle_main(FileListWidgetEvent::SELECTION_CHANGED);
+            let _ = app::handle_main(EVENT_ID_SELECTION_CHANGED);
         }
     }
 
     pub fn deselect_all(&mut self) {
         if self.toggle_selection(false) {
             self.selected_indices.borrow_mut().clear();
-            let _ = app::handle_main(FileListWidgetEvent::SELECTION_CHANGED);
+            let _ = app::handle_main(EVENT_ID_SELECTION_CHANGED);
         }
     }
 
@@ -356,7 +358,7 @@ impl <'a> FileListWidget {
             container_parent.redraw();
         }
 
-        let _ = app::handle_main(FileListWidgetEvent::SELECTION_CHANGED);
+        let _ = app::handle_main(EVENT_ID_SELECTION_CHANGED);
     }
 
     pub fn delete_selection(&mut self) {
@@ -380,7 +382,7 @@ impl <'a> FileListWidget {
             container_parent.redraw();
         }
 
-        let _ = app::handle_main(FileListWidgetEvent::SELECTION_CHANGED);
+        let _ = app::handle_main(EVENT_ID_SELECTION_CHANGED);
     }
 
     pub fn add_file(&mut self, path: PathBuf) {
@@ -391,8 +393,9 @@ impl <'a> FileListWidget {
         let (width_password, width_output_file, width_checkbox, width_progressbar, width_status, width_logs) = filelist_column_widths(ww);
 
         let mut row = group::Pack::default()
-            .with_type(group::PackType::Horizontal)
-            .with_size(ww, 40);
+            .with_size(ww, 40)
+            .with_type(group::PackType::Horizontal);
+
         row.set_spacing(WIDGET_GAP);
 
         let row_height: i32 = 30;
@@ -418,7 +421,7 @@ impl <'a> FileListWidget {
         let path_tooltip = path.display().to_string();
         let mut selectrow_checkbutton = button::CheckButton::default()
             .with_size(width_checkbox, row_height)
-            .with_label(&clip_text(path_name, width_checkbox));
+            .with_label(&clip_text(path_name.clone(), width_checkbox));
         selectrow_checkbutton.set_tooltip(&path_tooltip);
 
         let check_buttonx2 = selectrow_checkbutton.clone();
@@ -441,10 +444,11 @@ impl <'a> FileListWidget {
         row.end();
 
         let file_list_row = FileListRow {
+            container: row.clone(),
             password_button: password_frame.clone(),
-            checkbox: check_buttonx2,
-            progressbar,
-            status: status_frame,
+            checkbox: check_buttonx2.clone(),
+            progressbar: progressbar.clone(),
+            status: status_frame.clone(),
             log_link: logs_button.clone(),
             logs: Rc::new(RefCell::new(vec![])),
             file: path.clone(),
@@ -469,6 +473,9 @@ impl <'a> FileListWidget {
                         .with_size(dialog_width, dialog_height)
                         .with_pos(dialog_xpos, dialog_ypos)
                         .with_label(&trans.gettext("Custom output file"));
+
+                    win.make_modal(true);
+                    win.make_resizable(true);
 
                     let mut container_pack = group::Pack::default()
                         .with_pos(WIDGET_GAP, WIDGET_GAP)
@@ -564,8 +571,7 @@ impl <'a> FileListWidget {
                     container_pack.end();
 
                     win.end();
-                    win.make_modal(true);
-                    win.make_resizable(true);
+
                     win.show();
 
                     while win.shown() {
@@ -575,27 +581,31 @@ impl <'a> FileListWidget {
             }
         });
 
+        fn paint_highlight<W: WidgetExt>(wid: &mut W, opt_isset: bool) {
+            if wid.active() {
+                let old_color = draw::get_color();
+
+                let current_color = if opt_isset {
+                    enums::Color::DarkRed
+                } else {
+                    enums::Color::Yellow
+                };
+
+                draw::set_draw_color(current_color);
+
+                for i in 1..3 {
+                    draw::draw_rect(wid.x() + i, wid.y() + i, wid.w() - i - i, wid.h() - i - i);
+                }
+
+                draw::set_draw_color(old_color);
+            }
+        }
+
         output_file_button.draw({
             let opt_current = file_list_row.opt_output_file.clone();
 
             move |wid| {
-                if wid.active() {
-                    let old_color = draw::get_color();
-
-                    let current_color = if opt_current.borrow().is_some() {
-                        enums::Color::DarkRed
-                    } else {
-                        enums::Color::Yellow
-                    };
-
-                    draw::set_draw_color(current_color);
-
-                    for i in 1..3 {
-                        draw::draw_rect(wid.x() + i, wid.y() + i, wid.w() - i - i, wid.h() - i - i);
-                    }
-
-                    draw::set_draw_color(old_color);
-                }
+                paint_highlight(wid, opt_current.borrow().is_some());
             }
         });
 
@@ -606,21 +616,7 @@ impl <'a> FileListWidget {
             let opt_current = file_list_row.opt_passwd.clone();
 
             move |wid| {
-                if wid.active() {
-                    let old_color = draw::get_color();
-                    let current_color = if opt_current.borrow().is_some() {
-                        enums::Color::DarkRed
-                    } else {
-                        enums::Color::Yellow
-                    };
-                    draw::set_draw_color(current_color);
-
-                    let stroke = 2;
-                    for i in 1..(stroke + 1) {
-                        draw::draw_rect(wid.x() + i, wid.y() + i, wid.w() - i - i, wid.h() - i - i);
-                    }
-                    draw::set_draw_color(old_color);
-                }
+                paint_highlight(wid, opt_current.borrow().is_some());
             }
         });
 
@@ -702,6 +698,7 @@ impl <'a> FileListWidget {
                     container_pack.end();
 
                     win.end();
+
                     win.make_modal(true);
                     win.make_resizable(true);
                     win.show();
@@ -792,12 +789,13 @@ impl <'a> FileListWidget {
                         selfie.selected_indices.borrow_mut().retain( |x| *x != idx as usize);
                     }
 
-                    let _ = app::handle_main(FileListWidgetEvent::SELECTION_CHANGED);
+                    let _ = app::handle_main(EVENT_ID_SELECTION_CHANGED);
                 }
             }
         });
 
         self.container.add(&row);
+        row.auto_layout();
         self.rows.borrow_mut().push(file_list_row);
         self.resize(self.container.x(), self.container.y(), ww, self.container.h());
     }
@@ -1338,7 +1336,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     selectall_frame_rc.borrow_mut().handle({
         move |_, ev| match ev {
             enums::Event::Push => {
-                let _ = app::handle_main(FileListWidgetEvent::ALL_SELECTED);
+                let _ = app::handle_main(EVENT_ID_ALL_SELECTED);
                 true
             }
             _ => false,
@@ -1348,7 +1346,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     deselectall_frame_rc.borrow_mut().handle({
         move |_, ev| match ev {
             enums::Event::Push => {
-                let _ = app::handle_main(FileListWidgetEvent::ALL_DESELECTED);
+                let _ = app::handle_main(EVENT_ID_ALL_DESELECTED);
                 true
             }
             _ => false,
@@ -2071,7 +2069,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 true
             }
             _ => {
-                if ev.bits() == FileListWidgetEvent::SELECTION_CHANGED {
+                if ev.bits() == EVENT_ID_SELECTION_CHANGED {
                     let selection = filelist_widget_ref.selected_indices();
                     let empty_selection = selection.is_empty();
 
@@ -2091,10 +2089,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                     filelist_widget_ref.container.redraw();
                     filelist_scroll_ref.redraw();
                     true
-                } else if ev.bits() == FileListWidgetEvent::ALL_SELECTED {
+                } else if ev.bits() == EVENT_ID_ALL_SELECTED {
                     filelist_widget_ref.select_all();
                     true
-                } else if ev.bits() == FileListWidgetEvent::ALL_DESELECTED {
+                } else if ev.bits() == EVENT_ID_ALL_DESELECTED {
                     filelist_widget_ref.deselect_all();
                     true
                 } else if app::event_state().is_empty() && app::event_key() == enums::Key::Escape {
@@ -2129,7 +2127,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             let mut convert_button = convert_button.clone();
             move |_| {
                 convert_button.do_callback();
-        }});
+            }});
     }
 
     let receiver = r.lock().unwrap();
@@ -2229,7 +2227,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 #[cfg(target_os = "windows")]
-pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> {    
+pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> {
     use std::os::windows::process::CommandExt;
     match Command::new(cmd).arg(input).creation_flags(0x08000000).spawn() {
         Ok(_) => Ok(()),

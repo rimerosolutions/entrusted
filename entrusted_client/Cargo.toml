@@ -1,3 +1,5 @@
+cargo-features = ["strip"]
+
 [package]
 name = "entrusted-client"
 version = "0.2.4"

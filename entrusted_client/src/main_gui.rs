@@ -2197,7 +2197,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 },
                 common::AppEvent::ConversionSuccessEvent(row_idx, opt_viewer_app, pdf_pathbuf) => {
-                    filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_SUCCEEDED, enums::Color::Green);
+                    filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_SUCCEEDED, enums::Color::DarkGreen);
 
                     if let Some(viewer_app) = opt_viewer_app {
                         if let Err(ex) = pdf_open_with(viewer_app, pdf_pathbuf) {

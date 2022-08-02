@@ -22,7 +22,7 @@ echo "Building all Windows binaries"
 podman run --rm --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:1.60.0 sh -c "cd /src/entrusted_client && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu && cd /src/entrusted_webserver && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu && cd /src/entrusted_webclient && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu"
 retVal=$?
 if [ $retVal -ne 0 ]; then
-	echo "Failure"
+	echo "Failure to build Windows binaries"
   exit 1
 fi
 
@@ -35,6 +35,12 @@ echo "Generate windows installer"
 cp ${SCRIPTDIR}/installer.nsi ${ARTIFACTSDIR}/
 perl -pi -e "s/_APPVERSION_/${APPVERSION}/g" ${ARTIFACTSDIR}/installer.nsi
 podman run --rm -v "${ARTIFACTSDIR}":/build docker.io/binfalse/nsis installer.nsi
+retVal=$?
+if [ $retVal -ne 0 ]; then
+	echo "Failure to build Windows installer"
+  exit 1
+fi
+
 rm ${ARTIFACTSDIR}/installer.nsi
 mv ${ARTIFACTSDIR}/entrusted-windows-amd64-${APPVERSION}.exe ${ARTIFACTSDIR}/../
 

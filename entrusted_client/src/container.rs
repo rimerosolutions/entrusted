@@ -32,6 +32,20 @@ where
         })
 }
 
+fn read_output_no_capture<R>(thread_name: &str, stream: R, _: Sender<common::AppEvent>) -> Result<JoinHandle<Result<(), Box<dyn Error + Send + Sync>>>, io::Error>
+where
+    R: Read + Send + 'static {
+    thread::Builder::new()
+        .name(thread_name.to_string())
+        .spawn(move || {
+            let reader = BufReader::new(stream);
+            reader.lines()
+                .try_for_each(|_| {
+                    Ok(())
+                })
+        })
+}
+
 #[cfg(not(any(target_os = "windows")))]
 fn spawn_command(cmd: &str, cmd_args: Vec<String>) -> std::io::Result<Child> {    
     Command::new(cmd)
@@ -79,18 +93,24 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<Stri
 
     let mut cmd = spawn_command(rt_executable, cmd)?;
 
-    if capture_output {
-        let stdout_handles = vec![
+    
+    let stdout_handles = if capture_output {
+        vec![
             read_output("entrusted.stdout",  cmd.stdout.take().expect("!stdout"), tx.clone()),
             read_output("entrusted.stderr" , cmd.stderr.take().expect("!stderr"), tx.clone()),
-        ];
+        ]
+    } else {
+        vec![
+            read_output_no_capture("entrusted.stdout",  cmd.stdout.take().expect("!stdout"), tx.clone()),
+            read_output_no_capture("entrusted.stderr" , cmd.stderr.take().expect("!stderr"), tx.clone()),
+        ]        
+    };
 
-        for stdout_handle in stdout_handles {
-            if let Err(ex) = stdout_handle?.join() {
-                return Err(format!("{} {:?}", trans.gettext("Command output capture failed!"), ex).into());
-            }
+    for stdout_handle in stdout_handles {
+        if let Err(ex) = stdout_handle?.join() {
+            return Err(format!("{} {:?}", trans.gettext("Command output capture failed!"), ex).into());
         }
-    }
+    }    
 
     loop {
         match cmd.try_wait() {
@@ -287,7 +307,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             fs::copy(&container_output_file_path, output_path)?;
             fs::remove_file(container_output_file_path)?;
 
-            let output_file = fs::File::open(output_path_clone)?;
+            let output_file = fs::File::create(output_path_clone)?;
             filetime::set_file_handle_times(&output_file, Some(atime), Some(atime))?;
 
             if let Err(ex) = cleanup_dir(dz_tmp.clone().to_path_buf()) {

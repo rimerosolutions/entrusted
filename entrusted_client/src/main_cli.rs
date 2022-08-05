@@ -200,21 +200,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     if log_format == LOG_FORMAT_PLAIN {
         let pb = ProgressBar::new(100);
 
-        for line in rx {
-            if let common::AppEvent::ConversionProgressEvent(msg) = line {
-                let log_msg_ret: serde_json::Result<common::LogMessage> = serde_json::from_slice(msg.as_bytes());
+        for msg in rx {
+            let log_msg_ret: serde_json::Result<common::LogMessage> = serde_json::from_slice(msg.as_bytes());
 
-                if let Ok(log_msg) = log_msg_ret {
-                    pb.set_position(log_msg.percent_complete as u64);
-                    pb.println(&log_msg.data);
-                }
+            if let Ok(log_msg) = log_msg_ret {
+                pb.set_position(log_msg.percent_complete as u64);
+                pb.println(&log_msg.data);
             }
         }
     } else {
-        for line in rx {
-            if let common::AppEvent::ConversionProgressEvent(msg) = line {
-                println!("{}", msg);
-            }
+        for msg in rx {
+            println!("{}", msg);
         }
     }
 

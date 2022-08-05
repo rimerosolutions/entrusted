@@ -15,7 +15,7 @@ use std::thread;
 use entrusted_l10n as l10n;
 use crate::common;
 
-fn read_output<R>(thread_name: &str, stream: R, tx: Sender<common::AppEvent>) -> Result<JoinHandle<Result<(), Box<dyn Error + Send + Sync>>>, io::Error>
+fn read_output<R>(thread_name: &str, stream: R, tx: Sender<String>) -> Result<JoinHandle<Result<(), Box<dyn Error + Send + Sync>>>, io::Error>
 where
     R: Read + Send + 'static {
     thread::Builder::new()
@@ -24,15 +24,16 @@ where
             let reader = BufReader::new(stream);
             reader.lines()
                 .try_for_each(|line| {
-                    match tx.send(common::AppEvent::ConversionProgressEvent(line?)) {
-                        Ok(())  => Ok(()),
-                        Err(ex) => Err(ex.into())
+                    if let Err(ex) = tx.send(line?) {
+                        return Err(ex.into());
                     }
+
+                    Ok(())
                 })
         })
 }
 
-fn read_output_no_capture<R>(thread_name: &str, stream: R, _: Sender<common::AppEvent>) -> Result<JoinHandle<Result<(), Box<dyn Error + Send + Sync>>>, io::Error>
+fn read_output_no_capture<R>(thread_name: &str, stream: R, _: Sender<String>) -> Result<JoinHandle<Result<(), Box<dyn Error + Send + Sync>>>, io::Error>
 where
     R: Read + Send + 'static {
     thread::Builder::new()
@@ -47,7 +48,7 @@ where
 }
 
 #[cfg(not(any(target_os = "windows")))]
-fn spawn_command(cmd: &str, cmd_args: Vec<String>) -> std::io::Result<Child> {    
+fn spawn_command(cmd: &str, cmd_args: Vec<String>) -> std::io::Result<Child> {
     Command::new(cmd)
         .args(cmd_args)
         .stdin(Stdio::null())
@@ -68,10 +69,10 @@ fn spawn_command(cmd: &str, cmd_args: Vec<String>) -> std::io::Result<Child> {
         .spawn()
 }
 
-fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<String>, tx: Sender<common::AppEvent>, capture_output: bool, printer: Box<dyn LogPrinter>, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
+fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<String>, tx: Sender<String>, capture_output: bool, printer: Box<dyn LogPrinter>, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
     let rt_path = container_program.exec_path;
     let sub_commands = container_program.sub_commands.iter().map(|i| i.to_string());
-    let rt_executable: &str = &format!("{}", rt_path.display());
+    let rt_executable: &str = &rt_path.display().to_string();
 
     let mut cmd = Vec::with_capacity(sub_commands.len() + args.len());
     cmd.extend(sub_commands);
@@ -89,11 +90,11 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<Stri
 
     let masked_cmd = cmd_masked.join(" ");
 
-    tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, trans.gettext_fmt("Running command: {0}", vec![&format!("{} {}", rt_executable, masked_cmd)]))))?;
+    tx.send(printer.print(1, trans.gettext_fmt("Running command: {0}", vec![&format!("{} {}", rt_executable, masked_cmd)])))?;
 
     let mut cmd = spawn_command(rt_executable, cmd)?;
 
-    
+
     let stdout_handles = if capture_output {
         vec![
             read_output("entrusted.stdout",  cmd.stdout.take().expect("!stdout"), tx.clone()),
@@ -103,14 +104,14 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<Stri
         vec![
             read_output_no_capture("entrusted.stdout",  cmd.stdout.take().expect("!stdout"), tx.clone()),
             read_output_no_capture("entrusted.stderr" , cmd.stderr.take().expect("!stderr"), tx.clone()),
-        ]        
+        ]
     };
 
     for stdout_handle in stdout_handles {
         if let Err(ex) = stdout_handle?.join() {
             return Err(format!("{} {:?}", trans.gettext("Command output capture failed!"), ex).into());
         }
-    }    
+    }
 
     loop {
         match cmd.try_wait() {
@@ -172,7 +173,7 @@ impl LogPrinter for JsonLogPrinter {
     }
 }
 
-pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: common::ConvertOptions, tx: Sender<common::AppEvent>, trans: l10n::Translations) -> Result<bool, Box<dyn Error>> {
+pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: common::ConvertOptions, tx: Sender<String>, trans: l10n::Translations) -> Result<bool, Box<dyn Error>> {
     if !input_path.exists() {
         return Err(trans.gettext_fmt("The selected file does not exists: {0}!", vec![&input_path.display().to_string()]).into());
     }
@@ -183,7 +184,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         Box::new(JsonLogPrinter)
     };
 
-    tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, format!("{} {}.", trans.gettext("Converting"), input_path.display()))))?;
+    tx.send(printer.print(1, format!("{} {}", trans.gettext("Converting"), input_path.display())))?;
 
     let mut success = false;
 
@@ -230,19 +231,19 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
     if let Some(container_rt) = common::container_runtime_path() {
         let mut ensure_image_args = vec!["inspect".to_string(), convert_options.container_image_name.to_owned()];
 
-        tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, trans.gettext("Checking if container image exists"))))?;
+        tx.send(printer.print(1, trans.gettext("Checking if container image exists")))?;
 
         if let Err(ex) = exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone(), false, printer.clone_box(), trans.clone()) {
-            tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, trans.gettext_fmt("The container image was not found. {0}", vec![&ex.to_string()]))))?;
+            tx.send(printer.print(1, trans.gettext_fmt("The container image was not found. {0}", vec![&ex.to_string()])))?;
             ensure_image_args = vec!["pull".to_string(), convert_options.container_image_name.to_owned()];
-            tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, trans.gettext("Please wait, downloading image (roughly 600 MB)."))))?;
+            tx.send(printer.print(1, trans.gettext("Please wait, downloading image (roughly 600 MB).")))?;
 
             if let Err(exe) = exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone(), false, printer.clone_box(), trans.clone()) {
-                tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, trans.gettext("Couldn't download container image!"))))?;
+                tx.send(printer.print(100, trans.gettext("Couldn't download container image!")))?;
                 return Err(exe.into());
             }
 
-            tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext("Container image download completed..."))))?;
+            tx.send(printer.print(5, trans.gettext("Container image download completed...")))?;
         }
 
         let mut convert_args = Vec::with_capacity(run_args.len() + container_rt.suggested_run_args.len());
@@ -311,7 +312,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             let _ = filetime::set_file_handle_times(&output_file, Some(atime), Some(atime));
 
             if let Err(ex) = cleanup_dir(dz_tmp.clone().to_path_buf()) {
-                tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, trans.gettext_fmt("Failed to cleanup temporary folder: {0}. {1}.", vec![&dz_tmp.clone().display().to_string(), &ex.to_string()]))))?;
+                tx.send(printer.print(100, trans.gettext_fmt("Failed to cleanup temporary folder: {0}. {1}.", vec![&dz_tmp.clone().display().to_string(), &ex.to_string()])))?;
             }
             success = true;
         } else {
@@ -333,7 +334,6 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
     if success {
         Ok(success)
     } else {
-        tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, err_msg.clone())))?;
         Err(err_msg.into())
     }
 }

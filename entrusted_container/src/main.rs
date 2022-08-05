@@ -773,7 +773,7 @@ fn img_to_pdf(src_format: image::ImageFormat, src_path: &PathBuf, dest_path: &Pa
     let img = image::load(reader, src_format)?;
     let mut buffer: Vec<u8> = Vec::with_capacity(file_len);
 
-    img.write_to(&mut buffer, image::ImageOutputFormat::Png)?;
+    img.write_to(&mut Cursor::new(&mut buffer), image::ImageOutputFormat::Png)?;
 
     let mut c = Cursor::new(buffer);
     let surface_png = ImageSurface::create_from_png(&mut c)?;

@@ -9,9 +9,13 @@
   - [ ] Parallel conversions
   - [ ] Minimal resources management to avoid exhausting computer CPU and memory
 - User Interface
-  - [X] Responsiveness issues during conversions
-  - [X] Hide command prompts while running processes on Windows
+  - [X] Hide command prompts while running processes on Windows, and address file permissions errors
+  - [ ] Responsiveness issues during conversions (UI thread and background operations)
   - [ ] There're probably too many redraw operations in the Desktop UI
+  - [ ] Sorting in the conversion queue (file name, status, etc.)
+  - [ ] Allow other operations during conversions (add more files, etc.)
+  - [ ] Add overall progress information during conversions (pie chart?)
+  - [ ] Display overall conversion results ("X out of Y files were not successfully converted")
   - [ ] Improve scrolling behavior during conversions ("smooth-scrolling")
 - [ ] Hardening
   - [ ] Review container execution options (podman v.s podman-remote, security options, etc.)

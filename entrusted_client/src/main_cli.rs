@@ -2,7 +2,7 @@ use clap::{App, Arg};
 use std::env;
 use std::error::Error;
 use std::path::PathBuf;
-use std::sync::mpsc::channel;
+use std::sync::mpsc;
 use std::fs;
 use std::thread;
 use serde_json;
@@ -183,14 +183,14 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
     }  else {
-            None
+        None
     };
 
-    let (tx, rx) = channel();
+    let (tx, rx) = mpsc::sync_channel::<common::AppEvent>(5);
 
     let exec_handle = thread::spawn(move || {
         let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), ocr_lang, opt_passwd);
-        match container::convert(src_path_copy, output_filename, convert_options, tx, trans.clone()) {
+        match container::convert(src_path_copy, output_filename, convert_options, tx, common::ExecSource::CLI, trans.clone()) {
             Ok(_)   => None,
             Err(ex) => Some(ex.to_string())
         }
@@ -200,17 +200,21 @@ fn main() -> Result<(), Box<dyn Error>> {
     if log_format == LOG_FORMAT_PLAIN {
         let pb = ProgressBar::new(100);
 
-        for msg in rx {
-            let log_msg_ret: serde_json::Result<common::LogMessage> = serde_json::from_slice(msg.as_bytes());
+        for line in rx {
+            if let common::AppEvent::ConversionProgressEvent(msg) = line {
+                let log_msg_ret: serde_json::Result<common::LogMessage> = serde_json::from_slice(msg.as_bytes());
 
-            if let Ok(log_msg) = log_msg_ret {
-                pb.set_position(log_msg.percent_complete as u64);
-                pb.println(&log_msg.data);
+                if let Ok(log_msg) = log_msg_ret {
+                    pb.set_position(log_msg.percent_complete as u64);
+                    pb.println(&log_msg.data);
+                }
             }
         }
     } else {
-        for msg in rx {
-            println!("{}", msg);
+        for line in rx {
+            if let common::AppEvent::ConversionProgressEvent(msg) = line {
+                println!("{}", msg);
+            }
         }
     }
 

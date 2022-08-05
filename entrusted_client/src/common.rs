@@ -23,6 +23,11 @@ macro_rules! incl_gettext_files {
     };
 }
 
+#[derive(Deserialize, Serialize, Clone, Debug, Copy, PartialEq)]
+pub enum ExecSource {
+    CLI, GUI
+}
+
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub enum AppEvent {
     FileOpenEvent(String),
@@ -30,6 +35,7 @@ pub enum AppEvent {
     ConversionStartEvent(usize),
     ConversionSuccessEvent(usize, Option<String>, PathBuf),
     ConversionFailureEvent(usize),
+    ConversionFinishedAckEvent
 }
 
 pub fn executable_find(exe_name: &str) -> Option<PathBuf> {

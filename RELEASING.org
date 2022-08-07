@@ -9,7 +9,7 @@ General steps:
     - Please try to follow closely [[https://semver.org/][semantic versioning]]
   - Bump the =version= field in the =entrusted_container/Dockerfile= for the label =org.opencontainers.image.version=
   - Bump the version in the HTML title for =entrusted_webserver/web-assets/index.html=
-- On a recent Ubuntu Linux installation, build all the release artifacts =ci_cd/build_all.sh=
+- On a recent Ubuntu Linux installation, build all the release artifacts =ci_cd/build.sh=
   - This generates release artifacts under a new folder called =packages=
   - You can then test the resulting archives and executables under Linux, Mac OS and Windows
   - You can test the live CD ISO image with a tool such as [[https://www.qemu.org/][QEMU]] or the software of your choice

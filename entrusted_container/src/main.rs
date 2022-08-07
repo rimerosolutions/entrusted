@@ -9,7 +9,7 @@ use std::error::Error;
 use std::ffi::CString;
 use std::fs;
 use serde::{Deserialize, Serialize};
-use std::io::{BufReader, Cursor};
+use std::io::{BufReader, Cursor, Seek, Write};
 use std::path::PathBuf;
 use std::time::Instant;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -21,13 +21,13 @@ mod mimetypes;
 
 const LOCATION_LIBREOFFICE_PROGRAM: &str = "/usr/lib/libreoffice/program";
 
-const IMAGE_DPI: f64   = 150.0;
-const TARGET_DPI : f64 = 72.0;
-const ZOOM_RATIO: f64  = IMAGE_DPI / TARGET_DPI;
-
 const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str = "ENTRUSTED_DOC_PASSWD";
 const ENV_VAR_LOG_FORMAT: &str           = "LOG_FORMAT";
 const ENV_VAR_OCR_LANGUAGE: &str         = "OCR_LANGUAGE";
+
+const IMAGE_DPI: f64   = 150.0;
+const TARGET_DPI : f64 = 72.0;
+const ZOOM_RATIO: f64  = IMAGE_DPI / TARGET_DPI;
 
 macro_rules! incl_gettext_files {
     ( $( $x:expr ),* ) => {
@@ -142,7 +142,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         progress_range = ProgressRange::new(90, 98);
         pdf_combine_pdfs(&logger, progress_range, page_count, &output_dir_path, &output_file_path, l10n.clone())?;
 
-        // step 5 (80%)
+        // step 5 (98%)
         move_file_to_dir(&output_file_path, &safe_dir_path)
     };
 
@@ -533,10 +533,10 @@ fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_rang
             let sh = (h * ZOOM_RATIO) as i32;
 
             let surface_png = ImageSurface::create(Format::Rgb24, sw, sh)?;
+            
             let ctx = Context::new(&surface_png)?;
-
-            ctx.set_source_rgb(1.0, 1.0, 1.0);
             ctx.scale(ZOOM_RATIO, ZOOM_RATIO);
+            ctx.set_source_rgb(1.0, 1.0, 1.0);
             ctx.set_antialias(antialias_setting);
             ctx.set_font_options(&font_options);
             ctx.paint()?;
@@ -772,11 +772,13 @@ fn img_to_pdf(src_format: image::ImageFormat, src_path: &PathBuf, dest_path: &Pa
     let reader = BufReader::new(f);
     let img = image::load(reader, src_format)?;
     let mut buffer: Vec<u8> = Vec::with_capacity(file_len);
+    let buffer_cursor = &mut Cursor::new(&mut buffer);
+    img.write_to(buffer_cursor, image::ImageOutputFormat::Png)?;
 
-    img.write_to(&mut Cursor::new(&mut buffer), image::ImageOutputFormat::Png)?;
+    buffer_cursor.flush()?;
+    buffer_cursor.rewind()?;
 
-    let mut c = Cursor::new(buffer);
-    let surface_png = ImageSurface::create_from_png(&mut c)?;
+    let surface_png = ImageSurface::create_from_png(buffer_cursor)?;
     let (w, h) = (surface_png.width() as f64, surface_png.height() as f64);
     let surface_pdf = PdfSurface::new(w, h, &dest_path)?;
     let ctx = Context::new(&surface_pdf)?;

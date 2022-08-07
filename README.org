@@ -5,8 +5,8 @@
 ** Overview
 
 =Entrusted= is a document sanitizer tool that converts "/potentially suspicious files/" into /safe PDFs/:
-- This is achieved by transforming documents inside a "lightweight sandbox" ([[https://www.ibm.com/cloud/learn/containerization][containerization]]): =containerization= itself does not provide absolute security guarantees...
-- Supported file formats include PDF documents, common image formats, Office documents ([[https://www.office.com/][Microsoft Office]] or [[https://www.libreoffice.org/discover/what-is-opendocument/][OpenDocument]]). For Office documents, processing can be performed only for text documents, spreadsheets and presentations
+- This is achieved by transforming documents inside a "lightweight sandbox" ([[https://www.ibm.com/cloud/learn/containerization][containerization]])
+- Supported file types include PDF documents, common image formats, Office documents ([[https://www.office.com/][MS Office]] or [[https://www.libreoffice.org/discover/what-is-opendocument/][OpenDocument]]). 
 - The progam was originally a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation purposes
 
 *NOTE*: Unless you use the live CD, you MUST install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior running the program.
@@ -20,25 +20,25 @@ Below are some screenshots of the graphical Desktop client running on Linux.
 ** Features
 
 - Documents or images are converted inside a "sandbox"
-- Files can be converted in batch (sequential conversions for now)
-- There is support for password-protected documents (known Office document formats and PDF files)
-- An optional Web interface is available and can act as an "online service" (towards multi-tenancy)
 - The transformation of large/complex documents is frictionless (timeouts or other user-visible issues)
+- Files can be converted in batch (sequential conversions for now)
+- An optional Web interface is available and can act as an "online service" (towards multi-tenancy)
 - The live CD provides both enhanced security and convenience:
   - Pre-installed [[https://xebia.com/blog/podman-the-free-container-engine-alternative-to-docker/][container solution]], with no required user configuration ([[./entrusted_webserver][entrusted_webserver]])
   - Extra isolation layer via a virtual machine
 - The application supports multiple languages (English and French for now)
+- There is support for password-protected documents (known Office document formats and PDF files)
 - On Mac OS, [[https://github.com/lima-vm/lima][Lima]] is supported as an alternative to [[https://www.docker.com/products/docker-desktop/][Docker]] (/default Lima instance/ only)
     
 * What is available?
 
 ** User interfaces
 
-There are 3 user interfaces ([[./entrusted_client][Desktop and CLI]], [[./entrusted_webserver][Web]])
+There are three user interfaces ([[./entrusted_client][Desktop and CLI]], [[./entrusted_webserver][Web]]):
 - The graphical Desktop interface is recommended for most users
 - If you prefer the Web interface, please download the live CD for an out-of-the-box user experience:
   - You can run the live CD with tools such as [[https://www.qemu.org/][QEMU]], [[https://www.virtualbox.org/wiki/Downloads][VirtualBox]], [[https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v][Hyper-V]], [[https://www.vmware.com/nl/products/workstation-player.html][VmWare]], [[https://www.parallels.com/][Parallels]], etc.
-  - The Web UI is available at =http://localhost:13000=
+  - The Web UI can be accessed at the address =http://localhost:13000=
   - Replace =localhost= by the IP address of your virtual machine in the above-mentioned link
 
 ** Downloads
@@ -48,9 +48,9 @@ Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releas
 |---------------+-----------------------------------------+-----------------------------------------------|
 | "System" (OS) | Artifact                                | Description                                   |
 |---------------+-----------------------------------------+-----------------------------------------------|
-| =Linux=       | =entrusted-linux-amd64-<version>.tar=   | Archive with all programs                     |
-|               | =entrusted-linux-amd64-<version>.deb=   | Desktop and CLI clients (Debian-Like distros) |
+| =Linux=       | =entrusted-linux-amd64-<version>.deb=   | Desktop and CLI clients (Debian-Like distros) |
 |               | =entrusted-linux-amd64-<version>.rpm=   | Desktop and CLI clients (Redhat-Like distros) |
+|               | =entrusted-linux-amd64-<version>.tar=   | Archive with all programs                     |
 |---------------+-----------------------------------------+-----------------------------------------------|
 | =Mac OS=      | =entrusted-macos-amd64-<version>.dmg=   | Installer with the Desktop and CLI clients    |
 |               | =entrusted-macos-amd64-<version>.zip=   | Archive with all programs                     |
@@ -64,8 +64,8 @@ Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releas
 ** Key software components
 
 Most users will interact with the Desktop user interface (=entrusted_client= component):
-- This doesn't install a container runtime, but will display "useful" error messages when possible
-- This will automatically download a container image (~600 MB), as needed ("The backend" service")
+- This doesn't install a container runtime, but will display "useful" error messages if possible
+- This will automatically download a container image (~600 MB), as needed ("The backend service")
 
 |---------------------+---------------------------------------------|
 | Component           | Purpose                                     |
@@ -74,7 +74,7 @@ Most users will interact with the Desktop user interface (=entrusted_client= com
 | [[./entrusted_client][entrusted_client]]    | Command-line and graphical user interfaces  |
 | [[./entrusted_webserver][entrusted_webserver]] | Online service feature with a Web interface |
 | [[./entrusted_webclient][entrusted_webclient]] | Command-line client for the =web server=    |
-| [[./entrusted_l10n][entrusted_l10n]]      | Shared library for translation features     |
+| [[./entrusted_l10n][entrusted_l10n]]      | Shared library for text translations        |
 |---------------------+---------------------------------------------|
 
 ** Architecture overview

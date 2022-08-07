@@ -2184,6 +2184,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 },
                 common::AppEvent::ConversionProgressEvent(msg) => {
+                    app::sleep(0.01);
                     let log_msg_ret: serde_json::Result<common::LogMessage> = serde_json::from_slice(msg.as_bytes());
 
                     if let Ok(log_msg) = log_msg_ret {
@@ -2195,6 +2196,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     app::awake();
                 },
                 common::AppEvent::ConversionSuccessEvent(row_idx, opt_viewer_app, pdf_pathbuf) => {
+                    app::sleep(0.01);
                     filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_SUCCEEDED, enums::Color::DarkGreen);
 
                     if let Some(viewer_app) = opt_viewer_app {
@@ -2209,11 +2211,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                     app_tx.send(common::AppEvent::ConversionFinishedAckEvent);
                 },
                 common::AppEvent::ConversionFailureEvent(row_idx) => {
+                    app::sleep(0.01);
                     filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_FAILED, enums::Color::Red);
                     app::awake();
                     app_tx.send(common::AppEvent::ConversionFinishedAckEvent);
                 },
                 common::AppEvent::ConversionStartEvent(row_idx) => {
+                    app::sleep(0.01);
                     filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_INPROGRESS, enums::Color::DarkYellow);
                     let row_ypos = filelist_widget.ypos(row_idx);
                     let scroll_half_height = filelist_scroll.h() / 2;
@@ -2222,6 +2226,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                         filelist_scroll.scroll_to(0, row_ypos - scroll_half_height);
                         filelist_scroll.redraw();
                     }
+                    app::awake();
                 },
                 _ => {}
             }

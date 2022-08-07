@@ -18,5 +18,5 @@ General steps:
 - Push the container image to [[https://hub.docker.com/r/uycyjnzgntrn/entrusted_container][Docker Hub]] per [[./entrusted_container/README.org][publishing instructions]]
 - Create a new GitHub release from its Web interface:
   - Add the release notes
-  - Upload all release artifacts (=exe=, =dmg=, =zip=, =tar= and =iso= files)
+  - Upload all release artifacts (=exe=, =dmg=, =zip=, =tar=, =deb=, =rpm= and =iso= files)
   - Publish the release

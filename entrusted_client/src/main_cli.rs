@@ -17,6 +17,24 @@ mod container;
 
 const LOG_FORMAT_PLAIN: &str = "plain";
 
+#[derive(Clone)]
+struct CliEventSender {
+    tx: mpsc::SyncSender<common::AppEvent>
+}
+
+
+impl common::EventSender for CliEventSender {
+    fn send(&self, evt: crate::common::AppEvent) -> Result<(), mpsc::SendError<crate::common::AppEvent>> {
+        let ret = self.tx.send(evt);
+
+        ret
+    }
+
+    fn clone_box(&self) -> Box<dyn common::EventSender> {
+        Box::new(self.clone())
+    }
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     l10n::load_translations(incl_gettext_files!("en", "fr"));
 
@@ -187,10 +205,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let (tx, rx) = mpsc::sync_channel::<common::AppEvent>(5);
+    let eventer = Box::new(CliEventSender {
+        tx: tx.clone()
+    });
 
     let exec_handle = thread::spawn(move || {
         let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), ocr_lang, opt_passwd);
-        match container::convert(src_path_copy, output_filename, convert_options, tx, common::ExecSource::CLI, trans.clone()) {
+        match container::convert(src_path_copy, output_filename, convert_options, eventer, trans.clone()) {
             Ok(_)   => None,
             Err(ex) => Some(ex.to_string())
         }

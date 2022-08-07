@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::{error::Error, sync::mpsc::SendError};
 use std::path::PathBuf;
 use which;
 use serde::{Deserialize, Serialize};
@@ -23,9 +23,9 @@ macro_rules! incl_gettext_files {
     };
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug, Copy, PartialEq)]
-pub enum ExecSource {
-    CLI, GUI
+pub trait EventSender: Sync + Send {
+    fn send(&self, evt: crate::common::AppEvent) -> Result<(), SendError<crate::common::AppEvent>>;
+    fn clone_box(&self) -> Box<dyn EventSender>;
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]

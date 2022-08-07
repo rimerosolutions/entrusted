@@ -161,9 +161,6 @@ msgstr "Supprimer le(s) fichier(s) sélectionné(s)"
 msgid "Convert document(s)"
 msgstr "Convertir le(s) document(s)"
 
-msgid "Conversion failed!"
-msgstr "Erreur de conversion"
-
 msgid "File name"
 msgstr "Nom de fichier"
 
@@ -247,6 +244,12 @@ msgstr "La commande a échoué!"
 
 msgid "Conversion failed!"
 msgstr "La conversion a échoué!"
+
+msgid "Container process terminated abruptly likely due to memory usage. Are PDF pages too big? Trying increasing the container engine memory."
+msgstr "Le processus de conteneur s'est terminé brusquement probablement en raison de l'utilisation de la mémoire. Les pages PDF sont-elles trop grandes? Vous essayez d'augmenter la mémoire du moteur de conteneur."
+
+msgid "Container process terminated abruptly due to a crash."
+msgstr "Le processus de conteneur s'est terminé brusquement en raison d'un crash."
 
 msgid "Please install Docker."
 msgstr "Veuillez installer Docker."

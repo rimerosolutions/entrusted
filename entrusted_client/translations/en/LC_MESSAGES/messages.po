@@ -153,9 +153,6 @@ msgstr ""
 msgid "Convert document(s)"
 msgstr ""
 
-msgid "Conversion failed!"
-msgstr ""
-
 msgid "File name"
 msgstr ""
 
@@ -238,6 +235,12 @@ msgid "Command failed!"
 msgstr ""
 
 msgid "Conversion failed!"
+msgstr ""
+
+msgid "Container process terminated abruptly likely due to memory usage. Are PDF pages too big? Trying increasing the container memory."
+msgstr ""
+
+msgid "Container process terminated abruptly due to a crash."
 msgstr ""
 
 msgid "Please install Docker."

@@ -41,6 +41,28 @@ const EVENT_ID_ALL_SELECTED: i32      = 51;
 const EVENT_ID_ALL_DESELECTED: i32    = 52;
 
 #[derive(Clone)]
+struct GuiEventSender {
+    tx: mpsc::SyncSender<common::AppEvent>
+}
+
+impl common::EventSender for GuiEventSender {
+    fn send(&self, evt: crate::common::AppEvent) -> Result<(), mpsc::SendError<crate::common::AppEvent>> {
+        app::sleep(0.01);
+        let ret = self.tx.send(evt);
+        app::awake();
+
+        ret
+    }
+
+    fn clone_box(&self) -> Box<dyn common::EventSender> {
+        Box::new(self.clone())
+    }
+}
+
+unsafe impl Send for GuiEventSender {}
+unsafe impl Sync for GuiEventSender {}
+
+#[derive(Clone)]
 struct ConversionTask {
     input_path: PathBuf,
     output_path: PathBuf,
@@ -857,7 +879,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let is_converting = Arc::new(AtomicBool::new(false));
 
     let app = app::App::default().with_scheme(app::Scheme::Gleam);
-    let (tx, rx) = mpsc::sync_channel::<common::AppEvent>(5);
+    let (tx, rx) = mpsc::sync_channel::<common::AppEvent>(1);
     let (app_tx, app_rx) = app::channel::<common::AppEvent>();
     let app_rx_ref = Arc::new(Mutex::new(app_rx));
 
@@ -1541,6 +1563,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let mut filelist_scroll_ref = filelist_scroll_ref.clone();
                 let mut convert_frame_ref = convert_frame_ref.clone();
                 let mut helpinfo_frame_ref = helpinfo_frame_ref.clone();
+                let eventer: Box<dyn common::EventSender> = Box::new(GuiEventSender {
+                    tx: tx.clone()
+                });
 
                 move || {
                     let mut idx = 0;
@@ -1554,17 +1579,16 @@ fn main() -> Result<(), Box<dyn Error>> {
                             let convert_options = task.options.clone();
                             move_next = false;
 
-                            let _ = tx.send(common::AppEvent::ConversionStartEvent(idx));
+                            let _ = eventer.send(common::AppEvent::ConversionStartEvent(idx));
 
                             if let Ok(_)  = container::convert(input_path,
                                                                output_path.clone(),
                                                                convert_options,
-                                                               tx.clone(),
-                                                               common::ExecSource::GUI,
+                                                               eventer.clone_box(),
                                                                trans_ref.clone()) {
-                                let _ = tx.send(common::AppEvent::ConversionSuccessEvent(idx, task.viewer_app_option.clone(), output_path.clone()));
+                                let _ = eventer.send(common::AppEvent::ConversionSuccessEvent(idx, task.viewer_app_option.clone(), output_path.clone()));
                             } else {
-                                let _ = tx.send(common::AppEvent::ConversionFailureEvent(idx));
+                                let _ = eventer.send(common::AppEvent::ConversionFailureEvent(idx));
                             }
                         }
 
@@ -2184,7 +2208,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 },
                 common::AppEvent::ConversionProgressEvent(msg) => {
-                    app::sleep(0.01);
                     let log_msg_ret: serde_json::Result<common::LogMessage> = serde_json::from_slice(msg.as_bytes());
 
                     if let Ok(log_msg) = log_msg_ret {
@@ -2196,7 +2219,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                     app::awake();
                 },
                 common::AppEvent::ConversionSuccessEvent(row_idx, opt_viewer_app, pdf_pathbuf) => {
-                    app::sleep(0.01);
                     filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_SUCCEEDED, enums::Color::DarkGreen);
 
                     if let Some(viewer_app) = opt_viewer_app {
@@ -2211,13 +2233,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                     app_tx.send(common::AppEvent::ConversionFinishedAckEvent);
                 },
                 common::AppEvent::ConversionFailureEvent(row_idx) => {
-                    app::sleep(0.01);
                     filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_FAILED, enums::Color::Red);
                     app::awake();
                     app_tx.send(common::AppEvent::ConversionFinishedAckEvent);
                 },
                 common::AppEvent::ConversionStartEvent(row_idx) => {
-                    app::sleep(0.01);
                     filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_INPROGRESS, enums::Color::DarkYellow);
                     let row_ypos = filelist_widget.ypos(row_idx);
                     let scroll_half_height = filelist_scroll.h() / 2;

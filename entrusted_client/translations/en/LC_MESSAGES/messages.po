@@ -33,7 +33,7 @@ msgid ""
 "- Images (.jpg, .jpeg, .gif, .png, .tif, .tiff)\n"
 "- Document Graphics (.odg)\n"
 "- Text Documents (.rtf, .doc, .docx, .odt)\n"
-"- Spreadsheets (.xls, .xlsx)\n"
+"- Spreadsheets (.xls, .xlsx, .ods)\n"
 "- Presentations (.ppt, .pptx, .odp)"
 msgstr ""
 

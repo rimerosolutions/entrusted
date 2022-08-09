@@ -208,7 +208,7 @@ fn show_info_dialog(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Tra
                                        "Images (.jpg, .jpeg, .gif, .png, .tif, .tiff)",
                                        "Document Graphics (.odg)",
                                        "Text Documents (.rtf, .doc, .docx, .odt)",
-                                       "Spreadsheets (.xls, .xlsx)",
+                                       "Spreadsheets (.xls, .xlsx, .ods)",
                                        "Presentations (.ppt, .pptx, .odp)");
 
 

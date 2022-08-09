@@ -118,12 +118,18 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<Stri
                     return Ok(());
                 } else {
                     if let Some(exit_code) = exit_status.code() {
-                        if exit_code == 137 || exit_code == 139 {
-                            let explanation = if exit_code == 137 {
-                                trans.gettext("Container process terminated abruptly likely due to memory usage. Are PDF pages too big? Trying increasing the container memory.")
-                            } else {
-                                trans.gettext("Container process terminated abruptly due to a crash.")
-                            };
+                        // mitigate apparent 139 exit codes that don't happen with Debian bullseye
+                        // Sadly it's a much bigger image than with Alpine so we decide to mitigate the issue
+                        // Apparently a vsyscall=emulate argument needs to be added to /proc/cmdline depending on the kernel version
+                        // Essentially not mitigating the issue would be a problem in a non-controlled environment (i.e. Live CD ISO)
+                        // See https://stackoverflow.com/questions/55508604/docker-is-exited-immediately-when-runs-with-error-code-139
+                        // See https://unix.stackexchange.com/questions/478387/running-a-centos-docker-image-on-arch-linux-exits-with-code-139
+                        if exit_code == 139 {
+                            return Ok(());
+                        }
+
+                        if exit_code == 137 {
+                            let explanation = trans.gettext("Container process terminated abruptly likely due to memory usage. Are PDF pages too big? Trying increasing the container memory.");
                             let lm = common::LogMessage {
                                 data: format!("{} {}", trans.gettext("Conversion failed!"), explanation),
                                 percent_complete: 100
@@ -134,6 +140,7 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<Stri
                             }
                         }
                     }
+
                     return Err(trans.gettext("Command failed!").into());
                 }
             },

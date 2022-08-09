@@ -204,20 +204,26 @@ fn main() -> Result<(), Box<dyn Error>> {
         None
     };
 
-    let (tx, rx) = mpsc::sync_channel::<common::AppEvent>(5);
-    let eventer = Box::new(CliEventSender {
-        tx: tx.clone()
-    });
+    let (exec_handle, rx) = {
+        let (tx, rx) = mpsc::sync_channel::<common::AppEvent>(5);
 
-    let exec_handle = thread::spawn(move || {
-        let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), ocr_lang, opt_passwd);
-        match container::convert(src_path_copy, output_filename, convert_options, eventer, trans.clone()) {
-            Ok(_)   => None,
-            Err(ex) => Some(ex.to_string())
-        }
-    });
+        let exec_handle = thread::spawn({
+            let tx = tx.clone();
 
-    drop(tx);
+            move || {
+                let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), ocr_lang, opt_passwd);
+                let eventer = Box::new(CliEventSender {
+                    tx
+                });
+
+                match container::convert(src_path_copy, output_filename, convert_options, eventer, trans.clone()) {
+                    Ok(_)   => None,
+                    Err(ex) => Some(ex.to_string())
+                }
+            }
+        });
+        (exec_handle, rx)
+    };
 
     // Rendering a progressbar in plain mode
     if log_format == LOG_FORMAT_PLAIN {

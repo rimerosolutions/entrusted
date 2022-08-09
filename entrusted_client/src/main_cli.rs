@@ -217,6 +217,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
+    drop(tx);
+
     // Rendering a progressbar in plain mode
     if log_format == LOG_FORMAT_PLAIN {
         let pb = ProgressBar::new(100);

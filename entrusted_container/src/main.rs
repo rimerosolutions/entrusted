@@ -533,8 +533,8 @@ fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_rang
             let sh = (h * ZOOM_RATIO) as i32;
 
             let surface_png = ImageSurface::create(Format::Rgb24, sw, sh)?;
-            
             let ctx = Context::new(&surface_png)?;
+
             ctx.scale(ZOOM_RATIO, ZOOM_RATIO);
             ctx.set_source_rgb(1.0, 1.0, 1.0);
             ctx.set_antialias(antialias_setting);
@@ -773,8 +773,8 @@ fn img_to_pdf(src_format: image::ImageFormat, src_path: &PathBuf, dest_path: &Pa
     let img = image::load(reader, src_format)?;
     let mut buffer: Vec<u8> = Vec::with_capacity(file_len);
     let buffer_cursor = &mut Cursor::new(&mut buffer);
-    img.write_to(buffer_cursor, image::ImageOutputFormat::Png)?;
 
+    img.write_to(buffer_cursor, image::ImageOutputFormat::Png)?;
     buffer_cursor.flush()?;
     buffer_cursor.rewind()?;
 

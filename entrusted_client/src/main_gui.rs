@@ -59,9 +59,6 @@ impl common::EventSender for GuiEventSender {
     }
 }
 
-unsafe impl Send for GuiEventSender {}
-unsafe impl Sync for GuiEventSender {}
-
 #[derive(Clone)]
 struct ConversionTask {
     input_path: PathBuf,

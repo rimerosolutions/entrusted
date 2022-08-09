@@ -7,6 +7,7 @@ mod uil10n;
 mod model;
 mod config;
 mod server;
+mod process;
 
 macro_rules! incl_gettext_files {
     ( $( $x:expr ),* ) => {

@@ -33,6 +33,7 @@ dirs = "4.0.0"
 toml = "0.5.9"
 base64-lib = "0.2.2"
 bs58 = "0.4.0"
+which = "4.2.2"
 entrusted_l10n = { path = "../entrusted_l10n" }
 
 [build-dependencies]

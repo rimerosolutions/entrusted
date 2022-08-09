@@ -21,6 +21,7 @@ impl ConversionOptions {
         }
     }
 }
+
 impl Notification {
     pub fn new(event: String, id: String, data: String) -> Self {
         Self { event, id, data }

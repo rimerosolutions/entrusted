@@ -6,7 +6,6 @@ use once_cell::sync::Lazy;
 use actix_cors::Cors;
 use tokio::io::AsyncBufReadExt;
 use tokio::io::BufReader;
-use tokio::process::Command;
 use std::collections::HashMap;
 use std::env;
 use std::fs;
@@ -40,6 +39,7 @@ use entrusted_l10n as l10n;
 use crate::config;
 use crate::model;
 use crate::uil10n;
+use crate::process;
 
 const SPA_INDEX_HTML: &[u8] = include_bytes!("../web-assets/index.html");
 
@@ -496,8 +496,13 @@ async fn run_entrusted(
         }
     }
 
-    let mut cmdline = vec![
-        "entrusted-cli".to_string(),
+    let cmd = if let Some(app_path) = process::exe_find("entrusted-cli") {
+        app_path.display().to_string()
+    } else {
+        return Err(l10n.gettext("Please ensure that the entrusted-cli binary is available in your PATH environment variable.").into());
+    };
+
+    let mut cmd_args = vec![
         "--log-format".to_string(),
         "json".to_string(),
         "--container-image-name".to_string(),
@@ -509,15 +514,15 @@ async fn run_entrusted(
     ];
 
     if let Some(ocr_lang) = conversion_options.opt_ocr_lang {
-        cmdline.push("--ocr-lang".to_string());
-        cmdline.push(ocr_lang);
+        cmd_args.push("--ocr-lang".to_string());
+        cmd_args.push(ocr_lang);
     }
 
     if conversion_options.opt_passwd.is_some() {
-        cmdline.push("--passwd-prompt".to_string());
+        cmd_args.push("--passwd-prompt".to_string());
     }
 
-    println!("{}: {}", l10n.gettext("Running command"), cmdline.join(" "));
+    println!("{}: {}", l10n.gettext("Running command"), cmd_args.join(" "));
 
     let err_find_notif = l10n.gettext("Could not find notification for");
     let err_notif_handle = l10n.gettext("Could not read notifications data");
@@ -529,18 +534,7 @@ async fn run_entrusted(
         env_map.insert("ENTRUSTED_AUTOMATED_PASSWORD_ENTRY".to_string(), doc_passwd);
     }
 
-    let mut shcmd = Vec::with_capacity(2);
-    shcmd.push("-c".to_string());
-    shcmd.push(cmdline.join(" "));
-
-    let mut child = Command::new("sh")
-        .envs(env_map)
-        .args(shcmd)
-        .stderr(std::process::Stdio::piped())
-        .stdout(std::process::Stdio::piped())
-        .kill_on_drop(true)
-        .spawn()?;
-
+    let mut child = process::spawn_cmd(cmd, cmd_args, env_map)?;
     let mut counter = 1;
 
     let stdout = child.stdout.take().expect("child is missing stdout handle");

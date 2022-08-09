@@ -145,7 +145,6 @@ fn clip_text<S: Into<String>>(txt: S, max_width: i32) -> String {
 }
 
 fn row_to_task(viewer_app_opt: &Option<String>, active_ociimage_option: &String, active_ocrlang_option: &Option<String>, active_file_suffix: &String, active_row: &FileListRow) -> ConversionTask {
-
     let input_path = active_row.file.clone();
 
     let output_path = if let Some(custom_output_path) = active_row.opt_output_file.borrow().clone() {
@@ -237,7 +236,7 @@ fn filelist_column_widths(w: i32) -> (i32, i32, i32, i32, i32, i32) {
     let width_output_file = 40;
     let active_w = w - width_password - width_output_file - (WIDGET_GAP * 5);
 
-    let width_checkbox    = (active_w as f64 * 0.4) as i32;
+    let width_checkbox    = (active_w as f64 * 0.4)  as i32;
     let width_progressbar = (active_w as f64 * 0.15) as i32;
     let width_status      = (active_w as f64 * 0.15) as i32;
     let width_logs        = (active_w as f64 * 0.3)  as i32;
@@ -1560,6 +1559,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let mut filelist_scroll_ref = filelist_scroll_ref.clone();
                 let mut convert_frame_ref = convert_frame_ref.clone();
                 let mut helpinfo_frame_ref = helpinfo_frame_ref.clone();
+
                 let eventer: Box<dyn common::EventSender> = Box::new(GuiEventSender {
                     tx: tx.clone()
                 });
@@ -1769,12 +1769,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             enums::Event::DndEnter => {
                 dnd = true;
                 true
-            }
+            },
             enums::Event::DndDrag => true,
             enums::Event::DndRelease => {
                 released = true;
                 true
-            }
+            },
             enums::Event::Paste => {
                 if dnd && released {
                     let path  = app::event_text();
@@ -1827,7 +1827,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
 
                 true
-            }
+            },
             enums::Event::Push => {
                 let mut selectfiles_filedialog = dialog::FileDialog::new(dialog::FileDialogType::BrowseMultiFile);
                 selectfiles_filedialog.set_title(&dialog_title);
@@ -1878,7 +1878,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 }
                 true
-            }
+            },
             _ => false,
         }
     });
@@ -2226,7 +2226,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
 
                     app::awake();
-
                     app_tx.send(common::AppEvent::ConversionFinishedAckEvent);
                 },
                 common::AppEvent::ConversionFailureEvent(row_idx) => {
@@ -2243,6 +2242,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                         filelist_scroll.scroll_to(0, row_ypos - scroll_half_height);
                         filelist_scroll.redraw();
                     }
+
                     app::awake();
                 },
                 _ => {}
@@ -2257,7 +2257,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> {
     use std::os::windows::process::CommandExt;
     match Command::new(cmd).arg(input).creation_flags(0x08000000).spawn() {
-        Ok(_) => Ok(()),
+        Ok(_)   => Ok(()),
         Err(ex) => Err(ex.into()),
     }
 }
@@ -2265,7 +2265,7 @@ pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> 
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]
 pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> {
     match Command::new(cmd).arg(input).spawn() {
-        Ok(_) => Ok(()),
+        Ok(_)   => Ok(()),
         Err(ex) => Err(ex.into()),
     }
 }

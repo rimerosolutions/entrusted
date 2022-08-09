@@ -111,11 +111,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         let page_count = doc.n_pages() as usize;
 
-        // step 2 (20%)
+        // step 2 (20%-45%)
         progress_range = ProgressRange::new(20, 45);
         split_pdf_pages_into_images(&logger, progress_range, page_count, doc, &output_dir_path, l10n.clone())?;
 
-        // step 3 (40%)
+        // step 3 (45%-90%)
         progress_range = ProgressRange::new(45, 90);
 
         match env::var(ENV_VAR_OCR_LANGUAGE) {
@@ -138,12 +138,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
 
-        // step 4 (60%)
+        // step 4 (90%-98%)
         progress_range = ProgressRange::new(90, 98);
         pdf_combine_pdfs(&logger, progress_range, page_count, &output_dir_path, &output_file_path, l10n.clone())?;
 
-        // step 5 (98%)
-        move_file_to_dir(&output_file_path, &safe_dir_path)
+        // step 5 (98%-98%)
+        progress_range = ProgressRange::new(98, 98);
+        move_file_to_dir(&logger, progress_range, &output_file_path, &safe_dir_path, l10n.clone())
     };
 
     let mut exit_code = 0;
@@ -163,9 +164,28 @@ fn main() -> Result<(), Box<dyn Error>> {
     std::process::exit(exit_code);
 }
 
-fn move_file_to_dir(src_file_path: &PathBuf, dest_dir_path: &PathBuf) -> Result<(), Box<dyn Error>> {
-    fs::copy(&src_file_path, &dest_dir_path)?;
-    fs::remove_file(&src_file_path)?;
+fn move_file_to_dir(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, src_file_path: &PathBuf, dest_dir_path: &PathBuf, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
+    if let Err(ex) = fs::File::create(&dest_dir_path) {
+        if let Some(dest_dir) = dest_dir_path.parent() {
+            if let Err(_) = fs::create_dir_all(dest_dir) {
+                logger.log(progress_range.min, l10n.gettext_fmt("Failed to copy file from {0} to {1}", vec![&src_file_path.display().to_string(), &dest_dir_path.display().to_string()]));
+            }
+
+            return Err(ex.into());
+        }
+    }
+    
+    if let Err(ex) = fs::copy(&src_file_path, &dest_dir_path) {
+        logger.log(progress_range.min, l10n.gettext_fmt("Failed to copy file from {0} to {1}", vec![&src_file_path.display().to_string(), &dest_dir_path.display().to_string()]));
+        return Err(ex.into());            
+    }
+
+    if let Err(ex) = fs::remove_file(&src_file_path) {
+        logger.log(progress_range.min, l10n.gettext_fmt("Failed to copy file from {0} to {1}", vec![&src_file_path.display().to_string(), &dest_dir_path.display().to_string()]));
+        return Err(ex.into());            
+    }
+
+    logger.log(progress_range.min, l10n.gettext("Moving output files to their final destination"));
 
     Ok(())
 }

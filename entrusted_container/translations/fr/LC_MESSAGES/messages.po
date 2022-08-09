@@ -149,3 +149,10 @@ msgstr[2] "{0} secondes"
 
 msgid "Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English."
 msgstr "Code de langue inconnu pour le paramètre ocr-lang: {0}. Astuce: Essayez 'eng' pour l'Anglais."
+
+msgid "Failed to copy file from {0} to {1}"
+msgstr "Échec de la copie du fichier de {0} à {1}"
+
+msgid "Moving output files to their final destination"
+msgstr "Déplacement des fichiers de sortie vers leur destination finale"
+

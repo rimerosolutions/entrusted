@@ -10,7 +10,6 @@ use indicatif::ProgressBar;
 use rpassword;
 use std::collections::HashMap;
 use entrusted_l10n as l10n;
-use normpath::PathExt;
 
 mod common;
 mod config;
@@ -164,8 +163,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     // std::fs::canonicalize returns UNC paths on Windows, and a lot of software doesn't support UNC paths
     // This is problematic with Docker and mapped volumes for this application
     // See https://github.com/rust-lang/rust/issues/42869
-    let src_path = fs::canonicalize(input_filename)?;
-    let src_path = src_path.normalize()?.into_path_buf();
+    let src_path = {
+        #[cfg(not(target_os = "windows"))] {
+            fs::canonicalize(input_filename)?
+        }
+        #[cfg(target_os = "windows")] {
+            use dunce;
+            dunce::canonicalize(input_filename)?
+        }
+    };
 
     let file_suffix = if let Some(proposed_file_suffix) = &run_matches.value_of("file-suffix") {
         String::from(proposed_file_suffix.clone())

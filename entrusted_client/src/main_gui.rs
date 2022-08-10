@@ -876,6 +876,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let (tx, rx) = mpsc::sync_channel::<common::AppEvent>(1);
     let (app_tx, app_rx) = app::channel::<common::AppEvent>();
     let app_rx_ref = Arc::new(Mutex::new(app_rx));
+    let app_rx_appleevents = app_rx_ref.clone();
 
     let wind_title = format!(
         "{} {}",
@@ -2152,56 +2153,57 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     while app.wait() {
-        if let Ok(app_event) = rx.try_recv() {
-            match app_event {
-                common::AppEvent::FileOpenEvent(msg) => {
-                    let mut filelist_widget_ref = filelist_widget.clone();
-                    let mut scroll_ref = filelist_scroll.clone();
-                    let file_path = PathBuf::from(msg);
-                    let mut selection_pack_ref = selection_pack.clone();
-                    let select_all_frame_ref = selectall_frame_rc.clone();
-                    let mut filelist_scroll_ref = filelist_scroll.clone();
-                    let deselect_all_frame_ref = deselectall_frame_rc.clone();
-                    let is_converting_ref = is_converting.clone();
+        if let Ok(app_rx) = app_rx_appleevents.lock() {
+            if let Some(common::AppEvent::FileOpenEvent(msg)) = app_rx.recv() {
+                let mut filelist_widget_ref = filelist_widget.clone();
+                let mut scroll_ref = filelist_scroll.clone();
+                let file_path = PathBuf::from(msg);
+                let mut selection_pack_ref = selection_pack.clone();
+                let select_all_frame_ref = selectall_frame_rc.clone();
+                let mut filelist_scroll_ref = filelist_scroll.clone();
+                let deselect_all_frame_ref = deselectall_frame_rc.clone();
+                let is_converting_ref = is_converting.clone();
 
-                    if file_path.exists() {
-                        if is_converting_ref.load(Ordering::Relaxed) {
-                            is_converting_ref.store(false, Ordering::Relaxed);
-                            filelist_widget_ref.delete_all();
-                            filelist_scroll_ref.scroll_to(0, 0);
-                            filelist_scroll_ref.redraw();
+                if file_path.exists() {
+                    if is_converting_ref.load(Ordering::Relaxed) {
+                        is_converting_ref.store(false, Ordering::Relaxed);
+                        filelist_widget_ref.delete_all();
+                        filelist_scroll_ref.scroll_to(0, 0);
+                        filelist_scroll_ref.redraw();
+                    }
+
+                    if add_to_conversion_queue(vec![file_path], &mut filelist_widget_ref, &mut scroll_ref) {
+                        if !selectall_frame_rc.borrow().active() {
+                            selectall_frame_rc.borrow_mut().activate();
+                            selectall_frame_rc.borrow_mut().set_label_color(enums::Color::Blue);
                         }
 
-                        if add_to_conversion_queue(vec![file_path], &mut filelist_widget_ref, &mut scroll_ref) {
-                            if !selectall_frame_rc.borrow().active() {
-                                selectall_frame_rc.borrow_mut().activate();
-                                selectall_frame_rc.borrow_mut().set_label_color(enums::Color::Blue);
-                            }
+                        if !deselectall_frame_rc.borrow().active() {
+                            deselectall_frame_rc.borrow_mut().activate();
+                            deselectall_frame_rc.borrow_mut().set_label_color(enums::Color::Blue);
+                        }
 
-                            if !deselectall_frame_rc.borrow().active() {
-                                deselectall_frame_rc.borrow_mut().activate();
-                                deselectall_frame_rc.borrow_mut().set_label_color(enums::Color::Blue);
-                            }
+                        if !convert_button.active() {
+                            convert_button.activate();
+                            selection_pack_ref.set_damage(true);
+                            select_all_frame_ref.borrow_mut().show();
+                            deselect_all_frame_ref.borrow_mut().show();
 
-                            if !convert_button.active() {
-                                convert_button.activate();
-                                selection_pack_ref.set_damage(true);
-                                select_all_frame_ref.borrow_mut().show();
-                                deselect_all_frame_ref.borrow_mut().show();
+                            selection_pack_ref.resize(selection_pack_ref.x(),
+                                                      selection_pack_ref.y(),
+                                                      selection_pack_ref.w(),
+                                                      40);
 
-                                selection_pack_ref.resize(
-                                    selection_pack_ref.x(),
-                                    selection_pack_ref.y(),
-                                    selection_pack_ref.w(),
-                                    40,
-                                );
-
-                                selection_pack_ref.set_damage(true);
-                                selection_pack_ref.redraw();
-                            }
+                            selection_pack_ref.set_damage(true);
+                            selection_pack_ref.redraw();
                         }
                     }
-                },
+                }
+            }
+        }
+
+        if let Ok(app_event) = rx.try_recv() {
+            match app_event {
                 common::AppEvent::ConversionProgressEvent(msg) => {
                     let log_msg_ret: serde_json::Result<common::LogMessage> = serde_json::from_slice(msg.as_bytes());
 
@@ -2293,7 +2295,7 @@ pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> 
         }
     } else {
         if let Err(ex) = Command::new(cmd).arg(input).spawn() {
-             Err(ex.into())
+            Err(ex.into())
         } else {
             Ok(())
         }

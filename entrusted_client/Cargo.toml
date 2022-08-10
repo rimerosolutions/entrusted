@@ -25,6 +25,7 @@ dirs = "4.0.0"
 toml = "0.5.9"
 fltk = { version = "1.3.12", features = ["fltk-bundled"] }
 entrusted_l10n = { path = "../entrusted_l10n" }
+normpath = "0.3.2"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 freedesktop_entry_parser = "1.2.0"

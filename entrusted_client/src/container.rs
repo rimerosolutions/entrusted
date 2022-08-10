@@ -245,7 +245,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         "--security-opt".to_string(),
         "label=disable".to_string()
     ];
-
+    
     let input_file_volume = format!("{}:/tmp/input_file", input_path.display());
     let mut err_msg = String::new();
 

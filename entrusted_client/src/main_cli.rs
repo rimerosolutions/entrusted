@@ -10,6 +10,7 @@ use indicatif::ProgressBar;
 use rpassword;
 use std::collections::HashMap;
 use entrusted_l10n as l10n;
+use normpath::PathExt;
 
 mod common;
 mod config;
@@ -159,15 +160,20 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    let src_path = fs::canonicalize(input_filename);
-    let src_path_copy = fs::canonicalize(input_filename)?;
+    // Deal transparently with Windows UNC path returned by fs::canonicalize
+    // std::fs::canonicalize returns UNC paths on Windows, and a lot of software doesn't support UNC paths
+    // This is problematic with Docker and mapped volumes for this application
+    // See https://github.com/rust-lang/rust/issues/42869
+    let src_path = fs::canonicalize(input_filename)?;
+    let src_path = src_path.normalize()?.into_path_buf();
+
     let file_suffix = if let Some(proposed_file_suffix) = &run_matches.value_of("file-suffix") {
         String::from(proposed_file_suffix.clone())
     } else {
         String::from(app_config.file_suffix.clone())
     };
 
-    let abs_output_filename = common::default_output_path(src_path?, file_suffix)?;
+    let abs_output_filename = common::default_output_path(src_path.clone(), file_suffix)?;
 
     if output_filename.file_name().is_none() {
         output_filename = abs_output_filename;
@@ -216,7 +222,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     tx
                 });
 
-                match container::convert(src_path_copy, output_filename, convert_options, eventer, trans.clone()) {
+                match container::convert(src_path.clone(), output_filename, convert_options, eventer, trans.clone()) {
                     Ok(_)   => None,
                     Err(ex) => Some(ex.to_string())
                 }

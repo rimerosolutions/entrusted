@@ -25,6 +25,7 @@ macro_rules! incl_gettext_files {
 
 pub trait EventSender: Send {
     fn send(&self, evt: crate::common::AppEvent) -> Result<(), SendError<crate::common::AppEvent>>;
+
     fn clone_box(&self) -> Box<dyn EventSender>;
 }
 

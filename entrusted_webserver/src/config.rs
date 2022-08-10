@@ -33,11 +33,8 @@ impl Default for AppConfig {
     }
 }
 
-pub fn load_config <T> () -> Result<T, Box<dyn Error>>
-where T: Default + DeserializeOwned {
-    let opt_config_dir = dirs::config_dir();
-
-    if let Some(config_dir) = opt_config_dir {
+pub fn load_config <T> () -> Result<T, Box<dyn Error>> where T: Default + DeserializeOwned {
+    if let Some(config_dir) = dirs::config_dir() {
         let config_dir_dgz = config_dir.join(PROGRAM_GROUP);
 
         if config_dir_dgz.exists() {
@@ -52,13 +49,8 @@ where T: Default + DeserializeOwned {
                     toml::from_slice(&config_data)
                 };
 
-                match ret {
-                    Err(_) => {
-                        return Ok(T::default());
-                    },
-                    Ok(data) => {
-                        return Ok(data);
-                    }
+                if let Ok(data) = ret {
+                    return Ok(data);
                 }
             }
         }

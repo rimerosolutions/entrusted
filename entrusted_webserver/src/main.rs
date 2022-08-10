@@ -74,7 +74,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let ci_image_name = match run_matches.value_of("container-image-name") {
         Some(img_name) => img_name.to_string(),
-        _ => appconfig.container_image_name.clone()
+        _              => appconfig.container_image_name.clone()
     };
 
     if let (Some(host), Some(port)) = (run_matches.value_of("host"), run_matches.value_of("port")) {

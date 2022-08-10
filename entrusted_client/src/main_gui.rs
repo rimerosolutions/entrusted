@@ -582,7 +582,6 @@ impl <'a> FileListWidget {
                     container_pack.end();
 
                     win.end();
-
                     win.show();
 
                     while win.shown() {
@@ -709,7 +708,6 @@ impl <'a> FileListWidget {
                     container_pack.end();
 
                     win.end();
-
                     win.make_modal(true);
                     win.make_resizable(true);
                     win.show();
@@ -2272,23 +2270,33 @@ pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> 
 
 #[cfg(target_os = "macos")]
 pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> {
-    match common::executable_find("open") {
-        Some(open_cmd) => match Command::new(open_cmd).arg("-a").arg(cmd).arg(input).spawn() {
-            Ok(mut child_proc) => {
-                match child_proc.wait() {
-                    Ok(exit_status) => {
-                        if exit_status.success() {
-                            Ok(())
-                        } else {
-                            Err("Could not open PDF file!".into())
-                        }
-                    },
-                    Err(ex) => Err(ex.into())
-                }
+    let p = std::path::Path::new(&cmd);
+
+    if p.exists() && p.is_dir() {
+        match common::executable_find("open") {
+            Some(open_cmd) => match Command::new(open_cmd).arg("-a").arg(cmd).arg(input).spawn() {
+                Ok(mut child_proc) => {
+                    match child_proc.wait() {
+                        Ok(exit_status) => {
+                            if exit_status.success() {
+                                Ok(())
+                            } else {
+                                Err("Could not open PDF file!".into())
+                            }
+                        },
+                        Err(ex) => Err(ex.into())
+                    }
+                },
+                Err(ex) => Err(ex.into()),
             },
-            Err(ex) => Err(ex.into()),
-        },
-        None => Err("Could not find 'open' command in PATH!".into()),
+            None => Err("Could not find 'open' command in PATH!".into()),
+        }
+    } else {
+        if let Err(ex) = Command::new(cmd).arg(input).spawn() {
+             Err(ex.into())
+        } else {
+            Ok(())
+        }
     }
 }
 

@@ -64,11 +64,8 @@ impl Default for AppConfig {
     }
 }
 
-fn load_config <T> () -> Result<T, Box<dyn Error>>
-where T: Default + DeserializeOwned {
-    let config_dir_opt = dirs::config_dir();
-
-    if let Some(config_dir) = config_dir_opt {
+fn load_config <T> () -> Result<T, Box<dyn Error>> where T: Default + DeserializeOwned {
+    if let Some(config_dir) = dirs::config_dir() {
         let config_dir_dgz = config_dir.join(PROGRAM_GROUP);
 
         if config_dir_dgz.exists() {
@@ -82,8 +79,6 @@ where T: Default + DeserializeOwned {
 
                 if let Ok(data) = ret {
                     return Ok(data);
-                } else {
-                    return Ok(T::default());
                 }
             }
         }
@@ -366,7 +361,9 @@ async fn process_notifications(tracking_url: String,
 
         while let Some(event) = es.next().await {
             match event {
-                Ok(Event::Open) => println!("{}", l10n.gettext("Connection open!")),
+                Ok(Event::Open) => {
+                    println!("{}", l10n.gettext("Connection open!"))
+                },
                 Ok(Event::Message(msg)) => {
                     if msg.event == "processing_update" {
                         let log_msg_ret: serde_json::Result<LogMessage> = serde_json::from_str(&msg.data);

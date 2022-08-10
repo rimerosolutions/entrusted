@@ -3,7 +3,6 @@ use std::env;
 use std::error::Error;
 use std::path::PathBuf;
 use std::sync::mpsc;
-use std::fs;
 use std::thread;
 use serde_json;
 use indicatif::ProgressBar;
@@ -165,10 +164,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     // See https://github.com/rust-lang/rust/issues/42869
     let src_path = {
         #[cfg(not(target_os = "windows"))] {
-            fs::canonicalize(input_filename)?
+            std::fs::canonicalize(input_filename)?
         }
         #[cfg(target_os = "windows")] {
-            use dunce;
             dunce::canonicalize(input_filename)?
         }
     };

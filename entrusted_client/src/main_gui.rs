@@ -2235,11 +2235,17 @@ fn main() -> Result<(), Box<dyn Error>> {
                 },
                 common::AppEvent::ConversionStartEvent(row_idx) => {
                     filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_INPROGRESS, enums::Color::DarkYellow);
-                    let row_ypos = filelist_widget.ypos(row_idx);
-                    let scroll_half_height = filelist_scroll.h() / 2;
+                    let mut row_ypos = filelist_widget.ypos(row_idx);
+                    let scroll_height = filelist_scroll.h();
 
-                    if row_ypos > (filelist_scroll.y() + scroll_half_height) {
-                        filelist_scroll.scroll_to(0, row_ypos - scroll_half_height);
+                    if row_ypos > (filelist_scroll.yposition()) {
+                        let distance = row_ypos % scroll_height;
+
+                        if distance >= (scroll_height - 40) {
+                            row_ypos -= 40;
+                        }
+                        
+                        filelist_scroll.scroll_to(0, row_ypos - filelist_scroll.y());
                         filelist_scroll.redraw();
                     }
 

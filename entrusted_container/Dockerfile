@@ -1,4 +1,5 @@
-FROM docker.io/alpine:latest as builder
+ARG ALPINE_VERSION=3.16.2
+FROM docker.io/alpine:${ALPINE_VERSION} as builder
 LABEL stage=entrusted_container_builder
 RUN apk -U upgrade && \
     apk add \
@@ -22,7 +23,7 @@ WORKDIR /home/rust/entrusted-container
 COPY . .
 RUN LO_INCLUDE_PATH=/usr/include/LibreOfficeKit cargo install --path entrusted_container && cargo clean --manifest-path entrusted_container/Cargo.toml
 
-FROM docker.io/alpine:latest
+FROM docker.io/alpine:${ALPINE_VERSION}
 
 LABEL maintainer="Rimero Solutions Inc."
 LABEL org.opencontainers.image.title="Entrusted document sanitizer container image"

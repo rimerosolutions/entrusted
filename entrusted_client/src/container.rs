@@ -14,7 +14,20 @@ use std::thread;
 use entrusted_l10n as l10n;
 use crate::common;
 
-fn read_output_with_capture<R>(thread_name: &str, stream: R, tx: Box<dyn common::EventSender>) -> Result<JoinHandle<Result<(), Box<dyn Error + Send + Sync>>>, io::Error>
+#[derive(Clone)]
+struct NoOpEventSender;
+
+impl common::EventSender for NoOpEventSender {
+    fn send(&self, _: crate::common::AppEvent) -> Result<(), std::sync::mpsc::SendError<crate::common::AppEvent>> {
+        Ok(())
+    }
+
+    fn clone_box(&self) -> Box<dyn common::EventSender> {
+        Box::new(self.clone())
+    }
+}
+
+fn read_cmd_output<R>(thread_name: &str, stream: R, tx: Box<dyn common::EventSender>) -> Result<JoinHandle<Result<(), Box<dyn Error + Send + Sync>>>, io::Error>
 where
     R: Read + Send + 'static {
     thread::Builder::new()
@@ -27,20 +40,6 @@ where
                         return Err(ex.into());
                     }
 
-                    Ok(())
-                })
-        })
-}
-
-fn read_output_no_capture<R>(thread_name: &str, stream: R, _: Box<dyn common::EventSender>) -> Result<JoinHandle<Result<(), Box<dyn Error + Send + Sync>>>, io::Error>
-where
-    R: Read + Send + 'static {
-    thread::Builder::new()
-        .name(thread_name.to_string())
-        .spawn(move || {
-            let reader = BufReader::new(stream);
-            reader.lines()
-                .try_for_each(|_| {
                     Ok(())
                 })
         })
@@ -95,13 +94,15 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<Stri
 
     let stdout_handles = if capture_output {
         vec![
-            read_output_with_capture("entrusted.stdout",  cmd.stdout.take().expect("!stdout"), tx.clone_box()),
-            read_output_with_capture("entrusted.stderr" , cmd.stderr.take().expect("!stderr"), tx.clone_box()),
+            read_cmd_output("entrusted.stdout",  cmd.stdout.take().expect("!stdout"), tx.clone_box()),
+            read_cmd_output("entrusted.stderr" , cmd.stderr.take().expect("!stderr"), tx.clone_box()),
         ]
     } else {
+        let nosender = Box::new(NoOpEventSender);
+
         vec![
-            read_output_no_capture("entrusted.stdout",  cmd.stdout.take().expect("!stdout"), tx.clone_box()),
-            read_output_no_capture("entrusted.stderr" , cmd.stderr.take().expect("!stderr"), tx.clone_box()),
+            read_cmd_output("entrusted.stdout",  cmd.stdout.take().expect("!stdout"), nosender.clone()),
+            read_cmd_output("entrusted.stderr" , cmd.stderr.take().expect("!stderr"), nosender.clone())
         ]
     };
 

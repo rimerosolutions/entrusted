@@ -39,11 +39,8 @@ impl Default for AppConfig {
     }
 }
 
-pub fn load_config <T> () -> Result<T, Box<dyn Error>>
-where T: Default + DeserializeOwned {
-    let opt_config_dir = dirs::config_dir();
-
-    if let Some(config_dir) = opt_config_dir {
+pub fn load_config <T> () -> Result<T, Box<dyn Error>> where T: Default + DeserializeOwned {
+    if let Some(config_dir) = dirs::config_dir() {
         let config_dir_dgz = config_dir.join(PROGRAM_GROUP);
 
         if config_dir_dgz.exists() {
@@ -57,8 +54,6 @@ where T: Default + DeserializeOwned {
 
                 if let Ok(data) = ret {
                     return Ok(data);
-                } else {
-                    return Ok(T::default());
                 }
             }
         }
@@ -83,8 +78,7 @@ where T: Default + Serialize {
         }
 
         let config_path = config_dir_dgz.join(CFG_FILENAME);
-        let mut f = fs::OpenOptions::new().create(true).write(true).truncate(true).open(config_path.clone())?;
-        
+        let mut f = fs::OpenOptions::new().create(true).write(true).truncate(true).open(config_path.clone())?;        
         let config_data = toml::to_vec(&config_instance)?;
 
         if let Err(e) = f.write(&config_data) {

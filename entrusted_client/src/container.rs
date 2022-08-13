@@ -67,7 +67,7 @@ fn spawn_command(cmd: &str, cmd_args: Vec<String>) -> std::io::Result<Child> {
         .spawn()
 }
 
-fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<String>, tx: Box<dyn common::EventSender>, capture_output: bool, printer: Box<dyn LogPrinter>, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
+fn exec_crt_command (cmd_desc: String, container_program: common::ContainerProgram, args: Vec<String>, tx: Box<dyn common::EventSender>, capture_output: bool, printer: Box<dyn LogPrinter>, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
     let rt_path = container_program.exec_path;
     let sub_commands = container_program.sub_commands.iter().map(|i| i.to_string());
     let rt_executable: &str = &rt_path.display().to_string();
@@ -89,6 +89,7 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<Stri
     let masked_cmd = cmd_masked.join(" ");
 
     tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, trans.gettext_fmt("Running command: {0}", vec![&format!("{} {}", rt_executable, masked_cmd)]))))?;
+    tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, cmd_desc)))?;
 
     let mut cmd = spawn_command(rt_executable, cmd)?;
 
@@ -119,7 +120,7 @@ fn exec_crt_command (container_program: common::ContainerProgram, args: Vec<Stri
                     return Ok(());
                 } else {
                     if let Some(exit_code) = exit_status.code() {
-                        // mitigate apparent 139 exit codes that don't happen with Debian bullseye
+                        // Mitigate apparent 139 exit codes that don't happen with Debian bullseye
                         // Sadly it's a much bigger image than with Alpine so we decide to mitigate the issue
                         // Apparently a vsyscall=emulate argument needs to be added to /proc/cmdline depending on the kernel version
                         // Essentially not mitigating the issue would be a problem in a non-controlled environment (i.e. Live CD ISO)
@@ -253,15 +254,11 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
     // TODO for Lima we assume the default VM instance, that might not be true all the time...
     if let Some(container_rt) = common::container_runtime_path() {
         let mut ensure_image_args = vec!["inspect".to_string(), convert_options.container_image_name.to_owned()];
-
-        tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, trans.gettext("Checking if container image exists"))))?;
-
-        if let Err(ex) = exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone_box(), false, printer.clone_box(), trans.clone()) {
+        if let Err(ex) = exec_crt_command(trans.gettext("Checking if container image exists"), container_rt.clone(), ensure_image_args, tx.clone_box(), false, printer.clone_box(), trans.clone()) {
             tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, trans.gettext_fmt("The container image was not found. {0}", vec![&ex.to_string()]))))?;
             ensure_image_args = vec!["pull".to_string(), convert_options.container_image_name.to_owned()];
-            tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, trans.gettext("Please wait, downloading image (roughly 600 MB)."))))?;
 
-            if let Err(exe) = exec_crt_command(container_rt.clone(), ensure_image_args, tx.clone_box(), false, printer.clone_box(), trans.clone()) {
+            if let Err(exe) = exec_crt_command(trans.gettext("Please wait, downloading image (roughly 600 MB)"), container_rt.clone(), ensure_image_args, tx.clone_box(), false, printer.clone_box(), trans.clone()) {
                 tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, trans.gettext("Couldn't download container image!"))))?;
                 return Err(exe.into());
             }
@@ -318,7 +315,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             common::CONTAINER_IMAGE_EXE.to_string()
         ]);
 
-        if let Ok(_) = exec_crt_command(container_rt, convert_args, tx.clone_box(), true, printer.clone_box(), trans.clone()) {
+        if let Ok(_) = exec_crt_command(trans.gettext("Starting document processing"), container_rt, convert_args, tx.clone_box(), true, printer.clone_box(), trans.clone()) {
             if output_path.exists() {
                 fs::remove_file(output_path.clone())?;
             }

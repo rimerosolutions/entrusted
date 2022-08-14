@@ -20,7 +20,7 @@ uuid = { version = "1.0.0", features = ["serde", "v4"] }
 tokio = { version = "1.17.0", features = ["full"] }
 tokio-io = "0.1.13"
 tokio-rustls = "0.23.3"
-futures = "0.3.21"
+futures = { version = "0.3.23", default-features = false, features = ["std"] }
 actix = "0.13.0"
 actix-cors = "0.6.1"
 actix-web = { version = "4.0.1", features=["rustls"] }

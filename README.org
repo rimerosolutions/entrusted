@@ -57,6 +57,8 @@ Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releas
 | =Live CD=     | =entrusted-livecd-amd64-<version>.iso=  | Web interface Live CD for virtual machines    |
 |---------------+-----------------------------------------+-----------------------------------------------|
 
+On Linux, if you prefer [[https://flatpak.org/][Flatpak]], please visit the [[https://github.com/axtloss/flatpaks][axtloss flatpaks]] project page for general instructions: The flatpak package itself is developed [[https://github.com/axtloss/flatpaks/tree/main/com.github.rimerosolutions.entrusted][here]].
+
 ** Key software components
 
 Most users will interact with the Desktop user interface (=entrusted_client= component):

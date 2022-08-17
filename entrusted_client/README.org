@@ -86,7 +86,7 @@ The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to
 
 #+begin_src conf-toml
   # This must be a valid tesseract lang code
-  # See also https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html
+  # See https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html
   ocr-lang = "eng"
 
   # The converted name will be named as follow original-name-sanitized.pdf
@@ -96,10 +96,10 @@ The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to
   # container-image-name= docker.io/MY_USERNAME_HERE/entrusted_container:1.2.3
 
   # Only if the conversion is successful each document will be opened automatically
-  # "AcruBOT_ReadAZ" is the name of the PDF viewer as "identified" in the GUI client
-  # That name isn't just random: the name, spacing and case all matter...
+  # "Acrobat Reader" is the name of the PDF viewer "as identified" in the GUI client
+  # That name isn't just random: the name, spacing and case ALL matter...
   # Only configure this manually if you know what you're doing
-  # preview-result-appname=AcruBOT_ReadAZ
+  # preview-result-appname=Acrobat Reader
 #+end_src
 
 *** Overview

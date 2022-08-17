@@ -93,19 +93,18 @@ fn exec_crt_command (cmd_desc: String, container_program: common::ContainerProgr
 
     let mut cmd = spawn_command(rt_executable, cmd)?;
 
-    let stdout_handles = if capture_output {
-        vec![
-            read_cmd_output("entrusted.stdout",  cmd.stdout.take().expect("!stdout"), tx.clone_box()),
-            read_cmd_output("entrusted.stderr" , cmd.stderr.take().expect("!stderr"), tx.clone_box()),
-        ]
-    } else {
-        let nosender = Box::new(NoOpEventSender);
-
-        vec![
-            read_cmd_output("entrusted.stdout",  cmd.stdout.take().expect("!stdout"), nosender.clone()),
-            read_cmd_output("entrusted.stderr" , cmd.stderr.take().expect("!stderr"), nosender.clone())
-        ]
-    };
+    let stdout_handles = vec![
+        read_cmd_output("entrusted.stdout",  cmd.stdout.take().expect("!stdout"), if capture_output {
+            tx.clone_box()
+        } else {
+            Box::new(NoOpEventSender)
+        }),
+        read_cmd_output("entrusted.stderr" , cmd.stderr.take().expect("!stderr"), if capture_output {
+            tx.clone_box()
+        } else {
+            Box::new(NoOpEventSender)
+        })
+    ];
 
     for stdout_handle in stdout_handles {
         if let Err(ex) = stdout_handle?.join() {
@@ -247,7 +246,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         "--security-opt".to_string(),
         "label=disable".to_string()
     ];
-    
+
     let input_file_volume = format!("{}:/tmp/input_file", input_path.display());
     let mut err_msg = String::new();
 

@@ -113,10 +113,11 @@ RUN apk -U upgrade && \
 
 COPY --from=builder /usr/local/bin/entrusted-container /usr/local/bin/entrusted-container
 
-RUN find /usr/libreoffice -type f -name "*.py" -exec rm -rf {} \; \
+RUN find /usr/lib/libreoffice -type f -name "*.py" -exec rm -rf {} \; \
     && rm -rf /usr/lib/python3.10 \
-    && rm -rf /usr/libreoffice/share/Scripts/* \
-    && rm -rf /usr/libreoffice/*.html && rm -rf /usr/libreoffice/*.fodt \
+    && rm -rf /usr/include/* \
+    && rm -rf /usr/lib/libreoffice/share/Scripts/* \
+    && rm -rf /usr/lib/libreoffice/*.html && rm -rf /usr/lib/libreoffice/*.fodt \
     && rm -rf /usr/lib/libreoffice/program/classes/*.jar \
     && rm -rf /usr/bin
 

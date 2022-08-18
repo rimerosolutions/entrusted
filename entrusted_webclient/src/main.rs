@@ -5,21 +5,20 @@ use reqwest_eventsource::{Event, EventSource};
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::collections::HashMap;
+use std::io::Write;
 use indicatif::ProgressBar;
 use rpassword;
 
 use std::env;
 
 use std::{
+    fs,
     error::Error,
     path::PathBuf,
 };
-use tokio::{fs::File, io::AsyncWriteExt};
-use tokio_util::codec::{BytesCodec, FramedRead};
 
 use serde::de::DeserializeOwned;
 
-use std::fs;
 use dirs;
 
 use entrusted_l10n as l10n;
@@ -295,10 +294,9 @@ async fn convert_file (
 
     let addr = format!("{}:{}", conversion_options.host, conversion_options.port.parse::<u16>()?);
     println!("{}: {}", l10n.gettext("Connecting to server at"), addr.clone());
-
-    let file = File::open(input_path.clone()).await?;
-    let stream = FramedRead::new(file, BytesCodec::new());
-    let stream_part = reqwest::multipart::Part::stream(Body::wrap_stream(stream));
+    
+    let stream = fs::read(&input_path)?;
+    let stream_part = reqwest::multipart::Part::stream(Body::from(stream));
 
     let mut multipart_form = reqwest::multipart::Form::new()
         .text("filename", filename)
@@ -345,8 +343,8 @@ async fn convert_file (
         }
     };
 
-    let mut output_file = File::create(output_path).await?;
-    output_file.write_all(&download_data).await?;
+    let mut output_file = fs::File::create(output_path)?;
+    output_file.write_all(&download_data)?;
 
     Ok(())
 }

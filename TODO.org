@@ -17,9 +17,9 @@
   - [ ] Add overall progress information during conversions (pie chart?)
   - [ ] Display overall conversion results ("X out of Y files were not successfully converted")
   - [ ] Improve scrolling behavior during conversions ("smooth-scrolling")
-- [ ] Hardening
+  - [ ] Check for version updates
+- [-] Hardening
   - [ ] Review container execution options (podman v.s podman-remote, security options, etc.)
-  - [ ] Revisit Flatpak support, maybe it's best to leave that effort "the community" 
   - [ ] Review some of the code and read few security-related articles
 - [ ] Online Web Service
   - [ ] Evaluate [[https://github.com/tokio-rs/axum][axum]] as a replacement of [[https://github.com/actix/actix-web][actix_web]] ([[https://ordina-jworks.github.io/event-driven/2021/04/23/SSE-with-HTTP2.html#http11-vs-http2][HTTP2 support + SSE]] + browsers)
@@ -28,8 +28,9 @@
 - [-] Code maintenance
   - [X] Eliminate shell commands inside the container image
   - [ ] Add automated tests (unit & integration)
-- [-] CI/CD
+- [-] CI/CD and packaging
   - [X] Adopt Git flow and delete all the previous spiral branches
+  - [X] Revisit Flatpak support (See [[https://github.com/axtloss/flatpaks][axtloss flatpaks]])
   - [X] Create few specific packages (DEB, RPM)
   - [ ] Transition CI/CD scripts to Github actions or TravisCI or something else?
 - [X] Mime-type detection and file associations

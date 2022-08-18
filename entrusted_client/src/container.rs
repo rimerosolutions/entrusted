@@ -242,9 +242,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
     let run_args:Vec<String> = vec![
         "run".to_string(),
         "--network".to_string(),
-        "none".to_string(),
-        "--security-opt".to_string(),
-        "label=disable".to_string()
+        "none".to_string(),        
     ];
 
     let input_file_volume = format!("{}:/tmp/input_file", input_path.display());
@@ -311,7 +309,6 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
 
         convert_args.append(&mut vec![
             convert_options.container_image_name.to_owned(),
-            common::CONTAINER_IMAGE_EXE.to_string()
         ]);
 
         if let Ok(_) = exec_crt_command(trans.gettext("Starting document processing"), container_rt, convert_args, tx.clone_box(), true, printer.clone_box(), trans.clone()) {

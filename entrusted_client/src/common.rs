@@ -3,7 +3,6 @@ use std::path::PathBuf;
 use which;
 use serde::{Deserialize, Serialize};
 
-pub const CONTAINER_IMAGE_EXE: &str = "/usr/local/bin/entrusted-container";
 pub const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str = "ENTRUSTED_DOC_PASSWD";
 pub const LOG_FORMAT_JSON: &str = "json";
 
@@ -104,9 +103,9 @@ enum ContainerProgramStub<'a> {
 // Especially for Lima and similar tooling, to avoid further downstream conditional blocks
 pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
     let container_program_stubs = [
-        ContainerProgramStub::Docker("docker", vec![], vec![], None),
-        ContainerProgramStub::Podman("podman", vec![], vec!["--userns", "keep-id"], None),
-        ContainerProgramStub::Lima("lima", vec!["nerdctl"], vec![], Some("/tmp/lima")),
+        ContainerProgramStub::Docker("docker", vec![], vec!["--security-opt=no-new-privileges:true", "--security-opt=label:disable"], None),
+        ContainerProgramStub::Podman("podman", vec![], vec!["--userns", "keep-id", "--security-opt", "no-new-privileges", "--security-opt", "label=disable"], None),
+        ContainerProgramStub::Lima("lima", vec!["nerdctl"], vec!["--security-opt", "no-new-privileges", "--security-opt", "label=disable"], Some("/tmp/lima")),
         ContainerProgramStub::Nerdctl("nerdctl", vec![], vec![], None),
     ];
 

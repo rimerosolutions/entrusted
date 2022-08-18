@@ -21,7 +21,8 @@ RUN apk -U upgrade && \
 
 WORKDIR /home/rust/entrusted-container
 COPY . .
-RUN LO_INCLUDE_PATH=/usr/include/LibreOfficeKit cargo install --path entrusted_container && cargo clean --manifest-path entrusted_container/Cargo.toml
+RUN LO_INCLUDE_PATH=/usr/include/LibreOfficeKit cargo install --path entrusted_container --root /usr/local \
+    && cargo clean --manifest-path entrusted_container/Cargo.toml
 
 FROM docker.io/alpine:${ALPINE_VERSION}
 
@@ -110,7 +111,14 @@ RUN apk -U upgrade && \
     tesseract-ocr-data-ukr \
     tesseract-ocr-data-vie
 
-COPY --from=builder /root/.cargo/bin/entrusted-container /usr/local/bin/
+COPY --from=builder /usr/local/bin/entrusted-container /usr/local/bin/entrusted-container
+
+RUN find /usr/libreoffice -type f -name "*.py" -exec rm -rf {} \; \
+    && rm -rf /usr/lib/python3.10 \
+    && rm -rf /usr/libreoffice/share/Scripts/* \
+    && rm -rf /usr/libreoffice/*.html && rm -rf /usr/libreoffice/*.fodt \
+    && rm -rf /usr/lib/libreoffice/program/classes/*.jar \
+    && rm -rf /usr/bin
 
 # Add the unprivileged user
 RUN adduser -h /home/entrusted -s /bin/sh -D entrusted
@@ -123,3 +131,5 @@ USER entrusted
 #
 # /safezone is where the wrapper eventually moves the sanitized files.
 VOLUME /tmp/input_file /safezone
+
+ENTRYPOINT ["/usr/local/bin/entrusted-container"]

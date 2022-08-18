@@ -10,6 +10,7 @@ use std::collections::HashMap;
 use std::env;
 use std::fs;
 
+use std::io::Write;
 use std::path::PathBuf;
 use std::pin::Pin;
 use std::sync::Mutex;
@@ -30,7 +31,6 @@ use actix_multipart::Multipart;
 use actix_web::http::{Method, Uri};
 use futures::TryStreamExt;
 use http_api_problem::{HttpApiProblem, StatusCode};
-use tokio::io::AsyncWriteExt;
 
 use bs58;
 
@@ -453,8 +453,8 @@ pub async fn save_file(
     }
 
     let filepath = tmpdir.join(format!("{}.{}", &file_uuid, fileext));
-    let mut f = tokio::fs::File::create(&filepath).await?;
-    f.write_all(&buf).await?;
+    let mut f = fs::File::create(&filepath)?;
+    f.write_all(&buf)?;
 
     let location = filepath.display().to_string();
 

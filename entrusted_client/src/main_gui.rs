@@ -961,7 +961,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             draw::draw_rect_fill(widxx + WIDGET_GAP/2 - 2, wid.y() + wid.h() / 2 - 4, 4, 4, enums::Color::Yellow);
             draw::draw_polygon(widxx + 4, wid.y() + wid.h()/2 - 4, widxx + WIDGET_GAP/2, wid.y() + 6, widxx + WIDGET_GAP - 4, wid.y() + wid.h()/2 - 4);
-            draw::draw_line(widxx + WIDGET_GAP/2 - 4, wid.y() + wid.h() / 2 + 2, widxx + WIDGET_GAP/2 - 2 + 5, wid.y() + wid.h() / 2 + 2);            
+            draw::draw_line(widxx + WIDGET_GAP/2 - 4, wid.y() + wid.h() / 2 + 2, widxx + WIDGET_GAP/2 - 2 + 5, wid.y() + wid.h() / 2 + 2);
 
             draw::set_draw_color(old_color);
         }
@@ -1355,27 +1355,25 @@ fn main() -> Result<(), Box<dyn Error>> {
         .borrow_mut()
         .set_label_color(enums::Color::Blue);
 
+    fn paint_underline<W: WidgetExt>(wid: &mut W) {
+        if wid.visible() && wid.active() {
+            let (lw, _) = draw::measure(&wid.label(), true);
+            let old_color = draw::get_color();
+            draw::set_draw_color(wid.label_color());
+            draw::draw_line(wid.x() + 3, wid.y() + wid.h(), wid.x() + lw, wid.y() + wid.h());
+            draw::set_draw_color(old_color);
+        }
+    }
+
     selectall_frame_rc.borrow_mut().draw({
         move |wid| {
-            if wid.visible() && wid.active() {
-                let (lw, _) = draw::measure(&wid.label(), true);
-                let old_color = draw::get_color();
-                draw::set_draw_color(wid.label_color());
-                draw::draw_line(wid.x() + 3, wid.y() + wid.h(), wid.x() + lw, wid.y() + wid.h());
-                draw::set_draw_color(old_color);
-            }
+            paint_underline(wid);
         }
     });
 
     deselectall_frame_rc.borrow_mut().draw({
         move |wid| {
-            if wid.visible() && wid.active() {
-                let (lw, _) = draw::measure(&wid.label(), true);
-                let old_color = draw::get_color();
-                draw::set_draw_color(wid.label_color());
-                draw::draw_line(wid.x() + 3, wid.y() + wid.h(), wid.x() + lw, wid.y() + wid.h());
-                draw::set_draw_color(old_color);
-            }
+            paint_underline(wid);
         }
     });
 

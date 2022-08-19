@@ -17,7 +17,7 @@
   - [ ] Add overall progress information during conversions (pie chart?)
   - [ ] Display overall conversion results ("X out of Y files were not successfully converted")
   - [ ] Improve scrolling behavior during conversions ("smooth-scrolling")
-  - [-] Check for release updates (graphical desktop client)
+  - [-] Check for release updates (Desktop and command-line clients)
     - [X] Manual checks
     - [ ] Automated checks      
 - [ ] Hardening

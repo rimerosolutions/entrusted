@@ -17,8 +17,10 @@
   - [ ] Add overall progress information during conversions (pie chart?)
   - [ ] Display overall conversion results ("X out of Y files were not successfully converted")
   - [ ] Improve scrolling behavior during conversions ("smooth-scrolling")
-  - [ ] Check for version updates
-- [-] Hardening
+  - [-] Check for release updates (graphical desktop client)
+    - [X] Manual checks
+    - [ ] Automated checks      
+- [ ] Hardening
   - [ ] Review container execution options (podman v.s podman-remote, security options, etc.)
   - [ ] Review some of the code and read few security-related articles
 - [ ] Online Web Service

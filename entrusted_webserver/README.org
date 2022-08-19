@@ -10,7 +10,6 @@ This module allows document conversions from the comfort of your Web browser
 * What does it look like?
 
 There's a basic Web interface that can be accessed from the server root URL (i.e. [[http://localhost:13000]]).
-It is a single page application that interacts with a backend service via HTTP calls.
 
 [[./images/screenshot-web.png]]
 
@@ -19,9 +18,9 @@ It is a single page application that interacts with a backend service via HTTP c
 This is used for a single workstation, in a multi virtual machines scenario (several virtual machines: /VMs/):
 - There are several /VMs/ for specific purposes ("entrusted VM", "programming VM", "socials VM", etc.)
 - Inside some of the /VMs/, there's a need to open safely documents (ebooks, emails attachments, etc.)
-  - The "Entrusted VM" performing document conversions has no internet connectivity.
+  - The "Entrusted VM" performing document conversions has no internet connectivity
   - The "Entrusted VM" only allows SSH and "document conversion requests"
-  - The "Entrusted VM" has limited resources (1GB of RAM allocated).
+  - The "Entrusted VM" has limited resources (1GB of RAM allocated)
 
 * What is the overall architecture?
 

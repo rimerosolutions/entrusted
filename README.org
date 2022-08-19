@@ -9,7 +9,7 @@
 - PDF documents, common image formats and Office documents ([[https://www.office.com/][MS Office]] or [[https://www.libreoffice.org/discover/what-is-opendocument/][OpenDocument]]) are supported
 - The progam was originally a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation purposes
 
-*NOTE*: Unless you use the live CD, you MUST install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior running the program.
+*NOTE*: Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]], you MUST install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior running the program.
 
 [[./images/screenshot.gif]]
 
@@ -19,7 +19,7 @@
 - The transformation of large/complex documents is frictionless (timeouts or other user-visible issues)
 - Files can be converted in batch (sequential conversions for now)
 - An optional Web interface is available and can act as an "online service" (towards multi-tenancy)
-- The live CD provides both enhanced security and convenience:
+- The [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]] provides both enhanced security and convenience:
   - Pre-installed [[https://xebia.com/blog/podman-the-free-container-engine-alternative-to-docker/][container solution]], with no required user configuration ([[./entrusted_webserver][entrusted_webserver]])
   - Extra isolation layer via a virtual machine
 - The application supports multiple languages (English and French for now)

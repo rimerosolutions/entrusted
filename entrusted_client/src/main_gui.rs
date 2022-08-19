@@ -27,7 +27,6 @@ const WIDGET_GAP: i32 = 20;
 const ELLIPSIS: &str  = "...";
 
 const ICON_HELP_TEXT: &str = "?";
-const ICON_UPDATES_TEXT: &str = "U";
 
 const ICON_SAVE: &[u8]     = include_bytes!("../../images/Save_icon.png");
 const ICON_FRAME: &[u8]    = include_bytes!("../../images/Entrusted_icon.png");
@@ -172,21 +171,26 @@ fn row_to_task(viewer_app_opt: &Option<String>, active_ociimage_option: &String,
 }
 
 fn show_dialog_updates(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Translations) {
-    let (x, y, _, h) = parent_window_bounds;
+    let (x, y, w, h) = parent_window_bounds;
+    let msg = {
 
-    match common::update_check() {
-        Ok(opt_new_release) => {
-            if let Some(new_release) = opt_new_release {
-                dialog::alert(x, y +  h / 2, &trans.gettext_fmt("Version {0} is out!\nPlease visit {1}", vec![&new_release.tag_name, &new_release.html_url]));
-            } else {
-                dialog::alert(x, y +  h / 2, &trans.gettext("No updates available at this time!"));
+        match common::update_check() {
+            Ok(opt_new_release) => {
+                if let Some(new_release) = opt_new_release {
+                    trans.gettext_fmt("Version {0} is out!\nPlease visit {1}", vec![&new_release.tag_name, &new_release.html_url])
+                } else {
+                    trans.gettext("No updates available at this time!")
+                }
+            },
+            Err(ex) => {
+                trans.gettext_fmt("Could not check for updates, please try later.\n{0}", vec![&ex.to_string()])
             }
-        },
-        Err(ex) => {
-            let err_text = trans.gettext_fmt("Could not check for updates, please try later.\n{0}", vec![&ex.to_string()]);
-            dialog::alert(x, y +  h / 2, &err_text);
         }
-    }
+    };
+    let (lbl_width, lbl_height) = draw::measure(&msg, true);
+
+
+    dialog::alert(x +( w/2) - (lbl_width/2), y +  (h / 2) - (lbl_height / 2), &msg);
 }
 
 fn show_dialog_help(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Translations) {
@@ -952,7 +956,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             draw::draw_rect_fill(widxx, widy, WIDGET_GAP, WIDGET_GAP, color);
             draw::set_draw_color(enums::Color::White);
             draw::draw_text(ICON_HELP_TEXT, (widx + WIDGET_GAP/2) - w/2, wid.y() + h);
-            draw::draw_text(ICON_UPDATES_TEXT, (widxx + WIDGET_GAP/2) - w/2, wid.y() + h);
+
+            draw::set_draw_color(enums::Color::Yellow);
+
+            draw::draw_rect_fill(widxx + WIDGET_GAP/2 - 2, wid.y() + wid.h() / 2 - 4, 4, 4, enums::Color::Yellow);
+            draw::draw_polygon(widxx + 4, wid.y() + wid.h()/2 - 4, widxx + WIDGET_GAP/2, wid.y() + 6, widxx + WIDGET_GAP - 4, wid.y() + wid.h()/2 - 4);
+            draw::draw_line(widxx + WIDGET_GAP/2 - 4, wid.y() + wid.h() / 2 + 2, widxx + WIDGET_GAP/2 - 2 + 5, wid.y() + wid.h() / 2 + 2);            
+
             draw::set_draw_color(old_color);
         }
     });
@@ -970,7 +980,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 if x >= widx && x <= widx + WIDGET_GAP && y >= widy && y <= widy + WIDGET_GAP {
                     show_dialog_help((wind.x(), wind.y(), wind.w(), wind.h()), trans_ref.clone());
-                } else if x >= widxx && x <= widxx + WIDGET_GAP && y >= widy && y <= widy + WIDGET_GAP {                    
+                } else if x >= widxx && x <= widxx + WIDGET_GAP && y >= widy && y <= widy + WIDGET_GAP {
                     show_dialog_updates((wind.x(), wind.y(), wind.w(), wind.h()), trans_ref.clone());
                 }
 

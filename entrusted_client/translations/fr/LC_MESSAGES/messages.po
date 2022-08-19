@@ -18,6 +18,21 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "Could not check for updates, please try later.\n{0}"
+msgstr "Impossible de vérifier les mises à jour, veuillez essayer plus tard.\n{0}"
+
+msgid "Version {0} is out!\nPlease visit {1}"
+msgstr "La version {0} est sortie!\nVeuillez visiter {1}"
+
+msgid "No updates available at this time!"
+msgstr "Aucune mise à jour disponible pour le moment!"
+
+msgid "Could not read latest software version!"
+msgstr "Impossible de lire la dernière version du logiciel!"
+
+msgid "Could not read current software version!"
+msgstr "Impossible de lire la version actuelle du logiciel!"
+
 msgid "Help"
 msgstr "Aide"
 

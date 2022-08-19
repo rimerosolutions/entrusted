@@ -18,6 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "No updates available at this time!"
+msgstr ""
+
+msgid "Could not read latest software version!"
+msgstr ""
+
+msgid "Could not read current software version!"
+msgstr ""
+
 msgid "Help"
 msgstr ""
 

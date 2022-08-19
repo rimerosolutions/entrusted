@@ -60,6 +60,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let help_log_format = trans.gettext("Log format (json or plain)");
     let help_file_suffix = trans.gettext("Default file suffix (entrusted)");
     let help_password_prompt = trans.gettext("Prompt for document password");
+    let help_update_checks = trans.gettext("Check for updates");
 
     let app = App::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
@@ -78,11 +79,17 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .required(false)
                 .takes_value(true)
         ).arg(
+            Arg::with_name("update-checks")
+                .long("update-checks")
+                .help(&help_update_checks)
+                .required(false)
+                .takes_value(false)
+        ).arg(
             Arg::with_name("input-filename")
                 .long("input-filename")
                 .help(&help_input_filename)
                 .takes_value(true)
-                .required(true)
+                .required_unless("update-checks")
         ).arg(
             Arg::with_name("container-image-name")
                 .long("container-image-name")
@@ -115,6 +122,24 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 
     let run_matches= app.to_owned().get_matches();
+
+    if run_matches.is_present("update-checks") {
+        match common::update_check() {
+            Ok(opt_new_release) => {
+                if let Some(new_release) = opt_new_release {
+                    println!("{}", trans.gettext_fmt("Version {0} is out!\nPlease visit {1}", vec![&new_release.tag_name, &new_release.html_url]));
+                } else {
+                    println!("{}", trans.gettext("No updates available at this time!"));
+                }
+            },
+            Err(ex) => {
+                let err_text = trans.gettext_fmt("Could not check for updates, please try later.\n{0}", vec![&ex.to_string()]);
+                eprintln!("{}", err_text);
+            }
+        }
+
+        return Ok(());
+    }
 
     let mut input_filename = "";
     let mut output_filename = PathBuf::from("");

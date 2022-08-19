@@ -27,6 +27,8 @@ const WIDGET_GAP: i32 = 20;
 const ELLIPSIS: &str  = "...";
 
 const ICON_HELP_TEXT: &str = "?";
+const ICON_UPDATES_TEXT: &str = "U";
+
 const ICON_SAVE: &[u8]     = include_bytes!("../../images/Save_icon.png");
 const ICON_FRAME: &[u8]    = include_bytes!("../../images/Entrusted_icon.png");
 const ICON_PASSWORD: &[u8] = include_bytes!("../../images/Password_icon.png");
@@ -169,7 +171,25 @@ fn row_to_task(viewer_app_opt: &Option<String>, active_ociimage_option: &String,
     }
 }
 
-fn show_info_dialog(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Translations) {
+fn show_dialog_updates(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Translations) {
+    let (x, y, _, h) = parent_window_bounds;
+
+    match common::update_check() {
+        Ok(opt_new_release) => {
+            if let Some(new_release) = opt_new_release {
+                dialog::alert(x, y +  h / 2, &trans.gettext_fmt("Version {0} is out!\nPlease visit {1}", vec![&new_release.tag_name, &new_release.html_url]));
+            } else {
+                dialog::alert(x, y +  h / 2, &trans.gettext("No updates available at this time!"));
+            }
+        },
+        Err(ex) => {
+            let err_text = trans.gettext_fmt("Could not check for updates, please try later.\n{0}", vec![&ex.to_string()]);
+            dialog::alert(x, y +  h / 2, &err_text);
+        }
+    }
+}
+
+fn show_dialog_help(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Translations) {
     let wind_w = 450;
     let wind_h = 300;
     let wind_x = parent_window_bounds.0 + (parent_window_bounds.2 / 2) - (wind_w / 2);
@@ -226,6 +246,7 @@ fn show_info_dialog(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Tra
     grp.end();
 
     win.show();
+
     while win.shown() {
         app::wait();
     }
@@ -919,6 +940,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         move |wid| {
             let (w, h) = draw::measure(ICON_HELP_TEXT, true);
             let widx = wid.x() + wid.w() - WIDGET_GAP;
+            let widxx = wid.x() + wid.w() - (WIDGET_GAP * 2) - 5;
             let widy = wid.y() + 2;
             let old_color = draw::get_color();
             let color = if wid.active() {
@@ -927,8 +949,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                 enums::Color::Blue.inactive()
             };
             draw::draw_rect_fill(widx, widy, WIDGET_GAP, WIDGET_GAP, color);
+            draw::draw_rect_fill(widxx, widy, WIDGET_GAP, WIDGET_GAP, color);
             draw::set_draw_color(enums::Color::White);
             draw::draw_text(ICON_HELP_TEXT, (widx + WIDGET_GAP/2) - w/2, wid.y() + h);
+            draw::draw_text(ICON_UPDATES_TEXT, (widxx + WIDGET_GAP/2) - w/2, wid.y() + h);
             draw::set_draw_color(old_color);
         }
     });
@@ -941,10 +965,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             enums::Event::Push => {
                 let (x, y) = app::event_coords();
                 let widx = wid.x() + wid.w() - WIDGET_GAP;
+                let widxx = wid.x() + wid.w() - (WIDGET_GAP * 2)- 5;
                 let widy = wid.y() + 2;
 
                 if x >= widx && x <= widx + WIDGET_GAP && y >= widy && y <= widy + WIDGET_GAP {
-                    show_info_dialog((wind.x(), wind.y(), wind.w(), wind.h()), trans_ref.clone());
+                    show_dialog_help((wind.x(), wind.y(), wind.w(), wind.h()), trans_ref.clone());
+                } else if x >= widxx && x <= widxx + WIDGET_GAP && y >= widy && y <= widy + WIDGET_GAP {                    
+                    show_dialog_updates((wind.x(), wind.y(), wind.w(), wind.h()), trans_ref.clone());
                 }
 
                 true
@@ -2244,7 +2271,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                         if distance >= (scroll_height - 40) {
                             row_ypos -= 40;
                         }
-                        
+
                         filelist_scroll.scroll_to(0, row_ypos - filelist_scroll.y());
                         filelist_scroll.redraw();
                     }

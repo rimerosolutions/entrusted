@@ -43,7 +43,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let trans = l10n::new_translations(locale);
-
     let app_config_ret = config::load_config();
     let app_config = app_config_ret.unwrap_or(config::AppConfig::default());
 

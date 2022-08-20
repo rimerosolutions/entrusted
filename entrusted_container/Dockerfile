@@ -132,5 +132,3 @@ USER entrusted
 #
 # /safezone is where the wrapper eventually moves the sanitized files.
 VOLUME /tmp/input_file /safezone
-
-ENTRYPOINT ["/usr/local/bin/entrusted-container"]

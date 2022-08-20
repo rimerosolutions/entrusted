@@ -6,13 +6,6 @@ ENTRUSTED_VERSION=$(cat /etc/entrusted_release | head -1)
 echo "Setting up hostname"
 echo "entrusted-livecd" > /etc/hostname
 
-# mkdir -p /etc/live
-# echo > /etc/live/boot.conf
-# echo "overlay-size=000 000 000" >> /etc/live/boot.conf
-# echo "ramdisk-size=000 000 000" >> /etc/live/boot.conf
-# echo "overlay-size=70%" >> /etc/live/boot.conf
-# echo "ramdisk-size=70%" >> /etc/live/boot.conf
-
 echo "Installing default packages"
 export DEBIAN_FRONTEND=noninteractive
 

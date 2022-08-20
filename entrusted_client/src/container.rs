@@ -309,6 +309,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
 
         convert_args.append(&mut vec![
             convert_options.container_image_name.to_owned(),
+            common::CONTAINER_IMAGE_EXE.to_string()
         ]);
 
         if let Ok(_) = exec_crt_command(trans.gettext("Starting document processing"), container_rt, convert_args, tx.clone_box(), true, printer.clone_box(), trans.clone()) {

@@ -125,6 +125,8 @@ RUN find /usr/lib/libreoffice -type f -name "*.py" -exec rm -rf {} \; \
 RUN adduser -h /home/entrusted -s /bin/sh -D entrusted
 USER entrusted
 
+ENTRYPOINT ["/usr/local/bin/entrusted-container"]
+
 # /tmp/input_file is where the first convert expects the input file to be, and
 # /tmp where it will write the pixel files
 #

@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::rc::Rc;
 use std::sync::atomic::{AtomicBool, Ordering, AtomicI32};
-use std::sync::{mpsc, Mutex};
+use std::sync::mpsc;
 use std::sync::Arc;
 use std::thread;
 
@@ -900,8 +900,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let app = app::App::default().with_scheme(app::Scheme::Gleam);
     let (tx, rx) = mpsc::sync_channel::<common::AppEvent>(1);
     let (app_tx, app_rx) = app::channel::<common::AppEvent>();
-    let app_rx_ref = Arc::new(Mutex::new(app_rx));
-    let app_rx_appleevents = app_rx_ref.clone();
+
+    #[cfg(target_os = "macos")]
+    let (_, app_rx_appleevents) = app::channel::<String>();
 
     let wind_title = format!(
         "{} {}",
@@ -1587,7 +1588,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let trans_ref = trans_ref.clone();
                 let tx = tx.clone();
                 let mut messages_frame_ref = messages_frame_ref.clone();
-                let app_rcv = app_rx_ref.clone();
+                let app_rcv = app_rx.clone();
                 let current_row_idx = current_row_idx.clone();
                 let mut tabsettings_button_ref = tabsettings_button_ref.clone();
                 let mut filelist_scroll_ref = filelist_scroll_ref.clone();
@@ -1623,14 +1624,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                             }
                         }
 
-                        if let Ok(receiver) = app_rcv.try_lock() {
-                            if let Some(_) = receiver.recv() {
-                                idx += 1;
-                                current_row_idx.store(idx as i32, Ordering::Relaxed);
-                                move_next = true;
-                            } else {
-                                thread::yield_now();
-                            }
+                        if let Some(_) = app_rcv.recv() {
+                            idx += 1;
+                            current_row_idx.store(idx as i32, Ordering::Relaxed);
+                            move_next = true;
+                        } else {
+                            thread::yield_now();
                         }
 
                         if let Ok(_) = app::lock() {
@@ -1661,11 +1660,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         use fltk::menu;
 
         app::raw_open_callback(Some(|s| {
-            let tx = app::Sender::<common::AppEvent>::get();
-            let _ = tx.send(common::AppEvent::FileOpenEvent({
+            let tx = app::Sender::<String>::get();
+            let _ = tx.send({
                 let ret = unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().to_string() };
                 ret.to_owned()
-            }));
+            });
         }));
 
         menu::mac_set_about({
@@ -2188,8 +2187,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     while app.wait() {
-        if let Ok(app_rx) = app_rx_appleevents.lock() {
-            if let Some(common::AppEvent::FileOpenEvent(msg)) = app_rx.recv() {
+        #[cfg(target_os = "macos")] {
+
+            if let Some(msg) = app_rx_appleevents.recv() {
                 let mut filelist_widget_ref = filelist_widget.clone();
                 let mut scroll_ref = filelist_scroll.clone();
                 let file_path = PathBuf::from(msg);
@@ -2235,6 +2235,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 }
             }
+
         }
 
         if let Ok(app_event) = rx.try_recv() {

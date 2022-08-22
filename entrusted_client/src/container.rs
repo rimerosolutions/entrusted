@@ -241,6 +241,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
 
     let run_args:Vec<String> = vec![
         "run".to_string(),
+        "--rm".to_string(),
         "--network".to_string(),
         "none".to_string(),        
     ];

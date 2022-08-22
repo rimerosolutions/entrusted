@@ -2,10 +2,10 @@
 
 * What is this?
 
-This module allows document conversions from the comfort of your Web browser
+This module allows converting documents from the comfort of your Web browser.
 - From the Web interface, the user uploads documents to the =server= via HTTP (images, PDF or office documents)
-- The server sanitizes the original documents and transforms them to PDFs (=entrusted-cli= command-line invocation)
-- Once the processing is completed successfully, resulting PDF documents can be downloaded
+- The server sanitizes original documents and transforms them to PDFs (=entrusted-cli= command-line invocation)
+- Once the processing completed successfully completed, resulting PDF documents can be downloaded
   
 * What does it look like?
 
@@ -15,18 +15,18 @@ There's a basic Web interface that can be accessed from the server root URL (i.e
 
 * What is the current use-case?
 
-This is used for a single workstation, in a multi virtual machines scenario (several virtual machines: /VMs/):
+This is used for a single workstation, in a "multi virtual machines" scenario (several virtual machines: /VMs/):
 - There are several /VMs/ for specific purposes ("entrusted VM", "programming VM", "socials VM", etc.)
 - Inside some of the /VMs/, there's a need to open safely documents (ebooks, emails attachments, etc.)
-  - The "Entrusted VM" performing document conversions has no internet connectivity
+  - The "Entrusted VM" performing document conversions has no internet connectivity (by choice)
   - The "Entrusted VM" only allows SSH and "document conversion requests"
-  - The "Entrusted VM" has limited resources (1GB of RAM allocated)
+  - The "Entrusted VM" has limited resources (1 GB of RAM allocated)
 
 * What is the overall architecture?
 
 - Strive for balance between minimalism and convenience, but focus on performance
-- Keep a general common look and feel for user interfaces (Web or Desktop interfaces)
-- Avoid large feature gaps with the Desktop interface, based on what is possible in the browser (among other considerations)
+- Keep a familiar look and feel in user interfaces (Web or Desktop interfaces)
+- Avoid large feature gaps between the Web and Desktop interfaces
 - Delete automatically files from the server upon download for both privacy and free disk space purposes
   
   The high-level architecture is described below.

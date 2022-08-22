@@ -27,6 +27,7 @@ const WIDGET_GAP: i32 = 20;
 const ELLIPSIS: &str  = "...";
 
 const ICON_HELP_TEXT: &str = "?";
+const ICON_UPDATECHECKS_TEXT: &str = "U";
 
 const ICON_SAVE: &[u8]     = include_bytes!("../../images/Save_icon.png");
 const ICON_FRAME: &[u8]    = include_bytes!("../../images/Entrusted_icon.png");
@@ -939,36 +940,48 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_size(120, 20)
         .with_label(&trans.gettext("Convert"));
 
-    let mut helpinfo_frame = frame::Frame::default_fill();
+    let mut helpinfo_pack = group::Pack::default()
+        .with_size(400, 20)
+        .with_type(group::PackType::Horizontal)
+        .with_align(enums::Align::Inside | enums::Align::Right);
+    helpinfo_pack.set_spacing(WIDGET_GAP/5);
 
-    helpinfo_frame.draw({
-        move |wid| {
-            let (w, h) = draw::measure(ICON_HELP_TEXT, true);
-            let widx = wid.x() + wid.w() - WIDGET_GAP;
-            let widxx = wid.x() + wid.w() - (WIDGET_GAP * 2) - 5;
-            let widy = wid.y() + 2;
-            let old_color = draw::get_color();
-            let color = if wid.active() {
-                enums::Color::Blue
-            } else {
-                enums::Color::Blue.inactive()
-            };
-            draw::draw_rect_fill(widx, widy, WIDGET_GAP, WIDGET_GAP, color);
-            draw::draw_rect_fill(widxx, widy, WIDGET_GAP, WIDGET_GAP, color);
-            draw::set_draw_color(enums::Color::White);
-            draw::draw_text(ICON_HELP_TEXT, (widx + WIDGET_GAP/2) - w/2, wid.y() + h);
+    let spacer_frame = frame::Frame::default()
+        .with_size(360 - (WIDGET_GAP * 2), 20);
+    
+    let mut updatechecks_button = button::Button::default()
+        .with_size(20, 20)
+        .with_label(ICON_UPDATECHECKS_TEXT);
+    updatechecks_button.set_tooltip(&trans_ref.gettext("Check for updates"));
+    updatechecks_button.set_color(enums::Color::Blue);
+    updatechecks_button.set_label_color(enums::Color::White);
+    
+    let mut helpinfo_button = button::Button::default()
+        .with_size(20, 20)
+        .with_label(ICON_HELP_TEXT);
+    helpinfo_button.set_color(enums::Color::Blue);
+    helpinfo_button.set_label_color(enums::Color::White);
 
-            draw::set_draw_color(enums::Color::Yellow);
-
-            draw::draw_rect_fill(widxx + WIDGET_GAP/2 - 2, wid.y() + wid.h() / 2 - 4, 4, 4, enums::Color::Yellow);
-            draw::draw_polygon(widxx + 4, wid.y() + wid.h()/2 - 4, widxx + WIDGET_GAP/2, wid.y() + 6, widxx + WIDGET_GAP - 4, wid.y() + wid.h()/2 - 4);
-            draw::draw_line(widxx + WIDGET_GAP/2 - 4, wid.y() + wid.h() / 2 + 2, widxx + WIDGET_GAP/2 - 2 + 5, wid.y() + wid.h() / 2 + 2);
-
-            draw::set_draw_color(old_color);
+    helpinfo_button.set_tooltip(&trans_ref.gettext("Help"));
+    helpinfo_button.set_callback({
+        let wind = wind.clone();
+        let trans_ref = trans_ref.clone();
+        
+        move |_| {
+            show_dialog_help((wind.x(), wind.y(), wind.w(), wind.h()), trans_ref.clone());
         }
     });
 
-    helpinfo_frame.handle({
+    updatechecks_button.set_callback({
+        let wind = wind.clone();
+        let trans_ref = trans_ref.clone();
+        
+        move |_| {
+            show_dialog_updates((wind.x(), wind.y(), wind.w(), wind.h()), trans_ref.clone());
+        }
+    });
+
+    helpinfo_button.handle({
         let wind = wind.clone();
         let trans_ref = trans_ref.clone();
 
@@ -990,6 +1003,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             _ => false,
         }
     });
+    helpinfo_pack.end();
 
     top_group.end();
 
@@ -1521,7 +1535,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         let app_config_ref = appconfig.clone();
         let current_row_idx = current_row_idx.clone();
         let messages_frame_ref = messages_frame.clone();
-        let mut helpinfo_frame_ref = helpinfo_frame.clone();
+        // let mut helpinfo_pack_ref = helpinfo_pack.clone();
+        let mut helpinfo_frame_ref = helpinfo_button.clone();
         let tx = tx.clone();
 
         move |b| {
@@ -1919,8 +1934,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     wind.handle({
         let mut top_group_ref = top_group.clone();
 
-        let mut helpinfo_frame_ref = helpinfo_frame.clone();
-
         let settings_pack_rc_ref = settings_pack_rc.clone();
 
         let mut filesuffix_pack_ref = filesuffix_pack.clone();
@@ -1956,6 +1969,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut columns_frame_ref = columns_frame.clone();
 
         let mut messages_frame_ref = messages_frame.clone();
+        let mut helpinfo_pack_ref = helpinfo_pack.clone();
+        let mut spacer_frame = spacer_frame.clone();
+        let mut helpinfo_button_ref = helpinfo_button.clone();
+        let mut updatechecks_button_ref = updatechecks_button.clone();
 
         move |wid, ev| match ev {
             enums::Event::Move => {
@@ -1974,7 +1991,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                 tabsettings_button.resize(WIDGET_GAP, top_group_ref.y(), tabs_width, 30);
                 tabconvert_button.resize(tabsettings_button.x() + WIDGET_GAP, top_group_ref.y(), tabs_width, 30);
 
-                helpinfo_frame_ref.resize(tabconvert_button.x() + WIDGET_GAP, top_group_ref.y(), wid.w() - (WIDGET_GAP * 4) - (tabs_width * 2), 30);
+                helpinfo_pack_ref.resize(tabconvert_button.x() + WIDGET_GAP, top_group_ref.y(), wid.w() - (WIDGET_GAP * 4) - (tabs_width * 2), 30);
+                spacer_frame.resize(helpinfo_pack_ref.x(), helpinfo_pack_ref.y(), helpinfo_pack_ref.w() - (WIDGET_GAP/4 * 2) - (30 * 2), 30);
+                helpinfo_button_ref.resize(spacer_frame.x() + spacer_frame.w() + WIDGET_GAP/4, spacer_frame.y(), 30, 30);
+                updatechecks_button_ref.resize(helpinfo_button_ref.x() + WIDGET_GAP/4, spacer_frame.y(), 30, 30);
 
                 let content_y = top_group_ref.y() + top_group_ref.h() + WIDGET_GAP;
 
@@ -2188,7 +2208,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     while app.wait() {
         #[cfg(target_os = "macos")] {
-
             if let Some(msg) = app_rx_appleevents.recv() {
                 let mut filelist_widget_ref = filelist_widget.clone();
                 let mut scroll_ref = filelist_scroll.clone();
@@ -2337,10 +2356,10 @@ pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> 
         }
     } else {
         if let Err(ex) = Command::new(cmd).arg(input).spawn() {
-            Err(ex.into())
-        } else {
-            Ok(())
+            return Err(ex.into());
         }
+
+        Ok(())        
     }
 }
 

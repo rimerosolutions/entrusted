@@ -18,6 +18,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "Check for updates"
+msgstr "Vérifier les mises à jour"
+
 msgid "Could not check for updates, please try later.\n{0}"
 msgstr "Impossible de vérifier les mises à jour, veuillez essayer plus tard.\n{0}"
 

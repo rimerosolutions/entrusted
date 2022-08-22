@@ -6,8 +6,7 @@
   - [X] Custom output location for individual documents in the conversion queue
   - [X] Support for password-protected documents
   - [ ] Cancellable conversions for those that haven't started yet (minor UI redesign needed)
-  - [ ] Parallel conversions
-  - [ ] Minimal resources management to avoid exhausting computer CPU and memory
+  - [ ] Parallel conversions and associated minimal resources management (CPU + RAM?)
 - User Interface
   - [X] Hide command prompts while running processes on Windows, and address file permissions errors
   - [X] Responsiveness issues during conversions (UI thread and background operations)
@@ -17,11 +16,13 @@
   - [ ] Add overall progress information during conversions (pie chart?)
   - [ ] Display overall conversion results ("X out of Y files were not successfully converted")
   - [ ] Improve scrolling behavior during conversions ("smooth-scrolling")
+  - [ ] Prompt for confirmation prior closing the application during conversions
   - [-] Check for release updates (Desktop and command-line clients)
     - [X] Manual checks
     - [ ] Automated checks      
-- [ ] Hardening
+- [ ] Container solutions and hardening
   - [ ] Review container execution options (podman v.s podman-remote, security options, etc.)
+  - [ ] Support and test [[https://rancherdesktop.io/][Ranger Desktop]] (this might already work with default settings)
   - [ ] Review some of the code and read few security-related articles
 - [ ] Online Web Service
   - [ ] Evaluate [[https://github.com/tokio-rs/axum][axum]] as a replacement of [[https://github.com/actix/actix-web][actix_web]] ([[https://ordina-jworks.github.io/event-driven/2021/04/23/SSE-with-HTTP2.html#http11-vs-http2][HTTP2 support + SSE]] + browsers)
@@ -32,8 +33,9 @@
   - [ ] Add automated tests (unit & integration)
 - [-] CI/CD and packaging
   - [X] Adopt Git flow and delete all the previous spiral branches
-  - [X] Revisit Flatpak support (See [[https://github.com/axtloss/flatpaks][axtloss flatpaks]])
   - [X] Create few specific packages (DEB, RPM)
+  - [X] Add README notes for [[https://github.com/axtloss/flatpaks][axtloss Flatpak packages]] and later in release notes
+  - [ ] Support for different CPU architectures (ARM, etc.)
   - [ ] Transition CI/CD scripts to Github actions or TravisCI or something else?
 - [X] Mime-type detection and file associations
   - [X] Register file associations with supported document types

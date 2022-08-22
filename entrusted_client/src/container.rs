@@ -242,9 +242,10 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
     let run_args:Vec<String> = vec![
         "run".to_string(),
         "--rm".to_string(),
-        "--network".to_string(), "none".to_string(),
-        "--security-opt".to_string(), "no-new-privileges:true".to_string(),
-        "--security-opt".to_string(), "label:disable".to_string(),
+        "--network".to_string(),
+        "none".to_string(),
+        "--security-opt".to_string(),
+        "label=disable".to_string()
     ];
 
     let input_file_volume = format!("{}:/tmp/input_file", input_path.display());

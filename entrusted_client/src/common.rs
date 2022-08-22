@@ -112,9 +112,9 @@ enum ContainerProgramStub<'a> {
 // Especially for Lima and similar tooling, to avoid further downstream conditional blocks
 pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
     let container_program_stubs = [
-        ContainerProgramStub::Docker("docker", vec![], vec!["--security-opt=no-new-privileges:true", "--security-opt=label:disable"], None),
-        ContainerProgramStub::Podman("podman", vec![], vec!["--userns", "keep-id", "--security-opt", "no-new-privileges", "--security-opt", "label=disable"], None),
-        ContainerProgramStub::Lima("lima", vec!["nerdctl"], vec!["--security-opt", "no-new-privileges", "--security-opt", "label=disable"], Some("/tmp/lima")),
+        ContainerProgramStub::Docker("docker", vec![], vec!["--security-opt=no-new-privileges:true", "--security-opt=label=disable"], None),
+        ContainerProgramStub::Podman("podman", vec![], vec!["--userns", "keep-id", "--security-opt", "no-new-privileges", "--security-opt", "label:disable"], None),
+        ContainerProgramStub::Lima("lima", vec!["nerdctl"], vec!["--security-opt", "no-new-privileges", "--security-opt", "label:disable"], Some("/tmp/lima")),
         ContainerProgramStub::Nerdctl("nerdctl", vec![], vec![], None),
     ];
 

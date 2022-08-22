@@ -243,7 +243,8 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         "run".to_string(),
         "--rm".to_string(),
         "--network".to_string(),
-        "none".to_string(),        
+        "none".to_string(),
+        "--cap-drop=all".to_string()
     ];
 
     let input_file_volume = format!("{}:/tmp/input_file", input_path.display());
@@ -326,11 +327,14 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             fs::remove_file(container_output_file_path)?;
 
             let output_file = fs::File::open(output_path_clone)?;
+
+            // This seems to fail on Microsoft Windows with permission denied errors
             let _ = filetime::set_file_handle_times(&output_file, Some(atime), Some(atime));
 
             if let Err(ex) = cleanup_dir(dz_tmp.clone().to_path_buf()) {
                 tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, trans.gettext_fmt("Failed to cleanup temporary folder: {0}. {1}.", vec![&dz_tmp.clone().display().to_string(), &ex.to_string()]))))?;
             }
+
             success = true;
         } else {
             err_msg = trans.gettext("Conversion failed!");
@@ -346,6 +350,8 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         } else { // Linux and others
             err_msg.push_str(&trans.gettext("Please install Docker or Podman."));
         }
+
+        tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, err_msg.clone())))?;
     }
 
     if success {

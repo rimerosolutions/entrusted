@@ -26,9 +26,6 @@ mod container;
 const WIDGET_GAP: i32 = 20;
 const ELLIPSIS: &str  = "...";
 
-const ICON_HELP_TEXT: &str = "?";
-const ICON_UPDATECHECKS_TEXT: &str = "U";
-
 const ICON_SAVE: &[u8]     = include_bytes!("../../images/Save_icon.png");
 const ICON_FRAME: &[u8]    = include_bytes!("../../images/Entrusted_icon.png");
 const ICON_PASSWORD: &[u8] = include_bytes!("../../images/Password_icon.png");
@@ -948,25 +945,59 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let spacer_frame = frame::Frame::default()
         .with_size(360 - (WIDGET_GAP * 2), 20);
-    
+
     let mut updatechecks_button = button::Button::default()
-        .with_size(20, 20)
-        .with_label(ICON_UPDATECHECKS_TEXT);
+        .with_size(20, 20);
     updatechecks_button.set_tooltip(&trans_ref.gettext("Check for updates"));
-    updatechecks_button.set_color(enums::Color::Blue);
-    updatechecks_button.set_label_color(enums::Color::White);
-    
+
     let mut helpinfo_button = button::Button::default()
-        .with_size(20, 20)
-        .with_label(ICON_HELP_TEXT);
-    helpinfo_button.set_color(enums::Color::Blue);
-    helpinfo_button.set_label_color(enums::Color::White);
+        .with_size(20, 20);
+
+    helpinfo_button.draw({
+        move |wid| {
+            let (lw, lh) = draw::measure("?", true);
+            let old_color = draw::get_color();
+            let new_color = if wid.active() {
+                enums::Color::Blue
+            } else {
+                enums::Color::Blue.inactive()
+            };
+            draw::set_draw_color(new_color);
+            draw::draw_rect_fill(wid.x(), wid.y(), wid.w(), wid.h(), new_color);
+            draw::set_draw_color(enums::Color::White);
+            draw::draw_text("?", wid.x() + (wid.w() / 2) - (lw /2 ), wid.y() + (wid.h()/ 2) +  lh/3);
+            draw::set_draw_color(old_color);
+        }
+    });
+
+    updatechecks_button.draw({
+        move |wid| {
+            let old_color = draw::get_color();
+            let new_color = if wid.active() {
+                enums::Color::Blue
+            } else {
+                enums::Color::Blue.inactive()
+            };
+            draw::set_draw_color(new_color);
+            draw::draw_rect_fill(wid.x(), wid.y(), wid.w(), wid.h(), new_color);
+            draw::set_draw_color(enums::Color::White);
+
+            let margin = 4;
+            draw::draw_polygon(wid.x() + margin, wid.y() + wid.h()/3, wid.x() + (wid.w()/ 2), wid.y() + margin, wid.x() + wid.w() - margin, wid.y() + (wid.h()/3));
+            draw::draw_rect_fill(wid.x() + (margin * 3), wid.y() + (wid.h()/3), wid.w() - (margin * 2 * 3), wid.h() / 3, enums::Color::White);
+            draw::draw_line(wid.x() + margin, wid.y() + (wid.h()/3*2) + 2, wid.x() + wid.w() - margin, wid.y() + (wid.h()/3 * 2) + 2);
+
+
+
+            draw::set_draw_color(old_color);
+        }
+    });
 
     helpinfo_button.set_tooltip(&trans_ref.gettext("Help"));
     helpinfo_button.set_callback({
         let wind = wind.clone();
         let trans_ref = trans_ref.clone();
-        
+
         move |_| {
             show_dialog_help((wind.x(), wind.y(), wind.w(), wind.h()), trans_ref.clone());
         }
@@ -975,7 +1006,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     updatechecks_button.set_callback({
         let wind = wind.clone();
         let trans_ref = trans_ref.clone();
-        
+
         move |_| {
             show_dialog_updates((wind.x(), wind.y(), wind.w(), wind.h()), trans_ref.clone());
         }
@@ -1535,13 +1566,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         let app_config_ref = appconfig.clone();
         let current_row_idx = current_row_idx.clone();
         let messages_frame_ref = messages_frame.clone();
-        // let mut helpinfo_pack_ref = helpinfo_pack.clone();
-        let mut helpinfo_frame_ref = helpinfo_button.clone();
+        let mut updatechecks_button_ref = updatechecks_button.clone();
+        let mut helpinfo_button_ref = helpinfo_button.clone();
         let tx = tx.clone();
 
         move |b| {
             b.deactivate();
-            helpinfo_frame_ref.deactivate();
+            helpinfo_button_ref.deactivate();
+            updatechecks_button_ref.deactivate();
             tabsettings_button_ref.deactivate();
             selectall_frame_rc_ref.borrow_mut().deactivate();
             deselectall_frame_rc_ref.borrow_mut().deactivate();
@@ -1608,7 +1640,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let mut tabsettings_button_ref = tabsettings_button_ref.clone();
                 let mut filelist_scroll_ref = filelist_scroll_ref.clone();
                 let mut convert_frame_ref = convert_frame_ref.clone();
-                let mut helpinfo_frame_ref = helpinfo_frame_ref.clone();
+                let mut helpinfo_button_ref = helpinfo_button_ref.clone();
+                let mut updatechecks_button_ref = updatechecks_button_ref.clone();
 
                 let eventer: Box<dyn common::EventSender> = Box::new(GuiEventSender {
                     tx: tx.clone()
@@ -1658,7 +1691,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                     if let Ok(_) = app::lock() {
                         messages_frame_ref.set_label("");
                         tabsettings_button_ref.activate();
-                        helpinfo_frame_ref.activate();
+                        helpinfo_button_ref.activate();
+                        updatechecks_button_ref.activate();
                         convert_frame_ref.activate();
                         filelist_scroll_ref.scroll_to(0, 0);
                         filelist_scroll_ref.redraw();
@@ -2359,7 +2393,7 @@ pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> 
             return Err(ex.into());
         }
 
-        Ok(())        
+        Ok(())
     }
 }
 

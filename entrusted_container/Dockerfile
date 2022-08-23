@@ -118,8 +118,7 @@ RUN find /usr/lib/libreoffice -type f -name "*.py" -exec rm -rf {} \; \
     && rm -rf /usr/include/* \
     && rm -rf /usr/lib/libreoffice/share/Scripts/* \
     && rm -rf /usr/lib/libreoffice/*.html && rm -rf /usr/lib/libreoffice/*.fodt \
-    && rm -rf /usr/lib/libreoffice/program/classes/*.jar \
-    && rm -rf /usr/bin
+    && rm -rf /usr/lib/libreoffice/program/classes/*.jar
 
 # Add the unprivileged user
 RUN adduser -h /home/entrusted -s /bin/sh -D entrusted

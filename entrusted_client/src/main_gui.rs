@@ -955,17 +955,36 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     helpinfo_button.draw({
         move |wid| {
-            let (lw, lh) = draw::measure("?", true);
             let old_color = draw::get_color();
+
             let new_color = if wid.active() {
                 enums::Color::Blue
             } else {
                 enums::Color::Blue.inactive()
             };
+
             draw::set_draw_color(new_color);
             draw::draw_rect_fill(wid.x(), wid.y(), wid.w(), wid.h(), new_color);
             draw::set_draw_color(enums::Color::White);
-            draw::draw_text("?", wid.x() + (wid.w() / 2) - (lw /2 ), wid.y() + (wid.h()/ 2) +  lh/3);
+
+            let margin = 4;
+
+            for i in 0..2 {
+                draw::draw_line(wid.x() + (margin * 3) - 1, wid.y() + margin + i,  wid.x() + wid.w() - margin, wid.y() + margin + i);
+            }
+
+            for i in 0..2 {
+                draw::draw_line(wid.x() + wid.w() - margin - 1 + i, wid.y() + margin,  wid.x() + wid.w() - margin - 1 + i, wid.y() + (wid.h()/3) + 1);
+            }
+
+            for i in 0..2 {
+                draw::draw_line(wid.x() + (margin * 3), wid.y() + (wid.h()/3) + i + 1,  wid.x() + wid.w() - margin, wid.y() + (wid.h()/3) + i + 1);
+            }
+
+            draw::draw_rect_fill(wid.x() + (margin * 3), wid.y() + (wid.h()/3) + 1, wid.w() - (margin * 2 * 3)-1, wid.h() / 3 - 1, enums::Color::White);
+
+            draw::draw_rect_fill(wid.x() + (wid.w()/2) - (wid.w() - (margin * 2 * 3))/2 , wid.y() + (wid.h()/3*2) + 2, margin+1, margin, enums::Color::White);
+
             draw::set_draw_color(old_color);
         }
     });
@@ -973,11 +992,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     updatechecks_button.draw({
         move |wid| {
             let old_color = draw::get_color();
+
             let new_color = if wid.active() {
                 enums::Color::Blue
             } else {
                 enums::Color::Blue.inactive()
             };
+
             draw::set_draw_color(new_color);
             draw::draw_rect_fill(wid.x(), wid.y(), wid.w(), wid.h(), new_color);
             draw::set_draw_color(enums::Color::White);
@@ -986,8 +1007,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             draw::draw_polygon(wid.x() + margin, wid.y() + wid.h()/3, wid.x() + (wid.w()/ 2), wid.y() + margin, wid.x() + wid.w() - margin, wid.y() + (wid.h()/3));
             draw::draw_rect_fill(wid.x() + (margin * 3), wid.y() + (wid.h()/3), wid.w() - (margin * 2 * 3), wid.h() / 3, enums::Color::White);
             draw::draw_line(wid.x() + margin, wid.y() + (wid.h()/3*2) + 2, wid.x() + wid.w() - margin, wid.y() + (wid.h()/3 * 2) + 2);
-
-
 
             draw::set_draw_color(old_color);
         }

@@ -172,7 +172,7 @@ fn show_dialog_updates(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::
     let (x, y, w, h) = parent_window_bounds;
     let msg = {
 
-        match common::update_check() {
+        match common::update_check(&trans) {
             Ok(opt_new_release) => {
                 if let Some(new_release) = opt_new_release {
                     trans.gettext_fmt("Version {0} is out!\nPlease visit {1}", vec![&new_release.tag_name, &new_release.html_url])

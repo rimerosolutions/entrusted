@@ -20,7 +20,7 @@ echo "Building all Mac OS binaries"
 podman run --rm \
     --volume "${PROJECTDIR}":/root/src \
     --workdir /root/src \
-    docker.io/joseluisq/rust-linux-darwin-builder:1.60.0 \
+    docker.io/joseluisq/rust-linux-darwin-builder:1.63.0 \
     sh -c "export CC=/usr/local/osxcross/target/bin/o64-clang; export CXX=/usr/local/osxcross/target/bin/o64-clang++; cd /root/src/entrusted_client && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-apple-darwin && cd /root/src/entrusted_webclient && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-apple-darwin && cd /root/src/entrusted_webserver && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-apple-darwin"
 retVal=$?
 if [ $retVal -ne 0 ]; then

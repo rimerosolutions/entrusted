@@ -123,7 +123,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let run_matches= app.to_owned().get_matches();
 
     if run_matches.is_present("update-checks") {
-        match common::update_check() {
+        match common::update_check(&trans) {
             Ok(opt_new_release) => {
                 if let Some(new_release) = opt_new_release {
                     println!("{}", trans.gettext_fmt("Version {0} is out!\nPlease visit {1}", vec![&new_release.tag_name, &new_release.html_url]));

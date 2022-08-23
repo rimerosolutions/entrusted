@@ -4,7 +4,7 @@ use which;
 use serde::{Deserialize, Serialize};
 use minreq;
 use semver;
-
+use crate::l10n;
 pub const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str = "ENTRUSTED_DOC_PASSWD";
 pub const LOG_FORMAT_JSON: &str = "json";
 
@@ -152,7 +152,7 @@ pub fn default_output_path(input: PathBuf, file_suffix: String) -> Result<PathBu
     }
 }
 
-pub fn update_check() -> Result<Option<ReleaseInfo>, Box<dyn Error>> {
+pub fn update_check(trans: &l10n::Translations) -> Result<Option<ReleaseInfo>, Box<dyn Error>> {
     let releases_url = "https://api.github.com/repos/rimerosolutions/entrusted/releases/latest";
 
       let response = minreq::get(releases_url)
@@ -177,10 +177,10 @@ pub fn update_check() -> Result<Option<ReleaseInfo>, Box<dyn Error>> {
                     return Ok(None);
                 }
             } else {
-                Err("Could not read latest release version!".into())
+                Err(trans.gettext("Could not read latest release version!").into())
             }
         } else {
-            Err("Could not current software version!".into())
+            Err(trans.gettext("Could not current software version!").into())
         }         
     }
 }

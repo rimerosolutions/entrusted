@@ -10,7 +10,7 @@ use std::ffi::CString;
 use std::fs;
 use serde::{Deserialize, Serialize};
 use std::io::{BufReader, Cursor, Seek, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::Instant;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -47,7 +47,7 @@ macro_rules! incl_gettext_files {
 #[derive(Clone, Debug)]
 enum ConversionType {
     None,
-    LibreOffice(String, String), // libreoffice_filter, file_extension
+    LibreOffice(&'static str, &'static str), // libreoffice_filter, file_extension
     Convert,
 }
 
@@ -91,14 +91,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let ret = || -> Result<(), Box<dyn Error>> {
-        let raw_input_path = PathBuf::from("/tmp/input_file");
-        let output_file_path = PathBuf::from("/tmp/safe-output-compressed.pdf");
-        let output_dir_path = PathBuf::from("/tmp/");
-        let safe_dir_path = PathBuf::from("/safezone/safe-output-compressed.pdf");
+        let raw_input_path = Path::new("/tmp/input_file");
+        let output_file_path = Path::new("/tmp/safe-output-compressed.pdf");
+        let output_dir_path = Path::new("/tmp/");
+        let safe_dir_path = Path::new("/safezone/safe-output-compressed.pdf");
 
         // step 1 0%
         let mut progress_range = ProgressRange::new(0, 20);
-        let input_file_path = input_as_pdf_to_pathbuf_uri(&logger, progress_range, raw_input_path, document_password.clone(), l10n.clone())?;
+        let input_file_path = input_as_pdf_to_pathbuf_uri(&logger, progress_range, &raw_input_path, document_password.clone(), l10n.clone())?;
 
         let input_file_param = input_file_path.display().to_string();
         let doc = if let Some(passwd) = document_password {
@@ -135,7 +135,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 ocr_imgs_to_pdf(&logger, progress_range, page_count, tess_settings, &output_dir_path, &output_dir_path, l10n.clone())?;
             },
             Err(_) => {
-                imgs_to_pdf(&logger, progress_range, page_count, &output_dir_path, &output_dir_path, l10n.clone())?;
+                imgs_to_pdf(&logger, progress_range, page_count, output_dir_path, output_dir_path, l10n.clone())?;
             }
         }
 
@@ -165,7 +165,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     std::process::exit(exit_code);
 }
 
-fn move_file_to_dir(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, src_file_path: &PathBuf, dest_dir_path: &PathBuf, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
+fn move_file_to_dir(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, src_file_path: &Path, dest_dir_path: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
     if let Err(ex) = fs::File::create(&dest_dir_path) {
         if let Some(dest_dir) = dest_dir_path.parent() {
             if let Err(_) = fs::create_dir_all(dest_dir) {
@@ -191,54 +191,54 @@ fn move_file_to_dir(logger: &Box<dyn ConversionLogger>, progress_range: Progress
     Ok(())
 }
 
-fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRange, raw_input_path: PathBuf, opt_passwd: Option<String>, l10n: l10n::Translations) -> Result<PathBuf, Box<dyn Error>> {
+fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRange, raw_input_path: &Path, opt_passwd: Option<String>, l10n: l10n::Translations) -> Result<PathBuf, Box<dyn Error>> {
     let conversion_by_mimetype: HashMap<&str, ConversionType> = [
         ("application/pdf", ConversionType::None),
         (
             "application/rtf",
-            ConversionType::LibreOffice("writer_pdf_Export".to_string(), "rtf".to_string()),
+            ConversionType::LibreOffice("writer_pdf_Export", "rtf"),
         ),
         (
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            ConversionType::LibreOffice("writer_pdf_Export".to_string(), "docx".to_string()),
+            ConversionType::LibreOffice("writer_pdf_Export", "docx"),
         ),
         (
             "application/vnd.ms-word.document.macroEnabled.12",
-            ConversionType::LibreOffice("writer_pdf_Export".to_string(), "docm".to_string()),
+            ConversionType::LibreOffice("writer_pdf_Export", "docm"),
         ),
         (
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            ConversionType::LibreOffice("calc_pdf_Export".to_string(),"xlsx".to_string()),
+            ConversionType::LibreOffice("calc_pdf_Export", "xlsx"),
         ),
         (
             "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            ConversionType::LibreOffice("impress_pdf_Export".to_string(), "pptx".to_string()),
+            ConversionType::LibreOffice("impress_pdf_Export", "pptx"),
         ),
-        ("application/msword", ConversionType::LibreOffice("writer_pdf_Export".to_string(), "doc".to_string())),
+        ("application/msword", ConversionType::LibreOffice("writer_pdf_Export", "doc")),
         (
             "application/vnd.ms-excel",
-            ConversionType::LibreOffice("calc_pdf_Export".to_string(), "xls".to_string()),
+            ConversionType::LibreOffice("calc_pdf_Export", "xls"),
         ),
         (
             "application/vnd.ms-powerpoint",
-            ConversionType::LibreOffice("impress_pdf_Export".to_string(), "ppt".to_string()),
+            ConversionType::LibreOffice("impress_pdf_Export", "ppt"),
         ),
         (
             "application/vnd.oasis.opendocument.text",
-            ConversionType::LibreOffice("writer_pdf_Export".to_string(), "odt".to_string()),
+            ConversionType::LibreOffice("writer_pdf_Export", "odt"),
         ),
         (
             "application/vnd.oasis.opendocument.graphics",
-            ConversionType::LibreOffice("impress_pdf_Export".to_string(), "odg".to_string()),
+            ConversionType::LibreOffice("impress_pdf_Export", "odg"),
         ),
 
         (
             "application/vnd.oasis.opendocument.presentation",
-            ConversionType::LibreOffice("impress_pdf_Export".to_string(), "odp".to_string()),
+            ConversionType::LibreOffice("impress_pdf_Export", "odp"),
         ),
         (
             "application/vnd.oasis.opendocument.spreadsheet",
-            ConversionType::LibreOffice("calc_pdf_Export".to_string(), "ods".to_string()),
+            ConversionType::LibreOffice("calc_pdf_Export", "ods"),
         ),
         ("image/jpeg",   ConversionType::Convert),
         ("image/gif",    ConversionType::Convert),
@@ -385,8 +385,8 @@ fn ocr_imgs_to_pdf(
     progress_range: ProgressRange,
     page_count: usize,
     tess_settings: TessSettings,
-    input_path: &PathBuf,
-    output_path: &PathBuf,
+    input_path: &Path,
+    output_path: &Path,
     l10n: l10n::Translations
 ) -> Result<(), Box<dyn Error>> {
     let progress_delta = progress_range.delta();
@@ -402,7 +402,7 @@ fn ocr_imgs_to_pdf(
         logger.log(progress_value, l10n.gettext_fmt("Performing OCR on page {0}", vec![&page_num_text]));
         let src = input_path.join(format!("page-{}.png", page_num));
         let dest = output_path.join(format!("page-{}", page_num));
-        ocr_img_to_pdf(api, src, dest)?;
+        ocr_img_to_pdf(api, &src, &dest)?;
     }
 
     tesseract_delete(api);
@@ -441,13 +441,13 @@ fn tesseract_delete(api: *mut tesseract_plumbing::tesseract_sys::TessBaseAPI) {
 
 fn ocr_img_to_pdf(
     api: *mut tesseract_plumbing::tesseract_sys::TessBaseAPI,
-    input_path: PathBuf,
-    output_path: PathBuf,
+    input_path: &Path,
+    output_path: &Path,
 ) -> Result<(), Box<dyn Error>> {
-    let c_inputname = CString::new(input_path.clone().into_os_string().into_string().unwrap().as_str())?;
+    let c_inputname = CString::new(input_path.clone().display().to_string().as_str())?;
     let inputname = c_inputname.as_bytes().as_ptr() as *mut u8 as *mut i8;
 
-    let c_outputbase = CString::new(output_path.into_os_string().into_string().unwrap())?;
+    let c_outputbase = CString::new(output_path.display().to_string().as_str())?;
     let outputbase = c_outputbase.as_bytes().as_ptr() as *mut u8 as *mut i8;
 
     let c_input_name = CString::new(input_path.clone().file_name().unwrap().to_str().unwrap()).unwrap();
@@ -520,12 +520,13 @@ impl ProgressRange {
         Self { min, max }
     }
 
+    #[inline]
     fn delta(&self) -> usize {
         self.max - self.min
     }
 }
 
-fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, doc: Document, dest_folder: &PathBuf, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
+fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, doc: Document, dest_folder: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
     let mut progress_value: usize = progress_range.min;
 
     logger.log(progress_value, l10n.ngettext("Extract PDF file into one image",
@@ -570,7 +571,7 @@ fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_rang
     Ok(())
 }
 
-fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, input_dir_path: &PathBuf, output_path: &PathBuf, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
+fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, input_dir_path: &Path, output_path: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
     logger.log(progress_range.min,
                l10n.ngettext("Combining one PDF document",
                              "Combining few PDF documents",
@@ -766,7 +767,7 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: Progress
     Ok(())
 }
 
-fn imgs_to_pdf(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, input_path: &PathBuf, output_path: &PathBuf, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
+fn imgs_to_pdf(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange, page_count: usize, input_path: &Path, output_path: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
     let progress_delta = progress_range.delta();
     let mut progress_value: usize = progress_range.min;
 
@@ -787,7 +788,7 @@ fn imgs_to_pdf(logger: &Box<dyn ConversionLogger>, progress_range: ProgressRange
     Ok(())
 }
 
-fn img_to_pdf(src_format: image::ImageFormat, src_path: &PathBuf, dest_path: &PathBuf) -> Result<(), Box<dyn Error>> {
+fn img_to_pdf(src_format: image::ImageFormat, src_path: &Path, dest_path: &Path) -> Result<(), Box<dyn Error>> {
     let file_len = src_path.metadata()?.len() as usize;
     let f = fs::File::open(src_path)?;
     let reader = BufReader::new(f);

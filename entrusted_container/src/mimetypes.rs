@@ -1,11 +1,11 @@
 use std::io::{Cursor, BufReader, Read};
 use std::error::Error;
-use std::path::PathBuf;
+use std::path::Path;
 use std::fs;
 use zip;
 use cfb;
 
-pub fn detect_from_path (path: &PathBuf) -> Result<Option<String>, Box<dyn Error>> {
+pub fn detect_from_path (path: &Path) -> Result<Option<String>, Box<dyn Error>> {
     let mut data = [0u8; 8];
     let mut f: fs::File = fs::File::open(path)?;    
     f.read(&mut data)?;

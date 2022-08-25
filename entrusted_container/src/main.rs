@@ -256,9 +256,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: ProgressRa
 
     let filename_pdf: String;
 
-    if let Some(mime_type_text) = mimetypes::detect_from_path(&raw_input_path)? {
-        let mime_type = mime_type_text.as_str();
-
+    if let Some(mime_type) = mimetypes::detect_from_path(&raw_input_path)? {
         if let Some(conversion_type) = conversion_by_mimetype.get(mime_type) {
             if let Some(parent_dir) = raw_input_path.parent() {
                 if let Some(basename_opt) = raw_input_path.file_stem() {

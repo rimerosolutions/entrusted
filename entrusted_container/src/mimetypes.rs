@@ -5,29 +5,29 @@ use std::fs;
 use zip;
 use cfb;
 
-pub fn detect_from_path (path: &Path) -> Result<Option<String>, Box<dyn Error>> {
+pub fn detect_from_path (path: &Path) -> Result<Option<&str>, Box<dyn Error>> {
     let mut data = [0u8; 8];
     let mut f: fs::File = fs::File::open(path)?;    
     f.read(&mut data)?;
 
     if is_png(&data) {
-        return Ok(Some("image/png".to_string()));
+        return Ok(Some("image/png"));
     } else if is_gif(&data) {
-        return Ok(Some("image/gif".to_string()));
+        return Ok(Some("image/gif"));
     } else if is_jpeg(&data) {
-        return Ok(Some("image/jpeg".to_string()));
+        return Ok(Some("image/jpeg"));
     } else if is_tiff(&data) {
-        return Ok(Some("image/tiff".to_string()));
+        return Ok(Some("image/tiff"));
     } else if is_rtf(&data) {
-        return Ok(Some("application/rtf".to_string()));
+        return Ok(Some("application/rtf"));
     } else if is_pdf(&data) {
-        return Ok(Some("application/pdf".to_string()));
+        return Ok(Some("application/pdf"));
     } else if is_zip(&data) {        
-        let data = fs::read(path)?;
-        return office_mime(&data);
+        let ndata = fs::read(path)?;
+        return office_mime(ndata);
     } else if is_cfb(&data) {
-        let data = fs::read(path)?;
-        return legacy_office_mime(&data);
+        let ndata = fs::read(path)?;
+        return legacy_office_mime(ndata);
     }
 
     Ok(None)
@@ -98,7 +98,7 @@ fn is_tiff(data: &[u8]) -> bool {
     byte_range_matches(data, 0, 4, "49 49 2A 00")
 }
 
-fn office_mime(data: &[u8]) -> Result<Option<String>, Box<dyn Error>> {
+fn office_mime<'a>(data: Vec<u8>) -> Result<Option<&'a str>, Box<dyn Error>> {
     let reader = Cursor::new(data);
     let mut zip = zip::ZipArchive::new(reader)?;
     let probe_count_expected = 2;
@@ -160,13 +160,15 @@ fn office_mime(data: &[u8]) -> Result<Option<String>, Box<dyn Error>> {
                     }
 
                     probe_count_ooxml += 1;
+
+                    
                 }
             }
 
             if probe_count_odt == probe_count_expected {
-                return Ok(Some(ret_odt.to_string()));
+                return Ok(Some(ret_odt));
             } else if probe_count_ooxml == probe_count_expected {
-                return Ok(Some(ret_ooxml.to_string()));
+                return Ok(Some(ret_ooxml));
             }
         }
     }
@@ -174,15 +176,15 @@ fn office_mime(data: &[u8]) -> Result<Option<String>, Box<dyn Error>> {
     Ok(None)
 }
 
-fn legacy_office_mime(data: &[u8]) -> Result<Option<String>, Box<dyn Error>> {
+fn legacy_office_mime<'a>(data: Vec<u8>) -> Result<Option<&'a str>, Box<dyn Error>> {
     match cfb::CompoundFile::open(Cursor::new(data)) {
         Ok(file) => {
             return match file.root_entry().clsid().to_string().as_str() {
                 "00020810-0000-0000-c000-000000000046" | "00020820-0000-0000-c000-000000000046" => {
-                    Ok(Some("application/vnd.ms-excel".to_string()))
+                    Ok(Some("application/vnd.ms-excel"))
                 },
-                "00020906-0000-0000-c000-000000000046" => Ok(Some("application/msword".to_string())),
-                "64818d10-4f9b-11cf-86ea-00aa00b929e8" => Ok(Some("application/vnd.ms-powerpoint".to_string())),
+                "00020906-0000-0000-c000-000000000046" => Ok(Some("application/msword")),
+                "64818d10-4f9b-11cf-86ea-00aa00b929e8" => Ok(Some("application/vnd.ms-powerpoint")),
                 _ => Ok(None),
             };
         },

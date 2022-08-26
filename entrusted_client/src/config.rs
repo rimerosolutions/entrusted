@@ -46,7 +46,7 @@ pub fn load_config <T> () -> Result<T, Box<dyn Error>> where T: Default + Deseri
         if config_dir_dgz.exists() {
             let config_path = config_dir_dgz.join(CFG_FILENAME);
 
-            if config_path.exists() {                
+            if config_path.exists() {
                 let ret = {
                     let config_data = fs::read(&config_path)?;
                     toml::from_slice(&config_data)
@@ -66,9 +66,7 @@ pub fn load_config <T> () -> Result<T, Box<dyn Error>> where T: Default + Deseri
 #[allow(dead_code)]
 pub fn save_config <T> (config_instance: T) -> Result<(), Box<dyn Error>>
 where T: Default + Serialize {
-    let opt_config_dir = dirs::config_dir();
-
-    if let Some(config_dir) = opt_config_dir {
+    if let Some(config_dir) = dirs::config_dir() {
         let config_dir_dgz = config_dir.join(PROGRAM_GROUP);
 
         if !config_dir_dgz.exists() {
@@ -78,7 +76,7 @@ where T: Default + Serialize {
         }
 
         let config_path = config_dir_dgz.join(CFG_FILENAME);
-        let mut f = fs::OpenOptions::new().create(true).write(true).truncate(true).open(config_path.clone())?;        
+        let mut f = fs::OpenOptions::new().create(true).write(true).truncate(true).open(config_path.clone())?;
         let config_data = toml::to_vec(&config_instance)?;
 
         if let Err(e) = f.write(&config_data) {

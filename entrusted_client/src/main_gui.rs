@@ -560,9 +560,8 @@ impl <'a> FileListWidget {
                             let mut dlg = dialog::FileDialog::new(dialog::FileDialogType::BrowseSaveFile);
                             dlg.set_title(&select_pdffile_msg);
                             dlg.show();
-                            let selected_filename = dlg.filename();
 
-                            if !selected_filename.as_os_str().is_empty() {
+                            if !dlg.filename().as_os_str().is_empty() {
                                 let path_name = dlg.filename().display().to_string();
                                 outputfile_input_rc.borrow_mut().set_value(&path_name);
                             }
@@ -586,9 +585,11 @@ impl <'a> FileListWidget {
 
                         move |_| {
                             let output_filename = outputfile_input_rc.borrow().value();
+
                             if output_filename.trim().len() != 0 {
                                 opt_output_file.replace(Some(output_filename));
                             }
+
                             win.hide();
                         }
                     });
@@ -982,9 +983,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
 
             draw::draw_rect_fill(wid.x() + (margin * 3), wid.y() + (wid.h()/3) + 1, wid.w() - (margin * 2 * 3)-1, wid.h() / 3 - 1, enums::Color::White);
-
             draw::draw_rect_fill(wid.x() + (wid.w()/2) - (wid.w() - (margin * 2 * 3))/2 , wid.y() + (wid.h()/3*2) + 2, margin+1, margin, enums::Color::White);
-
             draw::set_draw_color(old_color);
         }
     });
@@ -1514,8 +1513,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             let file_count = filelist_widget_ref.children();
             if file_count != 0 {
                 let w = filelist_widget_ref.container.w();
-
                 let (width_output_file, width_password, width_checkbox, width_progressbar, width_status, width_logs) = filelist_column_widths(w);
+
                 let column_widths = [
                     width_output_file, width_password, width_checkbox, width_progressbar, width_status, width_logs
                 ];

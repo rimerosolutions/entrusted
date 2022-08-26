@@ -47,11 +47,11 @@ fn hex_encode_upper(data: &[u8]) -> String {
     let mut hex_vec = String::with_capacity(data.len() * 2);
 
     for i in 0..data.len() {
-        let hex = format!("{:02x}", data[i]);
+        let hex = format!("{:02x}", data[i]).to_uppercase();
         hex_vec.push_str(&hex);
     }
 
-    hex_vec.to_uppercase()
+    hex_vec
 }
 
 fn byte_range_matches(data: &[u8], lo: usize, hi: usize, sig: &str) -> bool {

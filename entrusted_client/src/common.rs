@@ -41,9 +41,10 @@ pub enum AppEvent {
 }
 
 pub fn executable_find(exe_name: &str) -> Option<PathBuf> {
-    match which::which(exe_name) {
-        Err(_) => None,
-        Ok(path_location) => Some(path_location)
+    if let Ok(path_location) = which::which(exe_name) {
+        Some(path_location)
+    } else {
+        None
     }
 }
 

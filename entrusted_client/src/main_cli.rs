@@ -21,12 +21,9 @@ struct CliEventSender {
     tx: mpsc::SyncSender<common::AppEvent>
 }
 
-
 impl common::EventSender for CliEventSender {
     fn send(&self, evt: crate::common::AppEvent) -> Result<(), mpsc::SendError<crate::common::AppEvent>> {
-        let ret = self.tx.send(evt);
-
-        ret
+        self.tx.send(evt)
     }
 
     fn clone_box(&self) -> Box<dyn common::EventSender> {
@@ -37,9 +34,10 @@ impl common::EventSender for CliEventSender {
 fn main() -> Result<(), Box<dyn Error>> {
     l10n::load_translations(incl_gettext_files!("en", "fr"));
 
-    let locale = match env::var(l10n::ENV_VAR_ENTRUSTED_LANGID) {
-        Ok(selected_locale) => selected_locale,
-        Err(_) => l10n::sys_locale()
+    let locale = if let Ok(selected_locale) = env::var(l10n::ENV_VAR_ENTRUSTED_LANGID) {
+         selected_locale
+    } else {
+        l10n::sys_locale()
     };
 
     let trans = l10n::new_translations(locale);
@@ -119,7 +117,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .takes_value(false)
         );
 
-
     let run_matches= app.to_owned().get_matches();
 
     if run_matches.is_present("update-checks") {
@@ -196,9 +193,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let file_suffix = if let Some(proposed_file_suffix) = &run_matches.value_of("file-suffix") {
-        String::from(proposed_file_suffix.clone())
+        proposed_file_suffix.to_string()
     } else {
-        String::from(app_config.file_suffix.clone())
+        app_config.file_suffix.to_string()
     };
 
     let abs_output_filename = common::default_output_path(src_path.clone(), file_suffix)?;
@@ -209,7 +206,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let container_image_name = match &run_matches.value_of("container-image-name") {
         Some(img) => img.to_string(),
-        None => if let Some(container_image_name_saved) = app_config.container_image_name {
+        None      => if let Some(container_image_name_saved) = app_config.container_image_name {
             container_image_name_saved.clone()
         } else {
             config::default_container_image_name()
@@ -218,7 +215,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let log_format = match &run_matches.value_of("log-format") {
         Some(fmt) => fmt,
-        None => LOG_FORMAT_PLAIN
+        None      => LOG_FORMAT_PLAIN
     };
 
     let opt_passwd = if run_matches.is_present("passwd-prompt") {
@@ -250,9 +247,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                     tx
                 });
 
-                match container::convert(src_path.clone(), output_filename, convert_options, eventer, trans.clone()) {
-                    Ok(_)   => None,
-                    Err(ex) => Some(ex.to_string())
+                if let Err(ex) = container::convert(src_path.clone(), output_filename, convert_options, eventer, trans.clone()) {
+                    Some(ex.to_string())
+                } else {
+                    None
                 }
             }
         });
@@ -265,9 +263,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         for line in rx {
             if let common::AppEvent::ConversionProgressEvent(msg) = line {
-                let log_msg_ret: serde_json::Result<common::LogMessage> = serde_json::from_slice(msg.as_bytes());
-
-                if let Ok(log_msg) = log_msg_ret {
+                if let Ok(log_msg) = serde_json::from_slice::<common::LogMessage>(msg.as_bytes()) {
                     pb.set_position(log_msg.percent_complete as u64);
                     pb.println(&log_msg.data);
                 }
@@ -282,12 +278,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let exit_code = {
-        match exec_handle.join() {
-            Ok(exec_result) => match exec_result {
-                None    => 0,
-                Some(_) => 1
-            },
-            _ => 1
+        if let Ok(exec_result) = exec_handle.join() {
+            if exec_result.is_none() {
+                0
+            } else {
+                1
+            }
+        } else {
+            1
         }
     };
 

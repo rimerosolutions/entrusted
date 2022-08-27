@@ -2,7 +2,7 @@
 
 * What is this?
 
-This repository provides a command-line client for the =entrusted-webserver= component. It also provides a concrete usage of the =entrusted-webserver= API.
+This repository provides a command-line client for the =entrusted-webserver= component.
 
 There are few reasons to run the =entrusted-webclient= binary:
 - You opted to install the =entrusted-webserver= on a remote machine

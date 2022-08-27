@@ -47,7 +47,7 @@ fn hex_encode_upper(data: &[u8]) -> String {
     let mut hex_vec = String::with_capacity(data.len() * 2);
 
     for i in 0..data.len() {
-        let hex = format!("{:02x}", data[i]).to_uppercase();
+        let hex = format!("{:02X}", data[i]);
         hex_vec.push_str(&hex);
     }
 

@@ -63,10 +63,12 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     l10n::load_translations(incl_gettext_files!("en", "fr"));
 
-    let locale = match env::var(l10n::ENV_VAR_ENTRUSTED_LANGID) {
-        Ok(selected_locale) => selected_locale,
-        Err(_)              => l10n::sys_locale()
+    let locale = if let Ok(selected_locale) = env::var(l10n::ENV_VAR_ENTRUSTED_LANGID) {
+        selected_locale
+    } else {
+        l10n::sys_locale()
     };
+
     let l10n = l10n::new_translations(locale);
 
     let document_password = if let Ok(passwd) = env::var(ENV_VAR_ENTRUSTED_DOC_PASSWD) {
@@ -100,14 +102,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut progress_range = ProgressRange::new(0, 20);
         let input_file_path = input_as_pdf_to_pathbuf_uri(&logger, &progress_range, &raw_input_path, document_password.clone(), l10n.clone())?;
 
-        let input_file_param = input_file_path.display().to_string();
         let doc = if let Some(passwd) = document_password {
             // We only care about originally encrypted PDF files
             // If the document was in another format, then it's already decrypted at this stage
             // Providing a password for a non-encrypted document doesn't fail which removes the need for additional logic and state handling
-            Document::from_file(&input_file_param, Some(&passwd))?
+            Document::from_file(&input_file_path.display().to_string(), Some(&passwd))?
         } else {
-            Document::from_file(&input_file_param, None)?
+            Document::from_file(&input_file_path.display().to_string(), None)?
         };
 
         let page_count = doc.n_pages() as usize;
@@ -258,13 +259,9 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: &ProgressR
         if let Some(conversion_type) = conversion_by_mimetype.get(mime_type) {
             if let Some(parent_dir) = raw_input_path.parent() {
                 let filename_pdf: String = {
-                    if let Some(basename_opt) = raw_input_path.file_stem() {
-                        if let Some(basename) = basename_opt.to_str() {
-                            let input_name = format!("{}_input.pdf", basename);
-                            format!("{}", parent_dir.join(input_name.as_str()).display())
-                        } else {
-                            return Err(l10n.gettext_fmt("Could not determine basename for file {0}", vec![&raw_input_path.display().to_string()]).into());
-                        }
+                    if let Some(basename) = raw_input_path.file_stem().and_then(|i| i.to_str()) {
+                        let input_name = format!("{}_input.pdf", basename);
+                        format!("{}", parent_dir.join(input_name.as_str()).display())
                     } else {
                         return Err(l10n.gettext_fmt("Could not determine basename for file {0}", vec![&raw_input_path.display().to_string()]).into());
                     }
@@ -273,7 +270,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: &ProgressR
                 match conversion_type {
                     ConversionType::None => {
                         logger.log(5, l10n.gettext_fmt("Copying PDF input to {0}", vec![&filename_pdf]));
-                        fs::copy(&raw_input_path, PathBuf::from(&filename_pdf))?;
+                        fs::copy(&raw_input_path, &filename_pdf)?;
                     }
                     ConversionType::Convert => {
                         logger.log(5, l10n.gettext("Converting input image to PDF"));
@@ -347,7 +344,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: &ProgressR
                             return Err(l10n.gettext_fmt("Could not export input document as PDF! {0}", vec![&ex.to_string()]).into());
                         }
                     }
-                }                
+                }
 
                 Ok(PathBuf::from(format!("file://{}", filename_pdf)))
             } else {
@@ -498,8 +495,10 @@ impl ConversionLogger for PlainConversionLogger {
 impl ConversionLogger for JsonConversionLogger {
     fn log(&self, percent_complete: usize, data: String) {
         let progress_msg = ProgressMessage { percent_complete, data};
-        let progress_json = serde_json::to_string(&progress_msg).unwrap();
-        println!("{}", progress_json);
+
+        if let Ok(progress_json) = serde_json::to_string(&progress_msg) {
+            println!("{}", progress_json);
+        }
     }
 }
 

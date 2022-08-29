@@ -17,7 +17,7 @@ The current build server is a virtual machine running [[https://ubuntu.com/][Ubu
 | [[https://imagemagick.org/script/convert.php][convert]]   | [[https://imagemagick.org/][ImageMagick]] program for scaling images during =Mac OS= packaging  |
 | [[https://dentrassi.de/2014/02/25/creating-mac-os-x-icons-icns-on-linux/][icnsutils]] | Convert PNG icons to icns format, during =Mac OS= packaging       |
 | [[https://pandoc.org/][pandoc]]    | Convert man pages from markdown (DEB and RPM packaging)           |
-| [[https://www.perl.org/][perl]]      | Alternative to sed to avoid UNIX specific differences             |
+| [[https://www.perl.org/][perl]]      | Alternative to sed to avoid OS specific arguments differences     |
 | [[https://rpm.org/][rpm]]       | RPM tool on the Ubuntu to build RPM packages                      |
 |-----------+-------------------------------------------------------------------|
 

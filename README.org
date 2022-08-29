@@ -39,23 +39,31 @@ There are three user interfaces ([[./entrusted_client][Desktop and CLI]], [[./en
 
 ** Downloads
 
-Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releases page]] (downloads for 64 bit operating systems).
+Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releases page]] for downloads (64-bit: [[https://en.wikipedia.org/wiki/X86-64][amd64/x86_64]] and [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]]).
 
-|---------------+-----------------------------------------+-----------------------------------------------|
-| "System" (OS) | Artifact                                | Description                                   |
-|---------------+-----------------------------------------+-----------------------------------------------|
-| =Linux=       | =entrusted-linux-amd64-<version>.deb=   | Desktop and CLI clients (Debian-Like distros) |
-|               | =entrusted-linux-amd64-<version>.rpm=   | Desktop and CLI clients (Redhat-Like distros) |
-|               | =entrusted-linux-amd64-<version>.tar=   | Archive with all programs                     |
-|---------------+-----------------------------------------+-----------------------------------------------|
-| =Mac OS=      | =entrusted-macos-amd64-<version>.dmg=   | Installer with the Desktop and CLI clients    |
-|               | =entrusted-macos-amd64-<version>.zip=   | Archive with all programs                     |
-|---------------+-----------------------------------------+-----------------------------------------------|
-| =MS Windows=  | =entrusted-windows-amd64-<version>.exe= | Installer with the Desktop and CLI clients    |
-|               | =entrusted-windows-amd64-<version>.zip= | Archive with all programs                     |
-|---------------+-----------------------------------------+-----------------------------------------------|
-| =Live CD=     | =entrusted-livecd-amd64-<version>.iso=  | Web interface Live CD for virtual machines    |
-|---------------+-----------------------------------------+-----------------------------------------------|
+|-----------+-------------------------------------------+-----------------------------------------------|
+| "System"  | Artifact                                  | Description                                   |
+|-----------+-------------------------------------------+-----------------------------------------------|
+| =Linux=   | =entrusted-linux-amd64-<version>.deb=     | Desktop and CLI clients (Debian-Like distros) |
+|           | =entrusted-linux-amd64-<version>.rpm=     | Desktop and CLI clients (Redhat-Like distros) |
+|           | =entrusted-linux-amd64-<version>.tar=     | Archive with all programs                     |
+|           | =entrusted-linux-aarch64-<version>.deb=   | Desktop and CLI clients (Debian-Like distros) |
+|           | =entrusted-linux-aarch64-<version>.rpm=   | Desktop and CLI clients (Redhat-Like distros) |
+|           | =entrusted-linux-aarch64-<version>.tar=   | Archive with all programs                     |
+|-----------+-------------------------------------------+-----------------------------------------------|
+| =Mac OS=  | =entrusted-macos-amd64-<version>.dmg=     | Installer with the Desktop and CLI clients    |
+|           | =entrusted-macos-amd64-<version>.zip=     | Archive with all programs                     |
+|           | =entrusted-macos-aarch64-<version>.dmg=   | Archive with all programs                     |
+|           | =entrusted-macos-aarch64-<version>.zip=   | Archive with all programs                     |
+|-----------+-------------------------------------------+-----------------------------------------------|
+| =Windows= | =entrusted-windows-amd64-<version>.exe=   | Installer with the Desktop and CLI clients    |
+|           | =entrusted-windows-amd64-<version>.zip=   | Archive with all programs                     |
+|           | =entrusted-windows-aarch64-<version>.exe= | Archive with all programs                     |
+|           | =entrusted-windows-aarch64-<version>.zip= | Archive with all programs                     |
+|-----------+-------------------------------------------+-----------------------------------------------|
+| =Live CD= | =entrusted-livecd-amd64-<version>.iso=    | Web interface Live CD for virtual machines    |
+|           | =entrusted-livecd-aarch64-<version>.iso=  | Web interface Live CD for virtual machines    |
+|-----------+-------------------------------------------+-----------------------------------------------|
 
 On Linux, if you prefer [[https://flatpak.org/][Flatpak]], please check out the [[https://github.com/axtloss/flatpaks][axtloss flatpaks]] project page for general instructions.
 

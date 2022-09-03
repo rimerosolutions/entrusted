@@ -107,7 +107,7 @@ The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to
 |--------------------------+-------------------------------------------------------------------|
 | Parameter                | Description                                                       |
 |--------------------------+-------------------------------------------------------------------|
-| =ocr-lang=               | The [[https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html][tesseract OCR langcode]] is OCR is desired (slower conversions) |
+| =ocr-lang=               | The [[https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html][tesseract OCR langcode]] if OCR is desired (slower conversions) |
 | =file-suffix=            | Custom file suffix for converted files (defaults to =entrusted=)  |
 | =container-image-name=   | A custom container image for conversions (advanced option)        |
 | =preview-result-appname= | The PDF viewer as identified by the GUI to open converted files   |

@@ -4,8 +4,9 @@ APPVERSION=$1
 OUTPUT_PKGLOCATION=$2
 IMAGES_PROJECTDIR=$3
 LINUX_ARTIFACTSDIR=$4
+CPU_ARCH=$5
 APPNAME=entrusted
-BUILDFOLDERNAME=${APPNAME}-${APPVERSION}-1_amd64
+BUILDFOLDERNAME=${APPNAME}-${APPVERSION}-1_${CPU_ARCH}
 BUILDTOPDIR="/tmp/entrusted-pkg-deb/build"
 SCRIPTDIR="$(realpath $(dirname "$0"))"
 
@@ -21,13 +22,14 @@ mkdir -p ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/man/man1
 
 cp -f ${SCRIPTDIR}/packaging/debian_spec ${BUILDTOPDIR}/${BUILDFOLDERNAME}/DEBIAN/control
 cp -f ${LINUX_ARTIFACTSDIR}/entrusted-cli ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/bin/
-cp -f ${LINUX_ARTIFACTSDIR}/*.AppImage ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/bin/entrusted-gui
+cp -f ${LINUX_ARTIFACTSDIR}/entrusted-gui ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/bin/entrusted-gui
 cp -f ${SCRIPTDIR}/xdg/*.desktop ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/applications/
 cp -f ${IMAGES_PROJECTDIR}/Entrusted.png ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/icons/entrusted-gui.png
 cp -f ${SCRIPTDIR}/doc/copyright ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/doc/${APPNAME}/
 cp -f ${SCRIPTDIR}/doc/changelog ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/doc/${APPNAME}/changelog
 
 perl -pi -e "s/_APPVERSION_/${APPVERSION}/g" ${BUILDTOPDIR}/${BUILDFOLDERNAME}/DEBIAN/control
+perl -pi -e "s/_CPU_ARCH_/${CPU_ARCH}/g" ${BUILDTOPDIR}/${BUILDFOLDERNAME}/DEBIAN/control
 gzip -9 -n ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/doc/${APPNAME}/changelog
 
 cp ${SCRIPTDIR}/manpages/${APPNAME}*.md ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/man/man1/

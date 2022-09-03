@@ -1,25 +1,28 @@
 #+TITLE: CI_CD README
 
- Except for the the live CD, all the release artifacts are created within [[https://podman.io/][Podman]].
+ Except for the the live CD, most of the release tasks are preformed within [[https://podman.io/][Podman]].
  - In the future, maybe =GitHub actions=, =TravisCI= or other solutions will be used for further automation.
  - Pull requests are welcome for any improvements!
 
 * Overview
 
-A bunch of shell scripts create all release artifacts for few operating systems (Linux, Mac OS or Windows), including [[./live_cd][live CD]] ISO image.
+A set of shell scripts create release artifacts for supported operating systems (Linux, Mac OS or Windows)
+- A Linux [[./live_cd][live CD]] ISO image is alo provided for use with virtual machines
+- arm64 binaries are available for Linux and Mac OS
 
 The current build server is a virtual machine running [[https://ubuntu.com/][Ubuntu Linux]] with the following software installed (among other applications).
 
-|-----------+-------------------------------------------------------------------|
-| Tool      | Purpose                                                           |
-|-----------+-------------------------------------------------------------------|
-| [[https://podman.io/][podman]]    | Container solution: used to build all artifacts inside containers |
-| [[https://imagemagick.org/script/convert.php][convert]]   | [[https://imagemagick.org/][ImageMagick]] program for scaling images during =Mac OS= packaging  |
-| [[https://dentrassi.de/2014/02/25/creating-mac-os-x-icons-icns-on-linux/][icnsutils]] | Convert PNG icons to icns format, during =Mac OS= packaging       |
-| [[https://pandoc.org/][pandoc]]    | Convert man pages from markdown (DEB and RPM packaging)           |
-| [[https://www.perl.org/][perl]]      | Alternative to sed to avoid OS specific arguments differences     |
-| [[https://rpm.org/][rpm]]       | RPM tool on the Ubuntu to build RPM packages                      |
-|-----------+-------------------------------------------------------------------|
+|------------------+-------------------------------------------------------------------|
+| Tool             | Purpose                                                           |
+|------------------+-------------------------------------------------------------------|
+| [[https://podman.io/][podman]]           | Container solution: used to build all artifacts inside containers |
+| [[https://www.nongnu.org/binfmt-support/][binfmt-support]]   | Run arm64 container images on amd64 machines (arm64 packaging)    |
+| [[https://wiki.debian.org/QemuUserEmulation][qemu-user-static]] | Run arm64 container images on amd64 machines (arm64 packaging)    |
+| [[https://imagemagick.org/script/convert.php][convert]]          | [[https://imagemagick.org/][ImageMagick]] program for scaling images during =Mac OS= packaging  |
+| [[https://dentrassi.de/2014/02/25/creating-mac-os-x-icons-icns-on-linux/][icnsutils]]        | Convert PNG icons to icns format, during =Mac OS= packaging       |
+| [[https://pandoc.org/][pandoc]]           | Convert man pages from markdown (DEB and RPM packaging)           |
+| [[https://www.perl.org/][perl]]             | Alternative to sed to avoid OS specific arguments differences     |
+|------------------+-------------------------------------------------------------------|
 
 * About Installers and Packages
 

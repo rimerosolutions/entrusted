@@ -1,6 +1,9 @@
 #!/usr/bin/env sh
 set -x
 
+# TODO boot issues check EFI related code and compare with entrusted-0.2.4
+echo "This is not working at this time..."
+
 PREVIOUSDIR="$(echo $PWD)"
 SCRIPTDIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${SCRIPTDIR}/../..)"

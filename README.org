@@ -40,8 +40,8 @@ There are three user interfaces ([[./entrusted_client][Desktop and CLI]], [[./en
 ** Downloads
 
 Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releases page]] for downloads (64-bit: [[https://en.wikipedia.org/wiki/X86-64][amd64/x86_64]] and [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]]).
-- On Linux, if you prefer [[https://flatpak.org/][Flatpak]], please check out the [[https://github.com/axtloss/flatpaks][axtloss flatpaks]] project page for general instructions.
-- =arm64= builds are not yet available for Windows
+- On Linux, if you prefer [[https://flatpak.org/][Flatpak]], please check out the [[https://github.com/axtloss/flatpaks][axtloss flatpaks]] project page
+- =aarch64= (=arm64=) builds are not yet available for Windows
 
 |-----------+-------------------------------------------+-----------------------------------------------|
 | "System"  | Artifact                                  | Description                                   |

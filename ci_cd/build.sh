@@ -29,6 +29,13 @@ if [ $retVal -ne 0 ]; then
   exit 1
 fi
 
+sh ${ROOT_SCRIPTDIR}/create_container_image.sh
+retVal=$?
+if [ $retVal -ne 0 ]; then
+	echo "Could not build container image"
+  exit 1
+fi
+
 sh ${ROOT_SCRIPTDIR}/live_cd/build.sh
 retVal=$?
 if [ $retVal -ne 0 ]; then

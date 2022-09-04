@@ -1,6 +1,7 @@
-ARG ALPINE_VERSION=3.16.2
+ARG ALPINE_VERSION=3.16
 FROM docker.io/alpine:${ALPINE_VERSION} as builder
 LABEL stage=entrusted_container_builder
+
 RUN apk -U upgrade && \
     apk add \
     binutils \
@@ -21,7 +22,8 @@ RUN apk -U upgrade && \
 
 WORKDIR /home/rust/entrusted-container
 COPY . .
-RUN LO_INCLUDE_PATH=/usr/include/LibreOfficeKit cargo install --path entrusted_container --root /usr/local \
+
+RUN PKG_CONFIG_ALLOW_CROSS=1 LO_INCLUDE_PATH=/usr/include/LibreOfficeKit cargo install --path entrusted_container --root /usr/local \
     && cargo clean --manifest-path entrusted_container/Cargo.toml
 
 FROM docker.io/alpine:${ALPINE_VERSION}
@@ -41,7 +43,10 @@ RUN apk -U upgrade && \
     apk add \
     leptonica-dev \
     icu-data-full \
-    libreofficekit \
+    libreoffice-draw \
+    libreoffice-writer \
+    libreoffice-calc \
+    libreoffice-impress \
     tesseract-ocr-dev \
     poppler-dev \
     cairo-dev \
@@ -124,7 +129,7 @@ RUN find /usr/lib/libreoffice -type f -name "*.py" -exec rm -rf {} \; \
 RUN adduser -h /home/entrusted -s /bin/sh -D entrusted
 USER entrusted
 
-ENTRYPOINT ["/usr/local/bin/entrusted-container"]
+# ENTRYPOINT ["/usr/local/bin/entrusted-container"]
 
 # /tmp/input_file is where the first convert expects the input file to be, and
 # /tmp where it will write the pixel files
@@ -132,4 +137,4 @@ ENTRYPOINT ["/usr/local/bin/entrusted-container"]
 # /entrusted is where the second script expects files to be put by the first one
 #
 # /safezone is where the wrapper eventually moves the sanitized files.
-VOLUME /tmp/input_file /safezone
+# VOLUME /tmp/input_file /safezone

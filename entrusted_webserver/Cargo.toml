@@ -21,7 +21,7 @@ tokio-rustls = "0.23.3"
 futures = { version = "0.3.23", default-features = false, features = ["std"] }
 actix = "0.13.0"
 actix-cors = "0.6.1"
-actix-web = { version = "4.0.1", features=["rustls"] }
+actix-web = { version = "4.0.1" , default-features = false, features = ["macros"] }
 actix-multipart = "0.4.0"
 actix-form-data = "0.6.2"
 http-api-problem = "0.17.0"

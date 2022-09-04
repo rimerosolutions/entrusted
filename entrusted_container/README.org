@@ -16,37 +16,31 @@ This module is deployed as a container image (/Docker/ or /Podman/ or /Lima/), p
 
 * How to build this?
 
-Because of a shared library, you must build the container image from the =entrusted= root folder.
+Because of a shared library, you /MUST/ build the container image from the =entrusted= root folder.
 
 ** Podman
 
 #+begin_src sh
-  podman build -t localhost/entrusted_container . -f entrusted_container/Dockerfile
+  APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' Cargo.toml)
+  podman build -t docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION} . -f entrusted_container/Dockerfile
   podman image prune -f --filter label=stage=entrusted_container_builder
 #+end_src
 
 ** Docker
 
 #+begin_src sh
-  docker build -t localhost/entrusted_container . -f entrusted_container/Dockerfile
+  APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' Cargo.toml)
+  docker build -t docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION} . -f entrusted_container/Dockerfile
   docker image prune -f --filter label=stage=entrusted_container_builder
 #+end_src
 
 ** Lima
 
 #+begin_src sh
-  lima nerdctl build -t localhost/entrusted_container . -f entrusted_container/Dockerfile
+  APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' Cargo.toml)
+  lima nerdctl build -t docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION} . -f entrusted_container/Dockerfile
   lima nerdctl prune -f --filter label=stage=entrusted_container_builder
 #+end_src
-
-For "manual testing" purposes, the following dependencies are required under =Void Linux=:
-- =leptonica-devel=
-- =libclang=
-- =clang=
-- =tesseract-ocr-devel=
-- =poppler-glib-devel=
-- =libreoffice-kit=
-
 
 * How to publish to Docker Hub?
 
@@ -55,19 +49,20 @@ The command examples below apply to =podman=, the syntax is similar for =docker=
 For all the command to follow, it is assumed that you're at the root of the =entrusted_container= folder.
 
 #+begin_src sh
+  ./support/build_container_image.sh
+
   APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' Cargo.toml)
 
   podman login -u uycyjnzgntrn docker.io
 
-  podman tag localhost/entrusted_container:latest docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}
-  podman push docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}
-
   podman tag docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION} docker.io/uycyjnzgntrn/entrusted_container:latest
-  podman push docker.io/uycyjnzgntrn/entrusted_container:latest
+
+  podman manifest push docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}
+  podman manifest push docker.io/uycyjnzgntrn/entrusted_container:latest
 
   podman logout docker.io
 #+end_src
 
 * How to run this?
 
-This application is leveraged by the =entrusted-client= program (shell commands to =podman= or =docker= or =lima=) , it's not really meant to be used "directly" (except for "informed & resourceful" devs).
+This application is leveraged by the =entrusted-client= program (shell commands to =podman= or =docker= or =lima=) , it's not really meant to be used "directly" (except for "informed & resourceful" individuals).

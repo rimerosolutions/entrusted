@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 use minreq;
 use semver;
 use crate::l10n;
+
+pub const CONTAINER_IMAGE_EXE: &str = "/usr/local/bin/entrusted-container";
 pub const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str = "ENTRUSTED_DOC_PASSWD";
 pub const LOG_FORMAT_JSON: &str = "json";
 

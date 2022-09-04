@@ -3,7 +3,7 @@ Source: entrusted
 Version: _APPVERSION_
 Section: graphics
 Priority: optional
-Architecture: amd64
+Architecture: _CPU_ARCH_
 Depends: libc6 (>= 2.14), zlib1g (>= 1:1.1.4), libfuse2 (>= 2.6), docker | podman | docker-ce
 Maintainer: Yves Zoundi <yves_zoundi@hotmail.com>
 Description: Document sanitizer Desktop client

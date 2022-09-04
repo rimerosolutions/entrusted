@@ -1,6 +1,6 @@
 #+TITLE: ROADMAP
 
-* Next steps [14%]
+* Next steps [28%]
 
 - [-] Improved conversions
   - [X] Custom output location for individual documents in the conversion queue
@@ -31,12 +31,12 @@
 - [-] Code maintenance
   - [X] Eliminate shell commands inside the container image
   - [ ] Add automated tests (unit & integration)
-- [-] CI/CD and packaging
+- [X] CI/CD and packaging
   - [X] Adopt Git flow and delete all the previous spiral branches
   - [X] Create few specific packages (DEB, RPM)
   - [X] Add README notes for [[https://github.com/axtloss/flatpaks][axtloss Flatpak packages]] and later in release notes
-  - [ ] Support for different CPU architectures (ARM, etc.)
-  - [X] For now stick wih custom CI/CD pipeline scripts
+  - [X] Support for different [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]]
+  - [X] For now, stick to custom CI/CD pipeline instead of [[https://github.com/features/actions][GitHub actions]] or similar
 - [X] Mime-type detection and file associations
   - [X] Register file associations with supported document types
   - [X] For now, roll custom mime-type detection system until there is something better available

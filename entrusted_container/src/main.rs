@@ -408,16 +408,16 @@ fn ocr_imgs_to_pdf(
 
 fn tesseract_init(ocr_lang: &str, tessdata_dir: &str) -> *mut tesseract_plumbing::tesseract_sys::TessBaseAPI {
     let c_lang = CString::new(ocr_lang).unwrap();
-    let lang = c_lang.as_bytes().as_ptr() as *mut u8 as *mut i8;
+    let lang = c_lang.as_bytes().as_ptr() as *mut std::os::raw::c_char;
 
     let c_datapath = CString::new(tessdata_dir).unwrap();
-    let datapath = c_datapath.as_bytes().as_ptr() as *mut u8 as *mut i8;
+    let datapath = c_datapath.as_bytes().as_ptr() as *mut std::os::raw::c_char;
 
     let c_user_defined_dpi_var_name = CString::new("user_defined_dpi").unwrap();
-    let user_defined_dpi_var_name = c_user_defined_dpi_var_name.as_bytes().as_ptr() as *mut u8 as *mut i8;
+    let user_defined_dpi_var_name = c_user_defined_dpi_var_name.as_bytes().as_ptr() as *mut std::os::raw::c_char;
 
     let c_user_defined_dpi_var_value = CString::new("72").unwrap();
-    let user_defined_dpi_var_value = c_user_defined_dpi_var_value.as_bytes().as_ptr() as *mut u8 as *mut i8;
+    let user_defined_dpi_var_value = c_user_defined_dpi_var_value.as_bytes().as_ptr() as *mut std::os::raw::c_char;
 
     unsafe {
         let api = tesseract_plumbing::tesseract_sys::TessBaseAPICreate();
@@ -441,15 +441,15 @@ fn ocr_img_to_pdf(
     output_path: &Path,
 ) -> Result<(), Box<dyn Error>> {
     let c_inputname = CString::new(input_path.clone().display().to_string().as_str())?;
-    let inputname = c_inputname.as_bytes().as_ptr() as *mut u8 as *mut i8;
+    let inputname = c_inputname.as_bytes().as_ptr() as *mut std::os::raw::c_char;
 
     let c_outputbase = CString::new(output_path.display().to_string().as_str())?;
-    let outputbase = c_outputbase.as_bytes().as_ptr() as *mut u8 as *mut i8;
+    let outputbase = c_outputbase.as_bytes().as_ptr() as *mut std::os::raw::c_char;
 
     let c_input_name = CString::new(input_path.clone().file_name().unwrap().to_str().unwrap()).unwrap();
-    let input_name = c_input_name.as_bytes().as_ptr() as *mut u8 as *mut i8;
+    let input_name = c_input_name.as_bytes().as_ptr() as *mut std::os::raw::c_char;
 
-    let do_not_care = CString::new("").unwrap().as_bytes().as_ptr() as *mut u8 as *mut i8;
+    let do_not_care = CString::new("").unwrap().as_bytes().as_ptr() as *mut std::os::raw::c_char;
 
     unsafe {
         tesseract_plumbing::tesseract_sys::TessBaseAPISetInputName(api, input_name);

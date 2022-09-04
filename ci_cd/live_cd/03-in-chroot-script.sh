@@ -2,6 +2,7 @@
 set -x
 
 ENTRUSTED_VERSION=$(cat /etc/entrusted_release | head -1)
+ENTRUSTED_ARCH=$(cat /etc/entrusted_arch | head -1)
 
 echo "Setting up hostname"
 echo "entrusted-livecd" > /etc/hostname
@@ -11,7 +12,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 apt update && \
     apt install -y \
-    linux-image-amd64 \
+    linux-image-${ENTRUSTED_ARCH} \
     auditd \
     iptables-persistent \
     doas \

@@ -2,7 +2,7 @@ Summary: Document sanitizer Desktop client
 Name: entrusted
 Version: _APPVERSION_
 Release: 1
-BuildArch: x86_64
+BuildArch: _CPU_ARCH_
 License: GPL v3
 Source: _RPMBUILD_SOURCE_
 BuildRoot: _RPMBUILD_BUILDROOT_

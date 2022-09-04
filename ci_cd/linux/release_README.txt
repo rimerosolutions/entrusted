@@ -12,10 +12,10 @@ Entrusted README
 
 * About the binaries
 
-- "Entrusted_GUI-x86_64.AppImage" is the graphical user interface (GUI)
-- "entrusted-cli" is a CLI program that is the equivalent of the GUI in command-line mode
-- "entrusted-webserver" is a CLI program that provides a shared service for document conversions, it has a minimal Web interface
-- "entrusted-webclient" is a CLI program that communicates with "entrusted-webserver" via HTTP
+- "entrusted-gui" is the graphical user interface (GUI)
+- "entrusted-cli" is the command-line user interface (CLI)
+- "entrusted-webserver" is a program that provides a shared service for document conversions, it has a minimal Web interface
+- "entrusted-webclient" is a program that communicates with "entrusted-webserver" via HTTP
 
 * References
 

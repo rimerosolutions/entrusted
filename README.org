@@ -40,6 +40,8 @@ There are three user interfaces ([[./entrusted_client][Desktop and CLI]], [[./en
 ** Downloads
 
 Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releases page]] for downloads (64-bit: [[https://en.wikipedia.org/wiki/X86-64][amd64/x86_64]] and [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]]).
+- On Linux, if you prefer [[https://flatpak.org/][Flatpak]], please check out the [[https://github.com/axtloss/flatpaks][axtloss flatpaks]] project page for general instructions.
+- =arm64= builds are not yet available for Windows
 
 |-----------+-------------------------------------------+-----------------------------------------------|
 | "System"  | Artifact                                  | Description                                   |
@@ -58,14 +60,11 @@ Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releas
 |-----------+-------------------------------------------+-----------------------------------------------|
 | =Windows= | =entrusted-windows-amd64-<version>.exe=   | Installer with the Desktop and CLI clients    |
 |           | =entrusted-windows-amd64-<version>.zip=   | Archive with all programs                     |
-|           | =entrusted-windows-aarch64-<version>.exe= | Archive with all programs                     |
-|           | =entrusted-windows-aarch64-<version>.zip= | Archive with all programs                     |
 |-----------+-------------------------------------------+-----------------------------------------------|
 | =Live CD= | =entrusted-livecd-amd64-<version>.iso=    | Web interface Live CD for virtual machines    |
 |           | =entrusted-livecd-aarch64-<version>.iso=  | Web interface Live CD for virtual machines    |
 |-----------+-------------------------------------------+-----------------------------------------------|
 
-On Linux, if you prefer [[https://flatpak.org/][Flatpak]], please check out the [[https://github.com/axtloss/flatpaks][axtloss flatpaks]] project page for general instructions.
 
 ** Key software components
 

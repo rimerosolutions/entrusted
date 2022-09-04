@@ -65,7 +65,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
     else
         cd ${PROJECTDIR} && perl -pi -e "s/fltk-shared/fltk-bundled/g" ${PROJECTDIR}/entrusted_client/Cargo.toml
 
-        podman run --rm --privileged -v "${PROJECTDIR}":/src -v "${PROJECTDIR}/artifacts":/artifacts docker.io/uycyjnzgntrn/rust-centos8:1.63.0 /bin/bash -c "ln -sf /usr/lib64/libfuse.so.2.9.2 /usr/lib/libfuse.so.2 && mkdir -p /tmp/appdir/usr/bin /tmp/appdir/usr/share/icons && cp /src/ci_cd/linux/xdg/* /tmp/appdir/ && cd /src/entrusted_client && /root/.cargo/bin/cargo build --release --bin entrusted-gui --features=gui && strip target/release/entrusted-gui && cp target/release/entrusted-gui /tmp/appdir/ && cp /src/images/Entrusted.png /tmp/appdir/usr/share/icons/entrusted-gui.png && ARCH=${APPIMAGE_ARCH} linuxdeploy --appdir /tmp/appdir --desktop-file /tmp/appdir/entrusted-gui.desktop --icon-filename /tmp/appdir/usr/share/icons/entrusted-gui.png --output appimage && mv *.AppImage /artifacts/entrusted-linux-${CPU_ARCH}-${APPVERSION}/entrusted-gui"
+        podman run --rm --privileged -v "${PROJECTDIR}":/src -v "${PROJECTDIR}/artifacts":/artifacts docker.io/uycyjnzgntrn/rust-centos8:1.63.0 /bin/bash -c "ln -sf /usr/lib64/libfuse.so.2.9.2 /usr/lib/libfuse.so.2 && mkdir -p /tmp/appdir/usr/bin /tmp/appdir/usr/share/icons && cp /src/ci_cd/linux/xdg/* /tmp/appdir/ && cd /src/entrusted_client && /root/.cargo/bin/cargo build --release --bin entrusted-gui --features=gui && strip target/release/entrusted-gui && cp target/release/entrusted-gui /tmp/appdir/ && cp /src/images/Entrusted.png /tmp/appdir/usr/share/icons/entrusted-gui.png && ARCH=${APPIMAGE_ARCH} linuxdeploy --appdir /tmp/appdir --desktop-file /tmp/appdir/entrusted-gui.desktop --icon-file /tmp/appdir/usr/share/icons/entrusted-gui.png --output appimage && mv *.AppImage /artifacts/entrusted-linux-${CPU_ARCH}-${APPVERSION}/entrusted-gui"
 
         retVal=$?
         if [ $retVal -ne 0 ]; then
@@ -106,4 +106,3 @@ done
 cd ${PROJECTDIR} && perl -pi -e "s/fltk-shared/fltk-bundled/g" ${PROJECTDIR}/entrusted_client/Cargo.toml
 
 cd ${SCRIPTDIR}
-

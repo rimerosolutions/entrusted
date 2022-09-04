@@ -13,9 +13,7 @@ rm -rf  ${PROJECTDIR}/entrusted_client/target    \
         ${PROJECTDIR}/entrusted_webclient/target \
         ${PROJECTDIR}/entrusted_webserver/target \
         ${PROJECTDIR}/entrusted_container/target \
-        ${PROJECTDIR}/entrusted_l10n/target      \
-        ${PROJECTDIR}/artifacts                  \
-        ${PROJECTDIR}/packages
+        ${PROJECTDIR}/entrusted_l10n/target
 
 for CPU_ARCH in $CPU_ARCHS ; do
     podman rmi docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}-${CPU_ARCH}

@@ -41,7 +41,7 @@ There are three user interfaces ([[./entrusted_client][Desktop and CLI]], [[./en
 
 Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releases page]] for downloads (64-bit: [[https://en.wikipedia.org/wiki/X86-64][amd64/x86_64]] and [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]]).
 - On Linux, if you prefer [[https://flatpak.org/][Flatpak]], please check out the [[https://github.com/axtloss/flatpaks][axtloss flatpaks]] project page
-- =aarch64= (=arm64=) builds are not yet available for Windows
+- =aarch64= (=arm64=) builds are not yet available for Windows or the Live CD
 
 |-----------+------------------------------------------+-----------------------------------------------|
 | "System"  | Artifact                                 | Description                                   |
@@ -62,7 +62,6 @@ Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releas
 |           | =entrusted-windows-amd64-<version>.zip=  | Archive with all programs                     |
 |-----------+------------------------------------------+-----------------------------------------------|
 | =Live CD= | =entrusted-livecd-amd64-<version>.iso=   | Web interface Live CD for virtual machines    |
-|           | =entrusted-livecd-aarch64-<version>.iso= | Web interface Live CD for virtual machines    |
 |-----------+------------------------------------------+-----------------------------------------------|
 
 

@@ -8,12 +8,15 @@ PREVIOUSDIR="$(echo $PWD)"
 SCRIPTDIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${SCRIPTDIR}/../..)"
 APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' ${PROJECTDIR}/entrusted_client/Cargo.toml)
-CPU_ARCHS="amd64 aarch64"
+#CPU_ARCHS="amd64 aarch64"
+CPU_ARCHS="amd64"
 ENTRUSTED_VERSION="${APPVERSION}"
 
 if [ -n "$1" ]; then
     ENTRUSTED_VERSION=$1
 fi
+
+echo "Cannot yet generate a Live ISO image for arm64, sorry!"
 
 for CPU_ARCH in $CPU_ARCHS ; do
     ARTIFACTSDIR="${PROJECTDIR}/artifacts/entrusted-livecd-${CPU_ARCH}-${ENTRUSTED_VERSION}"

@@ -11,7 +11,7 @@ echo "Installing default packages"
 export DEBIAN_FRONTEND=noninteractive
 
 apt update && \
-    apt install -y \
+    apt install -y --no-install-recommends \
     linux-image-${ENTRUSTED_ARCH} \
     auditd \
     iptables-persistent \

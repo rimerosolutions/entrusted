@@ -31,6 +31,8 @@ apt update && \
     openssh-server \
     podman \
     live-boot \
+    syslinux-efi \
+    grub-efi-${ENTRUSTED_ARCH}-bin \
     systemd-sysv
 
 apt clean

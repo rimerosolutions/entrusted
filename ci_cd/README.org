@@ -27,12 +27,12 @@ The current build server is a virtual machine running [[https://ubuntu.com/][Ubu
 * About Installers and Packages
 
 While it could be preferrable on Linux to have several native distro packages, it's time consuming (build, test & support):
-  - How many distributions do you target?
-  - How much testing is required and for which versions of a particular Linux distribution? Especially Linux distribution that you don't personally use at all.
-  - When you have a /service/, do you provide associated files for any possible [[https://en.wikipedia.org/wiki/Init][init system]]?
-  - What about =Flatpak= vs =Snap= vs =AppImage=? =AppImage= was selected only for the purpose of building binaries that will work out of the box for most distributions
-
-The binaries are not signed yet (Windows & Mac OS), if possible this should be done inside a container too, without having to switch between different machines.
+- On Linux, if you prefer [[https://flatpak.org/][Flatpak]] packages, please check out the [[https://github.com/axtloss/flatpaks][axtloss flatpaks]] project page
+- On Windows, binaries are not signed
+- On Mac OS, similarly to Windows, binaries are not signed
+- =arm64= builds are considered *highly experimental*
+  - Executables have been created inside an "emulator", not on real hardware
+  - Community help is desired to confirm that "it works" (lack of arm laptop to test)
 
 * Targeted Operating Systems
 

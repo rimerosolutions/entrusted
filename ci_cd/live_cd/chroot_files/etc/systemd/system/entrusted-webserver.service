@@ -1,5 +1,5 @@
 [Unit]
-Description=Entrusted HTTP server
+Description=Entrusted Web Server
 After=network.target
 
 [Service]

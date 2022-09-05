@@ -16,10 +16,10 @@ rm -rf  ${PROJECTDIR}/entrusted_client/target    \
         ${PROJECTDIR}/entrusted_l10n/target
 
 for CPU_ARCH in $CPU_ARCHS ; do
-    podman rmi docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}-${CPU_ARCH}
+    podman rmi --force docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}-${CPU_ARCH}
 done
 
-podman rmi docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}
+podman rmi --force docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}
 
 buildah manifest create docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}
 

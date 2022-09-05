@@ -30,9 +30,9 @@ echo "Preparing boot files"
 cp $HOME/LIVE_BOOT-${DEBIAN_ARCH}/chroot/boot/vmlinuz-* $HOME/LIVE_BOOT-${DEBIAN_ARCH}/staging/live/vmlinuz
 cp $HOME/LIVE_BOOT-${DEBIAN_ARCH}/chroot/boot/initrd.img-* $HOME/LIVE_BOOT-${DEBIAN_ARCH}/staging/live/initrd
 
-cp "${ROOT_SCRIPTS_DIR}"/post_chroot_files/home/entrusted/LIVE_BOOT-${DEBIAN_ARCH}/staging/isolinux/isolinux.cfg $HOME/LIVE_BOOT-${DEBIAN_ARCH}/staging/isolinux/isolinux.cfg
-cp "${ROOT_SCRIPTS_DIR}"/post_chroot_files/home/entrusted/LIVE_BOOT-${DEBIAN_ARCH}/staging/boot/grub/grub.cfg    $HOME/LIVE_BOOT-${DEBIAN_ARCH}/staging/boot/grub/grub.cfg
-cp "${ROOT_SCRIPTS_DIR}"/post_chroot_files/home/entrusted/LIVE_BOOT-${DEBIAN_ARCH}/tmp/grub-standalone.cfg       $HOME/LIVE_BOOT-${DEBIAN_ARCH}/tmp/grub-standalone.cfg
+cp "${ROOT_SCRIPTS_DIR}"/post_chroot_files/home/entrusted/LIVE_BOOT/staging/isolinux/isolinux.cfg $HOME/LIVE_BOOT-${DEBIAN_ARCH}/staging/isolinux/isolinux.cfg
+cp "${ROOT_SCRIPTS_DIR}"/post_chroot_files/home/entrusted/LIVE_BOOT/staging/boot/grub/grub.cfg    $HOME/LIVE_BOOT-${DEBIAN_ARCH}/staging/boot/grub/grub.cfg
+cp "${ROOT_SCRIPTS_DIR}"/post_chroot_files/home/entrusted/LIVE_BOOT/tmp/grub-standalone.cfg       $HOME/LIVE_BOOT-${DEBIAN_ARCH}/tmp/grub-standalone.cfg
 
 touch $HOME/LIVE_BOOT-${DEBIAN_ARCH}/staging/DEBIAN_CUSTOM
 

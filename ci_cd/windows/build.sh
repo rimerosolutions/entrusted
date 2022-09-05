@@ -19,7 +19,9 @@ rm -rf ${PROJECTDIR}/entrusted_webserver/target
 cd ${PROJECTDIR}
 
 echo "Building all Windows binaries"
-podman run --rm --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:1.63.0 sh -c "RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --features=gui --manifest-path /src/entrusted_client/Cargo.toml && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --manifest-path /src/entrusted_webserver/Cargo.toml && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --manifest-path /src/entrusted_webclient/Cargo.toml && x86_64-w64-mingw32-strip /src/entrusted_client/target/x86_64-pc-windows-gnu/release/entrusted-cli.exe && x86_64-w64-mingw32-strip /src/entrusted_client/target/x86_64-pc-windows-gnu/release/entrusted-gui.exe && x86_64-w64-mingw32-strip /src/entrusted_webserver/target/x86_64-pc-windows-gnu/release/entrusted-webserver.exe && x86_64-w64-mingw32-strip /src/entrusted_webclient/target/x86_64-pc-windows-gnu/release/entrusted-webclient.exe"
+echo "TODO check stripping binaries later after more testing"
+
+podman run --rm --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:1.63.0 sh -c "RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --features=gui --manifest-path /src/entrusted_client/Cargo.toml && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --manifest-path /src/entrusted_webserver/Cargo.toml && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --manifest-path /src/entrusted_webclient/Cargo.toml"
 
 retVal=$?
 if [ $retVal -ne 0 ]; then

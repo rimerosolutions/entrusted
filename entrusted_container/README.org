@@ -6,7 +6,6 @@ This is the =backend= part of the solution running inside a "sandbox" ([[https:/
 
 - There's a small series of transformations leading to the generation of a trusted PDF document (optionally with full-text search support, if [[https://en.wikipedia.org/wiki/Optical_character_recognition][OCR]] was requested)
 - There is no command-line invocation of external programs within the container
-- OCR is a resources intensive and time consuming: it should always be disabled, unless you NEED to be able to search or select text in the PDF
 
 [[./images/architecture.png]]
 
@@ -44,12 +43,12 @@ Because of a shared library, you /MUST/ build the container image from the =entr
 
 * How to publish to Docker Hub?
 
-The command examples below apply to =podman=, the syntax is similar for =docker= or =lima=.
-
-For all the command to follow, it is assumed that you're at the root of the =entrusted_container= folder.
+The commands below apply to =podman=, the syntax is similar for =docker= or =lima=.
+- For all the commands to follow, it is assumed that you're at the root of the =entrusted= project folder
+- A multi-arch container image is published (=linux/amd64= and =linux/arm64= platforms)
 
 #+begin_src sh
-  ./support/build_container_image.sh
+  ./ci_cd/create_container_image.sh
 
   APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' Cargo.toml)
 
@@ -57,8 +56,8 @@ For all the command to follow, it is assumed that you're at the root of the =ent
 
   podman tag docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION} docker.io/uycyjnzgntrn/entrusted_container:latest
 
-  podman manifest push docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}
-  podman manifest push docker.io/uycyjnzgntrn/entrusted_container:latest
+  podman manifest push --all docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION} docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}
+  podman manifest push --all docker.io/uycyjnzgntrn/entrusted_container:latest docker.io/uycyjnzgntrn/entrusted_container:latest
 
   podman logout docker.io
 #+end_src

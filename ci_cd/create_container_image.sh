@@ -33,7 +33,7 @@ for PLATFORM_ARCH in $PLATFORM_ARCHS ; do
         CPU_ARCH="arm64"
     fi
 
-    buildah bud --squash --platform=${PLATFORM_ARCH} -t docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}-${CPU_ARCH} -f entrusted_container/Dockerfile .
+    buildah bud --squash --platform=${PLATFORM_ARCH} --format docker -t docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}-${CPU_ARCH} -f entrusted_container/Dockerfile .
     buildah manifest add docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION} docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}-${CPU_ARCH}
 done
 

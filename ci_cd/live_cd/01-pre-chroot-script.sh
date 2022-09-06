@@ -55,7 +55,7 @@ test -f /tmp/live-entrusted-container.tar && rm /tmp/live-entrusted-container.ta
 
 podman image prune -f --filter label=stage=entrusted_container_builder
 
-podman save -o /tmp/live-entrusted-container.tar "docker.io/uycyjnzgntrn/entrusted_container:${ENTRUSTED_VERSION}-${DEBIAN_ARCH}"
+podman save -m  -o /tmp/live-entrusted-container.tar "docker.io/uycyjnzgntrn/entrusted_container:${ENTRUSTED_VERSION}"
 
 retVal=$?
 if [ $retVal -ne 0 ]; then

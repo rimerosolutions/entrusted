@@ -38,9 +38,9 @@ While it could be preferrable on Linux to have several native distro packages, i
 
 * Linux 
 
-The GUI is built on a Centos 7 container image to achieve maximal [[https://stackoverflow.com/questions/1771366/binary-compatibility-between-linux-distributions][binary compatibility across Linux distributions]]:
+The GUI is built with the goal to achieve maximal [[https://stackoverflow.com/questions/1771366/binary-compatibility-between-linux-distributions][binary compatibility across Linux distributions]]:
 - The GUI binary cannot be statically linked
-- The libc versions ([[https://www.etalabs.net/compare_libcs.html][GLibc and alternatives]]) vary significantly across distributions, preventing the apps to run
+- The Libc versions ([[https://www.etalabs.net/compare_libcs.html][GLibc and alternatives]]) vary significantly across distributions, preventing the apps to run
 
   [[https://github.com/linuxdeploy/linuxdeploy][LinuxDeploy]] is the solution adopted for creating an [[https://docs.appimage.org/][AppImage]] for the GUI. The AppImage requires [[https://wiki.archlinux.org/title/FUSE][Fuse]] tools to run.
   

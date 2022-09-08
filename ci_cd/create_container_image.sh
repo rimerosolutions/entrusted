@@ -37,4 +37,6 @@ for PLATFORM_ARCH in $PLATFORM_ARCHS ; do
     buildah manifest add docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION} docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}-${CPU_ARCH}
 done
 
+podman tag docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION} docker.io/uycyjnzgntrn/entrusted_container:latest
+
 cd "${OLD_DIR}"

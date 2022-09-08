@@ -54,8 +54,6 @@ The commands below apply to =podman=, the syntax is similar for =docker= or =lim
 
   podman login -u uycyjnzgntrn docker.io
 
-  podman tag docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION} docker.io/uycyjnzgntrn/entrusted_container:latest
-
   podman manifest push --all docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION} docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}
   podman manifest push --all docker.io/uycyjnzgntrn/entrusted_container:latest docker.io/uycyjnzgntrn/entrusted_container:latest
 

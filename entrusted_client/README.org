@@ -29,7 +29,7 @@ The CLI can be convenient for "terminal warriors" or to supplement existing shel
 
 * How to build this?
 
-At the root of this project, open a command prompt and type =cargo build=.
+At the root of this project, open a command prompt and type =cargo build --features=gui=.
 
 * How to run this?
 

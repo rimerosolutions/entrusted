@@ -1,14 +1,10 @@
 #+TITLE: CI_CD README
 
- Except for the the live CD, most of the release tasks are preformed within [[https://podman.io/][Podman]].
- - In the future, maybe =GitHub actions=, =TravisCI= or other solutions will be used for further automation.
+ Except for the the live CD, the software artifacts for each release are produced from a containerized environment ([[https://podman.io/][Podman]]).
+ - In the future, =GitHub actions=, =TravisCI= or other similar solutions are ideal
  - Pull requests are welcome for any improvements!
 
 * Overview
-
-A set of shell scripts create release artifacts for supported operating systems (Linux, Mac OS or Windows)
-- A Linux [[./live_cd][live CD]] ISO image is alo provided for use with virtual machines
-- arm64 binaries are available for Linux and Mac OS
 
 The current build server is a virtual machine running [[https://ubuntu.com/][Ubuntu Linux]] with the following software installed (among other applications).
 
@@ -30,31 +26,27 @@ While it could be preferrable on Linux to have several native distro packages, i
 - On Linux, if you prefer [[https://flatpak.org/][Flatpak]] packages, please check out the [[https://github.com/axtloss/flatpaks][axtloss flatpaks]] project page
 - On Windows, binaries are not signed
 - On Mac OS, similarly to Windows, binaries are not signed
-- =arm64= builds are considered *highly experimental*
-  - Executables have been created inside an "emulator", not on real hardware
-  - Community help is desired to confirm that "it works" (lack of arm laptop to test)
+- =arm64= builds are considered *highly experimental*:
+  - Executables are created inside amd64 virtual machines (=QEMU VM= + =Podman=), not on real hardware
+  - Community help is desired to confirm that "it works" (lack of arm laptop for testing)
 
 * Targeted Operating Systems
 
 * Linux 
 
-The GUI is built with the goal to achieve maximal [[https://stackoverflow.com/questions/1771366/binary-compatibility-between-linux-distributions][binary compatibility across Linux distributions]]:
+The graphical Desktop interface executable is an [[https://docs.appimage.org/][AppImage]] binary with the goal to achieve maximal [[https://stackoverflow.com/questions/1771366/binary-compatibility-between-linux-distributions][compatibility across Linux distributions]]:
 - The GUI binary cannot be statically linked
 - The Libc versions ([[https://www.etalabs.net/compare_libcs.html][GLibc and alternatives]]) vary significantly across distributions, preventing the apps to run
 
-  [[https://github.com/linuxdeploy/linuxdeploy][LinuxDeploy]] is the solution adopted for creating an [[https://docs.appimage.org/][AppImage]] for the GUI. The AppImage requires [[https://wiki.archlinux.org/title/FUSE][Fuse]] tools to run.
+  [[https://github.com/linuxdeploy/linuxdeploy][LinuxDeploy]] is the solution adopted for creating an =AppImage= executable for the GUI. The AppImage requires [[https://wiki.archlinux.org/title/FUSE][Fuse]] installed to run.
   
 * Windows
 
-The performance, binaries and other details hasn't been assessed, but this seems to be running just fine.
-
-The EXE installer is built with the good old NSIS because it's fairly simple and has been around for a very long time (documentation, familiarity with the tool from projects a while back).
-
+There's no support yet for creating arm64 Windows binaries. The installer is built with the good old [[https://nsis.sourceforge.io/Main_Page][NSIS]].
+  
 * Mac OS
 
-The performance, binaries and other details hasn't been assessed, but this seems to be running just fine.
-
-For the "app bundle", there might be better ways to run external programs (i.e. not by wrapping the app binary within a shell script)
+For the "app bundle", there might be better ways to run external programs (i.e. instead of wrapping programs with a shell script)
 - https://developer.apple.com/documentation/xcode/embedding-a-helper-tool-in-a-sandboxed-app
 - https://stackoverflow.com/questions/27505022/open-another-mac-app
 

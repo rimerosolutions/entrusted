@@ -211,9 +211,9 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
 
     let mut success = false;
 
-    fn mkdirp(p: PathBuf, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
+    fn mkdirp(p: &PathBuf, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
         if !p.exists() {
-            if let Err(ex) = fs::create_dir(&p) {
+            if let Err(ex) = fs::create_dir_all(&p) {
                 return Err(trans.gettext_fmt("Cannot create directory: {0}! Error: {1}", vec![&p.display().to_string(), &ex.to_string()]).into());
             }
         }
@@ -277,12 +277,12 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             None => env::temp_dir(),
         };
         dz_tmp.push("entrusted");
-        mkdirp(dz_tmp.clone(), trans.clone())?;
+        mkdirp(&dz_tmp, trans.clone())?;
         cleanup_dir(dz_tmp.clone().to_path_buf())?;
 
         let mut dz_tmp_safe:PathBuf = dz_tmp.clone();
         dz_tmp_safe.push("safe");
-        mkdirp(dz_tmp_safe.clone(), trans.clone())?;
+        mkdirp(&dz_tmp_safe, trans.clone())?;
 
         let safedir_volume = format!("{}:/safezone", dz_tmp_safe.display());
 

@@ -449,7 +449,7 @@ pub async fn save_file(
     }
 
     if !tmpdir.exists() {
-        fs::create_dir(&tmpdir)?;
+        fs::create_dir_all(&tmpdir)?;
     }
 
     let filepath = tmpdir.join(format!("{}.{}", &file_uuid, fileext));

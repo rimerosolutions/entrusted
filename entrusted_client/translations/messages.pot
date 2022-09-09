@@ -247,7 +247,7 @@ msgstr ""
 msgid "Starting document processing"
 msgstr ""
 
-msgid "Please wait, downloading image (roughly 600 MB)"
+msgid "Please wait, downloading sandbox image (roughly 600 MB)"
 msgstr ""
 
 msgid "Couldn't download container image!"

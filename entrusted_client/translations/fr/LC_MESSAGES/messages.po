@@ -245,8 +245,8 @@ msgstr "L'image du conteneur est introuvable. {0}"
 msgid "Starting document processing"
 msgstr "Démarrage du traitement des documents"
 
-msgid "Please wait, downloading image (roughly 600 MB)"
-msgstr "Veuillez patienter, téléchargement de l'image (environ 600 Mo)"
+msgid "Please wait, downloading sandbox image (roughly 600 MB)"
+msgstr "Veuillez patienter, téléchargement de l'image du bac à sable (environ 600 Mo)"
 
 msgid "Couldn't download container image!"
 msgstr "Impossible de télécharger l'image du conteneur!"

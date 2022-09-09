@@ -2,6 +2,7 @@
 name = "entrusted_l10n"
 version = "0.2.4"
 edition = "2018"
+rust-version = "1.56"
 description = "Entrusted l10n library" 
 keywords = ["entrusted", "l10n"]
 license = "GPL"

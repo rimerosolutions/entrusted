@@ -2,6 +2,7 @@
 name = "entrusted-webclient"
 version = "0.2.5"
 edition = "2018"
+rust-version = "1.56"
 description = "Entrusted HTTP client" 
 keywords = ["entrusted", "remoting", "http"]
 license = "GPL"

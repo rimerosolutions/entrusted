@@ -13,7 +13,7 @@ pub const DEFAULT_LANGID: &str = "en";
 pub const ENV_VAR_ENTRUSTED_LANGID: &str = "ENTRUSTED_LANGID";
 
 static CATALOG_PER_LOCALE: Lazy<Mutex<HashMap<String, Catalog>>> = Lazy::new(|| {
-    Mutex::new(HashMap::new())
+    Mutex::new(HashMap::with_capacity(2))
 });
 
 pub fn sys_locale() -> String {
@@ -22,7 +22,7 @@ pub fn sys_locale() -> String {
     if let Some((_, language_range)) = locale.tags().next() {
         language_range.to_string()
     } else {
-        String::from(DEFAULT_LANGID)
+        DEFAULT_LANGID.to_string()
     }
 }
 

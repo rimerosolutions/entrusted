@@ -1,0 +1,70 @@
+#+TITLE: CHANGELOG
+
+* entrusted-0.2.5
+
+- [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]] support for Linux and Mac OS, as well as the container image
+- Small bug fixes for temporary folders handling
+- New button in the Desktop client to manually check for updates
+
+* entrusted-0.2.4
+
+- Hide Microsoft Windows command prompts displayed upon conversion (Issue 7)
+- Mitigate false positives while changing file modification dates on Windows (Issue 7)
+- Remove UNIX/Linux specific code in the "online service" (entrusted-webserver component)
+- Improve user interface "responsiveness" with better decoupling of background tasks
+
+* entrusted-0.2.3
+
+- Provide DEB and RPM packages for convenience (tested on recent Ubuntu and Fedora versions so far)
+- Mitigate inability to run the program on Fedora (SELinux related problems with container volumes)
+- Address erroneous progress information in early conversions stages
+- Fix occasional file deletion bug (select and delete from the conversion queue)
+
+* entrusted-0.2.1
+
+- Mitigate conversion failures for Office documents (errors while exiting container with an exit code 139)
+- Allow custom output files in the Desktop GUI client
+- Enable conversions of ODG and RTF documents
+
+* entrusted-0.2.0
+
+- Fix long messages truncation bug (Desktop client) resulting into longer conversion times
+- Remove read-only container flag for Podman as it occasionally fails conversions
+- Add few missing translations and improve code maintenance
+  
+* entrusted-0.1.3
+
+- New application icons and screenshots
+- Refactoring of all code references to the previous "Dangerzone" name.
+- Minor visual improvements
+- Translation fixes and easier maintenance for the underlying abstractions
+
+* entrusted-0.1.2
+
+- Application preferences and translations
+- Fix longstanding bug resulting into lack of user feedback (early conversion failures scenario)
+- On Windows, provide icons for the dangerzone-client binaries (GUI and CLI programs)
+- On Mac OS, make the application launcher script more reliable (app bundle sandbox and external programs)
+
+* entrusted-0.1.1
+
+- Small bug fixes and performance tweaks
+- Visual improvements in the Desktop interface (widgets layout, usability, click bugs, look and feel, etc)
+- Mac OS specific updates (Finder "open with", "about" menu)
+- CI/CD updates for generating all release artifacts at once, including installers and the live CD
+
+* entrusted-0.1.0
+
+- Batch conversion support
+- Minor optimizations and code cleanup
+
+* entrusted-0.0.2
+
+- User feedback improvement with conversion progress information
+- Minimal speed optimizations
+- Experimental Live CD based on Debian "bullseye"
+
+* entrusted-0.0.1
+
+Initial release with support for Linux, Mac OS and Windows
+  

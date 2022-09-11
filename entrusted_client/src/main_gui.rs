@@ -216,8 +216,8 @@ fn show_dialog_help(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Tra
     let label_container_solution = format!("{}{}{}{}",
                                            "The program requires a container solution: \n",
                                            "- Docker (Windows, Linux, Mac OS)\n",
-                                           "- Podman (Linux)\n",
-                                           "- Lima (Mac OS)");
+                                           "- or Podman (Linux)\n",
+                                           "- or Lima (Mac OS)");
 
     frame::Frame::default()
         .with_size(350, 80)

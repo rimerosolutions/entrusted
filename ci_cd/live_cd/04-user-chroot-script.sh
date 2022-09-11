@@ -10,4 +10,4 @@ cat /files/home/entrusted/.bashrc_append >> ~/.bashrc
 
 podman run --rm --platform linux/${ENTRUSTED_ARCH} docker-archive:/files/entrusted-container.tar "docker.io/uycyjnzgntrn/entrusted_container:${ENTRUSTED_VERSION}" cat /etc/os-release
 
-podman tag "docker.io/uycyjnzgntrn/entrusted_container:${ENTRUSTED_VERSION}-${ENTRUSTED_ARCH}" "docker.io/uycyjnzgntrn/entrusted_container:${ENTRUSTED_VERSION}"
+

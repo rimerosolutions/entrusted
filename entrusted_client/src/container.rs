@@ -258,7 +258,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, trans.gettext_fmt("The container image was not found. {0}", vec![&ex.to_string()]))))?;
             ensure_image_args = vec!["pull".to_string(), convert_options.container_image_name.to_owned()];
 
-            if let Err(exe) = exec_crt_command(trans.gettext("Please wait, downloading image (roughly 600 MB)"), container_rt.clone(), ensure_image_args, tx.clone_box(), false, printer.clone_box(), trans.clone()) {
+            if let Err(exe) = exec_crt_command(trans.gettext("Please wait, downloading sandbox image (roughly 600 MB)"), container_rt.clone(), ensure_image_args, tx.clone_box(), false, printer.clone_box(), trans.clone()) {
                 tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, trans.gettext("Couldn't download container image!"))))?;
                 return Err(exe.into());
             }

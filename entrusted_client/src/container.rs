@@ -221,9 +221,9 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         Ok(())
     }
 
-    pub fn cleanup_dir(dir: PathBuf) -> Result<(), Box<dyn Error>> {
+    pub fn cleanup_dir(dir: &PathBuf) -> Result<(), Box<dyn Error>> {
         if dir.exists() && dir.is_dir() {
-            let mut files = vec![dir];
+            let mut files = vec![dir.to_owned()];
 
             while let Some(f) = files.pop() {
                 if f.is_file() && f.exists() {
@@ -278,7 +278,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         };
         dz_tmp.push("entrusted");
         mkdirp(&dz_tmp, trans.clone())?;
-        cleanup_dir(dz_tmp.clone().to_path_buf())?;
+        cleanup_dir(&dz_tmp)?;
 
         let mut dz_tmp_safe:PathBuf = dz_tmp.clone();
         dz_tmp_safe.push("safe");
@@ -323,17 +323,16 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             let mut container_output_file_path = dz_tmp_safe.clone();
             container_output_file_path.push("safe-output-compressed.pdf");
             let atime = FileTime::now();
-            let output_path_clone = output_path.clone();
 
-            fs::copy(&container_output_file_path, output_path)?;
+            fs::copy(&container_output_file_path, &output_path)?;
             fs::remove_file(container_output_file_path)?;
 
-            let output_file = fs::File::open(output_path_clone)?;
+            let output_file = fs::File::open(&output_path)?;
 
             // This seems to fail on Microsoft Windows with permission denied errors
             let _ = filetime::set_file_handle_times(&output_file, Some(atime), Some(atime));
 
-            if let Err(ex) = cleanup_dir(dz_tmp.clone().to_path_buf()) {
+            if let Err(ex) = cleanup_dir(&dz_tmp) {
                 tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, trans.gettext_fmt("Failed to cleanup temporary folder: {0}. {1}.", vec![&dz_tmp.clone().display().to_string(), &ex.to_string()]))))?;
             }
 

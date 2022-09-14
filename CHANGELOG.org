@@ -1,5 +1,9 @@
 #+TITLE: CHANGELOG
 
+* entrusted-0.2.6
+
+Work in progress
+
 * entrusted-0.2.5
 
 - [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]] support for Linux and Mac OS, as well as the container image

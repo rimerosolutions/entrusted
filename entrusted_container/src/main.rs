@@ -336,6 +336,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: &ProgressR
                                 } else {
                                     ex.to_string()
                                 };
+
                                 Err(err_reason.into())
                             }
                         };

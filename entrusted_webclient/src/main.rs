@@ -236,7 +236,7 @@ async fn handle_args() -> Result<(), Box<dyn Error + Send + Sync>> {
     };
 
     let file_suffix = if let Some(proposed_file_suffix) = run_matches.value_of("file-suffix") {
-        String::from(proposed_file_suffix)
+        proposed_file_suffix.to_string()
     } else {
         appconfig.file_suffix.clone()
     };

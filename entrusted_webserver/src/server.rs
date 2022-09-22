@@ -176,7 +176,7 @@ fn parse_accept_language(req_language: &HeaderValue, fallback_lang: String) -> S
 
         if !language_list.is_empty() {
             let first_language = language_list[0].split(";").collect::<Vec<&str>>();
-            String::from(first_language[0])
+            first_language[0].to_string()
         } else {
             fallback_lang
         }
@@ -222,7 +222,7 @@ async fn uitranslations(req: HttpRequest) -> impl Responder {
     let langid = if let Some(req_language) = req.headers().get(header::ACCEPT_LANGUAGE) {
         parse_accept_language(req_language, l10n::DEFAULT_LANGID.to_string())
     } else {
-        String::from(l10n::DEFAULT_LANGID)
+        l10n::DEFAULT_LANGID.to_string()
     };
 
     let json_data = uil10n::ui_translation_for(langid);
@@ -579,16 +579,20 @@ async fn run_entrusted(
 
     if success {
         let msg = model::CompletionMessage::new(format!("/downloads/{}", refid.clone()));
-        let msg_json = serde_json::to_string(&msg).unwrap();
-        progress_made(refid.clone(), "processing_success", msg_json, counter, err_find_notif, err_notif_handle)?;
-        let _ = fs::remove_file(input_path);
+
+        if let Ok(msg_json) = serde_json::to_string(&msg) {
+            progress_made(refid.clone(), "processing_success", msg_json, counter, err_find_notif, err_notif_handle)?;
+            let _ = fs::remove_file(input_path);
+        }
 
         Ok(())
     } else {
         let msg = model::CompletionMessage::new("failure".to_string());
-        let msg_json = serde_json::to_string(&msg).unwrap();
-        progress_made(refid.clone(), "processing_failure", msg_json, counter, err_find_notif, err_notif_handle)?;
-        let _ = fs::remove_file(input_path);
+
+        if let Ok(msg_json) = serde_json::to_string(&msg) {
+            progress_made(refid.clone(), "processing_failure", msg_json, counter, err_find_notif, err_notif_handle)?;
+            let _ = fs::remove_file(input_path);
+        }
 
         Err(l10n.gettext("Processing failure").into())
     }

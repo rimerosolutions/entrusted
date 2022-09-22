@@ -26,7 +26,7 @@ pub fn default_container_image_name() -> String {
 impl Default for AppConfig {
     fn default() -> Self {
         Self {
-            host: String::from("0.0.0.0"),
+            host: "0.0.0.0".to_string(),
             port: 13000,
             container_image_name: default_container_image_name(),
         }

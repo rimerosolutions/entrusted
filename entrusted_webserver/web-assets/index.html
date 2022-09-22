@@ -539,12 +539,21 @@
         for (let i = 0; i < moreInfoElementKeys.length; i++) {
           let moreInfoElement = document.createElement("p");
           moreInfoElement.className = "leftAligned";
-          moreInfoElement.innerText = translations["data"][moreInfoElementKeys[i]];
-          documentFragment.appendChild(moreInfoElement);
-        }        
 
-        modalContent.appendChild(documentFragment);
-        modal.style.display = "block";
+          if (i == 0) {
+            moreInfoElement.innerText = translations["data"][moreInfoElementKeys[i]];
+          } else {
+            let pMoreInfoElement = document.createElement("a");
+            pMoreInfoElement.setAttribute("href", translations["data"][moreInfoElementKeys[i]]);
+            pMoreInfoElement.setAttribute("target", "_blank");
+            pMoreInfoElement.innerText = translations["data"][moreInfoElementKeys[i]];
+            moreInfoElement.appendChild(pMoreInfoElement);
+          }
+
+          documentFragment.appendChild(moreInfoElement);
+          modalContent.appendChild(documentFragment);
+          modal.style.display = "block";
+        }
       }
 
       function promptForPassword(source) {
@@ -552,7 +561,7 @@
 
         for (let i = 0; i < fileList.length && !found; i++) {
           let fileObj = fileList[i];
-          let passwordElementId = "passwd-" + fileObj.id;          
+          let passwordElementId = "passwd-" + fileObj.id;
           let passwordButtonElementId = "passwd-btn-" + fileObj.id;
 
           if (passwordButtonElementId == source.id || passwordElementId == source.id) {
@@ -805,7 +814,6 @@
           let rowElementToDisable = document.getElementById(rowElementIdsToDisable[i]);
           rowElementToDisable.disabled = true;
         }
-
         submitOneFile(fileObj, ocrSettings, uploadUrl);
       }
 
@@ -856,7 +864,7 @@
           };
         }
 
-        
+
         document.body.className = "visible";
       }
 
@@ -887,7 +895,9 @@
         }
       }
 
-      window.addEventListener("DOMContentLoaded", function(event) {
+      
+
+      window.addEventListener("DOMContentLoaded", function(event) {        
         applyTranslationsOnPageLoad();
 
         let submitButton = document.getElementById("submitButton");
@@ -1075,7 +1085,7 @@
       .passwordSet {
         border: 2px solid #8B0000;
       }
-      
+
       .passwordFileIcon {
         background-size: cover;
         width: 20px;
@@ -1141,7 +1151,7 @@
         background: blue;
         text-align: center;
       }
-      
+
       legend {
         padding: 10px;
         background: darkgray;

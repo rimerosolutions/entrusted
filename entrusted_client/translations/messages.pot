@@ -30,6 +30,21 @@ msgstr ""
 #~ "MIME-Version: 1.0\n"
 #~ "Content-Type: text/plain; charset=UTF-8"
 
+msgid "Version {0} is out!"
+msgstr ""
+
+msgid "Please get the new version!"
+msgstr ""
+
+msgid "One file failed to process"
+msgid_plural "Multiple files failed to process"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+msgid "Could not open URL: {0}, {1}"
+msgstr ""
+
 msgid "Check for updates"
 msgstr ""
 
@@ -67,7 +82,7 @@ msgid ""
 "- Presentations (.ppt, .pptx, .odp)"
 msgstr ""
 
-msgid "For more information, please visit:\n{0}"
+msgid "For more information, please visit:"
 msgstr ""
 
 msgid "Select"

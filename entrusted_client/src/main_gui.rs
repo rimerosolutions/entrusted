@@ -143,6 +143,16 @@ fn clip_text<S: Into<String>>(txt: S, max_width: i32) -> String {
     text
 }
 
+fn paint_underline<W: WidgetExt>(wid: &mut W) {
+    if wid.visible() && wid.active() {
+        let (lw, _) = draw::measure(&wid.label(), true);
+        let old_color = draw::get_color();
+        draw::set_draw_color(wid.label_color());
+        draw::draw_line(wid.x() + 3, wid.y() + wid.h(), wid.x() + lw, wid.y() + wid.h());
+        draw::set_draw_color(old_color);
+    }
+}
+
 fn row_to_task(viewer_app_opt: &Option<String>, active_ociimage_option: &String, active_ocrlang_option: &Option<String>, active_file_suffix: &String, active_row: &FileListRow) -> ConversionTask {
     let input_path = active_row.file.clone();
 
@@ -170,25 +180,97 @@ fn row_to_task(viewer_app_opt: &Option<String>, active_ociimage_option: &String,
 
 fn show_dialog_updates(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Translations) {
     let (x, y, w, h) = parent_window_bounds;
-    let msg = {
 
-        match common::update_check(&trans) {
-            Ok(opt_new_release) => {
-                if let Some(new_release) = opt_new_release {
-                    trans.gettext_fmt("Version {0} is out!\nPlease visit {1}", vec![&new_release.tag_name, &new_release.html_url])
-                } else {
-                    trans.gettext("No updates available at this time!")
-                }
-            },
-            Err(ex) => {
-                trans.gettext_fmt("Could not check for updates, please try later.\n{0}", vec![&ex.to_string()])
+    match common::update_check(&trans) {
+        Ok(opt_new_release) => {
+            if let Some(new_release) = opt_new_release {
+                show_dialog_newrelease(parent_window_bounds, new_release, trans);
+            } else {
+                let msg  = trans.gettext("No updates available at this time!");
+                let (lbl_width, lbl_height)  = draw::measure(&msg, true);
+                dialog::alert(x +( w/2) - (lbl_width/2), y +  (h / 2) - (lbl_height / 2), &msg);
+            }
+        },
+        Err(ex) => {
+            let msg = trans.gettext_fmt("Could not check for updates, please try later.\n{0}", vec![&ex.to_string()]);
+            let (lbl_width, lbl_height)  = draw::measure(&msg, true);
+            dialog::alert(x +( w/2) - (lbl_width/2), y +  (h / 2) - (lbl_height / 2), &msg);
+        }
+    }
+}
+
+fn show_dialog_newrelease(parent_window_bounds: (i32, i32, i32, i32), release_info: common::ReleaseInfo, trans: l10n::Translations) {
+    let wind_w = 450;
+    let wind_h = 100;
+    let wind_x = parent_window_bounds.0 + (parent_window_bounds.2 / 2) - (wind_w / 2);
+    let wind_y = parent_window_bounds.1 + (parent_window_bounds.3 / 2) - (wind_h / 2);
+
+    let mut win = window::Window::default()
+        .with_size(wind_w, wind_h)
+        .with_pos(wind_x, wind_y)
+        .with_label(&trans.gettext_fmt("Version {0} is out!", vec![&release_info.tag_name]));
+
+    win.begin();
+    win.make_resizable(true);
+    win.make_modal(true);
+
+    let mut grp = group::Pack::default()
+        .with_pos(WIDGET_GAP, WIDGET_GAP / 2)
+        .with_size(wind_w - (WIDGET_GAP * 2), wind_h - (WIDGET_GAP * 2))
+        .center_of(&win)
+        .with_type(group::PackType::Vertical);
+    grp.set_spacing(WIDGET_GAP);
+
+    frame::Frame::default()
+        .with_size(350, 20)
+        .with_label(&trans.gettext("Please get the new version!"))
+        .with_align(enums::Align::Inside | enums::Align::Left);
+    
+    let mut frame_website = frame::Frame::default()
+        .with_size(350, 20)
+        .with_label(&release_info.html_url)
+        .with_align(enums::Align::Inside | enums::Align::Left);
+
+    frame_website.set_label_color(enums::Color::Blue);
+
+    frame_website.draw({
+        move |wid| {
+            if wid.visible() && wid.active() {
+                let (lw, lh) = draw::measure(&wid.label(), true);
+                let old_color = draw::get_color();
+                draw::set_draw_color(wid.label_color());
+                let ypos = wid.y() + wid.h()/2 + lh/2;
+                draw::draw_line(wid.x() + 3, ypos, wid.x() + lw, ypos);
+                draw::set_draw_color(old_color);
             }
         }
-    };
-    let (lbl_width, lbl_height) = draw::measure(&msg, true);
+    });
 
+    frame_website.handle({
+        let wind_ref = win.clone();
+        let trans_ref = trans.clone();
 
-    dialog::alert(x +( w/2) - (lbl_width/2), y +  (h / 2) - (lbl_height / 2), &msg);
+        move |wid, ev| match ev {
+            enums::Event::Push => {
+                if let Err(ex) = open_web_page(&wid.label()) {
+                    let err_text = trans_ref.gettext_fmt("Could not open URL: {0}, {1}", vec![&wid.label(), &ex.to_string()]);
+                    dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, &err_text);
+                }
+
+                true
+            }
+            _ => false,
+        }
+    });
+
+    grp.end();
+    win.end();
+
+    win.show();
+
+    while win.shown() {
+        app::wait();
+    }
 }
 
 fn show_dialog_help(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Translations) {
@@ -238,15 +320,53 @@ fn show_dialog_help(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Tra
         .with_label(&trans.gettext(&label_supported_docs))
         .with_align(enums::Align::Inside | enums::Align::Left);
 
+    frame::Frame::default()
+        .with_size(350, 20)
+        .with_label(&trans.gettext("For more information, please visit:"))
+        .with_align(enums::Align::Inside | enums::Align::Left);
+
     let label_website = "https://github.com/rimerosolutions/entrusted";
 
-    frame::Frame::default()
-        .with_size(350, 30)
-        .with_label(&trans.gettext_fmt("For more information, please visit:\n{0}", vec![&label_website]))
+    let mut frame_website = frame::Frame::default()
+        .with_size(350, 20)
+        .with_label(label_website)
         .with_align(enums::Align::Inside | enums::Align::Left);
+
+    frame_website.set_label_color(enums::Color::Blue);
+
+    frame_website.draw({
+        move |wid| {
+            if wid.visible() && wid.active() {
+                let (lw, lh) = draw::measure(&wid.label(), true);
+                let old_color = draw::get_color();
+                draw::set_draw_color(wid.label_color());
+                let ypos = wid.y() + wid.h()/2 + lh/2;
+                draw::draw_line(wid.x() + 3, ypos, wid.x() + lw, ypos);
+                draw::set_draw_color(old_color);
+            }
+        }
+    });
+
+    frame_website.handle({
+        let wind_ref = win.clone();
+        let trans_ref = trans.clone();
+
+        move |wid, ev| match ev {
+            enums::Event::Push => {
+                if let Err(ex) = open_web_page(&wid.label()) {
+                    let err_text = trans_ref.gettext_fmt("Could not open URL: {0}, {1}", vec![&wid.label(), &ex.to_string()]);
+                    dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, &err_text);
+                }
+
+                true
+            }
+            _ => false,
+        }
+    });
 
     grp.end();
 
+    win.end();
     win.show();
 
     while win.shown() {
@@ -885,7 +1005,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Ok(selected_locale) => selected_locale,
         Err(_) => l10n::sys_locale()
     };
-
+    
     let trans = l10n::new_translations(locale);
     let trans_ref = trans.clone();
 
@@ -895,6 +1015,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let current_row_idx = Arc::new(AtomicI32::new(0));
     let is_converting = Arc::new(AtomicBool::new(false));
+    let conversion_is_active = Arc::new(AtomicBool::new(false));
 
     let app = app::App::default().with_scheme(app::Scheme::Gleam);
     let (tx, rx) = mpsc::sync_channel::<common::AppEvent>(1);
@@ -1419,16 +1540,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         .borrow_mut()
         .set_label_color(enums::Color::Blue);
 
-    fn paint_underline<W: WidgetExt>(wid: &mut W) {
-        if wid.visible() && wid.active() {
-            let (lw, _) = draw::measure(&wid.label(), true);
-            let old_color = draw::get_color();
-            draw::set_draw_color(wid.label_color());
-            draw::draw_line(wid.x() + 3, wid.y() + wid.h(), wid.x() + lw, wid.y() + wid.h());
-            draw::set_draw_color(old_color);
-        }
-    }
-
     selectall_frame_rc.borrow_mut().draw({
         move |wid| {
             paint_underline(wid);
@@ -1576,6 +1687,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let pdf_viewer_list_ref = openwith_inputchoice_rc.clone();
         let filesuffix_input_rc_ref = filesuffix_input_rc.clone();
         let is_converting_ref = is_converting.clone();
+        let conversion_is_active_ref = conversion_is_active.clone();
         let openwith_checkbutton_ref = openwith_checkbutton.clone();
         let selectall_frame_rc_ref = selectall_frame_rc.clone();
         let deselectall_frame_rc_ref = deselectall_frame_rc.clone();
@@ -1599,6 +1711,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             deselectall_frame_rc_ref.borrow_mut().set_label_color(enums::Color::from_rgb(82, 82, 82));
             convert_frame_ref.deactivate();
             is_converting_ref.store(true, Ordering::Relaxed);
+            conversion_is_active_ref.store(true, Ordering::Relaxed);
 
             let opt_viewer_app = if openwith_checkbutton_ref.is_checked() {
                 let viewer_app_name = pdf_viewer_list_ref.borrow_mut().input().value();
@@ -1660,6 +1773,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let mut convert_frame_ref = convert_frame_ref.clone();
                 let mut helpinfo_button_ref = helpinfo_button_ref.clone();
                 let mut updatechecks_button_ref = updatechecks_button_ref.clone();
+                let conversion_is_active_ref = conversion_is_active_ref.clone();
 
                 let eventer: Box<dyn common::EventSender> = Box::new(GuiEventSender {
                     tx: tx.clone()
@@ -1668,6 +1782,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 move || {
                     let mut idx = 0;
                     let mut move_next = true;
+                    let mut fail_count = 0;
 
                     while idx < task_count {
                         if move_next {
@@ -1686,6 +1801,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                                                                trans_ref.clone()) {
                                 let _ = eventer.send(common::AppEvent::ConversionSuccessEvent(idx, task.viewer_app_option.clone(), output_path.clone()));
                             } else {
+                                fail_count += 1;
                                 let _ = eventer.send(common::AppEvent::ConversionFailureEvent(idx));
                             }
                         }
@@ -1705,9 +1821,18 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
 
                     current_row_idx.store(0, Ordering::Relaxed);
+                    conversion_is_active_ref.store(false, Ordering::Relaxed);
+
+                    let summary_message = trans_ref.ngettext("One file failed to process", "Multiple files failed to process", fail_count);
+                    let messages_frame_color = if fail_count == 0 {
+                        enums::Color::DarkGreen
+                    } else {
+                        enums::Color::Red
+                    };
 
                     if let Ok(_) = app::lock() {
-                        messages_frame_ref.set_label("");
+                        messages_frame_ref.set_label(&summary_message);
+                        messages_frame_ref.set_label_color(messages_frame_color);
                         tabsettings_button_ref.activate();
                         helpinfo_button_ref.activate();
                         updatechecks_button_ref.activate();
@@ -1863,6 +1988,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut convert_button_ref = convert_button.clone();
         let mut columns_frame_ref = columns_frame.clone();
         let dialog_title = selectfiles_dialog_title.clone();
+        let mut messages_frame_ref = messages_frame.clone();
         let mut row_convert_button_ref = row_convert_button.clone();
 
         move |_, ev| match ev {
@@ -1889,6 +2015,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                     if is_converting_ref.load(Ordering::Relaxed) && !file_paths.is_empty() {
                         is_converting_ref.store(false, Ordering::Relaxed);
+                        messages_frame_ref.set_label("");
+                        messages_frame_ref.set_label_color(enums::Color::Black);
                         filelist_widget_ref.delete_all();
                         filelist_scroll_ref.scroll_to(0, 0);
                         filelist_scroll_ref.redraw();
@@ -1942,6 +2070,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 if is_converting_ref.load(Ordering::Relaxed) && !file_paths.is_empty() {
                     is_converting_ref.store(false, Ordering::Relaxed);
+                    messages_frame_ref.set_label("");
+                    messages_frame_ref.set_label_color(enums::Color::Black);
                     filelist_widget_ref.delete_all();
                     filelist_scroll_ref.scroll_to(0, 0);
                     filelist_scroll_ref.redraw();
@@ -1980,6 +2110,26 @@ fn main() -> Result<(), Box<dyn Error>> {
                 true
             },
             _ => false,
+        }
+    });
+
+    wind.set_callback({
+        let convertion_is_active_ref = conversion_is_active.clone();
+
+        move |wid| {
+            let mut close_window = true;
+
+            if convertion_is_active_ref.load(Ordering::Relaxed) {
+                if let Some(choice) = dialog::choice2(wid.x(), wid.y() + wid.h()/2, "Really close", "No", "Yes", "") {
+                    if choice == 0 {
+                        close_window = false;
+                    }
+                }
+            }
+
+            if close_window {
+                wid.hide();
+            }
         }
     });
 
@@ -2273,6 +2423,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if file_path.exists() {
                     if is_converting_ref.load(Ordering::Relaxed) {
                         is_converting_ref.store(false, Ordering::Relaxed);
+                        messages_frame.set_label("");
+                        messages_frame.set_label_color(enums::Color::Black);
                         filelist_widget_ref.delete_all();
                         filelist_scroll_ref.scroll_to(0, 0);
                         filelist_scroll_ref.redraw();
@@ -2415,17 +2567,133 @@ pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> 
     }
 }
 
-#[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
-pub fn list_apps_for_pdfs() -> HashMap<String, String> {
-    HashMap::new()
+#[cfg(target_os = "macos")]
+pub fn open_web_page(url: &str) -> Result<(), Box<dyn Error>> {
+    if let Some(cmd_open) = common::executable_find("open") {
+        match Command::new(cmd_open).arg(url).spawn() {
+            Ok(_)   => Ok(()),
+            Err(ex) => Err(ex.into()),
+        }
+    } else {
+        Err("Could not find 'open' command in PATH!".into())
+    }
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(target_os = "windows")]
+pub fn open_web_page(url: &str) -> Result<(), Box<dyn Error>> {
+    use std::os::windows::process::CommandExt;
+    Command::new("start")
+        .args(url)
+        .stdin(Stdio::null())
+        .creation_flags(0x08000000)
+        .spawn()
+}
+
+#[cfg(not(any(target_os = "windows", target_os = "macos")))]
+pub fn open_web_page(url: &str) -> Result<(), Box<dyn Error>> {
+    let known_commands = vec![
+        ("xdg-open"   , vec![]),
+        ("gio"        , vec!["open"]),
+        ("gnome-open" , vec![]),
+        ("kde-open"   , vec![]),
+        ("wslview"    , vec![]),
+    ];
+
+    let mut opt_cmd_open = None;
+
+    if let Ok(browser_from_env) = env::var("BROWSER") {
+        if let Some(abs_known_command) = common::executable_find(&browser_from_env) {
+            opt_cmd_open = Some((abs_known_command.display().to_string(), known_command_args.clone()));
+        }
+    }
+
+    if opt_cmd_open.is_none() {
+        for (known_command, known_command_args) in known_commands {
+            if let Some(abs_known_command) = common::executable_find(known_command) {
+                opt_cmd_open = Some((abs_known_command.display().to_string(), known_command_args.clone()));
+                break;
+            }
+        }
+    }
+
+    // Deeper look at file associations following the XDG specification conventions
+    // This is similar to finding the list of PDF viewers on Linux, except that we're looking for default and then registered apps
+    if opt_cmd_open.is_none() {
+        let applications_folders = &["/usr/share/applications", "/usr/local/share/applications"];
+        for applications_folder in applications_folders {
+            if opt_cmd_open.is_some() {
+                break;
+            }
+
+            let path_usr_share_applications_orig = PathBuf::from(application_folder);
+            let mut ret: HashMap<String, String> = HashMap::new();
+            let mut path_mimeinfo_cache = path_usr_share_applications_orig.clone();
+            path_mimeinfo_cache.push("mimeinfo.cache");
+
+            if path_mimeinfo_cache.exists() {
+                if let Ok(conf) = parse_entry(path_mimeinfo_cache) {
+                    if let Some(mime_pdf_desktop_refs) = conf.section("MIME Cache").attr("text/html") {
+                        let desktop_entries: Vec<&str> = mime_pdf_desktop_refs.split(";").collect();
+                        let mut result = HashMap::with_capacity(desktop_entries.len());
+
+                        for desktop_entry in desktop_entries {
+                            if desktop_entry.is_empty() {
+                                continue;
+                            }
+
+                            let desktop_file = path_usr_share_applications_orig.clone();
+                            desktop_file.push(desktop_entry);
+
+                            if !desktop_file.exists() {
+                                continue;
+                            }
+
+                            let desktop_entry_section = desktop_entry_data.section("Desktop Entry");
+
+                            if let (Some(app_name), Some(cmd_name)) = (
+                                &desktop_entry_section.attr("Name"),
+                                &desktop_entry_section
+                                    .attr("TryExec")
+                                    .or(desktop_entry_section.attr("Exec")),
+                            ) {
+                                let cmd_name_sanitized = cmd_name
+                                    .to_string()
+                                    .replace("%u", "")
+                                    .replace("%U", "")
+                                    .replace("%f", "")
+                                    .replace("%F", "");
+
+                                opt_cmd_open = Some(cmd_name_sanitized);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if let Some((cmd_open, cmd_open_args)) = opt_cmd_open {
+        let mut new_args = vec![];
+        new_args.extend(&cmd_open_args);
+        new_args.push(url);
+
+        match Command::new(cmd_open).args(new_args).spawn() {
+            Ok(_)   => Ok(()),
+            Err(ex) => Err(ex.into()),
+        }
+    } else {
+        Err("Cannot find Web Browser".into())
+    }
+}
+
+#[cfg(not(any(target_os = "windows", target_os = "macos")))]
 pub fn list_apps_for_pdfs() -> HashMap<String, String> {
     use freedesktop_entry_parser::parse_entry;
 
     // See https://wiki.archlinux.org/title/XDG_MIME_Applications for the logic
     // TODO is TryExec the best way to get a program name vs 'Exec' and stripping arguments???
+    // TODO This is not robust enough...
     // Exec=someapp -newtab %u => where '%u' could be the file input parameter on top of other defaults '-newtab'
     fn parse_desktop_apps(
         apps_dir: PathBuf,
@@ -2467,21 +2735,25 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
         result
     }
 
-    let path_usr_share_applications_orig = PathBuf::from("/usr/share/applications");
-    let mut ret: HashMap<String, String> = HashMap::new();
-    let mut path_mimeinfo_cache = path_usr_share_applications_orig.clone();
-    path_mimeinfo_cache.push("mimeinfo.cache");
+    let applications_folders = &["/usr/share/applications", "/usr/local/share/applications"];
 
-    if path_mimeinfo_cache.exists() {
-        if let Ok(conf) = parse_entry(path_mimeinfo_cache) {
-            if let Some(mime_pdf_desktop_refs) = conf.section("MIME Cache").attr("application/pdf") {
-                let tmp_result = parse_desktop_apps(
-                    path_usr_share_applications_orig.clone(),
-                    mime_pdf_desktop_refs,
-                );
+    for applications_folder in applications_folders {
+        let path_usr_share_applications_orig = PathBuf::from(application_folder);
+        let mut ret: HashMap<String, String> = HashMap::new();
+        let mut path_mimeinfo_cache = path_usr_share_applications_orig.clone();
+        path_mimeinfo_cache.push("mimeinfo.cache");
 
-                for (k, v) in &tmp_result {
-                    ret.insert(k.to_string(), v.to_string());
+        if path_mimeinfo_cache.exists() {
+            if let Ok(conf) = parse_entry(path_mimeinfo_cache) {
+                if let Some(mime_pdf_desktop_refs) = conf.section("MIME Cache").attr("application/pdf") {
+                    let tmp_result = parse_desktop_apps(
+                        path_usr_share_applications_orig.clone(),
+                        mime_pdf_desktop_refs,
+                    );
+
+                    for (k, v) in &tmp_result {
+                        ret.insert(k.to_string(), v.to_string());
+                    }
                 }
             }
         }

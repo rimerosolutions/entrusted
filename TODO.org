@@ -14,9 +14,9 @@
   - [ ] Sorting in the conversion queue (file name, status, etc.)
   - [ ] Allow other operations during conversions (add more files, etc.)
   - [ ] Add overall progress information during conversions (pie chart?)
-  - [ ] Display overall conversion results ("X out of Y files were not successfully converted")
+  - [X] Display overall conversion results ("X out of Y files were not successfully converted")
   - [ ] Improve scrolling behavior during conversions ("smooth-scrolling")
-  - [ ] Prompt for confirmation prior closing the application during conversions
+  - [ ] Prompt for confirmation prior closing the application during conversions (Desktop only)
   - [-] Check for release updates (Desktop and command-line clients)
     - [X] Manual checks
     - [ ] Automated checks (update agent, better notification dialog, etc.)

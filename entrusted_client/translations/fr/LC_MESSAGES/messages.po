@@ -18,6 +18,21 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "Version {0} is out!"
+msgstr "La version {0} est sortie!"
+
+msgid "Please get the new version!"
+msgstr "Veuillez obtenir la nouvelle version!"
+
+msgid "One file failed to process"
+msgid_plural "Multiple files failed to process"
+msgstr[0] "Tous les fichiers on été traités avec succès"
+msgstr[1] "{0} fichier a échoué au traitement"
+msgstr[2] "{0} fichiers ont échoué au traitement"
+
+msgid "Could not open URL: {0}, {1}"
+msgstr "Impossible d'ouvrir le lien: {0}, {1}"
+
 msgid "Check for updates"
 msgstr "Vérifier les mises à jour"
 
@@ -63,8 +78,8 @@ msgstr "- Documents Texte (.rtf, .doc, .docx, .odt)\n"
 msgstr "- Tableurs (.xls, .xlsx, .ods)\n"
 msgstr "- Présentations (.ppt, .pptx, .odp)"
 
-msgid "For more information, please visit:\n{0}"
-msgstr "Pour plus d'information, veuillez visiter:\n{0}"
+msgid "For more information, please visit:"
+msgstr "Pour plus d'information, veuillez visiter:"
 
 msgid "Select"
 msgstr "Sélectionner"

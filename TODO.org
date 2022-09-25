@@ -1,31 +1,29 @@
 #+TITLE: ROADMAP
 
-* Next steps [28%]
+* Next steps [33%]
 
 - [-] Improved conversions
+  - [ ] Cancellable conversions for those that haven't started yet (minor UI redesign needed?)
   - [X] Custom output location for individual documents in the conversion queue
   - [X] Support for password-protected documents
-  - [ ] Cancellable conversions for those that haven't started yet (minor UI redesign needed)
-  - [ ] Parallel conversions and associated minimal resources management (CPU + RAM?)
 - [-] User Interface
-  - [X] Hide command prompts while running processes on Windows, and address file permissions errors
-  - [X] Responsiveness issues during conversions (UI thread and background operations)
   - [ ] There are probably too many redraw operations in the Desktop UI
   - [ ] Sorting in the conversion queue (file name, status, etc.)
   - [ ] Allow other operations during conversions (add more files, etc.)
   - [ ] Add overall progress information during conversions (pie chart?)
-  - [X] Display overall conversion results ("X out of Y files were not successfully converted")
   - [ ] Improve scrolling behavior during conversions ("smooth-scrolling")
+  - [X] Hide command prompts while running processes on Windows, and address file permissions errors
+  - [X] Responsiveness issues during conversions (UI thread and background operations)
+  - [X] Display overall conversion results ("X out of Y files were not successfully converted")
   - [X] Prompt for confirmation prior closing the application during conversions (Desktop only)
-  - [X] Manual check for release updates (Desktop and command-line clients)
+  - [X] Manual check for release updates (Desktop and command-line clients)  
 - [-] Container solutions and hardening
-  - [X] Review container execution options (subject of recurring reviews)
   - [ ] Support and test [[https://rancherdesktop.io/][Ranger Desktop]] (this might already work with default settings)
+  - [X] Review container execution options (subject of recurring reviews)
   - [X] Review some of the code and read few security-related articles (subject of recurring reviews)
-- [ ] Investigate if specific support is required for Tails Linux (proxy, etc.)
 - [-] Code maintenance
-  - [X] Eliminate shell commands inside the container image
   - [ ] Add automated tests (unit & integration)
+  - [X] Eliminate shell commands inside the container image
 - [X] CI/CD and packaging
   - [X] Adopt Git flow and delete all the previous spiral branches
   - [X] Create few specific packages (DEB, RPM)

@@ -2556,7 +2556,7 @@ pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> 
                 },
                 Err(ex) => Err(ex.into()),
             },
-            None => Err("Could not find 'open' command in PATH!".into()),
+            None => Err("Could not find 'open' command in 'PATH' environment variable!".into()),
         }
     } else {
         if let Err(ex) = Command::new(cmd).arg(input).spawn() {
@@ -2575,7 +2575,7 @@ pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dy
             Err(ex) => Err(ex.into()),
         }
     } else {
-        Err(trans.gettext("Could not find 'open' command in PATH!").into())
+        Err(trans.gettext("Could not find 'open' command in 'PATH' environment variable!").into())
     }
 }
 

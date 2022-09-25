@@ -213,9 +213,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     };
 
-    let log_format = match &run_matches.value_of("log-format") {
-        Some(fmt) => fmt,
-        None      => LOG_FORMAT_PLAIN
+    let log_format = if let Some(fmt) = &run_matches.value_of("log-format") {
+        fmt
+    } else {
+        LOG_FORMAT_PLAIN
     };
 
     let opt_passwd = if run_matches.is_present("passwd-prompt") {

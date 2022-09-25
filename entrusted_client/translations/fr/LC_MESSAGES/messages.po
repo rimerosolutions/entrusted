@@ -224,9 +224,6 @@ msgstr "Impossible d’ouvrir le résultat"
 msgid "Could not run PDF viewer!"
 msgstr "Impossible d’exécuter l’editeur PDF"
 
-msgid "Could not find open command in PATH!"
-msgstr "La commande ‘open’ n’a pas été trouvée"
-
 msgid "English"
 msgstr "Anglais"
 

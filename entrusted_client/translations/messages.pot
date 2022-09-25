@@ -226,9 +226,6 @@ msgstr ""
 msgid "Could not run PDF viewer!"
 msgstr ""
 
-msgid "Could not find open command in PATH!"
-msgstr ""
-
 msgid "English"
 msgstr ""
 

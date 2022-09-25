@@ -18,6 +18,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "Could not find 'open' command in 'PATH' environment variable!"
+msgstr "Impossible de trouver la commande 'open' dans la variable d'environement 'PATH'!"
+
+msgid "Cannot find Web Browser"
+msgstr "Impossible de trouver le navigateur Web"
+
 msgid "Version {0} is out!"
 msgstr "La version {0} est sortie!"
 

@@ -252,7 +252,7 @@ fn show_dialog_newrelease(parent_window_bounds: (i32, i32, i32, i32), release_in
 
         move |wid, ev| match ev {
             enums::Event::Push => {
-                if let Err(ex) = open_web_page(&wid.label()) {
+                if let Err(ex) = open_web_page(&wid.label(), &trans) {
                     let err_text = trans_ref.gettext_fmt("Could not open URL: {0}, {1}", vec![&wid.label(), &ex.to_string()]);
                     dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, &err_text);
                 }
@@ -353,7 +353,7 @@ fn show_dialog_help(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Tra
 
         move |wid, ev| match ev {
             enums::Event::Push => {
-                if let Err(ex) = open_web_page(&wid.label()) {
+                if let Err(ex) = open_web_page(&wid.label(), &trans_ref) {
                     let err_text = trans_ref.gettext_fmt("Could not open URL: {0}, {1}", vec![&wid.label(), &ex.to_string()]);
                     dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, &err_text);
                 }
@@ -1003,7 +1003,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let locale = match env::var(l10n::ENV_VAR_ENTRUSTED_LANGID) {
         Ok(selected_locale) => selected_locale,
-        Err(_) => l10n::sys_locale()
+        Err(_)              => l10n::sys_locale()
     };
     
     let trans = l10n::new_translations(locale);
@@ -2568,19 +2568,19 @@ pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> 
 }
 
 #[cfg(target_os = "macos")]
-pub fn open_web_page(url: &str) -> Result<(), Box<dyn Error>> {
+pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {
     if let Some(cmd_open) = common::executable_find("open") {
         match Command::new(cmd_open).arg(url).spawn() {
             Ok(_)   => Ok(()),
             Err(ex) => Err(ex.into()),
         }
     } else {
-        Err("Could not find 'open' command in PATH!".into())
+        Err(trans.gettext("Could not find 'open' command in PATH!").into())
     }
 }
 
 #[cfg(target_os = "windows")]
-pub fn open_web_page(url: &str) -> Result<(), Box<dyn Error>> {
+pub fn open_web_page(url: &str, _: &l10n::Translations) -> Result<(), Box<dyn Error>> {
     use std::os::windows::process::CommandExt;
     Command::new("start")
         .args(url)
@@ -2590,7 +2590,7 @@ pub fn open_web_page(url: &str) -> Result<(), Box<dyn Error>> {
 }
 
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]
-pub fn open_web_page(url: &str) -> Result<(), Box<dyn Error>> {
+pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {
     let known_commands = vec![
         ("xdg-open"   , vec![]),
         ("gio"        , vec!["open"]),
@@ -2683,7 +2683,7 @@ pub fn open_web_page(url: &str) -> Result<(), Box<dyn Error>> {
             Err(ex) => Err(ex.into()),
         }
     } else {
-        Err("Cannot find Web Browser".into())
+        Err(trans.gettext("Cannot find Web Browser").into())
     }
 }
 
@@ -2798,7 +2798,6 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
     ret
 }
 
-// TODO windows support hasn't been tested that much...
 #[cfg(target_os = "windows")]
 pub fn list_apps_for_pdfs() -> HashMap<String, String> {
     use std::collections::HashSet;

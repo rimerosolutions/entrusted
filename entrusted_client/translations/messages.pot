@@ -30,6 +30,12 @@ msgstr ""
 #~ "MIME-Version: 1.0\n"
 #~ "Content-Type: text/plain; charset=UTF-8"
 
+msgid "Could not find 'open' command in 'PATH' environment variable!"
+msgstr ""
+
+msgid "Cannot find Web Browser"
+msgstr ""
+
 msgid "Version {0} is out!"
 msgstr ""
 

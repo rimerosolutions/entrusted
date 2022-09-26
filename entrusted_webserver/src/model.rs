@@ -10,14 +10,20 @@ pub struct Notification {
 #[derive(Debug, Clone)]
 pub struct ConversionOptions {
     pub ci_image_name: String,
-    pub opt_ocr_lang: Option<String>,    
-    pub opt_passwd: Option<String>,    
+    pub opt_ocr_lang: Option<String>,
+    pub opt_passwd: Option<String>,
 }
 
 impl ConversionOptions {
-    pub fn new (ci_image_name: String, opt_ocr_lang: Option<String>, opt_passwd: Option<String>) -> Self {
+    pub fn new(
+        ci_image_name: String,
+        opt_ocr_lang: Option<String>,
+        opt_passwd: Option<String>,
+    ) -> Self {
         Self {
-            ci_image_name, opt_ocr_lang, opt_passwd
+            ci_image_name,
+            opt_ocr_lang,
+            opt_passwd,
         }
     }
 }
@@ -29,21 +35,24 @@ impl Notification {
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
-pub struct CompletionMessage {    
+pub struct CompletionMessage {
     pub percent_complete: usize,
-    pub data: String
+    pub data: String,
 }
 
 impl CompletionMessage {
     pub fn new(new_data: String) -> Self {
-        Self { data: new_data, percent_complete: 100 }
+        Self {
+            data: new_data,
+            percent_complete: 100,
+        }
     }
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct UploadResponse {
     pub id: String,
-    pub tracking_uri: String
+    pub tracking_uri: String,
 }
 
 impl UploadResponse {
@@ -58,5 +67,5 @@ pub struct UploadedFile {
     pub docpassword: String,
     pub location: String,
     pub ocrlang: String,
-    pub fileext: String
+    pub fileext: String,
 }

@@ -1,11 +1,10 @@
+use entrusted_l10n as l10n;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::sync::Mutex;
-use entrusted_l10n as l10n;
 
-static UITRANSLATIONS_PER_LOCALE: Lazy<Mutex<HashMap<String, Vec<u8>>>> = Lazy::new(|| {
-    Mutex::new(load_ui_translations())
-});
+static UITRANSLATIONS_PER_LOCALE: Lazy<Mutex<HashMap<String, Vec<u8>>>> =
+    Lazy::new(|| Mutex::new(load_ui_translations()));
 
 macro_rules! incl_ui_json_files {
     ( $( $x:expr ),* ) => {
@@ -21,7 +20,7 @@ macro_rules! incl_ui_json_files {
     };
 }
 
-fn load_ui_translations() -> HashMap::<String, Vec<u8>> {
+fn load_ui_translations() -> HashMap<String, Vec<u8>> {
     let mut ret = HashMap::new();
     let locale_data = incl_ui_json_files!("en", "fr");
 

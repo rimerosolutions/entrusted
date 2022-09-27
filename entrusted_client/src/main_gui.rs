@@ -225,7 +225,7 @@ fn show_dialog_newrelease(parent_window_bounds: (i32, i32, i32, i32), release_in
         .with_size(350, 20)
         .with_label(&trans.gettext("Please get the new version!"))
         .with_align(enums::Align::Inside | enums::Align::Left);
-    
+
     let mut frame_website = frame::Frame::default()
         .with_size(350, 20)
         .with_label(&release_info.html_url)
@@ -1005,7 +1005,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Ok(selected_locale) => selected_locale,
         Err(_)              => l10n::sys_locale()
     };
-    
+
     let trans = l10n::new_translations(locale);
     let trans_ref = trans.clone();
 
@@ -2591,6 +2591,8 @@ pub fn open_web_page(url: &str, _: &l10n::Translations) -> Result<(), Box<dyn Er
 
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]
 pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {
+    use freedesktop_entry_parser::parse_entry;
+
     let known_commands = vec![
         ("xdg-open"   , vec![]),
         ("gio"        , vec!["open"]),
@@ -2603,7 +2605,7 @@ pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dy
 
     if let Ok(browser_from_env) = env::var("BROWSER") {
         if let Some(abs_known_command) = common::executable_find(&browser_from_env) {
-            opt_cmd_open = Some((abs_known_command.display().to_string(), known_command_args.clone()));
+            opt_cmd_open = Some((abs_known_command.display().to_string(), vec![]));
         }
     }
 
@@ -2625,8 +2627,8 @@ pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dy
                 break;
             }
 
-            let path_usr_share_applications_orig = PathBuf::from(application_folder);
-            let mut ret: HashMap<String, String> = HashMap::new();
+            let path_usr_share_applications_orig = PathBuf::from(applications_folder);
+            //let mut ret: HashMap<String, String> = HashMap::new();
             let mut path_mimeinfo_cache = path_usr_share_applications_orig.clone();
             path_mimeinfo_cache.push("mimeinfo.cache");
 
@@ -2634,37 +2636,38 @@ pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dy
                 if let Ok(conf) = parse_entry(path_mimeinfo_cache) {
                     if let Some(mime_pdf_desktop_refs) = conf.section("MIME Cache").attr("text/html") {
                         let desktop_entries: Vec<&str> = mime_pdf_desktop_refs.split(";").collect();
-                        let mut result = HashMap::with_capacity(desktop_entries.len());
 
                         for desktop_entry in desktop_entries {
                             if desktop_entry.is_empty() {
                                 continue;
                             }
 
-                            let desktop_file = path_usr_share_applications_orig.clone();
+                            let mut desktop_file = path_usr_share_applications_orig.clone();
                             desktop_file.push(desktop_entry);
 
                             if !desktop_file.exists() {
                                 continue;
                             }
 
-                            let desktop_entry_section = desktop_entry_data.section("Desktop Entry");
+                            if let Ok(desktop_entry_data) = parse_entry(desktop_file) {
+                                let desktop_entry_section = desktop_entry_data.section("Desktop Entry");
 
-                            if let (Some(app_name), Some(cmd_name)) = (
-                                &desktop_entry_section.attr("Name"),
-                                &desktop_entry_section
-                                    .attr("TryExec")
-                                    .or(desktop_entry_section.attr("Exec")),
-                            ) {
-                                let cmd_name_sanitized = cmd_name
-                                    .to_string()
-                                    .replace("%u", "")
-                                    .replace("%U", "")
-                                    .replace("%f", "")
-                                    .replace("%F", "");
+                                if let (Some(_), Some(cmd_name)) = (
+                                    &desktop_entry_section.attr("Name"),
+                                    &desktop_entry_section
+                                        .attr("TryExec")
+                                        .or(desktop_entry_section.attr("Exec")),
+                                ) {
+                                    let cmd_name_sanitized = cmd_name
+                                        .to_string()
+                                        .replace("%u", "")
+                                        .replace("%U", "")
+                                        .replace("%f", "")
+                                        .replace("%F", "");
 
-                                opt_cmd_open = Some(cmd_name_sanitized);
-                                break;
+                                    opt_cmd_open = Some((cmd_name_sanitized, vec![]));
+                                    break;
+                                }
                             }
                         }
                     }
@@ -2691,12 +2694,14 @@ pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dy
 pub fn list_apps_for_pdfs() -> HashMap<String, String> {
     use freedesktop_entry_parser::parse_entry;
 
+    let mut ret = HashMap::new();
+
     // See https://wiki.archlinux.org/title/XDG_MIME_Applications for the logic
     // TODO is TryExec the best way to get a program name vs 'Exec' and stripping arguments???
     // TODO This is not robust enough...
     // Exec=someapp -newtab %u => where '%u' could be the file input parameter on top of other defaults '-newtab'
     fn parse_desktop_apps(
-        apps_dir: PathBuf,
+        apps_dir: Vec<&str>,
         mime_pdf_desktop_refs: &str,
     ) -> HashMap<String, String> {
         let desktop_entries: Vec<&str> = mime_pdf_desktop_refs.split(";").collect();
@@ -2707,26 +2712,28 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
                 continue;
             }
 
-            let mut desktop_entry_path = apps_dir.clone();
-            desktop_entry_path.push(desktop_entry);
+            for app_dir in apps_dir.iter() {
+                let mut desktop_entry_path = PathBuf::from(app_dir.clone());
+                desktop_entry_path.push(desktop_entry);
 
-            if desktop_entry_path.exists() {
-                if let Ok(desktop_entry_data) = parse_entry(desktop_entry_path) {
-                    let desktop_entry_section = desktop_entry_data.section("Desktop Entry");
+                if desktop_entry_path.exists() {
+                    if let Ok(desktop_entry_data) = parse_entry(desktop_entry_path) {
+                        let desktop_entry_section = desktop_entry_data.section("Desktop Entry");
 
-                    if let (Some(app_name), Some(cmd_name)) = (
-                        &desktop_entry_section.attr("Name"),
-                        &desktop_entry_section
-                            .attr("TryExec")
-                            .or(desktop_entry_section.attr("Exec")),
-                    ) {
-                        let cmd_name_sanitized = cmd_name
-                            .to_string()
-                            .replace("%u", "")
-                            .replace("%U", "")
-                            .replace("%f", "")
-                            .replace("%F", "");
-                        result.insert(app_name.to_string(), cmd_name_sanitized);
+                        if let (Some(app_name), Some(cmd_name)) = (
+                            &desktop_entry_section.attr("Name"),
+                            &desktop_entry_section
+                                .attr("TryExec")
+                                .or(desktop_entry_section.attr("Exec")),
+                        ) {
+                            let cmd_name_sanitized = cmd_name
+                                .to_string()
+                                .replace("%u", "")
+                                .replace("%U", "")
+                                .replace("%f", "")
+                                .replace("%F", "");
+                            result.insert(app_name.to_string(), cmd_name_sanitized);
+                        }
                     }
                 }
             }
@@ -2736,9 +2743,10 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
     }
 
     let applications_folders = &["/usr/share/applications", "/usr/local/share/applications"];
+    let applications_folders_vec = applications_folders.to_vec();
 
     for applications_folder in applications_folders {
-        let path_usr_share_applications_orig = PathBuf::from(application_folder);
+        let path_usr_share_applications_orig = PathBuf::from(applications_folder);
         let mut ret: HashMap<String, String> = HashMap::new();
         let mut path_mimeinfo_cache = path_usr_share_applications_orig.clone();
         path_mimeinfo_cache.push("mimeinfo.cache");
@@ -2747,7 +2755,7 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
             if let Ok(conf) = parse_entry(path_mimeinfo_cache) {
                 if let Some(mime_pdf_desktop_refs) = conf.section("MIME Cache").attr("application/pdf") {
                     let tmp_result = parse_desktop_apps(
-                        path_usr_share_applications_orig.clone(),
+                        applications_folders_vec.clone(),
                         mime_pdf_desktop_refs,
                     );
 
@@ -2783,7 +2791,7 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
                     conf.section("Added Associations").attr("application/pdf")
                 {
                     let tmp_result = parse_desktop_apps(
-                        path_usr_share_applications_orig.clone(),
+                        applications_folders_vec.clone(),
                         mime_pdf_desktop_refs,
                     );
 

@@ -30,6 +30,12 @@ msgstr ""
 #~ "MIME-Version: 1.0\n"
 #~ "Content-Type: text/plain; charset=UTF-8"
 
+msgid "Cannot resolve address"
+msgstr ""
+
+msgid "Using address"
+msgstr ""
+
 msgid "Please ensure that the entrusted-cli binary is available in your PATH environment variable."
 msgstr ""
 

@@ -32,7 +32,7 @@ impl Default for AppConfig {
     fn default() -> Self {
         Self {
             ocr_lang: None,
-            file_suffix: String::from(DEFAULT_FILE_SUFFIX),
+            file_suffix: DEFAULT_FILE_SUFFIX.to_string(),
             container_image_name: None,
             openwith_appname: None,
         }

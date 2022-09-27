@@ -56,9 +56,9 @@ impl Default for AppConfig {
     fn default() -> Self {
         Self {
             ocr_lang: None,
-            host: String::from("localhost"),
+            host: "localhost".to_string(),
             port: 13000,
-            file_suffix: String::from("entrusted")
+            file_suffix: "entrusted".to_string()
         }
     }
 }
@@ -200,7 +200,7 @@ async fn handle_args() -> Result<(), Box<dyn Error + Send + Sync>> {
     let run_matches = app.to_owned().get_matches();
 
     let opt_ocr_lang = if let Some(proposed_ocr_lang) = run_matches.value_of("ocr-lang") {
-        Some(String::from(proposed_ocr_lang))
+        Some(proposed_ocr_lang.to_string())
     } else {
         appconfig.ocr_lang
     };

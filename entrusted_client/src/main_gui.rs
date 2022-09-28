@@ -2582,11 +2582,13 @@ pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dy
 #[cfg(target_os = "windows")]
 pub fn open_web_page(url: &str, _: &l10n::Translations) -> Result<(), Box<dyn Error>> {
     use std::os::windows::process::CommandExt;
-    Command::new("start")
-        .args(url)
-        .stdin(Stdio::null())
+    match Command::new("start")
+        .arg(url)
         .creation_flags(0x08000000)
-        .spawn()
+        .spawn() {
+            Ok(_)   => Ok(()),
+            Err(ex) => Err(ex.into()),
+        }
 }
 
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]

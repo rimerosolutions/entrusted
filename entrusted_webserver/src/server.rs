@@ -82,9 +82,9 @@ pub async fn serve(
     let mut addrs_iter = addr.to_socket_addrs()?.filter(|s| s.is_ipv4());
 
     match addrs_iter.next() {
-        Some(s) => {
-            tracing::info!("{}: {}", trans.gettext("Using address"), &s);
-            match axum::Server::bind(&s).serve(app.into_make_service()).await {
+        Some(socket_addr) => {
+            tracing::info!("{}: {}", trans.gettext("Using address"), &socket_addr);
+            match axum::Server::bind(&socket_addr).serve(app.into_make_service()).await {
                 Ok(_) => Ok(()),
                 Err(ex) => Err(ex.into()),
             }
@@ -398,7 +398,6 @@ struct Broadcaster {
 
 impl Broadcaster {
     fn create() -> Arc<Mutex<Self>> {
-        // Data ≃ Arc
         let me = Arc::new(Mutex::new(Broadcaster::new()));
 
         // ping clients every 10 seconds to see if they are alive
@@ -511,6 +510,7 @@ enum AppError {
 }
 
 impl IntoResponse for AppError {
+    // TODO response format based on accept headers: text or json
     fn into_response(self) -> axum::response::Response {
         let (status, problem) = match self {
             AppError::NotFound(reason)            => (StatusCode::NOT_FOUND, reason),
@@ -529,6 +529,7 @@ impl IntoResponse for AppError {
             header::CONTENT_TYPE,
             HeaderValue::from_static(http_api_problem::PROBLEM_JSON_MEDIA_TYPE),
         );
+
         response.headers_mut().insert(
             header::CONTENT_LENGTH,
             HeaderValue::from_str(&length.to_string()).unwrap(),
@@ -543,10 +544,10 @@ pub async fn save_file(
     tmpdir: PathBuf,
     l10n: l10n::Translations,
 ) -> Result<model::UploadedFile, Box<dyn std::error::Error>> {
-    let mut buf = Vec::<u8>::new();
-    let mut filename = String::new();
-    let mut fileext = String::new();
-    let mut ocrlang = String::new();
+    let mut buf         = Vec::<u8>::new();
+    let mut filename    = String::new();
+    let mut fileext     = String::new();
+    let mut ocrlang     = String::new();
     let mut docpassword = String::new();
 
     while let Ok(Some(field)) = payload.next_field().await {

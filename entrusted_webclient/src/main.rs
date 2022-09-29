@@ -117,17 +117,19 @@ pub struct LogMessage {
 async fn main() {
     l10n::load_translations(incl_gettext_files!("en", "fr"));
 
-    if let Err(ex) = handle_args().await {
+    if let Err(ex) = process_cli_args().await {
         eprintln!("{}", ex.to_string());
         std::process::exit(1);
     }
 }
 
-async fn handle_args() -> Result<(), Box<dyn Error + Send + Sync>> {
-    let locale = match env::var(l10n::ENV_VAR_ENTRUSTED_LANGID) {
-        Ok(selected_locale) => selected_locale,
-        Err(_) => l10n::sys_locale()
+async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
+    let locale = if let Ok(selected_locale) = env::var(l10n::ENV_VAR_ENTRUSTED_LANGID) {
+        selected_locale
+    } else {
+        l10n::sys_locale()
     };
+
     let trans = l10n::new_translations(locale);
 
     let appconfig_ret = load_config();
@@ -294,7 +296,7 @@ async fn convert_file (
 
     let addr = format!("{}:{}", conversion_options.host, conversion_options.port.parse::<u16>()?);
     println!("{}: {}", l10n.gettext("Connecting to server at"), addr.clone());
-    
+
     let stream = fs::read(&input_path)?;
     let stream_part = reqwest::multipart::Part::stream(Body::from(stream));
 
@@ -334,9 +336,7 @@ async fn convert_file (
     let output_path = if let Some(output_path_value) = output_path_opt {
         output_path_value
     } else {
-        let filename_noext_opt = input_path.file_stem().and_then(|i| i.to_str());
-
-        if let Some(filename_noext) = filename_noext_opt {
+        if let Some(filename_noext) = input_path.file_stem().and_then(|i| i.to_str()) {
             output_dir.join([filename_noext.to_string(), "-".to_string(), conversion_options.file_suffix, ".pdf".to_string()].concat())
         } else {
             return Err(l10n.gettext("Could not determine input file base name!").into());

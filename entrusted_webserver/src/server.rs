@@ -202,7 +202,7 @@ async fn upload(
             )),
         ))
     } else {
-        
+
         Err(AppError::InternalServerError(problem_internal_server_error(err_msg, &uri)).into())
     }
 }
@@ -470,29 +470,29 @@ impl Stream for Client {
             return Poll::Ready(None);
         }
 
-        let notifications_per_refid = NOTIFICATIONS_PER_REFID.lock().unwrap().clone();
+        if let Ok(notifications_per_refid) = NOTIFICATIONS_PER_REFID.lock() {
+            if let Some(notifications_group) = notifications_per_refid.get(&self.refid) {
+                let notifications = notifications_group.lock().unwrap();
+                let notifications_count = notifications.len();
+                let i = self.idx;
 
-        if let Some(notifications_group) = notifications_per_refid.get(&self.refid) {
-            let notifications = notifications_group.lock().unwrap();
-            let notifications_count = notifications.len();
-            let i = self.idx;
+                if i < notifications_count {
+                    let notifs = notifications.as_slice();
+                    let n = &notifs[i];
 
-            if i < notifications_count {
-                let notifs = notifications.as_slice();
-                let n = &notifs[i];
+                    if n.event == "processing_failure" || n.event == "processing_success" {
+                        self.done = true;
+                    }
 
-                if n.event == "processing_failure" || n.event == "processing_success" {
-                    self.done = true;
+                    let evt = Event::default()
+                        .data(n.data.clone())
+                        .id(n.id.clone())
+                        .event(n.event.clone());
+
+                    self.idx = i + 1;
+
+                    return Poll::Ready(Some(Ok(evt)));
                 }
-
-                let evt = Event::default()
-                    .data(n.data.clone())
-                    .id(n.id.clone())
-                    .event(n.event.clone());
-
-                self.idx = i + 1;
-
-                return Poll::Ready(Some(Ok(evt)));
             }
         }
 

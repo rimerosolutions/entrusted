@@ -7,7 +7,6 @@
 =Entrusted= is a document sanitizer tool that converts "/potentially suspicious files/" into /safe PDFs/:
 - This is achieved by processing documents inside a "lightweight sandbox" ([[https://www.ibm.com/cloud/learn/containerization][containerization]])
 - PDF documents, common image formats and Office documents ([[https://www.office.com/][MS Office]] or [[https://www.libreoffice.org/discover/what-is-opendocument/][OpenDocument]]) are supported
-- The progam was originally a [[https://www.rust-lang.org/][Rust]] port of [[https://dangerzone.rocks/][Dangerzone]], for experimentation purposes
 
 *NOTE*: Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]], you MUST install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior running the program.
 
@@ -17,7 +16,7 @@
 
 - Documents or images are converted inside a "sandbox"
 - The transformation of large/complex documents is frictionless (timeouts or other user-visible issues)
-- Files can be converted in batch (sequential conversions for now)
+- Files can be converted in batch (serial conversions for now)
 - An optional Web interface is available and can act as an "online service" (towards multi-tenancy)
 - The [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]] provides both enhanced security and convenience:
   - Pre-installed [[https://xebia.com/blog/podman-the-free-container-engine-alternative-to-docker/][container solution]], with no required user configuration ([[./entrusted_webserver][entrusted_webserver]])
@@ -67,19 +66,17 @@ Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releas
 
 ** Key software components
 
-Most users will interact with the Desktop user interface (=entrusted_client= component):
-- This doesn't install a container runtime, but will display "useful" error messages if possible
-- This will automatically download a container image (~600 MB), as needed ("The backend service")
+Most users will interact with the Desktop user interface (=entrusted_client= component).
 
-|---------------------+---------------------------------------------|
-| Component           | Purpose                                     |
-|---------------------+---------------------------------------------|
-| [[./entrusted_container][entrusted_container]] | Document processing "sandbox"               |
-| [[./entrusted_client][entrusted_client]]    | Command-line and graphical user interfaces  |
-| [[./entrusted_webserver][entrusted_webserver]] | Online service feature with a Web interface |
-| [[./entrusted_webclient][entrusted_webclient]] | Command-line client for the =web server=    |
-| [[./entrusted_l10n][entrusted_l10n]]      | Shared library for text translations        |
-|---------------------+---------------------------------------------|
+|---------------------+-----------------------------------------------|
+| Component           | Purpose                                       |
+|---------------------+-----------------------------------------------|
+| [[./entrusted_container][entrusted_container]] | Document processing "sandbox"                 |
+| [[./entrusted_client][entrusted_client]]    | Command-line and graphical user interfaces    |
+| [[./entrusted_webserver][entrusted_webserver]] | Online service feature with a Web interface   |
+| [[./entrusted_webclient][entrusted_webclient]] | Command-line client for =entrusted_webserver= |
+| [[./entrusted_l10n][entrusted_l10n]]      | Shared library for text translations          |
+|---------------------+-----------------------------------------------|
 
 ** Architecture overview
 
@@ -96,3 +93,9 @@ Below is a high-level architecture overview, the solution relies on a container 
 Conversions will fail if the container solution is not running or available in your [[https://www.java.com/en/download/help/path.html]["PATH settings"]]:
   - The tool doesn't attempt to modify software on your machine (install or change programs)
   - The tool doesn't attempt to manage software on your machine (start or stop services)
+
+* References
+
+- [[https://dangerzone.rocks/][Dangerzone]], the application that =Entrusted= is originally based-on (performance experiments)
+- Disabling file preview and thumbnails ([[https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/ADV200006][Windows]], [[https://osxdaily.com/2013/01/10/disable-finder-icon-thumbnails-previews-mac-os-x/][Mac OS]], Unix/Linux: [[https://gitlab.gnome.org/GNOME/eog/-/issues/130][Gnome]], [[https://www.reddit.com/r/kde/comments/gufzbh/how_do_you_turn_off_the_tiny_image_previews_in/][KDE]], etc.)
+- Security vulnerabilities for [[https://www.cvedetails.com/vulnerability-list/vendor_id-22772/product_id-80467/Podman-Project-Podman.html][Podman]], [[https://www.cvedetails.com/vulnerability-list/vendor_id-13534/product_id-28125/Docker-Docker.html][Docker]]

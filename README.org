@@ -82,7 +82,7 @@ Most users will interact with the Desktop user interface (=entrusted_client= com
 
 Below is a high-level architecture overview, the solution relies on a container engine solution (i.e. [[https://www.docker.com/][Docker]]).
 
-[[./images/image.png]]
+[[./images/architecture.png]]
 
 
 * What is required?

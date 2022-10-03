@@ -85,7 +85,7 @@ pub async fn serve(
         Some(socket_addr) => {
             tracing::info!("{}: {}", trans.gettext("Using address"), &socket_addr);
             match axum::Server::bind(&socket_addr).serve(app.into_make_service()).await {
-                Ok(_) => Ok(()),
+                Ok(_)   => Ok(()),
                 Err(ex) => Err(ex.into()),
             }
         }
@@ -181,9 +181,7 @@ async fn upload(
                 conversion_options,
                 l10n_async_ref.clone(),
                 langid_ref,
-            )
-            .await
-            {
+            ).await {
                 tracing::warn!(
                     "{}. {}",
                     l10n_async_ref.gettext("Processing failure"),

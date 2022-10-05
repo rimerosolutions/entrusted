@@ -10,7 +10,7 @@ All the bugs reports, questions or suggestions are welcome and appreciated:
 
 * Documentation
 
-Clear and concise communication is always a goal.  
+Clear and concise communication is always a goal. 
 
 * Research & Development
 
@@ -18,21 +18,14 @@ There are always multiple areas to explore (CI/CD, security, sandboxing approach
   
 * Coding
 
-There are several opportunities to refactor the code. The application was written in Rust for the following reasons.
-- It can target multiple operating systems including Linux/Unix (minimal requirement for me)
-- It's a great learning experience
-  - I would literally have learned almost nothing at all with let's say Java
-  - I don't have much interest in other programming languages or 
-- It's resources efficient and not garbage collected
-- It's reasonably high-level
-- It's evolving fast even though I wish that more mature and complete libraries were available sometimes
+There are several opportunities to refactor the code. The application was written in Rust mostly for resources efficient purposes.
   
 * User interfaces and artwork
 
 The logos and images have been created with Gimp and similar tools (minimal time investment).
 
 The goal is to keep user interfaces very lightweight (fast, responsive, resources efficient), which requires more work
-- FLTK is the Desktop graphical toolkit for this application, it's a small and fast library that is easy to use
+- [[https://github.com/fltk-rs/fltk-rs][FLTK]] is the Desktop graphical toolkit for this application, it's a small and fast library that is easy to use
 - The Web user interface is built with plain HTML and JavaScript at this time
 
 * Testing

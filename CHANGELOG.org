@@ -1,8 +1,13 @@
 #+TITLE: CHANGELOG
 
-* entrusted-0.2.6
+* entrusted-0.2.6 (UNRELEASED)
 
-Work in progress
+** Enhancements
+- Add "clickable" hyperlinks in few dialogs (project and release URLs)
+- Display overall progress information and final status summary
+
+** Maintenance
+- Technology change: Transition from [[https://actix.rs/][actix_web]] to [[https://github.com/tokio-rs/axum][axum]] for the "Online Service"
 
 * entrusted-0.2.5
 
@@ -35,7 +40,7 @@ Work in progress
 - Fix long messages truncation bug (Desktop client) resulting into longer conversion times
 - Remove read-only container flag for Podman as it occasionally fails conversions
 - Add few missing translations and improve code maintenance
-  
+
 * entrusted-0.1.3
 
 - New application icons and screenshots
@@ -71,4 +76,4 @@ Work in progress
 * entrusted-0.0.1
 
 Initial release with support for Linux, Mac OS and Windows
-  
+

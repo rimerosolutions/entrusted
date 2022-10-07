@@ -37,8 +37,8 @@ pub enum AppEvent {
     FileOpenEvent(String),
     ConversionProgressEvent(String),
     ConversionStartEvent(usize),
-    ConversionSuccessEvent(usize, Option<String>, PathBuf),
-    ConversionFailureEvent(usize),
+    ConversionSuccessEvent(usize, Option<String>, PathBuf, usize),
+    ConversionFailureEvent(usize, usize),
     ConversionFinishedAckEvent
 }
 

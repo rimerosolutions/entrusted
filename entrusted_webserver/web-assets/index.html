@@ -20,6 +20,7 @@
       let translations = {
         "locale": "en",
         "data": {
+          "l10n-window-overall-progress": "Overall progress",
           "l10n-window-help-title": "Help",
           "l10n-window-help-program-reqs-line1": "The program requires a container solution:",
           "l10n-window-help-program-reqs-line2": "Docker (Windows, Linux, Mac OS)",
@@ -314,7 +315,8 @@
           if (fileList.length == 0) {
             let submitButton = document.getElementById("submitButton");
             submitButton.disabled = true;
-
+            let overallProgressElement = document.getElementById("overallProgress");
+            overallProgressElement.value = 0;
             let conversionContainerElement = document.getElementById("conversionContainer");
             conversionContainerElement.className = "invisible";
           }
@@ -381,6 +383,8 @@
 
           let fileListTableElement = document.getElementById("conversionContainer");
           fileListTableElement.className = "invisible";
+          let overallProgressElement = document.getElementById("overallProgress");
+          overallProgressElement.value=0;
         }
       }
 
@@ -640,7 +644,7 @@
         element.className = value.toLowerCase();
       }
 
-      function submitOneFile(fileObj, ocrSettings, uploadUrl) {
+      function submitOneFile(idx, fileObj, ocrSettings, uploadUrl) {
         let file = fileObj.file;
         let fileObjId = fileObj.id;
 
@@ -662,6 +666,7 @@
         logByFileId.set(fileObjId, new Array());
 
         function onComplete(fileObjId, fileStatus, downloadLocation) {
+          let overallProgressElement = document.getElementById("overallProgress");
           let fprogressElement = document.getElementById("progress-" + fileObjId);
           let fprocessingStatusElement = document.getElementById("processing-status-" + fileObjId);
 
@@ -697,16 +702,20 @@
           fprocessingMessageElement.appendChild(fullLogElement);
 
           if (fileList.length != 0) {
+            let total = idx + fileList.length + 1;
+            let percentComplete = Math.max(1, ((idx + 1) * 100) / total);
+            overallProgressElement.value = percentComplete.toFixed();
             let nextFileObj = fileList.shift();
             let checkboxElement = document.getElementById("chk-" + nextFileObj.id);
             let passwdElement = document.getElementById("passwd-" + nextFileObj.id);
             checkboxElement.disabled = true;
             passwdElement.disabled = true;
-            submitOneFile(nextFileObj, ocrSettings, uploadUrl);
+            submitOneFile(++idx, nextFileObj, ocrSettings, uploadUrl);
           } else {
             let dropFileZoneElement = document.getElementById("dropFileZone");
             dropFileZoneElement.className = "dropFileZoneEnabled";
             dropFileZoneElement.disabled = false;
+            overallProgressElement.value = 100;
           }
         }
 
@@ -814,7 +823,10 @@
           let rowElementToDisable = document.getElementById(rowElementIdsToDisable[i]);
           rowElementToDisable.disabled = true;
         }
-        submitOneFile(fileObj, ocrSettings, uploadUrl);
+
+        let overallProgressElement = document.getElementById("overallProgress");
+        overallProgressElement.value = "1";
+        submitOneFile(0, fileObj, ocrSettings, uploadUrl);
       }
 
       function clearModalContents() {
@@ -895,9 +907,9 @@
         }
       }
 
-      
 
-      window.addEventListener("DOMContentLoaded", function(event) {        
+
+      window.addEventListener("DOMContentLoaded", function(event) {
         applyTranslationsOnPageLoad();
 
         let submitButton = document.getElementById("submitButton");
@@ -936,257 +948,261 @@
     </script>
     <style>
       .modal {
-        display: none; /* Hidden by default */
-        position: fixed; /* Stay in place */
-        z-index: 1; /* Sit on top */
-        padding-top: 5%; /* Location of the box */
-        left: 0;
-        top: 0;
-        width: 100%; /* Full width */
-        height: 100%; /* Full height */
-        overflow: auto; /* Enable scroll if needed */
-        background-color: rgb(0,0,0); /* Fallback color */
-        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+          display: none; /* Hidden by default */
+          position: fixed; /* Stay in place */
+          z-index: 1; /* Sit on top */
+          padding-top: 5%; /* Location of the box */
+          left: 0;
+          top: 0;
+          width: 100%; /* Full width */
+          height: 100%; /* Full height */
+          overflow: auto; /* Enable scroll if needed */
+          background-color: rgb(0,0,0); /* Fallback color */
+          background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
       }
 
       /* Modal Content */
       .modal-content {
-        background-color: #fefefe;
-        text-align:center;
-        margin: auto;
-        padding: 5%;
-        border: 1px solid #888;
-        width: 80%;
-        height: 70%;
-        overflow:auto;
+          background-color: #fefefe;
+          text-align:center;
+          margin: auto;
+          padding: 5%;
+          border: 1px solid #888;
+          width: 80%;
+          height: 70%;
+          overflow:auto;
       }
 
       .modal-content li {
-        text-align:left;
+          text-align:left;
       }
 
       /* The Close Button */
       .close {
-        color: #aaaaaa;
-        float: right;
-        font-size: 2em;
-        font-weight: bold;
+          color: #aaaaaa;
+          float: right;
+          font-size: 2em;
+          font-weight: bold;
       }
 
       .leftAligned {
-        text-align: left;
+          text-align: left;
       }
 
       .close:hover,
       .close:focus {
-        color: #000;
-        text-decoration: none;
-        cursor: pointer;
+          color: #000;
+          text-decoration: none;
+          cursor: pointer;
       }
 
       .row:after {
-        float:left;
-        text-align: left;
-        content: "";
-        display: table;
-        clear: both;
+          float:left;
+          text-align: left;
+          content: "";
+          display: table;
+          clear: both;
       }
 
       .column {
-        display: table;
-        float: left;
-        text-align: left;
+          display: table;
+          float: left;
+          text-align: left;
       }
 
       body {
-        background-color: #C8C8C8;
+          background-color: #C8C8C8;
       }
 
       hr {
-        width: 50%;
+          width: 50%;
       }
 
       progress {
-        width:80%;
-        accent-color: yellow;
+          width:80%;
+          accent-color: yellow;
       }
 
       .filePasswordColumn {
-        width: 2%;
+          width: 2%;
       }
 
       .fileNameColumn {
-        width: 30%;
+          width: 30%;
       }
 
       .progressStatusColumn {
-        width: 10%;
+          width: 10%;
       }
 
       .processingStatusColumn {
-        width: 10%;
+          width: 10%;
       }
 
       .progressMessageColumn {
-        width: 48%;
+          width: 48%;
       }
 
       #dropFileZone {
-        color: white;
-        border: #999 2px solid;
-        border-radius: 1em;
-        height: 1%;
-        font-size: 1em;
+          color: white;
+          border: #999 2px solid;
+          border-radius: 1em;
+          height: 1%;
+          font-size: 1em;
       }
 
       .dropFileZoneEnabled {
-        background: red;
+          background: red;
       }
 
       .dropFileZoneDisabled {
-        background: #ffcccc;
+          background: #ffcccc;
       }
 
       #dragUploadFile {
-        width: 50%;
-        margin: 0 auto;
+          width: 50%;
+          margin: 0 auto;
       }
 
       #dragUploadFile p {
-        text-align: center;
+          text-align: center;
       }
 
       #dragUploadFile #fileButton {
-        display: none;
+          display: none;
       }
 
       thead {
-        vertical-align: top;
-        border: 1px solid black;
+          vertical-align: top;
+          border: 1px solid black;
       }
 
       thead tr {
-        text-align: left;
-        border: 1px solid black;
+          text-align: left;
+          border: 1px solid black;
       }
 
       .title-text {
-        text-align: center;
-        color: maroon;
+          text-align: center;
+          color: maroon;
       }
 
       .deleteFileIcon {
       }
 
       .passwordNotSet {
-        border: 1px solid yellow;
+          border: 1px solid yellow;
       }
 
       .passwordSet {
-        border: 2px solid #8B0000;
+          border: 2px solid #8B0000;
       }
 
       .passwordFileIcon {
-        background-size: cover;
-        width: 20px;
-        height: 20px;
-        background-position: center center;
-        background-repeat: no-repeat;
-        background-image: url("data:image/png;base64,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");
+          background-size: cover;
+          width: 20px;
+          height: 20px;
+          background-position: center center;
+          background-repeat: no-repeat;
+          background-image: url("data:image/png;base64,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");
       }
 
       #fileListTable {
-        margin-top: 1%;
-        overflow: auto;
-        width: 100%;
+          margin-top: 1%;
+          overflow: auto;
+          width: 100%;
       }
 
       .visitedLink {
-        text-decoration: line-through;
+          text-decoration: line-through;
       }
 
       .succeeded {
-        accent-color: green;
-        color: green;
+          accent-color: green;
+          color: green;
       }
 
       .pending {
-        color: magenta;
-        accent-color: magenta;
+          color: magenta;
+          accent-color: magenta;
       }
 
       .failed {
-        color: red;
-        accent-color: red;
+          color: red;
+          accent-color: red;
       }
 
       .inprogress {
-        color: #999900;
-        accent-color: #999900;
+          color: #999900;
+          accent-color: #999900;
       }
 
       .invisible {
-        display: none;
+          display: none;
       }
 
       .visible {
-        display: visible;
+          display: visible;
       }
 
       fieldset {
-        border: 1px solid black;
+          border: 1px solid black;
       }
 
       .helpContainer {
-        width: 100%;
-        text-align: right;
+          width: 100%;
+          text-align: right;
       }
 
       .help {
-        position:absolute;
-        right: 1%;
-        top: 2%;
-        color: white;
-        width: 1%;
-        background: blue;
-        text-align: center;
+          position:absolute;
+          right: 1%;
+          top: 2%;
+          color: white;
+          width: 1%;
+          background: blue;
+          text-align: center;
       }
 
       legend {
-        padding: 10px;
-        background: darkgray;
-        color: black;
+          padding: 10px;
+          background: darkgray;
+          color: black;
       }
 
       #eventList {
-        overflow: auto;
-        margin: 0;
-        padding: 10px 1px 1px 1px;
-        background: yellow;
-        border: 5px solid #977c27;
-        font-family: monospace;
+          overflow: auto;
+          margin: 0;
+          padding: 10px 1px 1px 1px;
+          background: yellow;
+          border: 5px solid #977c27;
+          font-family: monospace;
       }
 
       #eventList li {
-        list-style-type: none;
-        text-align: left;
-        margin: 0;
-        padding: 0;
+          list-style-type: none;
+          text-align: left;
+          margin: 0;
+          padding: 0;
       }
 
       .actionButton:disabled {
-        background: #dbdbdb;
+          background: #dbdbdb;
       }
 
       .actionButton {
-        border: none;
-        margin-left: 1%;
-        padding: 15px 32px;
-        text-align: center;
-        text-decoration: none;
-        background: white;
-        display: inline-block;
-        font-size: 16px;
+          border: none;
+          margin-left: 1%;
+          padding: 15px 32px;
+          text-align: center;
+          text-decoration: none;
+          background: white;
+          display: inline-block;
+          font-size: 16px;
+      }
+
+      .overallProgressLabel {
+          color: #990000;
       }
     </style>
   </head>
@@ -1408,6 +1424,18 @@
               <button onclick="submitForm(this)" id="submitButton" class="actionButton"  data-l10n="l10n-convert-documents" disabled>Convert document(s)!</button>
             </td>
             <td></td>
+          </tr>
+        </tbody>
+      </table>
+      <table width="100%">
+        <tbody>
+          <tr>
+            <td width="15%">
+              <span data-l10n="l10n-window-overall-progress" class="overallProgressLabel">Overall progress</span>
+            </td>
+            <td width="85%">
+              <progress id="overallProgress" value="0" max="100"></progress>
+            </td>
           </tr>
         </tbody>
       </table>

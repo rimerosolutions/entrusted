@@ -1,7 +1,10 @@
 {
   "locale": "en",
   "data": {
-    "l10n-window-overall-progress": "Overall progress",
+    "l10n-overall-progress": "Overall progress",
+    "l10n-conversion-summary-succeeded": "All files were processed successfully",
+    "l10n-conversion-summary-one-failed": "file failed to process",
+    "l10n-conversion-summary-multiple-failed": "files failed to process",
     "l10n-window-help-title": "Help",
     "l10n-window-help-program-reqs-line1": "The program requires a container solution:",
     "l10n-window-help-program-reqs-line2": "Docker (Windows, Linux, Mac OS)",

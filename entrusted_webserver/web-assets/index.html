@@ -20,7 +20,10 @@
       let translations = {
         "locale": "en",
         "data": {
-          "l10n-window-overall-progress": "Overall progress",
+          "l10n-overall-progress": "Overall progress",
+          "l10n-conversion-summary-succeeded": "All files were processed successfully",
+          "l10n-conversion-summary-one-failed": "file failed to process",
+          "l10n-conversion-summary-multiple-failed": "files failed to process",
           "l10n-window-help-title": "Help",
           "l10n-window-help-program-reqs-line1": "The program requires a container solution:",
           "l10n-window-help-program-reqs-line2": "Docker (Windows, Linux, Mac OS)",
@@ -319,6 +322,10 @@
             overallProgressElement.value = 0;
             let conversionContainerElement = document.getElementById("conversionContainer");
             conversionContainerElement.className = "invisible";
+
+            let conversionSummaryElement = document.getElementById("conversionSummary");
+            conversionSummaryElement.innerText = "";
+            conversionSummaryElement.removeAttribute("class");
           }
         }
       }
@@ -366,6 +373,9 @@
           if (isConverting) {
             isConverting = false;
             fileList.clear();
+            let conversionSummaryElement = document.getElementById("conversionSummary");
+            conversionSummaryElement.innerText = "";
+            conversionSummaryElement.removeAttribute("class");
           }
 
           updateFileList(currentFileList);
@@ -384,7 +394,11 @@
           let fileListTableElement = document.getElementById("conversionContainer");
           fileListTableElement.className = "invisible";
           let overallProgressElement = document.getElementById("overallProgress");
-          overallProgressElement.value=0;
+          overallProgressElement.value=0;          
+
+          let conversionSummaryElement = document.getElementById("conversionSummary");
+          conversionSummaryElement.innerText = "";
+          conversionSummaryElement.removeAttribute("class");
         }
       }
 
@@ -644,16 +658,17 @@
         element.className = value.toLowerCase();
       }
 
-      function submitOneFile(idx, fileObj, ocrSettings, uploadUrl) {
+      function submitOneFile(idx, failCount, fileObj, ocrSettings, uploadUrl) {
         let file = fileObj.file;
         let fileObjId = fileObj.id;
-
         let filename = fileObj.fileName;
+        let newFailCount = failCount;
 
         let formData = new FormData();
         formData.append("file", file);
         formData.append("docpasswd", fileObj.passwd);
         formData.append("filename", filename);
+        
 
         if (ocrSettings["ocrlang"] != null && ocrSettings["ocrlang"] != undefined) {
           formData.append("ocrlang", ocrSettings["ocrlang"]);
@@ -662,10 +677,15 @@
         let progressElement = document.getElementById("progress-" + fileObjId);
         let processingStatusElement = document.getElementById("processing-status-" + fileObjId);
         let progressMessageElement = document.getElementById("progress-message-" + fileObjId);
+        let conversionSummaryElement = document.getElementById("conversionSummary");
 
         logByFileId.set(fileObjId, new Array());
 
         function onComplete(fileObjId, fileStatus, downloadLocation) {
+          if (fileStatus.toLowerCase() == "failed") {
+            newFailCount++;
+          }
+          
           let overallProgressElement = document.getElementById("overallProgress");
           let fprogressElement = document.getElementById("progress-" + fileObjId);
           let fprocessingStatusElement = document.getElementById("processing-status-" + fileObjId);
@@ -685,9 +705,7 @@
             downloadElement.href = downloadLocation;
             downloadElement.addEventListener("click", disableLinkListener);
             fprocessingMessageElement.appendChild(downloadElement);
-          }
 
-          if (downloadLocation) {
             let spacerElement = document.createElement("span");
             spacerElement.innerHTML = "&nbsp;|&nbsp;"
             fprocessingMessageElement.appendChild(spacerElement);
@@ -710,17 +728,32 @@
             let passwdElement = document.getElementById("passwd-" + nextFileObj.id);
             checkboxElement.disabled = true;
             passwdElement.disabled = true;
-            submitOneFile(++idx, nextFileObj, ocrSettings, uploadUrl);
+            submitOneFile(++idx, newFailCount, nextFileObj, ocrSettings, uploadUrl);
           } else {
             let dropFileZoneElement = document.getElementById("dropFileZone");
             dropFileZoneElement.className = "dropFileZoneEnabled";
             dropFileZoneElement.disabled = false;
             overallProgressElement.value = 100;
+
+            let conversionSummaryClassName = (newFailCount != 0)? "failed" : "succeeded";
+            conversionSummaryElement.className = conversionSummaryClassName;
+
+            let conversionSummaryText = translations["data"]["l10n-conversion-summary-succeeded"];
+            
+            if (newFailCount == 1) {
+              let tmp = translations["data"]["l10n-conversion-summary-one-failed"];
+              conversionSummaryText = `${newFailCount} ${tmp}`;
+            } else if (newFailCount > 1) {
+              let tmp = translations["data"]["l10n-conversion-summary-multiple-failed"];
+              conversionSummaryText = `${newFailCount} ${tmp}`;
+            }
+            
+            conversionSummaryElement.innerText = conversionSummaryText;
           }
         }
 
         transitionStatusElement(processingStatusElement, "InProgress");
-        let requestedLocale = translations["locale"];
+        let requestedLocale = translations["locale"];        
 
         return fetch(uploadUrl, {
           method: "POST",
@@ -826,7 +859,7 @@
 
         let overallProgressElement = document.getElementById("overallProgress");
         overallProgressElement.value = "1";
-        submitOneFile(0, fileObj, ocrSettings, uploadUrl);
+        submitOneFile(0, 0, fileObj, ocrSettings, uploadUrl);
       }
 
       function clearModalContents() {
@@ -1431,7 +1464,7 @@
         <tbody>
           <tr>
             <td width="15%">
-              <span data-l10n="l10n-window-overall-progress" class="overallProgressLabel">Overall progress</span>
+              <span data-l10n="l10n-overall-progress" class="overallProgressLabel">Overall progress</span>
             </td>
             <td width="85%">
               <progress id="overallProgress" value="0" max="100"></progress>
@@ -1452,5 +1485,6 @@
         <tbody id="fileListTableBody"></tbody>
       </table>
     </div>
+    <p id="conversionSummary"></p>
   </body>
 </html>

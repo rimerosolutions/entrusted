@@ -2,6 +2,7 @@ use clap::{App, Arg};
 use std::env;
 use std::error::Error;
 use std::path::PathBuf;
+use std::fs;
 use std::sync::mpsc;
 use std::thread;
 use serde_json;
@@ -148,7 +149,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         output_filename = PathBuf::from(proposed_output_filename);
     }
 
-    if !PathBuf::from(input_filename).exists() {
+    if !fs::metadata(input_filename).is_ok() {
         return Err(trans.gettext_fmt("The selected file does not exists! {0}", vec![input_filename]).into());
     }
 

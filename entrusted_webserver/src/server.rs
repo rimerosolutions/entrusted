@@ -64,6 +64,7 @@ pub async fn serve(
     let state_trans = Arc::new(trans.clone());
     let state_bc = Broadcaster::create();
     let state_ci_image = Arc::new(ci_image_name.clone());
+
     let addr = format!("{}:{}", host, port);
     tracing::info!("{}: {}", trans.gettext("Starting server at address"), &addr);
 
@@ -292,7 +293,7 @@ async fn downloads(
                     notifs_by_ref_id.remove(&request_id.to_string());
                 }
 
-                let mut headers = HeaderMap::new();
+                let mut headers = HeaderMap::with_capacity(3);
 
                 if let Ok(header_value) = HeaderValue::from_str("application/pdf") {
                     headers.insert(header::CONTENT_TYPE, header_value);
@@ -694,7 +695,7 @@ async fn run_entrusted(
     let err_find_notif = l10n.gettext("Could not find notification for");
     let err_notif_handle = l10n.gettext("Could not read notifications data");
 
-    let mut env_map: HashMap<String, String> = HashMap::new();
+    let mut env_map: HashMap<String, String> = HashMap::with_capacity(2);
     env_map.insert(l10n::ENV_VAR_ENTRUSTED_LANGID.to_string(), langid.clone());
 
     if let Some(doc_passwd) = conversion_options.opt_passwd {

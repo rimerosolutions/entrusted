@@ -1,9 +1,8 @@
 #+TITLE: ROADMAP
 
-* Next steps [66%]
+* Next steps [100%]
 
-- [-] Improved conversions
-  - [ ] Cancellable conversions for those that haven't started yet (minor UI redesign needed?)
+- [X] Improved conversions
   - [X] Custom output location for individual documents in the conversion queue
   - [X] Support for password-protected documents
 - [X] User Interface
@@ -16,13 +15,12 @@
 - [X] Container solutions and hardening
   - [X] Review container execution options (subject of recurring reviews)
   - [X] Review some of the code and read few security-related articles (subject of recurring reviews)
-- [-] Code maintenance
-  - [ ] Add automated tests (unit & integration)
+- [X] Code maintenance
   - [X] Migrate from [[https://actix.rs/][actix_web]] to [[https://github.com/tokio-rs/axum][axum]] for the =entrusted_webserver= component
   - [X] Eliminate shell commands inside the container image
 - [X] CI/CD and packaging
   - [X] Adopt Git flow and delete all the previous spiral branches
-  - [X] Create few specific packages (DEB, RPM)
+  - [X] Create few specific Linux packages (DEB, RPM)
   - [X] Add README notes for [[https://github.com/axtloss/flatpaks][axtloss Flatpak packages]] and later in release notes
   - [X] Support for different [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]]
   - [X] For now, stick to custom CI/CD pipeline instead of [[https://github.com/features/actions][GitHub actions]] or similar

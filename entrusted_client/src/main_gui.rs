@@ -379,10 +379,10 @@ fn filelist_column_widths(w: i32) -> (i32, i32, i32, i32, i32, i32) {
     let width_output_file = 40;
     let active_w = w - width_password - width_output_file - (WIDGET_GAP * 5);
 
-    let width_checkbox    = (active_w as f64 * 0.4)  as i32;
-    let width_progressbar = (active_w as f64 * 0.15) as i32;
-    let width_status      = (active_w as f64 * 0.15) as i32;
-    let width_logs        = (active_w as f64 * 0.3)  as i32;
+    let width_checkbox    = (active_w as f64 * 0.35)  as i32;
+    let width_progressbar = (active_w as f64 * 0.20) as i32;
+    let width_status      = (active_w as f64 * 0.20) as i32;
+    let width_logs        = (active_w as f64 * 0.25)  as i32;
 
     (width_output_file, width_password, width_checkbox, width_progressbar, width_status, width_logs)
 }
@@ -1592,7 +1592,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut delete_button = button::Button::default()
         .with_size(260, 20)
-        .with_label(&trans.gettext("Remove selected file(s)"));
+        .with_label(&trans.gettext("Delete selection"));
     delete_button.set_label_color(enums::Color::Black);
     delete_button.set_color(enums::Color::White);
     delete_button.deactivate();

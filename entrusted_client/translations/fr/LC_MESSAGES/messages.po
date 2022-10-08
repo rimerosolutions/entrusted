@@ -197,8 +197,8 @@ msgstr "Tout sélectionner"
 msgid "Deselect all"
 msgstr "Désélectionner tout"
 
-msgid "Remove selected file(s)"
-msgstr "Supprimer le(s) fichier(s) sélectionné(s)"
+msgid "Delete selection"
+msgstr "Supprimer la sélection"
 
 msgid "Convert document(s)"
 msgstr "Convertir le(s) document(s)"

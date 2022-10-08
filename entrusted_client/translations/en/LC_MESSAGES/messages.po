@@ -183,7 +183,7 @@ msgstr ""
 msgid "Deselect all"
 msgstr ""
 
-msgid "Remove selected file(s)"
+msgid "Delete selection"
 msgstr ""
 
 msgid "Convert document(s)"

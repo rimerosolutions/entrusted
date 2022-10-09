@@ -18,8 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
-msgid "Cannot resolve address"
-msgstr "Impossible de résoudre l'adresse"
+msgid "Could not decode request"
+msgstr "Impossible de décoder la requête"
+
+msgid "Cannot resolve server address"
+msgstr "Impossible de résoudre l'adresse du serveur"
 
 msgid "Using address"
 msgstr "Utilisation de l'addresse"

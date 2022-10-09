@@ -85,13 +85,14 @@ pub async fn serve(
     match addrs_iter.next() {
         Some(socket_addr) => {
             tracing::info!("{}: {}", trans.gettext("Using address"), &socket_addr);
+
             match axum::Server::bind(&socket_addr).serve(app.into_make_service()).await {
                 Ok(_)   => Ok(()),
                 Err(ex) => Err(ex.into()),
             }
         }
         None => {
-            return Err(trans.gettext("Cannot resolve address to bind to").into());
+            return Err(trans.gettext("Cannot resolve server address").into());
         }
     }
 }
@@ -258,24 +259,23 @@ async fn downloads(
                         request_err_found = false;
                     } else {
                         tracing::warn!(
-                            "An error was found: {:?}, {:?}",
-                            fileid_data,
-                            filename_data
+                            "{}: {}",
+                            l10n_ref.gettext("Could not decode request"),
+                            request_id
                         );
                     }
                 }
             }
         }
         Err(ex) => {
-            tracing::warn!("An error occurred: {:?}", ex);
+            tracing::warn!("{}:{}", l10n_ref.gettext("Internal error"), ex.to_string());
         }
     }
 
     if request_err_found {
         return Err(AppError::BadRequest(
-            problem_bad_request(l10n_ref.gettext("Invalid request identifier or perhaps the file name atrociously long"), &uri
-        ))
-        .into());
+            problem_bad_request(l10n_ref.gettext("Invalid request identifier or perhaps the file name atrociously long"), &uri))
+                   .into());
     }
 
     let file_loc = env::temp_dir()
@@ -350,31 +350,31 @@ fn output_filename_for(request_id: String) -> String {
         config::DEFAULT_FILE_SUFFIX.to_string(),
         ".pdf".to_string(),
     ]
-    .concat()
+        .concat()
 }
 
 fn problem_not_found(reason: String, uri: &Uri) -> http_api_problem::HttpApiProblem {
     http_api_problem::HttpApiProblem::with_title_and_type_from_status(
         http_api_problem::StatusCode::NOT_FOUND,
     )
-    .set_detail(reason)
-    .set_instance(uri.to_string())
+        .set_detail(reason)
+        .set_instance(uri.to_string())
 }
 
 fn problem_bad_request(reason: String, uri: &Uri) -> http_api_problem::HttpApiProblem {
     http_api_problem::HttpApiProblem::with_title_and_type_from_status(
         http_api_problem::StatusCode::BAD_REQUEST,
     )
-    .set_detail(reason)
-    .set_instance(uri.to_string())
+        .set_detail(reason)
+        .set_instance(uri.to_string())
 }
 
 fn problem_internal_server_error(reason: String, uri: &Uri) -> http_api_problem::HttpApiProblem {
     http_api_problem::HttpApiProblem::with_title_and_type_from_status(
         http_api_problem::StatusCode::INTERNAL_SERVER_ERROR,
     )
-    .set_detail(reason)
-    .set_instance(uri.to_string())
+        .set_detail(reason)
+        .set_instance(uri.to_string())
 }
 
 fn parse_accept_language(req_language: &HeaderValue, fallback_lang: String) -> String {
@@ -529,10 +529,9 @@ impl IntoResponse for AppError {
             HeaderValue::from_static(http_api_problem::PROBLEM_JSON_MEDIA_TYPE),
         );
 
-        response.headers_mut().insert(
-            header::CONTENT_LENGTH,
-            HeaderValue::from_str(&length.to_string()).unwrap(),
-        );
+        if let Ok(header_value) = HeaderValue::from_str(&length.to_string()) {
+            response.headers_mut().insert(header::CONTENT_LENGTH, header_value);
+        }
 
         response
     }
@@ -597,8 +596,7 @@ pub async fn save_file(
             "{}: {}",
             l10n.gettext("Mime type error! Does the input have a 'known' file extension?"),
             filename
-        )
-        .into());
+        ).into());
     }
 
     if !tmpdir.exists() {
@@ -757,7 +755,9 @@ async fn run_entrusted(
                 err_notif_handle,
             )?;
 
-            let _ = fs::remove_file(input_path);
+            if let Err(ex) = fs::remove_file(&input_path) {
+                tracing::warn!("{} {}: {}", l10n.gettext("Could not delete file"), input_path.display(), ex.to_string());
+            }
         }
 
         Ok(())
@@ -774,7 +774,9 @@ async fn run_entrusted(
                 err_notif_handle,
             )?;
 
-            let _ = fs::remove_file(input_path);
+            if let Err(ex) = fs::remove_file(&input_path) {
+                tracing::warn!("{} {}: {}", l10n.gettext("Could not delete file"), input_path.display(), ex.to_string());
+            }
         }
 
         Err(l10n.gettext("Processing failure").into())

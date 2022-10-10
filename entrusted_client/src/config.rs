@@ -41,15 +41,15 @@ impl Default for AppConfig {
 
 pub fn load_config <T> () -> Result<T, Box<dyn Error>> where T: Default + DeserializeOwned {
     if let Some(config_dir) = dirs::config_dir() {
-        let config_dir_dgz = config_dir.join(PROGRAM_GROUP);
+        let config_appdir = config_dir.join(PROGRAM_GROUP);
 
-        if config_dir_dgz.exists() {
-            let config_path = config_dir_dgz.join(CFG_FILENAME);
+        if config_appdir.exists() {
+            let config_appfile = config_appdir.join(CFG_FILENAME);
 
-            if config_path.exists() {
+            if config_appfile.exists() {
                 let ret = {
-                    let config_data = fs::read(&config_path)?;
-                    toml::from_slice(&config_data)
+                    let config_appdata = fs::read(&config_appfile)?;
+                    toml::from_slice(&config_appdata)
                 };
 
                 if let Ok(data) = ret {
@@ -67,19 +67,19 @@ pub fn load_config <T> () -> Result<T, Box<dyn Error>> where T: Default + Deseri
 pub fn save_config <T> (config_instance: T) -> Result<(), Box<dyn Error>>
 where T: Default + Serialize {
     if let Some(config_dir) = dirs::config_dir() {
-        let config_dir_dgz = config_dir.join(PROGRAM_GROUP);
+        let config_appdir = config_dir.join(PROGRAM_GROUP);
 
-        if !config_dir_dgz.exists() {
-            if let Err(ex) = fs::create_dir_all(&config_dir_dgz) {
-                return Err(format!("Couldn't create configuration folder: {}. {}", config_dir_dgz.display(), ex.to_string()).into())
+        if !config_appdir.exists() {
+            if let Err(ex) = fs::create_dir_all(&config_appdir) {
+                return Err(format!("Couldn't create configuration folder: {}. {}", config_appdir.display(), ex.to_string()).into())
             }
         }
 
-        let config_path = config_dir_dgz.join(CFG_FILENAME);
-        let mut f = fs::OpenOptions::new().create(true).write(true).truncate(true).open(config_path.clone())?;
-        let config_data = toml::to_vec(&config_instance)?;
+        let config_appfile = config_appdir.join(CFG_FILENAME);
+        let mut f = fs::OpenOptions::new().create(true).write(true).truncate(true).open(config_appfile.clone())?;
+        let config_appdata = toml::to_vec(&config_instance)?;
 
-        if let Err(e) = f.write(&config_data) {
+        if let Err(e) = f.write(&config_appdata) {
             Err(format!("Could not save configuration! {}", e.to_string()).into())
         } else {
             Ok(())

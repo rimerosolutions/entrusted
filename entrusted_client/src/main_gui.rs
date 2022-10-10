@@ -1150,29 +1150,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             show_dialog_updates((wind.x(), wind.y(), wind.w(), wind.h()), trans_ref.clone());
         }
     });
-
-    helpinfo_button.handle({
-        let wind = wind.clone();
-        let trans_ref = trans_ref.clone();
-
-        move |wid, ev| match ev {
-            enums::Event::Push => {
-                let (x, y) = app::event_coords();
-                let widx = wid.x() + wid.w() - WIDGET_GAP;
-                let widxx = wid.x() + wid.w() - (WIDGET_GAP * 2)- 5;
-                let widy = wid.y() + 2;
-
-                if x >= widx && x <= widx + WIDGET_GAP && y >= widy && y <= widy + WIDGET_GAP {
-                    show_dialog_help((wind.x(), wind.y(), wind.w(), wind.h()), trans_ref.clone());
-                } else if x >= widxx && x <= widxx + WIDGET_GAP && y >= widy && y <= widy + WIDGET_GAP {
-                    show_dialog_updates((wind.x(), wind.y(), wind.w(), wind.h()), trans_ref.clone());
-                }
-
-                true
-            }
-            _ => false,
-        }
-    });
+    
     helpinfo_pack.end();
 
     top_group.end();
@@ -1536,36 +1514,34 @@ fn main() -> Result<(), Box<dyn Error>> {
         .below_of(&convert_frame, 30);
     selection_pack.set_spacing(5);
 
-    let mut selectall_frame_rc = frame::Frame::default()
+    let mut selectall_frame = frame::Frame::default()
         .with_size(150, 10)
         .with_label(&trans.gettext("Select all"))
         .with_align(enums::Align::Inside | enums::Align::Left);
 
-    let mut deselectall_frame_rc = frame::Frame::default()
+    let mut deselectall_frame = frame::Frame::default()
         .with_size(150, 10)
         .with_label(&trans.gettext("Deselect all"))
         .with_align(enums::Align::Inside | enums::Align::Left);
 
-    selectall_frame_rc
+    selectall_frame
         .set_label_color(enums::Color::Blue);
 
-    selectall_frame_rc.draw({
+    selectall_frame.draw({
         move |wid| {
             paint_underline(wid);
         }
     });
 
-    deselectall_frame_rc.draw({
+    deselectall_frame.draw({
         move |wid| {
             paint_underline(wid);
         }
     });
 
-    deselectall_frame_rc
+    deselectall_frame.set_label_color(enums::Color::Blue);
 
-        .set_label_color(enums::Color::Blue);
-
-    selectall_frame_rc.handle({
+    selectall_frame.handle({
         move |_, ev| match ev {
             enums::Event::Push => {
                 let _ = app::handle_main(EVENT_ID_ALL_SELECTED);
@@ -1575,7 +1551,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
-    deselectall_frame_rc.handle({
+    deselectall_frame.handle({
         move |_, ev| match ev {
             enums::Event::Push => {
                 let _ = app::handle_main(EVENT_ID_ALL_DESELECTED);
@@ -1585,8 +1561,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
-    selectall_frame_rc.hide();
-    deselectall_frame_rc.hide();
+    selectall_frame.hide();
+    deselectall_frame.hide();
 
     selection_pack.end();
 
@@ -1721,8 +1697,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         let is_converting_ref = is_converting.clone();
         let conversion_is_active_ref = conversion_is_active.clone();
         let openwith_checkbutton_ref = openwith_checkbutton.clone();
-        let mut selectall_frame_rc_ref = selectall_frame_rc.clone();
-        let mut deselectall_frame_rc_ref = deselectall_frame_rc.clone();
+        let mut selectall_frame_ref = selectall_frame.clone();
+        let mut deselectall_frame_ref = deselectall_frame.clone();
         let mut filelist_scroll_ref = filelist_scroll.clone();
         let trans_ref = trans_ref.clone();
         let app_config_ref = appconfig.clone();
@@ -1737,10 +1713,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             helpinfo_button_ref.deactivate();
             updatechecks_button_ref.deactivate();
             tabsettings_button_ref.deactivate();
-            selectall_frame_rc_ref.deactivate();
-            deselectall_frame_rc_ref.deactivate();
-            selectall_frame_rc_ref.set_label_color(enums::Color::from_rgb(82, 82, 82));
-            deselectall_frame_rc_ref.set_label_color(enums::Color::from_rgb(82, 82, 82));
+            selectall_frame_ref.deactivate();
+            deselectall_frame_ref.deactivate();
+            selectall_frame_ref.set_label_color(enums::Color::from_rgb(82, 82, 82));
+            deselectall_frame_ref.set_label_color(enums::Color::from_rgb(82, 82, 82));
             convert_frame_ref.deactivate();
             is_converting_ref.store(true, Ordering::Relaxed);
             conversion_is_active_ref.store(true, Ordering::Relaxed);
@@ -2017,8 +1993,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut filelist_widget_ref = filelist_widget.clone();
         let mut selection_pack_ref = selection_pack.clone();
         let is_converting_ref = is_converting.clone();
-        let mut selectall_frame_rc_ref = selectall_frame_rc.clone();
-        let mut deselectall_frame_rc_ref = deselectall_frame_rc.clone();
+        let mut selectall_frame_rc_ref = selectall_frame.clone();
+        let mut deselectall_frame_rc_ref = deselectall_frame.clone();
         let mut convert_button_ref = convert_button.clone();
         let mut columns_frame_ref = columns_frame.clone();
         let dialog_title = selectfiles_dialog_title.clone();
@@ -2223,8 +2199,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         let convert_pack_rc_ref = convert_pack_rc.clone();
 
         let mut selection_pack_ref = selection_pack.clone();
-        let mut select_all_frame_ref = selectall_frame_rc.clone();
-        let mut deselect_all_frame_ref = deselectall_frame_rc.clone();
+        let mut select_all_frame_ref = selectall_frame.clone();
+        let mut deselect_all_frame_ref = deselectall_frame.clone();
 
         let mut filelist_scroll_ref = filelist_scroll.clone();
         let mut filelist_widget_ref = filelist_widget.clone();
@@ -2515,8 +2491,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let file_path = PathBuf::from(msg);
                 let mut selection_pack_ref = selection_pack.clone();
                 let mut filelist_scroll_ref = filelist_scroll.clone();
-                let mut select_all_frame_ref = selectall_frame_rc.clone();
-                let mut deselect_all_frame_ref = deselectall_frame_rc.clone();
+                let mut select_all_frame_ref = selectall_frame.clone();
+                let mut deselect_all_frame_ref = deselectall_frame.clone();
                 let is_converting_ref = is_converting.clone();
 
 
@@ -2541,14 +2517,14 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
 
                     if add_to_conversion_queue(vec![file_path], &mut filelist_widget_ref, &mut scroll_ref) {
-                        if !selectall_frame_rc.active() {
-                            selectall_frame_rc.activate();
-                            selectall_frame_rc.set_label_color(enums::Color::Blue);
+                        if !selectall_frame.active() {
+                            selectall_frame.activate();
+                            selectall_frame.set_label_color(enums::Color::Blue);
                         }
 
-                        if !deselectall_frame_rc.active() {
-                            deselectall_frame_rc.activate();
-                            deselectall_frame_rc.set_label_color(enums::Color::Blue);
+                        if !deselectall_frame.active() {
+                            deselectall_frame.activate();
+                            deselectall_frame.set_label_color(enums::Color::Blue);
                         }
 
                         if !convert_button.active() {

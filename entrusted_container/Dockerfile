@@ -1,4 +1,4 @@
-ARG ALPINE_VERSION=3.16
+ARG ALPINE_VERSION=3.16.2
 FROM docker.io/alpine:${ALPINE_VERSION} as builder
 LABEL stage=entrusted_container_builder
 

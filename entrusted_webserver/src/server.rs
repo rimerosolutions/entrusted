@@ -38,7 +38,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use http_api_problem;
-
+use percent_encoding::{percent_encode, NON_ALPHANUMERIC};
 use bs58;
 
 use crate::process;
@@ -300,7 +300,7 @@ async fn downloads(
                 }
 
                 if let Ok(header_value) =
-                    HeaderValue::from_str(&format!("attachment; filename={}", &filename))
+                    HeaderValue::from_str(&format!("attachment; filename*=UTF-8''{}", percent_encode(filename.as_bytes(), NON_ALPHANUMERIC).to_string()))
                 {
                     headers.insert(header::CONTENT_DISPOSITION, header_value);
                 }
@@ -339,11 +339,12 @@ async fn downloads(
     }
 }
 
-fn output_filename_for(request_id: String) -> String {
+fn output_filename_for(request_id: String) -> String {    
     let basename = std::path::Path::new(&request_id)
         .with_extension("")
         .display()
         .to_string();
+
     [
         basename,
         "-".to_string(),

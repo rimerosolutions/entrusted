@@ -7,7 +7,7 @@
 - Display overall progress information and final status summary
 
 ** Maintenance
-- Technology change: Transition from [[https://actix.rs/][actix_web]] to [[https://github.com/tokio-rs/axum][axum]] for the "Online Service"
+- Web framework change from [[https://actix.rs/][actix_web]] to [[https://github.com/tokio-rs/axum][axum]] for the "Online Service"
 
 * entrusted-0.2.5
 

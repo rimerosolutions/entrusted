@@ -1,6 +1,6 @@
 #+TITLE: ROADMAP
 
-* Next steps [100%]
+* Next steps [83%]
 
 - [X] Improved conversions
   - [X] Custom output location for individual documents in the conversion queue
@@ -18,7 +18,8 @@
 - [X] Code maintenance
   - [X] Migrate from [[https://actix.rs/][actix_web]] to [[https://github.com/tokio-rs/axum][axum]] for the =entrusted_webserver= component
   - [X] Eliminate shell commands inside the container image
-- [X] CI/CD and packaging
+- [-] CI/CD and packaging
+  - [ ] Better reproducible build environment  
   - [X] Adopt Git flow and delete all the previous spiral branches
   - [X] Create few specific Linux packages (DEB, RPM)
   - [X] Add README notes for [[https://github.com/axtloss/flatpaks][axtloss Flatpak packages]] and later in release notes

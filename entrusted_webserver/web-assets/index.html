@@ -322,7 +322,8 @@
             overallProgressElement.value = 0;
             let conversionContainerElement = document.getElementById("conversionContainer");
             conversionContainerElement.className = "invisible";
-
+            let overallProgressTableElement = document.getElementById("overallProgressTable");
+            overallProgressTableElement.className = "invisible";
             let conversionSummaryElement = document.getElementById("conversionSummary");
             conversionSummaryElement.innerText = "";
             conversionSummaryElement.removeAttribute("class");
@@ -394,7 +395,9 @@
           let fileListTableElement = document.getElementById("conversionContainer");
           fileListTableElement.className = "invisible";
           let overallProgressElement = document.getElementById("overallProgress");
-          overallProgressElement.value=0;          
+          overallProgressElement.value = 0;
+          let overallProgressTableElement = document.getElementById("overallProgressTable");
+          overallProgressTableElement.className = "invisible";
 
           let conversionSummaryElement = document.getElementById("conversionSummary");
           conversionSummaryElement.innerText = "";
@@ -668,7 +671,7 @@
         formData.append("file", file);
         formData.append("docpasswd", fileObj.passwd);
         formData.append("filename", filename);
-        
+
 
         if (ocrSettings["ocrlang"] != null && ocrSettings["ocrlang"] != undefined) {
           formData.append("ocrlang", ocrSettings["ocrlang"]);
@@ -678,6 +681,7 @@
         let processingStatusElement = document.getElementById("processing-status-" + fileObjId);
         let progressMessageElement = document.getElementById("progress-message-" + fileObjId);
         let conversionSummaryElement = document.getElementById("conversionSummary");
+        let overallProgressTableElement = document.getElementById("overallProgressTable");
 
         logByFileId.set(fileObjId, new Array());
 
@@ -685,7 +689,7 @@
           if (fileStatus.toLowerCase() == "failed") {
             newFailCount++;
           }
-          
+
           let overallProgressElement = document.getElementById("overallProgress");
           let fprogressElement = document.getElementById("progress-" + fileObjId);
           let fprocessingStatusElement = document.getElementById("processing-status-" + fileObjId);
@@ -721,8 +725,11 @@
 
           if (fileList.length != 0) {
             let total = idx + fileList.length + 1;
-            let percentComplete = Math.max(1, ((idx + 1) * 100) / total);
-            overallProgressElement.value = percentComplete.toFixed();
+            if (overallProgressTableElement.className != "invisible") {
+              let percentComplete = Math.max(1, ((idx + 1) * 100) / total);
+              overallProgressElement.value = percentComplete.toFixed();
+            }
+
             let nextFileObj = fileList.shift();
             let checkboxElement = document.getElementById("chk-" + nextFileObj.id);
             let passwdElement = document.getElementById("passwd-" + nextFileObj.id);
@@ -733,13 +740,16 @@
             let dropFileZoneElement = document.getElementById("dropFileZone");
             dropFileZoneElement.className = "dropFileZoneEnabled";
             dropFileZoneElement.disabled = false;
-            overallProgressElement.value = 100;
+                            
+            if (overallProgressTableElement.className != "invisible") {                            
+              overallProgressElement.value = 100;
+            }
 
             let conversionSummaryClassName = (newFailCount != 0)? "failed" : "succeeded";
             conversionSummaryElement.className = conversionSummaryClassName;
 
             let conversionSummaryText = translations["data"]["l10n-conversion-summary-succeeded"];
-            
+
             if (newFailCount == 1) {
               let tmp = translations["data"]["l10n-conversion-summary-one-failed"];
               conversionSummaryText = `${newFailCount} ${tmp}`;
@@ -747,13 +757,13 @@
               let tmp = translations["data"]["l10n-conversion-summary-multiple-failed"];
               conversionSummaryText = `${newFailCount} ${tmp}`;
             }
-            
+
             conversionSummaryElement.innerText = conversionSummaryText;
           }
         }
 
         transitionStatusElement(processingStatusElement, "InProgress");
-        let requestedLocale = translations["locale"];        
+        let requestedLocale = translations["locale"];
 
         return fetch(uploadUrl, {
           method: "POST",
@@ -848,7 +858,8 @@
         dropFileZoneElement.className = "dropFileZoneDisabled";
         dropFileZoneElement.disabled = true;
         submitButtonElement.disabled = true;
-
+                              
+        let fileCount = fileList.length;
         let fileObj = fileList.shift();
 
         let rowElementIdsToDisable = ["chk-" + fileObj.id, "passwd-" + fileObj.id];
@@ -856,7 +867,11 @@
           let rowElementToDisable = document.getElementById(rowElementIdsToDisable[i]);
           rowElementToDisable.disabled = true;
         }
-
+                            
+        if (fileCount > 1) {
+           overallProgressTable.className = "visible";
+        }
+        
         submitOneFile(0, 0, fileObj, ocrSettings, uploadUrl);
       }
 
@@ -1458,7 +1473,7 @@
           </tr>
         </tbody>
       </table>
-      <table width="100%">
+      <table width="100%" id="overallProgressTable" class="invisible">
         <tbody>
           <tr>
             <td width="15%">

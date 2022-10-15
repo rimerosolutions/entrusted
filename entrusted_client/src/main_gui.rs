@@ -1150,7 +1150,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             show_dialog_updates((wind.x(), wind.y(), wind.w(), wind.h()), trans_ref.clone());
         }
     });
-    
+
     helpinfo_pack.end();
 
     top_group.end();
@@ -1499,7 +1499,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             draw::set_draw_color(enums::Color::Black);
             draw::draw_line(startx , wid.y() + 1, startx + ww, wid.y() + 1);
             draw::set_draw_color(old_color);
-        }     
+        }
     });
 
     let mut row_convert_button = group::Pack::default()
@@ -1706,6 +1706,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         let messages_frame_ref = messages_frame.clone();
         let mut updatechecks_button_ref = updatechecks_button.clone();
         let mut helpinfo_button_ref = helpinfo_button.clone();
+        let mut overall_progress_pack_ref  = overall_progress_pack.clone();
+        let mut overall_progress_frame_ref  = overall_progress_frame.clone();
+        let mut overall_progress_progressbar_ref  = overall_progress_progressbar.clone();
         let tx = tx.clone();
 
         move |b| {
@@ -1768,6 +1771,16 @@ fn main() -> Result<(), Box<dyn Error>> {
             filelist_widget_ref.deactivate_controls();
             filelist_scroll_ref.scroll_to(0, 0);
             let task_count = tasks.len();
+
+            if task_count > 1 {
+                if !overall_progress_frame_ref.visible() {
+                    overall_progress_progressbar_ref.set_value(0.0);
+                    overall_progress_progressbar_ref.set_label("");
+                    overall_progress_frame_ref.show();
+                    overall_progress_progressbar_ref.show();
+                    overall_progress_pack_ref.redraw();                    
+                }
+            }
 
             thread::spawn({
                 let tasks = tasks.clone();
@@ -2000,9 +2013,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         let dialog_title = selectfiles_dialog_title.clone();
         let mut messages_frame_ref = messages_frame.clone();
         let mut row_convert_button_ref = row_convert_button.clone();
-
-        let mut overall_progress_pack_ref = overall_progress_pack.clone();
-        let mut overall_progress_frame_ref = overall_progress_frame.clone();
         let mut overall_progress_progressbar_ref = overall_progress_progressbar.clone();
 
         move |_, ev| match ev {
@@ -2039,17 +2049,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                             overall_progress_progressbar_ref.set_value(0.0);
                             overall_progress_progressbar_ref.set_label(&format!("{:.0}%", 0.0));
                         }
-
-                        if !overall_progress_frame_ref.visible() {
-                            overall_progress_frame_ref.show();
-                            overall_progress_progressbar_ref.show();
-                            overall_progress_pack_ref.redraw();
-
-                            overall_progress_progressbar_ref.set_value(0.0);
-                            overall_progress_progressbar_ref.set_label(&format!("{:.0}%", 0.0));
-                        }
-
-
 
                         if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut filelist_scroll_ref) {
                             if !selectall_frame_rc_ref.active() {
@@ -2109,12 +2108,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                         overall_progress_progressbar_ref.set_value(0.0);
                         overall_progress_progressbar_ref.set_label(&format!("{:.0}%", 0.0));
-                    }
-
-                    if !overall_progress_frame_ref.visible() {
-                        overall_progress_frame_ref.show();
-                        overall_progress_progressbar_ref.show();
-                        overall_progress_pack_ref.redraw();
                     }
 
                     if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut filelist_scroll_ref) {
@@ -2263,7 +2256,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     wid.h() - top_group_ref.h() + WIDGET_GAP,
                 );
 
-                
+
                 row_convert_button_ref.resize(
                     WIDGET_GAP, row_convert_button_ref.y(), wid.w() - (WIDGET_GAP * 2), row_convert_button_ref.h()
                 );
@@ -2288,11 +2281,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                 delete_button_ref.resize(
                     wid.w() - (convert_button_ref.w() * 2), delete_button_ref.y(), delete_button_ref.w(), delete_button_ref.h()
                 );
-                
+
                 divider_ref.resize(
                     WIDGET_GAP, divider_ref.y(), wid.w() - (WIDGET_GAP * 2), divider_ref.h()
                 );
-                
+
                 filelist_scroll_ref.resize(
                     WIDGET_GAP,
                     filelist_scroll_ref.y(),
@@ -2508,14 +2501,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                         overall_progress_progressbar.set_label(&format!("{:.0}%", 0.0));
                     }
 
-                    if !overall_progress_frame.visible() {
-                        overall_progress_frame.show();
-                        overall_progress_progressbar.show();
-                        overall_progress_pack.redraw();
-                        overall_progress_progressbar.set_value(0.0);
-                        overall_progress_progressbar.set_label(&format!("{:.0}%", 0.0));
-                    }
-
                     if add_to_conversion_queue(vec![file_path], &mut filelist_widget_ref, &mut scroll_ref) {
                         if !selectall_frame.active() {
                             selectall_frame.activate();
@@ -2570,9 +2555,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                         }
                     }
 
-                    let percent_complete = ((row_idx + 1) as f64 * 100.0) / (total as f64);
-                    overall_progress_progressbar.set_value(percent_complete);
-                    overall_progress_progressbar.set_label(&format!("{:.0}%", percent_complete));
+                    if overall_progress_progressbar.visible() {
+                        let percent_complete = ((row_idx + 1) as f64 * 100.0) / (total as f64);
+                        overall_progress_progressbar.set_value(percent_complete);
+                        overall_progress_progressbar.set_label(&format!("{:.0}%", percent_complete));
+                    }
 
                     app::awake();
                     app_tx.send(common::AppEvent::ConversionFinishedAckEvent);
@@ -2580,9 +2567,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                 common::AppEvent::ConversionFailureEvent(row_idx, total) => {
                     filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_FAILED, enums::Color::Red);
 
-                    let percent_complete = ( (row_idx + 1) as f64 * 100.0) / (total as f64);
-                    overall_progress_progressbar.set_value(percent_complete);
-                    overall_progress_progressbar.set_label(&format!("{:.0}%", percent_complete));
+                    if overall_progress_progressbar.visible() {
+                        let percent_complete = ( (row_idx + 1) as f64 * 100.0) / (total as f64);
+                        overall_progress_progressbar.set_value(percent_complete);
+                        overall_progress_progressbar.set_label(&format!("{:.0}%", percent_complete));
+                    }
 
                     app::awake();
                     app_tx.send(common::AppEvent::ConversionFinishedAckEvent);

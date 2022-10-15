@@ -34,6 +34,8 @@ use futures::{self, Stream};
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::time::{interval_at, Instant};
 
+use serde_json;
+
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -70,10 +72,10 @@ pub async fn serve(
 
     let app = Router::new()
         .route("/", get(index))
-        .route("/uitranslations", get(uitranslations))
-        .route("/upload", post(upload))
-        .route("/events/:request_id", get(events))
-        .route("/downloads/:request_id", get(downloads))
+        .route("/api/v1/uitranslations", get(uitranslations))
+        .route("/api/v1/upload", post(upload))
+        .route("/api/v1/events/:request_id", get(events))
+        .route("/api/v1/downloads/:request_id", get(downloads))
         .fallback(get(notfound))
         .layer(CorsLayer::permissive())
         .layer(Extension(state_ci_image))
@@ -105,7 +107,7 @@ async fn notfound(trans: Extension<Arc<l10n::Translations>>) -> impl IntoRespons
     (StatusCode::NOT_FOUND, trans.gettext("Resource not found"))
 }
 
-async fn uitranslations(headers: HeaderMap) -> Json<Vec<u8>> {
+async fn uitranslations(headers: HeaderMap, uri: Uri) -> Result<Json<model::TranslationResponse>, AppError> {
     let langid = if let Some(req_language) = headers.get(header::ACCEPT_LANGUAGE) {
         parse_accept_language(req_language, l10n::DEFAULT_LANGID.to_string())
     } else {
@@ -114,7 +116,16 @@ async fn uitranslations(headers: HeaderMap) -> Json<Vec<u8>> {
 
     let json_data = uil10n::ui_translation_for(langid);
 
-    Json(json_data)
+    let translation_response_ret: serde_json::Result<model::TranslationResponse> = serde_json::from_slice(&json_data);
+    
+    match translation_response_ret {
+        Ok(translation_response) => {
+            Ok(Json(translation_response))
+        },
+        Err(ex) => {
+            Err(AppError::InternalServerError(problem_internal_server_error(ex.to_string(), &uri)).into())
+        }
+    }
 }
 
 async fn upload(
@@ -198,7 +209,7 @@ async fn upload(
             StatusCode::ACCEPTED,
             Json(model::UploadResponse::new(
                 uploaded_file.id.clone(),
-                format!("/events/{}", uploaded_file.id.clone()),
+                format!("/api/v1/events/{}", uploaded_file.id.clone()),
             )),
         ))
     } else {
@@ -744,7 +755,7 @@ async fn run_entrusted(
     }
 
     if success {
-        let msg = model::CompletionMessage::new(format!("/downloads/{}", refid.clone()));
+        let msg = model::CompletionMessage::new(format!("/api/v1/downloads/{}", refid.clone()));
 
         if let Ok(msg_json) = serde_json::to_string(&msg) {
             progress_made(

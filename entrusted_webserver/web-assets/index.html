@@ -764,7 +764,7 @@
         }).then( response => {
           if (response.ok) {
             response.json().then(data => {
-              let fileId = data.id
+              let fileId = data.request_id
               let statusUrl = "." + data.tracking_uri;
               let sse = new EventSource(statusUrl);
 
@@ -1249,7 +1249,7 @@
     <div>
       <div class="helpContainer" onclick="showHelpDialog(event)"><p class="help">?</p></div>
       <br/>
-      <form id="uploadForm" action="./upload" method="post" enctype="multipart/form-data" onsubmit="preventDefaults(event)">
+      <form id="uploadForm" action="./api/v1/upload" method="post" enctype="multipart/form-data" onsubmit="preventDefaults(event)">
         <fieldset>
           <legend data-l10n="l10n-settings">Settings</legend>
           <table>

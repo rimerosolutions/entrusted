@@ -51,14 +51,20 @@ impl CompletionMessage {
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct UploadResponse {
-    pub id: String,
+    pub request_id: String,
     pub tracking_uri: String,
 }
 
 impl UploadResponse {
-    pub fn new(id: String, tracking_uri: String) -> Self {
-        Self { id, tracking_uri }
+    pub fn new(request_id: String, tracking_uri: String) -> Self {
+        Self { request_id, tracking_uri }
     }
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct TranslationResponse {
+    pub id: String,
+    pub tracking_uri: String,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, Default)]

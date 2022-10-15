@@ -97,7 +97,7 @@ pub struct ConversionOptions {
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct UploadResponse {
-    pub id: String,
+    pub request_id: String,
     pub tracking_uri: String,
 }
 

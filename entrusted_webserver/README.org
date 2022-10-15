@@ -81,66 +81,8 @@ It's possible to produce standalone binaries on Linux, with no runtime dependenc
 
 Yes, the user interface (simple HTML page) interacts with the Web API of the =entrusted-webserver=.
 
-There are three "main" API endpoints from a developer perspective.
+Please consult the [[./api_specification/openapi.yml][OpenAPI specification]] documentation for further details: instead of looking at the plain YAML file, you can visualize it using the online [[https://editor.swagger.io/][Swagger Editor]] or [[https://openapi.tools/#documentation][several other tools]].
 
-|-------------------+-------------+----------------------------------------|
-| Endpoint          | HTTP Method | Description                            |
-|-------------------+-------------+----------------------------------------|
-| =/upload=         | POST        | Uploading a file to sanitize           |
-| =/events/{id}=    | GET         | Processing notifications via SSE       |
-| =/downloads/{id}= | GET         | Download a successfully sanitized file |
-|-------------------+-------------+----------------------------------------|
-
-** Uploading a file to sanitize
-
-The =/upload= endpoint receives files to process (=multipart/form-data=). As soon as the document is uploaded without errors, document sanitization process is kicked-off automatically and the API client can start consuming "processing updates".
-
-|-------------+-----------+----------------------------------------------------------|
-| Parameters  | Required? | Description                                              |
-|-------------+-----------+----------------------------------------------------------|
-| =file=      | YES       | The file bytes                                           |
-| =filename=  | YES       | The file name for the uploaded file                      |
-| =ocrlang=   | NO        | A valid [[https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html][OCR Tesseract LangCode]] such as =eng= for English |
-| =docpasswd= | NO        | The password for the encrypted Office or PDF document    |
-|-------------+-----------+----------------------------------------------------------|
-
-If the upload was successful, the server returns a JSON payload with a reference =id= of the file being processed (HTTP 202 =ACCEPTED=. The returned =tracking_uri= helps processing notification updates.
-
-#+begin_src js
-  {
-    "id":           "USm3fpXnKG5EUBx2ndxBDMPVciP5hGey2Jh4NDv6gmeo1LkMeiKrLJUUBk6Z",
-    "tracking_uri": "/events/USm3fpXnKG5EUBx2ndxBDMPVciP5hGey2Jh4NDv6gmeo1LkMeiKrLJUUBk6Z"
-  }
-#+end_src
-
-The retrieved =id= used subsequently to receive processing notifications (=tracking_uri=), as well as downloading the final PDF document later on. The =id= is a [[https://tools.ietf.org/id/draft-msporny-base58-01.html][base58]] encoded value (=base64_fileuuid= *;* =base64_filename=).
-
-** Consuming processing notifications
-
-The =/events/{id}= endpoint informs clients about conversion progress via [[https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events][SSE events]] (=text/event-stream=).
-- The =id= path parameter value is the one obtained upon file upload submission (=/upload= endpoint response).
-- In order to consume events, you need to open an event source connection to the server, different from traditional GET
-  - [[https://golb.hplar.ch/2018/02/Access-Server-Sent-Events-from-Java.html][Java SSE client example]]
-  - [[https://javascript.info/server-sent-events][JavaScript SSE client example]]
-  - Please search on the Internet for "SSE MyProgrammingLanguage", more generally speaking
-
-There's no need =blindly poll= indefinitely the =downloads= endpoint with a hope that processing was successful.
-
-|-----------------------+---------------------+-------------------------------------------------------|
-| Custom Emitted Events | =data= field Format | =data= field Description                              |
-|-----------------------+---------------------+-------------------------------------------------------|
-| =processing_update=   | JSON                | ={"data":"doing stuff", "percent_complete":65}=       |
-| =processing_success=  | JSON                | ={"data":"/downloads/id", "percent_complete":100}=    |
-| =processing_failure=  | JSON                | ={"data":"doing stuff", "percent_complete":100}=      |
-|-----------------------+---------------------+-------------------------------------------------------|
-
-** Downloading files
-
-The =/downloads/{id}= endpoint allows downloading successfully converted documents
-- The =id= path parameter is the one obtained upon file upload submission (=/upload= endpoint)
-- Instead of hardcoding the URL, you should parse the data field of the =processing_success= field (while processing notifications).
-
- Please note that once downloaded, the file is immediately deleted from the server!
 
 * Is there a configuration file?
 

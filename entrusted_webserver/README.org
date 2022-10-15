@@ -81,7 +81,7 @@ It's possible to produce standalone binaries on Linux, with no runtime dependenc
 
 Yes, the user interface (simple HTML page) interacts with the Web API of the =entrusted-webserver=.
 
-Please consult the [[./api_specification/openapi.yml][OpenAPI specification]] documentation for further details: instead of looking at the plain YAML file, you can visualize it using the online [[https://editor.swagger.io/][Swagger Editor]] or [[https://openapi.tools/#documentation][several other tools]].
+Please consult the [[./api_specification/openapi.yml][OpenAPI specification]] documentation for further details.
 
 
 * Is there a configuration file?

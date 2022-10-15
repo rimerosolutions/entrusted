@@ -5,7 +5,7 @@
 This repository provides a command-line client for the =entrusted-webserver= component.
 
 There are few reasons to run the =entrusted-webclient= binary:
-- You selected to install the =entrusted-webserver= on a remote machine
+- You decided to install the =entrusted-webserver= on a remote machine
 - You do not have a Web browser installed on your local machine (i.e. old computer with limited resources)
 - Occasionally you want to run automation scripts ([[https://unix.stackexchange.com/questions/12902/how-to-run-find-exec][find and exec]]).
   - This can be suitable for batch conversions

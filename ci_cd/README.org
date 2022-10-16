@@ -1,24 +1,15 @@
 #+TITLE: CI_CD README
 
  Except for the the live CD, the software artifacts for each release are produced from a containerized environment ([[https://podman.io/][Podman]]).
- - In the future, =GitHub actions=, =TravisCI= or other similar solutions are ideal
- - Pull requests are welcome for any improvements!
 
 * Overview
 
-The current build server is a virtual machine running [[https://ubuntu.com/][Ubuntu Linux]] with the following software installed (among other applications).
+The current build server is a virtual machine running [[https://ubuntu.com/][Ubuntu Linux]].
+- 100 GB of disk space
+- 16 GB of allocated memory
+- 4 CPUs allocated
 
-|------------------+-------------------------------------------------------------------|
-| Tool             | Purpose                                                           |
-|------------------+-------------------------------------------------------------------|
-| [[https://podman.io/][podman]]           | Container solution: used to build all artifacts inside containers |
-| [[https://www.nongnu.org/binfmt-support/][binfmt-support]]   | Run arm64 container images on amd64 machines (arm64 packaging)    |
-| [[https://wiki.debian.org/QemuUserEmulation][qemu-user-static]] | Run arm64 container images on amd64 machines (arm64 packaging)    |
-| [[https://imagemagick.org/script/convert.php][convert]]          | [[https://imagemagick.org/][ImageMagick]] program for scaling images during =Mac OS= packaging  |
-| [[https://dentrassi.de/2014/02/25/creating-mac-os-x-icons-icns-on-linux/][icnsutils]]        | Convert PNG icons to icns format, during =Mac OS= packaging       |
-| [[https://pandoc.org/][pandoc]]           | Convert man pages from markdown (DEB and RPM packaging)           |
-| [[https://www.perl.org/][perl]]             | Alternative to sed to avoid OS specific arguments differences     |
-|------------------+-------------------------------------------------------------------|
+  [[./images/cicd.png]]
 
 * About Installers and Packages
 
@@ -32,7 +23,7 @@ While it could be preferrable on Linux to have several native distro packages, i
 
 * Targeted Operating Systems
 
-* Linux 
+** Linux 
 
 The graphical Desktop interface executable is an [[https://docs.appimage.org/][AppImage]] binary with the goal to achieve maximal [[https://stackoverflow.com/questions/1771366/binary-compatibility-between-linux-distributions][compatibility across Linux distributions]]:
 - The GUI binary cannot be statically linked
@@ -40,14 +31,17 @@ The graphical Desktop interface executable is an [[https://docs.appimage.org/][A
 
   [[https://github.com/linuxdeploy/linuxdeploy][LinuxDeploy]] is the solution adopted for creating an =AppImage= executable for the GUI. The AppImage requires [[https://wiki.archlinux.org/title/FUSE][Fuse]] installed to run.
   
-* Windows
+** Windows
 
 There's no support yet for creating arm64 Windows binaries. The installer is built with the good old [[https://nsis.sourceforge.io/Main_Page][NSIS]].
   
-* Mac OS
+** Mac OS
 
 For the "app bundle", there might be better ways to run external programs (i.e. instead of wrapping programs with a shell script)
 - https://developer.apple.com/documentation/xcode/embedding-a-helper-tool-in-a-sandboxed-app
 - https://stackoverflow.com/questions/27505022/open-another-mac-app
 
   
+* Future Work
+
+ =GitHub actions=, =TravisCI= or other similar solutions are ideal. Pull requests are welcome for any improvements!

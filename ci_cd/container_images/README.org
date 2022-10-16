@@ -1,0 +1,21 @@
+#+TITLE: Base container images README
+
+* Goal
+
+The objective is more reproducible builds for enhanced security and better developer experience.
+
+* Assessments
+
+While testing builds for upcoming releases, there can be intermittent failures:
+- Often buils are broken for arm64 due to outdated dependencies
+- Sometimes Debian Linux packages are broken
+- Some new packages versions may introduce compilation errors
+- Because there are no base images, there's lots of network chatiness and random network timeouts while downloading packages
+
+* Expected Outcomes
+
+The builds should be faster with a low rate of intermittent build failures (as errors those should be mostly network related).
+
+* Additional References
+
+Please consult the [[./build.sh][build.sh]] script in this directory for more details.

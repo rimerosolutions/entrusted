@@ -45,7 +45,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
     podman run --rm \
            --volume "${PROJECTDIR}":/root/src \
            --workdir /root/src \
-           docker.io/joseluisq/rust-linux-darwin-builder:1.63.0 \
+           docker.io/uycyjnzgntrn/rust-macos:1.64.0 \
            sh -c "${EXPORT_PARAMS} ${BUILD_PREAMBLE};cd /root/src/entrusted_webserver && ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --target  ${RUST_TARGET} && cd /root/src/entrusted_client && ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --features=gui --target ${RUST_TARGET} && cd /root/src/entrusted_webclient && ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --target ${RUST_TARGET}"
     retVal=$?
     if [ $retVal -ne 0 ]; then

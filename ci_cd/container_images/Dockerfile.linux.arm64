@@ -1,0 +1,53 @@
+FROM docker.io/rust:1.64.0-bullseye
+
+RUN apt update \
+    && apt install -y xorg-dev \
+    musl-dev \
+    musl-tools \
+    musl \
+    wget \
+    cmake \
+    git \
+    libpango1.0-dev \
+    libxft-dev  \
+    libx11-dev \
+    libxcb-render0-dev \
+    libxcb-shape0-dev \
+    libxcb-xfixes0-dev \
+    libxcb1-dev \
+    libxcursor-dev \
+    gcc \
+    g++ \
+    git \
+    libpango1.0-dev \
+    libcairo2-dev \
+    cpio \
+    libjpeg62-turbo \
+    rpm2cpio \
+    build-essential rpm pandoc \
+    fuse \
+    patchelf \
+    desktop-file-utils \
+    squashfuse && apt clean
+
+RUN rustup target add aarch64-unknown-linux-musl; rustup target add aarch64-unknown-linux-gnu;
+
+RUN ln -sf /usr/bin/gcc /usr/bin/aarch64-linux-musl-gcc && ln -sf /usr/bin/ar /usr/bin/aarch64-linux-musl-ar;
+
+RUN mkdir -p /tmp/support \
+    && cd /tmp/support \
+    && wget -c https://download.opensuse.org/repositories/OBS:/AppImage/toolchain/aarch64/linuxdeploy-1569677113.1be3327-98.2.aarch64.rpm \
+    && wget -c https://download.opensuse.org/repositories/OBS:/AppImage/toolchain/aarch64/linuxdeploy-plugin-appimage-1569677660.81ffb98-6.2.aarch64.rpm \
+    && wget -c https://download.opensuse.org/repositories/OBS:/AppImage/toolchain/aarch64/appimagetool-13-2.1.aarch64.rpm \
+    && wget -c https://download.opensuse.org/repositories/OBS:/AppImage/toolchain/aarch64/squashfs-tools-4.4+git.1-2.1.aarch64.rpm \
+    && wget -c https://ftp.lysator.liu.se/pub/opensuse/distribution/leap/15.4/repo/oss/aarch64/libjpeg8-8.2.2-150400.15.9.aarch64.rpm \
+    && rpm2cpio linuxdeploy-1569677113.1be3327-98.2.aarch64.rpm | cpio -idmv \
+    && rpm2cpio linuxdeploy-plugin-appimage-1569677660.81ffb98-6.2.aarch64.rpm | cpio -idmv \
+    && rpm2cpio appimagetool-13-2.1.aarch64.rpm | cpio -idmv \
+    && rpm2cpio squashfs-tools-4.4+git.1-2.1.aarch64.rpm | cpio -idmv \
+    && cp /tmp/support/usr/bin/* /usr/bin/ && cp -r /tmp/support/usr/lib/appimagetool /usr/lib/ \
+    && rpm2cpio libjpeg8-8.2.2-150400.15.9.aarch64.rpm | cpio -idmv && cp ./usr/lib64/*.so* /usr/lib \
+    && cd / \
+    && rm -rf /tmp/support
+
+

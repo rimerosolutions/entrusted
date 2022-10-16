@@ -1,0 +1,3 @@
+FROM docker.io/joseluisq/rust-linux-darwin-builder:1.64.0
+
+RUN rustup target add aarch64-apple-darwin

@@ -21,7 +21,7 @@ cd ${PROJECTDIR}
 echo "Building all Windows binaries"
 echo "TODO check stripping binaries later after more testing"
 
-podman run --rm --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:1.63.0 sh -c "RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --features=gui --manifest-path /src/entrusted_client/Cargo.toml && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --manifest-path /src/entrusted_webserver/Cargo.toml && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --manifest-path /src/entrusted_webclient/Cargo.toml"
+podman run --rm --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:1.64.0 sh -c "RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --features=gui --manifest-path /src/entrusted_client/Cargo.toml && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --manifest-path /src/entrusted_webserver/Cargo.toml && RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --manifest-path /src/entrusted_webclient/Cargo.toml"
 
 retVal=$?
 if [ $retVal -ne 0 ]; then

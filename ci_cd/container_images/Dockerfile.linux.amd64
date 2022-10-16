@@ -1,0 +1,40 @@
+FROM docker.io/rust:1.64.0-bullseye
+
+RUN apt update \
+    && apt install -y libjpeg62-turbo-dev \
+    squashfs-tools \
+    xorg-dev \
+    musl-dev \
+    musl-tools \
+    musl \
+    wget \
+    cmake \
+    git \
+    libpango1.0-dev \
+    libxft-dev  \
+    libx11-dev \
+    libxcb-render0-dev \
+    libxcb-shape0-dev \
+    libxcb-xfixes0-dev \
+    libxcb1-dev \
+    libxcursor-dev \
+    gcc \
+    g++ \
+    git \
+    libpango1.0-dev \
+    libcairo2-dev \
+    cpio \
+    rpm2cpio \
+    build-essential rpm pandoc \
+    fuse \
+    patchelf \
+    desktop-file-utils \
+    squashfuse && apt clean
+
+RUN rustup target add x86_64-unknown-linux-musl; rustup target add x86_64-unknown-linux-gnu;
+
+RUN mkdir -p /tmp/support \
+    && cd /tmp/support \
+    && wget -c https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage \
+    && chmod a+x linuxdeploy*.AppImage \
+    && mv linuxdeploy*.AppImage /usr/bin/linuxdeploy

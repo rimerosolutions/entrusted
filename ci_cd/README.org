@@ -5,9 +5,6 @@
 * Overview
 
 The current build server is a virtual machine running [[https://ubuntu.com/][Ubuntu Linux]].
-- 100 GB of disk space
-- 16 GB of allocated memory
-- 4 CPUs allocated
 
   [[./images/cicd.png]]
 

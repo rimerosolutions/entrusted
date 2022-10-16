@@ -14,12 +14,12 @@
 
 ** Features
 
-- Documents or images are converted inside a "sandbox"
+- Documents or images are converted inside a "sandbox" (internet access disabled)
 - The transformation of large/complex documents is frictionless (timeouts or other user-visible issues)
 - Files can be converted in batch (serial conversions for now)
-- An optional Web interface is available and can act as an "online service" (towards multi-tenancy)
+- An optional Web interface is available and can act as an "online service"
 - The [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]] provides both enhanced security and convenience:
-  - Pre-installed [[https://xebia.com/blog/podman-the-free-container-engine-alternative-to-docker/][container solution]], with no required user configuration ([[./entrusted_webserver][entrusted_webserver]])
+  - Pre-installed [[https://xebia.com/blog/podman-the-free-container-engine-alternative-to-docker/][container solution]], with no required user configuration ([[./entrusted_webserver][Web interface]])
   - Extra isolation layer via a virtual machine
 - The application has multilingual support (English and French for now)
 - Password-protected documents can be processed (known Office document formats and PDF files)
@@ -87,6 +87,7 @@ Below is a high-level architecture overview, the solution relies on a container 
 
 * What is required?
 
+It is assumed that you can dedicate at least 1 GB of memory for document processing.
 - *Operating System*: Linux, Mac OS or Windows
 - *Container Runtime*: [[https://podman.io/][Podman]] (Linux), [[https://www.docker.com/][Docker]] (Linux, Mac OS, Windows) or [[https://github.com/lima-vm/lima][Lima]] (Mac OS)
 
@@ -94,9 +95,9 @@ Conversions will fail if the container solution is not running or available in y
   - The tool doesn't attempt to modify software on your machine (install or change programs)
   - The tool doesn't attempt to manage software on your machine (start or stop services)
 
-* References
+* Few references
 
-- [[https://dangerzone.rocks/][Dangerzone]], the application that =Entrusted= is originally based-on (performance experiments)
+- [[https://dangerzone.rocks/][Dangerzone]], the application that =Entrusted= is originally based-on
 - Disabling file preview and thumbnails ([[https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/ADV200006][Windows]], [[https://osxdaily.com/2013/01/10/disable-finder-icon-thumbnails-previews-mac-os-x/][Mac OS]], Unix/Linux: [[https://gitlab.gnome.org/GNOME/eog/-/issues/130][Gnome]], [[https://www.reddit.com/r/kde/comments/gufzbh/how_do_you_turn_off_the_tiny_image_previews_in/][KDE]], etc.)
 - Security vulnerabilities for [[https://www.cvedetails.com/vulnerability-list/vendor_id-22772/product_id-80467/Podman-Project-Podman.html][Podman]], [[https://www.cvedetails.com/vulnerability-list/vendor_id-13534/product_id-28125/Docker-Docker.html][Docker]]
 - Few container vulnerability scanning tools: [[https://trivy.dev/][Trivy]], [[https://quay.github.io/clair/][Clair]], [[https://github.com/deepfence/ThreatMapper][ThreatMapper]]

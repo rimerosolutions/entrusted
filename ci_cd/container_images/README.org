@@ -14,7 +14,7 @@ While testing builds for upcoming releases, there can be intermittent failures:
 
 * Expected Outcomes
 
-The builds should be faster with a low rate of intermittent build failures (as errors those should be mostly network related).
+The builds should be faster with a low rate of intermittent build failures (those should be mostly network related).
 
 * Additional References
 

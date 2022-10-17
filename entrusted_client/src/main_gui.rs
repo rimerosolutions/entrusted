@@ -1467,7 +1467,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     savesettings_pack.end();
 
-
     settings_pack_rc.borrow_mut().end();
 
     let convert_pack_rc = Rc::new(RefCell::new(
@@ -2149,12 +2148,18 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     wind.set_callback({
         let convertion_is_active_ref = conversion_is_active.clone();
+        let trans_ref = trans.clone();
 
         move |wid| {
             let mut close_window = true;
 
             if convertion_is_active_ref.load(Ordering::Relaxed) {
-                if let Some(choice) = dialog::choice2(wid.x(), wid.y() + wid.h()/2, "Really close", "No", "Yes", "") {
+                if let Some(choice) = dialog::choice2(wid.x(), 
+                                                      wid.y() + wid.h()/2, 
+                                                      &trans_ref.gettext("Really close"), 
+                                                      &trans_ref.gettext("No"), 
+                                                      &trans_ref.gettext("Yes"), 
+                                                      "") {
                     if choice == 0 {
                         close_window = false;
                     }
@@ -2488,7 +2493,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let mut deselect_all_frame_ref = deselectall_frame.clone();
                 let is_converting_ref = is_converting.clone();
 
-
                 if file_path.exists() {
                     if is_converting_ref.load(Ordering::Relaxed) {
                         is_converting_ref.store(false, Ordering::Relaxed);
@@ -2549,8 +2553,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                     filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_SUCCEEDED, enums::Color::DarkGreen);
 
                     if let Some(viewer_app) = opt_viewer_app {
-                        if let Err(ex) = pdf_open_with(viewer_app, pdf_pathbuf) {
-                            let err_text = format!("{}\n{}.", trans.gettext("Could not open PDF result!"), ex.to_string());
+                        if let Err(ex) = pdf_open_with(viewer_app, pdf_pathbuf, &trans) {
+                            let err_text = format!("{}\n{}.", trans.gettext("Could not open PDF file!"), ex.to_string());
                             dialog::alert(wind.x(), wind.y() + wind.height() / 2, &err_text);
                         }
                     }
@@ -2603,7 +2607,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 #[cfg(target_os = "windows")]
-pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> {
+pub fn pdf_open_with(cmd: String, input: PathBuf, _: &l10n::Translations) -> Result<(), Box<dyn Error>> {
     use std::os::windows::process::CommandExt;
     match Command::new(cmd).arg(input).creation_flags(0x08000000).spawn() {
         Ok(_)   => Ok(()),
@@ -2612,7 +2616,7 @@ pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> 
 }
 
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]
-pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> {
+pub fn pdf_open_with(cmd: String, input: PathBuf, _: &l10n::Translations) -> Result<(), Box<dyn Error>> {
     match Command::new(cmd).arg(input).spawn() {
         Ok(_)   => Ok(()),
         Err(ex) => Err(ex.into()),
@@ -2620,7 +2624,7 @@ pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> 
 }
 
 #[cfg(target_os = "macos")]
-pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> {
+pub fn pdf_open_with(cmd: String, input: PathBuf, trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {
     let p = std::path::Path::new(&cmd);
 
     if p.exists() && p.is_dir() {
@@ -2632,7 +2636,7 @@ pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> 
                             if exit_status.success() {
                                 Ok(())
                             } else {
-                                Err("Could not open PDF file!".into())
+                                Err(trans.gettext("Could not open PDF file!").into())
                             }
                         },
                         Err(ex) => Err(ex.into())
@@ -2640,7 +2644,7 @@ pub fn pdf_open_with(cmd: String, input: PathBuf) -> Result<(), Box<dyn Error>> 
                 },
                 Err(ex) => Err(ex.into()),
             },
-            None => Err("Could not find 'open' command in 'PATH' environment variable!".into()),
+            None => Err(trans.gettext("Could not find 'open' command in 'PATH' environment variable!").into()),
         }
     } else {
         if let Err(ex) = Command::new(cmd).arg(input).spawn() {

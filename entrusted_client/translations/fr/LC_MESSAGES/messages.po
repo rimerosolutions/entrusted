@@ -18,6 +18,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "Could not open PDF file!"
+msgstr "Impossible d'ouvrir le fichier PDF!"
+
+msgid "Yes"
+msgstr "Oui"
+
+msgid "No"
+msgstr "Non"
+
+msgid "Really close"
+msgstr "Vraiment fermer"
+
 msgid "Overall progress"
 msgstr "Progrès d'ensemble"
 

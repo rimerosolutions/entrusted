@@ -424,12 +424,12 @@ impl <'a> FileListWidget {
                     Box::new(row.log_link.clone())
                 ];
 
-                let mut xx = x;
+                let mut x_position = x;
 
                 for i in 0..col_widths.len() {
                     let wid = &mut col_widgets[i];
-                    wid.resize(xx, wid.y(), col_widths[i], wid.h());
-                    xx = xx + col_widths[i] + WIDGET_GAP;
+                    wid.resize(x_position, wid.y(), col_widths[i], wid.h());
+                    x_position = x_position + col_widths[i] + WIDGET_GAP;
 
                     if i == 2 {
                         if let Some(path_name) = row.file.file_name().and_then(|x| x.to_str()) {
@@ -437,8 +437,6 @@ impl <'a> FileListWidget {
                         }
                     }
                 }
-
-                active_row.log_link.resize(active_row.log_link.x(), active_row.log_link.x(), 60, active_row.log_link.h());
             }
         }
     }

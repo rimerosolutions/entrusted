@@ -244,8 +244,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         "--rm".to_string(),
         "--network".to_string()      , "none".to_string(),
         "--security-opt".to_string() , "label=disable".to_string(),            
-        "--cap-drop".to_string()     , "all".to_string(),
-        "--log-level".to_string()    , "info".to_string()
+        "--cap-drop".to_string()     , "all".to_string()
     ];
 
     let input_file_volume = format!("{}:/tmp/input_file", input_path.display());

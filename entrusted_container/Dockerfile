@@ -1,24 +1,6 @@
 ARG ALPINE_VERSION=3.16.2
-FROM docker.io/alpine:${ALPINE_VERSION} as builder
+FROM docker.io/uycyjnzgntrn/alpine:${ALPINE_VERSION} as builder
 LABEL stage=entrusted_container_builder
-
-RUN apk -U upgrade && \
-    apk add \
-    binutils \
-    leptonica-dev \
-    icu-data-full \
-    tesseract-ocr-dev \
-    libreofficekit \
-    poppler-dev \
-    cairo-dev \
-    clang gcc clang-dev gcc cargo rust \
-    tiff-dev \
-    jpeg-dev \
-    giflib-dev \
-    libwebp-dev \
-    openjpeg-dev \
-    musl-dev \
-    curl
 
 WORKDIR /home/rust/entrusted-container
 COPY . .

@@ -9,6 +9,7 @@
 ** Maintenance
 - Web framework change from [[https://actix.rs/][actix_web]] to [[https://github.com/tokio-rs/axum][axum]] for the "Online Service"
 - Release pipeline improvements towards more reproducible builds
+- Look and feel consistency improvements (Desktop and "Online Service" interfaces)
 
 * entrusted-0.2.5
 

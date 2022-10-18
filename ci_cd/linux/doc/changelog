@@ -1,7 +1,32 @@
-entrusted (0.2.2) stable; urgency=medium
+entrusted (0.2.6) stable; urgency=medium
+
+  * Display overall progress information and final status summary
+  * Add "clickable" hyperlinks in few dialogs
+  * Look and feel consistency improvements
+
+ -- Yves Zoundi <yves_zoundi@hotmail.com>  Wed, 11 Sept 2022 09:38:25 -0400
+
+entrusted (0.2.5) stable; urgency=medium
+
+  * arm64 support for Linux and Mac OS binaries, as well as the container image
+  * Small bug fixes for temporary folders handling and other minor improvements
+  * New button in the Desktop client to manually check for updates
+
+ -- Yves Zoundi <yves_zoundi@hotmail.com>  Sun, 11 Sept 2022 09:38:25 -0400
+
+entrusted (0.2.4) stable; urgency=medium
+
+  * Hide Microsoft Windows command prompts displayed upon conversion
+  * Mitigate false positives while changing file modification dates on Windows
+  * Remove UNIX/Linux specific code in the online service
+  * Improve user interface "responsiveness" with better decoupling of background tasks
+
+ -- Yves Zoundi <yves_zoundi@hotmail.com>  Wed, 10 Aug 2022 09:38:25 -0400
+
+entrusted (0.2.3) stable; urgency=medium
 
   * Debian packaging is available
   * Fix file selection bug in the graphical user interface
   * Fix bug in conversion progress information
 
- -- Yves Zoundi <yves_zoundi@hotmail.com>  Wed, 13 Jul 2022 09:38:25 -0400
+ -- Yves Zoundi <yves_zoundi@hotmail.com>  Wed, 20 Jul 2022 09:38:25 -0400

@@ -30,6 +30,9 @@ msgstr ""
 #~ "MIME-Version: 1.0\n"
 #~ "Content-Type: text/plain; charset=UTF-8"
 
+msgid "Unknown upload request field"
+msgstr ""
+
 msgid "Could not decode request"
 msgstr ""
 

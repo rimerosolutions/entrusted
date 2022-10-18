@@ -117,7 +117,7 @@ async fn uitranslations(headers: HeaderMap, uri: Uri) -> Result<Json<model::Tran
     let json_data = uil10n::ui_translation_for(langid);
 
     let translation_response_ret: serde_json::Result<model::TranslationResponse> = serde_json::from_slice(&json_data);
-    
+
     match translation_response_ret {
         Ok(translation_response) => {
             Ok(Json(translation_response))
@@ -350,7 +350,7 @@ async fn downloads(
     }
 }
 
-fn output_filename_for(request_id: String) -> String {    
+fn output_filename_for(request_id: String) -> String {
     let basename = std::path::Path::new(&request_id)
         .with_extension("")
         .display()
@@ -579,6 +579,12 @@ pub async fn save_file(
                 if let Ok(chunk) = field.text().await {
                     docpassword.push_str(&chunk);
                 }
+            } else {
+                tracing::warn!(
+                    "{}: {}",
+                    l10n.gettext("Unknown upload request field"),
+                    fname
+                );
             }
         }
     }

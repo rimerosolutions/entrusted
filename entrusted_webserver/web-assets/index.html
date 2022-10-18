@@ -329,12 +329,12 @@
             conversionSummaryElement.removeAttribute("class");
 
             let fileNameCountElement = document.getElementById("fileNameCount");
-            fileNameCountElement.innerText = "";                            
+            fileNameCountElement.innerText = "";
           }
         }
-                            
+
         let fileNameCountElement = document.getElementById("fileNameCount");
-        if (fileList.length == 0) {                            
+        if (fileList.length == 0) {
           fileNameCountElement.innerText = "";
         } else {
           fileNameCountElement.innerText = "[" + fileList.length + "]";
@@ -501,7 +501,7 @@
         }
 
         let fileNameCountElement = document.getElementById("fileNameCount");
-        fileNameCountElement.innerText = "[" + fileList.length + "]";                                
+        fileNameCountElement.innerText = "[" + fileList.length + "]";
       }
 
       function toggleOcrCheckbox(source) {
@@ -756,8 +756,8 @@
             let dropFileZoneElement = document.getElementById("dropFileZone");
             dropFileZoneElement.className = "dropFileZoneEnabled";
             dropFileZoneElement.disabled = false;
-                            
-            if (overallProgressTableElement.className != "invisible") {                            
+
+            if (overallProgressTableElement.className != "invisible") {
               overallProgressElement.value = 100;
             }
 
@@ -874,7 +874,7 @@
         dropFileZoneElement.className = "dropFileZoneDisabled";
         dropFileZoneElement.disabled = true;
         submitButtonElement.disabled = true;
-                              
+
         let fileCount = fileList.length;
         let fileObj = fileList.shift();
 
@@ -883,11 +883,11 @@
           let rowElementToDisable = document.getElementById(rowElementIdsToDisable[i]);
           rowElementToDisable.disabled = true;
         }
-                            
+
         if (fileCount > 1) {
            overallProgressTable.className = "visible";
         }
-        
+
         submitOneFile(0, 0, fileObj, ocrSettings, uploadUrl);
       }
 

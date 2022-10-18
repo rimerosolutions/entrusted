@@ -327,7 +327,17 @@
             let conversionSummaryElement = document.getElementById("conversionSummary");
             conversionSummaryElement.innerText = "";
             conversionSummaryElement.removeAttribute("class");
+
+            let fileNameCountElement = document.getElementById("fileNameCount");
+            fileNameCountElement.innerText = "";                            
           }
+        }
+                            
+        let fileNameCountElement = document.getElementById("fileNameCount");
+        if (fileList.length == 0) {                            
+          fileNameCountElement.innerText = "";
+        } else {
+          fileNameCountElement.innerText = "[" + fileList.length + "]";
         }
       }
 
@@ -402,6 +412,9 @@
           let conversionSummaryElement = document.getElementById("conversionSummary");
           conversionSummaryElement.innerText = "";
           conversionSummaryElement.removeAttribute("class");
+
+          let fileNameCountElement = document.getElementById("fileNameCount");
+          fileNameCountElement.innerText = "";
         }
       }
 
@@ -486,6 +499,9 @@
 
           fileListTable.appendChild(documentFragment);
         }
+
+        let fileNameCountElement = document.getElementById("fileNameCount");
+        fileNameCountElement.innerText = "[" + fileList.length + "]";                                
       }
 
       function toggleOcrCheckbox(source) {
@@ -903,6 +919,7 @@
 
             if (      currentNodeName == "p"
                       || currentNodeName == "label"
+                      || currentNodeName == "span"
                       || currentNodeName == "h3"
                       || currentNodeName == "button"
                       || currentNodeName == "legend"
@@ -1489,7 +1506,7 @@
         <thead>
           <tr>
             <th class="filePasswordColumn"></th>
-            <th class="fileNameColumn" data-l10n="l10n-filelist-column-filename-text">File name</th>
+            <th class="fileNameColumn"><span data-l10n="l10n-filelist-column-filename-text">File name</span>&nbsp;<span id="fileNameCount"></th>
             <th class="progressStatusColumn" data-l10n="l10n-filelist-column-progress-text">Progress(%)</th>
             <th class="processingStatusColumn" data-l10n="l10n-filelist-column-status-text">Status</th>
             <th class="progressMessageColumn" data-l10n="l10n-filelist-column-message-text">Message</th>

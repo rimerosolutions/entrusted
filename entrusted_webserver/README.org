@@ -2,8 +2,8 @@
 
 * What is this?
 
-This module allows converting documents from the comfort of your Web browser.
-- From the Web interface, the user uploads documents to the =server= via HTTP (images, PDF or office documents)
+This module provides a Web server for the document sanitization solution
+- From a Web page, the user uploads documents to the =server= (images, PDF or office documents)
 - The server sanitizes original documents and transforms them to PDFs (=entrusted-cli= command-line invocation)
 - Once the processing completed successfully completed, resulting PDF documents can be downloaded
   

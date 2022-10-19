@@ -2,7 +2,7 @@
 
 * What is this?
 
-This is a helper library that provides reusable code for dealing with translations:
+This module provides a helper library for translated content:
 - It leverages [[https://www.gnu.org/software/gettext/][GNU Gettext]] for translations in Rust
 - It abstracts the underlying GNU Gettext ecosystem from the rest of the components
 

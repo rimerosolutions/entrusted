@@ -1,6 +1,6 @@
 #+TITLE: ROADMAP
 
-* Milestone: Harderning and features maturity
+* Milestone: Hardening and features maturity
 
 - Research
   - [ ] Investigate alternate sandbox approaches

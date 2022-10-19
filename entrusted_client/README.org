@@ -2,7 +2,7 @@
 
 * What is this?
 
-This is an application (command-line & desktop GUI), that converts /potentially suspicious documents/ to safe trusted PDF documents.
+This module provides graphical and command-line interfaces for the document sanization solution.
 
 * What is required?
 

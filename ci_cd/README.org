@@ -1,6 +1,6 @@
 #+TITLE: CI_CD README
 
- Except for the the live CD, the software artifacts for each release are produced from a containerized environment ([[https://podman.io/][Podman]]).
+ Except for the the live CD, release artifacts are produced from a containerized environment ([[https://podman.io/][Podman]]).
 
 * Overview
 
@@ -41,4 +41,15 @@ For the "app bundle", there might be better ways to run external programs (i.e. 
   
 * Future Work
 
- =GitHub actions=, =TravisCI= or other similar solutions are ideal. Pull requests are welcome for any improvements!
+ =GitHub actions=, =TravisCI= or other similar solutions are ideal.
+
+Pros:
+ - It is generally good to leverage free hosted solutions
+ - It will help with build times ahead of releases
+ - It will save local disk space and computing resources
+
+Cons:
+ - It might impact releases flexibility (i.e. arm64 support)
+ - It will require learning (or re-learning) infrastructure specific ecosystem (pipelines, tools, constraints, etc.)
+
+Pull requests are welcome for any improvements!

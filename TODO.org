@@ -55,7 +55,7 @@
   - [X] Register file associations with supported document types
   - [X] For now, roll custom mime-type detection system until there is something better available
 
-* Milestone: Document sanitization tool with graphical interface [100%]
+* Milestone: Initial document sanitization tool [100%]
 
 - [X] Replicate CLI functions of the original tool, not necessarily the exact behavior
 - [X] "Misc." bulk fixes & changes

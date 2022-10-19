@@ -1,25 +1,36 @@
 #+TITLE: ROADMAP
 
-* Next Steps
+* Milestone: Harderning and features maturity
 
-- [] Investigate alternate sandbox approaches
-  - https://github.com/servo/gaol
-  - https://github.com/trailofbits/flying-sandbox-monster
-  - https://crates.io/keywords/sandbox
-  - https://codeberg.org/valpackett/rusty-sandbox    
-- [ ] Cancel non-started tasks
-  - Try to avoid user interface cluttering
-  - Implement logic in both the Desktop and Web interfaces
-  
-* Usability and features stabilization [83%]
-
-- [-] Improved conversions
-  - [X] Custom output location for individual documents in the conversion queue
-  - [X] Support for password-protected documents
+- Research
+  - [ ] Investigate alternate sandbox approaches
+    - https://github.com/servo/gaol
+    - https://github.com/trailofbits/flying-sandbox-monster
+    - https://crates.io/keywords/sandbox
+    - https://codeberg.org/valpackett/rusty-sandbox
+  - [ ] Document periodic container vulnerability assessments (new =org-mode= file)
+    - [ ] Determine and document schedule
+    - [ ] Revisit currently used/preferred tool ([[https://trivy.dev/][Trivy]])
+- [ ] User interface
+  - [ ] Ability to cancel non-started tasks
+    - Try to avoid user interface cluttering
+    - Implement logic in both the Desktop and Web interfaces
+  - [ ] Evaluate opportunities to simplify the user interface
+- [ ] Improved conversions
   - [ ] Address occasional converstion failures
     - Symptom: Sometimes the final output is not found
     - Reproducibility: Batch conversions of 10+ files, once in a while
     - Wild guess: Potential concurrency issues here?
+  - [ ] Evalutate performance optimization opportunities
+- [ ] Builds and releases
+  - [ ] Move technical documentation to a wiki pages
+  - [ ] Check-in cargo manifest lock files to control dependencies versions
+
+* Milestone: Usability and features stabilization [100%]
+
+- [X] Improved conversions
+  - [X] Custom output location for individual documents in the conversion queue
+  - [X] Support for password-protected documents
 - [X] User Interface
   - [X] Add overall progress information during conversions
   - [X] Hide command prompts while running processes on Windows, and address file permissions errors
@@ -34,7 +45,7 @@
   - [X] Migrate from [[https://actix.rs/][actix_web]] to [[https://github.com/tokio-rs/axum][axum]] for the =entrusted_webserver= component
   - [X] Eliminate shell commands inside the container image
 - [X] CI/CD and packaging
-  - [X] Better reproducible build environment  
+  - [X] Better reproducible build environment
   - [X] Adopt Git flow and delete all the previous spiral branches
   - [X] Create few specific Linux packages (DEB, RPM)
   - [X] Add README notes for [[https://github.com/axtloss/flatpaks][axtloss Flatpak packages]] and later in release notes
@@ -44,7 +55,7 @@
   - [X] Register file associations with supported document types
   - [X] For now, roll custom mime-type detection system until there is something better available
 
-* Initial plan [100%]
+* Milestone: Document sanitization tool with graphical interface [100%]
 
 - [X] Replicate CLI functions of the original tool, not necessarily the exact behavior
 - [X] "Misc." bulk fixes & changes

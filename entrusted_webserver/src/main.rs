@@ -90,7 +90,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         match server::serve(host, port, ci_image_name, l10n.clone()).await {
-            Ok(_) => Ok(()),
+            Ok(_)   => Ok(()),
             Err(ex) => Err(ex.into()),
         }
     } else {

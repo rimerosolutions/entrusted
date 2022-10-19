@@ -2,20 +2,31 @@
 
 * Next Steps
 
-TODO
+- [] Investigate alternate sandbox approaches
+  - https://github.com/servo/gaol
+  - https://github.com/trailofbits/flying-sandbox-monster
+  - https://crates.io/keywords/sandbox
+  - https://codeberg.org/valpackett/rusty-sandbox    
+- [ ] Cancel non-started tasks
+  - Try to avoid user interface cluttering
+  - Implement logic in both the Desktop and Web interfaces
+  
+* Usability and features stabilization [83%]
 
-* Usability and features stabilization [100%]
-
-- [X] Improved conversions
+- [-] Improved conversions
   - [X] Custom output location for individual documents in the conversion queue
   - [X] Support for password-protected documents
+  - [ ] Address occasional converstion failures
+    - Symptom: Sometimes the final output is not found
+    - Reproducibility: Batch conversions of 10+ files, once in a while
+    - Wild guess: Potential concurrency issues here?
 - [X] User Interface
   - [X] Add overall progress information during conversions
   - [X] Hide command prompts while running processes on Windows, and address file permissions errors
   - [X] Responsiveness issues during conversions (UI thread and background operations)
   - [X] Display overall conversion results ("X out of Y files were not successfully converted")
   - [X] Prompt for confirmation prior closing the application during conversions (Desktop only)
-  - [X] Manual check for release updates (Desktop and command-line clients)  
+  - [X] Manual check for release updates (Desktop and command-line clients)
 - [X] Container solutions and hardening
   - [X] Review container execution options (subject of recurring reviews)
   - [X] Review some of the code and read few security-related articles (subject of recurring reviews)

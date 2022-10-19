@@ -1,4 +1,6 @@
-#+TITLE: Base container images README
+#+TITLE: cid_cd - support - README
+
+This folder contains container images supporting release builds.
 
 * Goal
 

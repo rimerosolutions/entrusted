@@ -2,14 +2,11 @@
 
 * entrusted-0.2.6 (UNRELEASED)
 
-** Enhancements
-- Add "clickable" hyperlinks in few dialogs (project and release URLs)
-- Display overall progress information and final status summary
-
-** Maintenance
-- Web framework change from [[https://actix.rs/][actix_web]] to [[https://github.com/tokio-rs/axum][axum]] for the "Online Service"
-- Release pipeline improvements towards more reproducible builds
-- Look and feel consistency improvements (Desktop and "Online Service" interfaces)
+- enhancement: Add "clickable" hyperlinks in few dialogs (project and release URLs)
+- enhancement: Display overall progress information and final status summary
+- maintenance: Web framework change from [[https://actix.rs/][actix_web]] to [[https://github.com/tokio-rs/axum][axum]] for the "Online Service"
+- maintenance: Release pipeline improvements towards more reproducible builds
+- maintenance: Look and feel consistency improvements (Desktop and "Online Service" interfaces)
 
 * entrusted-0.2.5
 

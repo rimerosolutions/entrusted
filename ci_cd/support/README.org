@@ -31,13 +31,13 @@ There are 2 key expected outcomes:
 
 * Additional references
 
-** Mapping to dockerhub repositories
+** Mappings to Docker repositories
 
 |------------------------------+---------------------------|
-| Dockerfile                   | dockerhub repository      |
+| Dockerfile                   | Docker Hub repository     |
 |------------------------------+---------------------------|
 | Dockerfile.linux.amd64       | [[https://hub.docker.com/r/uycyjnzgntrn/rust-linux][uycyjnzgntrn/rust-linux]]   |
-| Dockerfile.linux.arm64       |                           |
+| Dockerfile.linux.arm64       | [[https://hub.docker.com/r/uycyjnzgntrn/rust-linux][uycyjnzgntrn/rust-linux]]   |
 |------------------------------+---------------------------|
 | Dockerfile.macos.amd64       | [[https://hub.docker.com/r/uycyjnzgntrn/rust-macos][uycyjnzgntrn/rust-macos]]   |
 |------------------------------+---------------------------|

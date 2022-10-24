@@ -581,6 +581,7 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: &Progres
                              page_count as u64));
 
     let mut documents: Vec<lopdf::Document> = Vec::with_capacity(page_count);
+
     let step_count = 7;
     let mut step_num = 1;
     let progress_delta = progress_range.delta();
@@ -614,21 +615,22 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: &Progres
         doc.renumber_objects_with(max_id);
         max_id = doc.max_id + 1;
 
-        documents_pages.extend(
-            doc.get_pages()
-                .into_iter()
-                .map(|(_, object_id)| {
-                    if !first {
-                        let bookmark = lopdf::Bookmark::new(format!("Page_{}", pagenum), [0.0, 0.0, 1.0], 0, object_id);
-                        document.add_bookmark(bookmark, None);
-                        first = true;
-                        pagenum += 1;
-                    }
+        doc.get_pages()
+            .into_iter()
+            .map(|(_, object_id)| {
+                if !first {
+                    let bookmark = lopdf::Bookmark::new(format!("Page_{}", pagenum), [0.0, 0.0, 1.0], 0, object_id);
+                    document.add_bookmark(bookmark, None);
+                    first = true;
+                    pagenum += 1;
+                }
 
-                    (object_id, doc.get_object(object_id).unwrap().to_owned())
-                })
-                .collect::<BTreeMap<lopdf::ObjectId, lopdf::Object>>(),
-        );
+                (object_id, doc.get_object(object_id).unwrap().to_owned())
+            })
+            .for_each(|(key, value)| {
+                documents_pages.insert(key, value);
+            });
+
         documents_objects.extend(doc.objects);
     }
 
@@ -731,7 +733,9 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: &Progres
         if let Ok(dictionary) = catalog_object.1.as_dict() {
             let mut dictionary = dictionary.clone();
             dictionary.set("Pages", pages_object.0);
+            dictionary.set("PageMode", "UseOutlines");
             dictionary.remove(b"Outlines"); // Outlines not supported in merged PDFs
+
             document.objects.insert(catalog_object.0, lopdf::Object::Dictionary(dictionary));
         }
 

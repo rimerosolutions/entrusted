@@ -39,7 +39,7 @@ msgstr ""
 msgid "Converting input image to PDF"
 msgstr ""
 
-msgid "Converting to PDF using LibreOffice with filter: {0}"
+msgid "Converting to PDF using LibreOffice"
 msgstr ""
 
 msgid "Conversion succeeded!"

@@ -47,7 +47,7 @@ macro_rules! incl_gettext_files {
 #[derive(Clone, Debug)]
 enum ConversionType {
     None,
-    LibreOffice(&'static str, &'static str), // libreoffice_filter, file_extension
+    LibreOffice(&'static str), // libreoffice_filter, file_extension
     Convert,
 }
 
@@ -197,49 +197,49 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: &ProgressR
         ("application/pdf", ConversionType::None),
         (
             "application/rtf",
-            ConversionType::LibreOffice("writer_pdf_Export", "rtf"),
+            ConversionType::LibreOffice("rtf"),
         ),
         (
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            ConversionType::LibreOffice("writer_pdf_Export", "docx"),
+            ConversionType::LibreOffice("docx"),
         ),
         (
             "application/vnd.ms-word.document.macroEnabled.12",
-            ConversionType::LibreOffice("writer_pdf_Export", "docm"),
+            ConversionType::LibreOffice("docm"),
         ),
         (
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            ConversionType::LibreOffice("calc_pdf_Export", "xlsx"),
+            ConversionType::LibreOffice("xlsx"),
         ),
         (
             "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            ConversionType::LibreOffice("impress_pdf_Export", "pptx"),
+            ConversionType::LibreOffice("pptx"),
         ),
-        ("application/msword", ConversionType::LibreOffice("writer_pdf_Export", "doc")),
+        ("application/msword", ConversionType::LibreOffice("doc")),
         (
             "application/vnd.ms-excel",
-            ConversionType::LibreOffice("calc_pdf_Export", "xls"),
+            ConversionType::LibreOffice("xls"),
         ),
         (
             "application/vnd.ms-powerpoint",
-            ConversionType::LibreOffice("impress_pdf_Export", "ppt"),
+            ConversionType::LibreOffice("ppt"),
         ),
         (
             "application/vnd.oasis.opendocument.text",
-            ConversionType::LibreOffice("writer_pdf_Export", "odt"),
+            ConversionType::LibreOffice("odt"),
         ),
         (
             "application/vnd.oasis.opendocument.graphics",
-            ConversionType::LibreOffice("impress_pdf_Export", "odg"),
+            ConversionType::LibreOffice("odg"),
         ),
 
         (
             "application/vnd.oasis.opendocument.presentation",
-            ConversionType::LibreOffice("impress_pdf_Export", "odp"),
+            ConversionType::LibreOffice("odp"),
         ),
         (
             "application/vnd.oasis.opendocument.spreadsheet",
-            ConversionType::LibreOffice("calc_pdf_Export", "ods"),
+            ConversionType::LibreOffice("ods"),
         ),
         ("image/jpeg",   ConversionType::Convert),
         ("image/gif",    ConversionType::Convert),
@@ -285,8 +285,8 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: &ProgressR
                         }?;
                         img_to_pdf(img_format, &raw_input_path, &Path::new(&filename_pdf))?;
                     }
-                    ConversionType::LibreOffice(output_filter, fileext) => {
-                        logger.log(5, l10n.gettext_fmt("Converting to PDF using LibreOffice with filter: {0}", vec![&output_filter]));
+                    ConversionType::LibreOffice(fileext) => {
+                        logger.log(5, l10n.gettext("Converting to PDF using LibreOffice"));
                         let new_input_loc = format!("/tmp/input.{}", fileext);
                         let new_input_path = Path::new(&new_input_loc);
                         fs::copy(&raw_input_path, &new_input_path)?;

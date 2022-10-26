@@ -1,6 +1,6 @@
 #+TITLE: entrusted/app README
 
-**Entrusted** is not a single application. It's a suite of components that work together in order to sanitize a set of known file types:
+*Entrusted* is not a single application. It's a suite of components that work together in order to sanitize a set of known file types:
 - Images (.jpg, .jpeg, .gif, .png, .tif, .tiff)
 - Document Graphics (.odg)
 - Text Documents (.rtf, .doc, .docx, .odt)

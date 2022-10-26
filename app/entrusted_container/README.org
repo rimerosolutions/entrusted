@@ -15,7 +15,7 @@ This module is deployed as a container image (/Docker/ or /Podman/ or /Lima/), p
 
 * How to build this?
 
-Because of a shared library, you /MUST/ build the container image from the =entrusted= root folder.
+Because of a shared library, you /MUST/ build the container image from the =entrusted/app= root folder.
 
 ** Podman
 

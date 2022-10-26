@@ -8,7 +8,7 @@
 - This is achieved by processing documents inside a "lightweight sandbox" ([[https://www.ibm.com/cloud/learn/containerization][containerization]])
 - PDF documents, common image formats and Office documents ([[https://www.office.com/][MS Office]] or [[https://www.libreoffice.org/discover/what-is-opendocument/][OpenDocument]]) are supported
 
-Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]], you **MUST** install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior running the program
+Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]], you *MUST* install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior running the program
 
 [[./images/screenshot.gif]]
 

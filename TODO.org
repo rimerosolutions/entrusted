@@ -1,30 +1,24 @@
 #+TITLE: ROADMAP
 
-* Milestone: Hardening and features maturity
+* Milestone: Hardening and features maturity [0%]
 
-- Research
+- [-] Research
   - [ ] Investigate alternate sandbox approaches
-    - https://github.com/servo/gaol
-    - https://github.com/trailofbits/flying-sandbox-monster
-    - https://crates.io/keywords/sandbox
-    - https://codeberg.org/valpackett/rusty-sandbox
-  - [ ] Document periodic container vulnerability assessments (new =org-mode= file)
-    - [ ] Determine and document schedule
-    - [ ] Revisit currently used/preferred tool ([[https://trivy.dev/][Trivy]])
+  - [X] Document periodic container vulnerability assessments (new =org-mode= file)
+    - [X] Determine and document schedule
+    - [X] Revisit currently used/preferred tool ([[https://trivy.dev/][Trivy]])
 - [ ] User interface
   - [ ] Ability to cancel non-started tasks
-    - Try to avoid user interface cluttering
-    - Implement logic in both the Desktop and Web interfaces
   - [ ] Evaluate opportunities to simplify the user interface
 - [ ] Improved conversions
-  - [ ] Address occasional converstion failures
-    - Symptom: Sometimes the final output is not found
-    - Reproducibility: Batch conversions of 10+ files, once in a while
-    - Wild guess: Potential concurrency issues here?
+  - [ ] Address occasional conversion failures
   - [ ] Evalutate performance optimization opportunities
 - [ ] Builds and releases
-  - [ ] Move technical documentation to a wiki pages
   - [ ] Check-in cargo manifest lock files to control dependencies versions
+  - [ ] Explore migration from local shell scripts to GitHub actions
+- [-] Documentation and Marketing
+  - [X] Move technical documentation to a wiki pages
+  - [ ] Youtube presentation
 
 * Milestone: Usability and features stabilization [100%]
 

@@ -1,4 +1,4 @@
-#+TITLE: entrusted-client README
+#+TITLE: entrusted/app/entrusted-client
 
 * What is this?
 

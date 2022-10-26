@@ -1,4 +1,4 @@
-#+TITLE: live_cd README
+#+TITLE: entrusted/ci_cd/live_cd
 
 * Overview
 

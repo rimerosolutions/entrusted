@@ -1,4 +1,4 @@
-#+TITLE: entrusted-webserver README
+#+TITLE: entrusted/app/entrusted-webserver
 
 * What is this?
 

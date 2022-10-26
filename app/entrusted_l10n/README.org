@@ -1,8 +1,8 @@
-#+TITLE: entrusted-l10n README
+#+TITLE: entrusted/app/entrusted-l10n
 
 * What is this?
 
-This module provides a helper library for translated content:
+This is a helper library for translated content:
 - It leverages [[https://www.gnu.org/software/gettext/][GNU Gettext]] for translations in Rust
 - It abstracts the underlying GNU Gettext ecosystem from the rest of the components
 

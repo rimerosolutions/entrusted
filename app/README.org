@@ -1,0 +1,36 @@
+#+TITLE: entrusted/app README
+
+**Entrusted** is not a single application. It's a suite of components that work together in order to sanitize a set of known file types:
+- Images (.jpg, .jpeg, .gif, .png, .tif, .tiff)
+- Document Graphics (.odg)
+- Text Documents (.rtf, .doc, .docx, .odt)
+- Spreadsheets (.xls, .xlsx, .ods)
+- Presentations (.ppt, .pptx, .odp)
+
+* Components
+
+Most users will interact with the Desktop user interface (=entrusted_client= component).
+
+|---------------------+-----------------------------------------------|
+| Component           | Purpose                                       |
+|---------------------+-----------------------------------------------|
+| [[./entrusted_container][entrusted_container]] | Document processor deployed in the "sandbox"  |
+| [[./entrusted_client][entrusted_client]]    | Command-line and graphical user interfaces    |
+| [[./entrusted_webserver][entrusted_webserver]] | Online service feature with a Web interface   |
+| [[./entrusted_webclient][entrusted_webclient]] | Command-line client for =entrusted_webserver= |
+| [[./entrusted_l10n][entrusted_l10n]]      | Shared library for text translations          |
+|---------------------+-----------------------------------------------|
+
+* Architecture overview
+
+Below is a high-level design.
+- The "Entrusted Container Application" is hosted by a container engine.
+- The container engine (i.e. [[https://www.docker.com/][Docker]]) is not bundled with the solution, unless you use the Live CD .
+
+[[./images/architecture.png]]
+
+* Modules relationships
+
+The "Document sanitizer" is the key module of the solution.
+
+[[./images/modules.png]]

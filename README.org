@@ -8,28 +8,26 @@
 - This is achieved by processing documents inside a "lightweight sandbox" ([[https://www.ibm.com/cloud/learn/containerization][containerization]])
 - PDF documents, common image formats and Office documents ([[https://www.office.com/][MS Office]] or [[https://www.libreoffice.org/discover/what-is-opendocument/][OpenDocument]]) are supported
 
-*NOTE*: Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]], you MUST install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior running the program.
+Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]], you **MUST** install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior running the program
 
 [[./images/screenshot.gif]]
 
 ** Features
 
-- Documents or images are converted inside a "sandbox" (internet access disabled)
-- The transformation of large/complex documents is frictionless (timeouts or other user-visible issues)
-- Files can be converted in batch (serial conversions for now)
+- Documents or images are converted inside a "sandbox"
+- The transformation of huge documents is frictionless
+- Files can be converted in batch
 - An optional Web interface is available and can act as an "online service"
-- The [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]] provides both enhanced security and convenience:
-  - Pre-installed [[https://xebia.com/blog/podman-the-free-container-engine-alternative-to-docker/][container solution]], with no required user configuration ([[./entrusted_webserver][Web interface]])
-  - Extra isolation layer via a virtual machine
+- The [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]] provides both enhanced security and configuration convenience
 - The application has multilingual support (English and French for now)
-- Password-protected documents can be processed (known Office document formats and PDF files)
+- Password-protected files are supported (known Office document formats and PDF files)
 - On Mac OS, [[https://github.com/lima-vm/lima][Lima]] can be installed as an alternative to [[https://www.docker.com/products/docker-desktop/][Docker]] (/default Lima instance/ only)
     
 * What is available?
 
 ** User interfaces
 
-There are three user interfaces ([[./entrusted_client][Desktop and CLI]], [[./entrusted_webserver][Web]]):
+There are three user interfaces ([[./app/entrusted_client][Desktop and CLI]], [[./app/entrusted_webserver][Web]]):
 - The graphical Desktop interface is recommended for most users
 - If you prefer the Web interface, please download the live CD for an out-of-the-box user experience:
   - You can run the live CD with tools such as [[https://www.qemu.org/][QEMU]], [[https://www.virtualbox.org/wiki/Downloads][VirtualBox]], [[https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v][Hyper-V]], [[https://www.vmware.com/nl/products/workstation-player.html][VmWare]], [[https://www.parallels.com/][Parallels]], etc.
@@ -63,28 +61,6 @@ Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releas
 | =Live CD= | =entrusted-livecd-amd64-<version>.iso=   | Web interface Live CD for virtual machines    |
 |-----------+------------------------------------------+-----------------------------------------------|
 
-
-** Key software components
-
-Most users will interact with the Desktop user interface (=entrusted_client= component).
-
-|---------------------+-----------------------------------------------|
-| Component           | Purpose                                       |
-|---------------------+-----------------------------------------------|
-| [[./entrusted_container][entrusted_container]] | Document processing "sandbox"                 |
-| [[./entrusted_client][entrusted_client]]    | Command-line and graphical user interfaces    |
-| [[./entrusted_webserver][entrusted_webserver]] | Online service feature with a Web interface   |
-| [[./entrusted_webclient][entrusted_webclient]] | Command-line client for =entrusted_webserver= |
-| [[./entrusted_l10n][entrusted_l10n]]      | Shared library for text translations          |
-|---------------------+-----------------------------------------------|
-
-** Architecture overview
-
-Below is a high-level architecture overview, the solution relies on a container engine solution (i.e. [[https://www.docker.com/][Docker]]).
-
-[[./images/architecture.png]]
-
-
 * What is required?
 
 It is assumed that you can dedicate at least 1 GB of memory for document processing.
@@ -98,6 +74,7 @@ Conversions will fail if the container solution is not running or available in y
 * Few references
 
 - [[https://dangerzone.rocks/][Dangerzone]], the application that =Entrusted= is originally based-on
+- Youtube presentation about Entrusted  
 - Disabling file preview and thumbnails ([[https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/ADV200006][Windows]], [[https://osxdaily.com/2013/01/10/disable-finder-icon-thumbnails-previews-mac-os-x/][Mac OS]], Unix/Linux: [[https://gitlab.gnome.org/GNOME/eog/-/issues/130][Gnome]], [[https://www.reddit.com/r/kde/comments/gufzbh/how_do_you_turn_off_the_tiny_image_previews_in/][KDE]], etc.)
 - Security vulnerabilities for [[https://www.cvedetails.com/vulnerability-list/vendor_id-22772/product_id-80467/Podman-Project-Podman.html][Podman]], [[https://www.cvedetails.com/vulnerability-list/vendor_id-13534/product_id-28125/Docker-Docker.html][Docker]]
 - Few container vulnerability scanning tools: [[https://trivy.dev/][Trivy]], [[https://quay.github.io/clair/][Clair]], [[https://github.com/deepfence/ThreatMapper][ThreatMapper]]

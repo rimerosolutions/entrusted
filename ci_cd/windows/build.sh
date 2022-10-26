@@ -3,13 +3,13 @@ set -x
 
 PREVIOUSDIR="$(echo $PWD)"
 SCRIPTDIR="$(realpath $(dirname "$0"))"
-PROJECTDIR="$(realpath ${SCRIPTDIR}/../..)"
+PROJECTDIR="$(realpath ${SCRIPTDIR}/../../app)"
 APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' ${PROJECTDIR}/entrusted_client/Cargo.toml)
-ARTIFACTSDIR="${PROJECTDIR}/artifacts/entrusted-windows-amd64-${APPVERSION}"
+ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-windows-amd64-${APPVERSION}"
 
 mkdir -p ${ARTIFACTSDIR}
 
-cp ${PROJECTDIR}/LICENSE ${ARTIFACTSDIR}/LICENSE.txt
+cp ${PROJECTDIR}/../LICENSE ${ARTIFACTSDIR}/LICENSE.txt
 
 rm -rf ${PROJECTDIR}/entrusted_container/target
 rm -rf ${PROJECTDIR}/entrusted_client/target

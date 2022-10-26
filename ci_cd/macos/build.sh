@@ -3,17 +3,17 @@ set -x
 
 PREVIOUSDIR="$(echo $PWD)"
 SCRIPTDIR="$(realpath $(dirname "$0"))"
-PROJECTDIR="$(realpath ${SCRIPTDIR}/../..)"
+PROJECTDIR="$(realpath ${SCRIPTDIR}/../../app)"
 APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' ${PROJECTDIR}/entrusted_client/Cargo.toml)
 CPU_ARCHS="amd64 aarch64"
 
 for CPU_ARCH in $CPU_ARCHS ; do
-    ARTIFACTSDIR="${PROJECTDIR}/artifacts/entrusted-macos-${CPU_ARCH}-${APPVERSION}"
+    ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-macos-${CPU_ARCH}-${APPVERSION}"
     rm -rf ${ARTIFACTSDIR}
 done
 
 for CPU_ARCH in $CPU_ARCHS ; do
-    ARTIFACTSDIR="${PROJECTDIR}/artifacts/entrusted-macos-${CPU_ARCH}-${APPVERSION}"
+    ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-macos-${CPU_ARCH}-${APPVERSION}"
     RUST_TARGET="x86_64-apple-darwin"
     BUILD_PREAMBLE="true"
     RUSTFLAGS_PARAMS="RUSTFLAGS='-C target-feature=+crt-static'"
@@ -81,21 +81,25 @@ for CPU_ARCH in $CPU_ARCHS ; do
     mkdir -p ${APPBUNDLE}/Contents/MacOS
     mkdir -p ${APPBUNDLE}/Contents/Resources
 
-    convert -scale 16x16 macos/${APPNAME}.png macos/${APPNAME}_16_16.png
-    convert -scale 32x32 macos/${APPNAME}.png macos/${APPNAME}_32_32.png
-    convert -scale 128x128 macos/${APPNAME}.png macos/${APPNAME}_128_128.png
-    convert -scale 256x256 macos/${APPNAME}.png macos/${APPNAME}_256_256.png
-    convert -scale 512x512 macos/${APPNAME}.png macos/${APPNAME}_512_512.png
+    convert -scale 16x16   ${SCRIPTDIR}/macos/${APPNAME}.png ${SCRIPTDIR}/macos/${APPNAME}_16_16.png
+    convert -scale 32x32   ${SCRIPTDIR}/macos/${APPNAME}.png ${SCRIPTDIR}/macos/${APPNAME}_32_32.png
+    convert -scale 128x128 ${SCRIPTDIR}/macos/${APPNAME}.png ${SCRIPTDIR}/macos/${APPNAME}_128_128.png
+    convert -scale 256x256 ${SCRIPTDIR}/macos/${APPNAME}.png ${SCRIPTDIR}/macos/${APPNAME}_256_256.png
+    convert -scale 512x512 ${SCRIPTDIR}/macos/${APPNAME}.png ${SCRIPTDIR}/macos/${APPNAME}_512_512.png
 
-    cp macos/Info.plist ${APPBUNDLECONTENTS}/
-    cp macos/PkgInfo ${APPBUNDLECONTENTS}/
-    png2icns ${APPBUNDLEICON}/${APPNAME}.icns macos/${APPNAME}_16_16.png macos/${APPNAME}_32_32.png macos/${APPNAME}_128_128.png macos/${APPNAME}_256_256.png macos/${APPNAME}_512_512.png
+    cp ${SCRIPTDIR}/macos/Info.plist ${APPBUNDLECONTENTS}/
+    cp ${SCRIPTDIR}/macos/PkgInfo ${APPBUNDLECONTENTS}/
+    png2icns ${APPBUNDLEICON}/${APPNAME}.icns ${SCRIPTDIR}/macos/${APPNAME}_16_16.png ${SCRIPTDIR}/macos/${APPNAME}_32_32.png ${SCRIPTDIR}/macos/${APPNAME}_128_128.png ${SCRIPTDIR}/macos/${APPNAME}_256_256.png ${SCRIPTDIR}/macos/${APPNAME}_512_512.png
 
-    rm macos/${APPNAME}_16_16.png macos/${APPNAME}_32_32.png macos/${APPNAME}_128_128.png macos/${APPNAME}_256_256.png macos/${APPNAME}_512_512.png
+    rm ${SCRIPTDIR}/macos/${APPNAME}_16_16.png
+    rm ${SCRIPTDIR}/macos/${APPNAME}_32_32.png 
+    rm ${SCRIPTDIR}/macos/${APPNAME}_128_128.png 
+    rm ${SCRIPTDIR}/macos/${APPNAME}_256_256.png 
+    rm ${SCRIPTDIR}/macos/${APPNAME}_512_512.png
 
     cp ${PROJECTDIR}/entrusted_client/target/${RUST_TARGET}/release/entrusted-cli ${APPBUNDLEEXE}/
     mv ${ARTIFACTSDIR}/entrusted-gui ${APPBUNDLEEXE}/
-    cp macos/${APPNAME}  ${APPBUNDLEEXE}/
+    cp ${SCRIPTDIR}/macos/${APPNAME}  ${APPBUNDLEEXE}/
     perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ${APPBUNDLECONTENTS}/Info.plist
     perl -pi -e "s/_APPVERSION_/${APPBUNDLEVERSION}/g" ${APPBUNDLECONTENTS}/Info.plist
 

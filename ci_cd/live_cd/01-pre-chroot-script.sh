@@ -5,7 +5,7 @@ ENTRUSTED_VERSION=$1
 DEBIAN_ARCH=$2
 LINUX_ARTIFACTSDIR=$3
 THIS_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
-PROJECTDIR="$(realpath ${THIS_SCRIPTS_DIR}/../..)"
+PROJECTDIR="$(realpath ${THIS_SCRIPTS_DIR}/../../app)"
 
 echo "Cleanup previous build"
 test -d $HOME/LIVE_BOOT-${DEBIAN_ARCH} && sudo rm -rf $HOME/LIVE_BOOT-${DEBIAN_ARCH}

@@ -6,7 +6,7 @@ echo "This is not working at this time..."
 
 PREVIOUSDIR="$(echo $PWD)"
 SCRIPTDIR="$(realpath $(dirname "$0"))"
-PROJECTDIR="$(realpath ${SCRIPTDIR}/../..)"
+PROJECTDIR="$(realpath ${SCRIPTDIR}/../../app)"
 APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' ${PROJECTDIR}/entrusted_client/Cargo.toml)
 #CPU_ARCHS="amd64 aarch64"
 CPU_ARCHS="amd64"
@@ -20,8 +20,8 @@ echo "TODO Cannot yet generate a Live ISO image for arm64, sorry!"
 echo "TODO can also not load the arm64 image from chroot for some reason at this time"
 
 for CPU_ARCH in $CPU_ARCHS ; do
-    ARTIFACTSDIR="${PROJECTDIR}/artifacts/entrusted-livecd-${CPU_ARCH}-${ENTRUSTED_VERSION}"
-    LINUX_ARTIFACTSDIR="${PROJECTDIR}/artifacts/entrusted-linux-${CPU_ARCH}-${ENTRUSTED_VERSION}"
+    ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-livecd-${CPU_ARCH}-${ENTRUSTED_VERSION}"
+    LINUX_ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-linux-${CPU_ARCH}-${ENTRUSTED_VERSION}"
     DEBIAN_ARCH="amd64"
 
     if [ ${CPU_ARCH} != "amd64" ]

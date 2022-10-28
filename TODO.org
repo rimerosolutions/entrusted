@@ -2,11 +2,9 @@
 
 * Milestone: Hardening and features maturity [0%]
 
-- [-] Research
+- [-] Security
   - [ ] Investigate alternate sandbox approaches
-  - [X] Document periodic container vulnerability assessments (new =org-mode= file)
-    - [X] Determine and document schedule
-    - [X] Revisit currently used/preferred tool ([[https://trivy.dev/][Trivy]])
+  - [ ] Revisit container security options and practices as part of continuous improvement
 - [ ] User interface
   - [ ] Ability to cancel non-started tasks
   - [ ] Evaluate opportunities to simplify the user interface
@@ -15,12 +13,9 @@
   - [ ] Evalutate performance optimization opportunities
 - [ ] Builds and releases
   - [ ] Check-in cargo manifest lock files to control dependencies versions
-  - [ ] Explore migration from local shell scripts to GitHub actions
-- [-] Documentation and Marketing
-  - [X] Move technical documentation to a wiki pages
-  - [ ] Youtube presentation
+  - [ ] Revisit migration from local shell scripts to GitHub actions
 
-* Milestone: Usability and features stabilization [100%]
+* Milestone: Usability and features stabilization [85%]
 
 - [X] Improved conversions
   - [X] Custom output location for individual documents in the conversion queue
@@ -32,12 +27,16 @@
   - [X] Display overall conversion results ("X out of Y files were not successfully converted")
   - [X] Prompt for confirmation prior closing the application during conversions (Desktop only)
   - [X] Manual check for release updates (Desktop and command-line clients)
-- [X] Container solutions and hardening
+- [X] Security
   - [X] Review container execution options (subject of recurring reviews)
-  - [X] Review some of the code and read few security-related articles (subject of recurring reviews)
+  - [X] Review some of the code and read few security-related articles (subject of recurring reviews)    
+  - [X] Document periodic container vulnerability assessments (new =org-mode= file)
+    - [X] Determine and document schedule
+    - [X] Revisit currently used/preferred tool ([[https://trivy.dev/][Trivy]])
 - [X] Code maintenance
   - [X] Migrate from [[https://actix.rs/][actix_web]] to [[https://github.com/tokio-rs/axum][axum]] for the =entrusted_webserver= component
   - [X] Eliminate shell commands inside the container image
+  - [X] Investigate why Firefox now blocks programmatic button clicks for file uploads? (missing =xdg-portal*= packages for [[https://snapcraft.io/about][snap]])
 - [X] CI/CD and packaging
   - [X] Better reproducible build environment
   - [X] Adopt Git flow and delete all the previous spiral branches
@@ -48,6 +47,9 @@
 - [X] Mime-type detection and file associations
   - [X] Register file associations with supported document types
   - [X] For now, roll custom mime-type detection system until there is something better available
+- [-] Documentation and Marketing
+  - [X] Move some documentation to wiki pages
+  - [ ] Publish Youtube presentation and PDF slides
 
 * Milestone: Initial document sanitization tool [100%]
 

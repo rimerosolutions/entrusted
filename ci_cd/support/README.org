@@ -19,7 +19,7 @@ While preparing release artifacts, there can be intermittent failures.
 |----------------------------+----------------------------------------------------------|
 | Network timeouts           | Too many network requests during builds                  |
 | Missing arm64 dependencies | Outdated or renamed dependencies (not in official repos) |
-| Broken Debian packages     | Location of shared libraries, unavailable packagse, etc. |
+| Broken Debian packages     | Location of shared libraries, unavailable packages, etc. |
 | Compilation errors         | Missing symbols                                          |
 |----------------------------+----------------------------------------------------------|
 

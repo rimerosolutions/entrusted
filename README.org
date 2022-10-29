@@ -16,7 +16,7 @@ Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_c
 
 ** Features
 
-- Documents or images are converted inside a "sandbox"
+- Files (PDF, Office documents and images) are processed inside a "sandbox"
 - The transformation of huge documents is frictionless
 - Files can be converted in batch
 - An optional Web interface is available and can act as an "online service"

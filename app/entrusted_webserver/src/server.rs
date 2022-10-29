@@ -598,11 +598,13 @@ pub async fn save_file(
     }
 
     let file_uuid = Uuid::new_v4().to_string();
+
     let id_token = format!(
         "{};{}",
         base64_lib::encode(&file_uuid.clone().into_bytes()),
         base64_lib::encode(&filename.clone().into_bytes())
     );
+
     let id = bs58::encode(id_token).into_string();
 
     let p = std::path::Path::new(&filename);

@@ -16,6 +16,7 @@ Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_c
 
 ** Features
 
+Key features include the following:
 - Files (PDF, Office documents and images) are processed inside a "sandbox"
 - The transformation of huge documents is frictionless
 - Files can be converted in batch
@@ -24,6 +25,23 @@ Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_c
 - The application has multilingual support (English and French for now)
 - Password-protected files are supported (known Office document formats and PDF files)
 - On Mac OS, [[https://github.com/lima-vm/lima][Lima]] can be installed as an alternative to [[https://www.docker.com/products/docker-desktop/][Docker]] (/default Lima instance/ only)
+
+** Use-cases
+
+Do you identify yourself in one the situations below?
+- I think that my computer might have been infected few times due to documents containing malware
+- I "acquire" lots of documents from file sharing applications such as Bittorrent
+- I often need to open email attachments from unknown senders
+- I download lots of files from "potentially non-trusted websites", those sites look legit though
+
+** Supported files
+
+The following file types can be processed with =Entrusted=:
+- Images (=.jpg=, =.jpeg=, =.gif=, =.png=, =.tif=, =.tiff=)
+- Document Graphics (=.odg=)
+- Text Documents (=.rtf=, =.doc=, =.docx=, =.odt=)
+- Spreadsheets (=.xls=, =.xlsx=, =.ods=)
+- Presentations (=.ppt=, =.pptx=, =.odp=)
     
 * What is available?
 
@@ -39,7 +57,7 @@ There are three user interfaces ([[./app/entrusted_client][Desktop and CLI]], [[
 ** Downloads
 
 Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releases page]] for downloads (64-bit: [[https://en.wikipedia.org/wiki/X86-64][amd64/x86_64]] and [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]]).
-- On Linux, if you prefer [[https://flatpak.org/][Flatpak]], please check out the [[https://github.com/axtloss/flatpaks][axtloss flatpaks]] project page
+- If you prefer [[https://flatpak.org/][Flatpak]] on Linux, please check out the [[https://github.com/axtloss/flatpaks][axtloss flatpaks]] project page
 - =aarch64= (=arm64=) builds are not yet available for Windows or the Live CD
 
 |-----------+------------------------------------------+-----------------------------------------------|
@@ -65,9 +83,9 @@ Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releas
 
 * What is required?
 
-It is assumed that you can dedicate at least 1 GB of memory for document processing.
-- *Operating System*: Linux, Mac OS or Windows
-- *Container Runtime*: [[https://podman.io/][Podman]] (Linux), [[https://www.docker.com/][Docker]] (Linux, Mac OS, Windows) or [[https://github.com/lima-vm/lima][Lima]] (Mac OS)
+It is assumed that you can allocate at least 1 GB of memory for document processing.
+- Operating System: Linux, Mac OS or Windows
+- Container Runtime: [[https://podman.io/][Podman]] (Linux), [[https://www.docker.com/][Docker]] (Linux, Mac OS, Windows) or [[https://github.com/lima-vm/lima][Lima]] (Mac OS)
 
 Conversions will fail if the container solution is not running or available in your [[https://www.java.com/en/download/help/path.html]["PATH settings"]]:
   - The tool doesn't attempt to modify software on your machine (install or change programs)

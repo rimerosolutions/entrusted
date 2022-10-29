@@ -1,17 +1,12 @@
 #+TITLE: entrusted/app README
 
-*Entrusted* is not a single application. It's a suite of components that work together in order to sanitize a set of known file types:
-- Images (.jpg, .jpeg, .gif, .png, .tif, .tiff)
-- Document Graphics (.odg)
-- Text Documents (.rtf, .doc, .docx, .odt)
-- Spreadsheets (.xls, .xlsx, .ods)
-- Presentations (.ppt, .pptx, .odp)
+This folder contains all the software components of the application.
+
+Everything is written in the [[https://www.rust-lang.org/][Rust]] programming language.
 
 * Components
 
 Most users will interact with the Desktop user interface (=entrusted_client= component).
-
-All software components are written in the [[https://www.rust-lang.org/][Rust]] programming language.
 
 |---------------------+-----------------------------------------------|
 | Component           | Purpose                                       |
@@ -26,8 +21,8 @@ All software components are written in the [[https://www.rust-lang.org/][Rust]] 
 * Architecture overview
 
 Below is a high-level design.
-- The "Entrusted Container Application" is hosted by a container engine.
-- The container engine (i.e. [[https://www.docker.com/][Docker]]) is not bundled with the solution, unless you use the Live CD .
+- The "Entrusted Container Application" is hosted by a container engine
+- The container engine (i.e. [[https://www.docker.com/][Docker]]) is not bundled with the solution, unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][Live CD ISO image]]
 
 [[./images/architecture.png]]
 

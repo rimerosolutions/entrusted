@@ -15,7 +15,7 @@
   - [ ] Check-in cargo manifest lock files to control dependencies versions
   - [ ] Revisit migration from local shell scripts to GitHub actions
 
-* Milestone: Usability and features stabilization [85%]
+* Milestone: Usability and features stabilization [100%]
 
 - [X] Improved conversions
   - [X] Custom output location for individual documents in the conversion queue
@@ -47,9 +47,11 @@
 - [X] Mime-type detection and file associations
   - [X] Register file associations with supported document types
   - [X] For now, roll custom mime-type detection system until there is something better available
-- [-] Documentation and Marketing
+- [X] Documentation and Marketing
   - [X] Move some documentation to wiki pages
-  - [ ] Publish Youtube presentation and PDF slides
+  - [X] Publish presentations
+    - [X] PDF slides
+    - [X] Youtube presentation
 
 * Milestone: Initial document sanitization tool [100%]
 

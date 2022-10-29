@@ -12,6 +12,8 @@ Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_c
 
 [[./images/screenshot.gif]]
 
+[[https://www.youtube.com/watch?v=InEsPLyFsKQ][Youtube presentation]] about Entrusted
+
 ** Features
 
 - Documents or images are converted inside a "sandbox"
@@ -73,8 +75,8 @@ Conversions will fail if the container solution is not running or available in y
 
 * Few references
 
+- [[https://www.youtube.com/watch?v=InEsPLyFsKQ][Youtube presentation]] about Entrusted ([[https://github.com/rimerosolutions/entrusted/files/9892585/entrusted_document_sanitizer.pdf][PDF slides here]])
 - [[https://dangerzone.rocks/][Dangerzone]], the application that =Entrusted= is originally based-on
-- Youtube presentation about Entrusted  
 - Disabling file preview and thumbnails ([[https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/ADV200006][Windows]], [[https://osxdaily.com/2013/01/10/disable-finder-icon-thumbnails-previews-mac-os-x/][Mac OS]], Unix/Linux: [[https://gitlab.gnome.org/GNOME/eog/-/issues/130][Gnome]], [[https://www.reddit.com/r/kde/comments/gufzbh/how_do_you_turn_off_the_tiny_image_previews_in/][KDE]], etc.)
 - Security vulnerabilities for [[https://www.cvedetails.com/vulnerability-list/vendor_id-22772/product_id-80467/Podman-Project-Podman.html][Podman]], [[https://www.cvedetails.com/vulnerability-list/vendor_id-13534/product_id-28125/Docker-Docker.html][Docker]]
 - Few container vulnerability scanning tools: [[https://trivy.dev/][Trivy]], [[https://quay.github.io/clair/][Clair]], [[https://github.com/deepfence/ThreatMapper][ThreatMapper]]

@@ -28,7 +28,7 @@ Key features include the following:
 
 ** Use-cases
 
-Do you identify yourself in one the situations below?
+Do you identify yourself in one of the situations below?
 - I think that my computer might have been infected few times due to documents containing malware
 - I "acquire" lots of documents from file sharing applications such as Bittorrent
 - I often need to open email attachments from unknown senders

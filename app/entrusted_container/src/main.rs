@@ -26,9 +26,11 @@ const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str = "ENTRUSTED_DOC_PASSWD";
 const ENV_VAR_LOG_FORMAT: &str           = "LOG_FORMAT";
 const ENV_VAR_OCR_LANGUAGE: &str         = "OCR_LANGUAGE";
 
-const IMAGE_DPI: f64   = 150.0;
-const TARGET_DPI : f64 = 72.0;
-const ZOOM_RATIO: f64  = IMAGE_DPI / TARGET_DPI;
+// A4 150PPI/DPI
+// https://www.a4-size.com/a4-size-in-pixels/?size=a4&unit=px&ppi=150
+// TODO introduce the concept of preset for couple of options (papersize, rendering quality)
+const IMG_MAX_WIDTH: f64 = 1240.0;
+const IMG_MAX_HEIGHT: f64 = 1754.0;
 
 macro_rules! incl_gettext_files {
     ( $( $x:expr ),* ) => {
@@ -407,6 +409,8 @@ fn ocr_imgs_to_pdf(
     Ok(())
 }
 
+// TODO multiple language selection in the front-end with format pattern: lang1+lang2 (i.e. eng+deu)
+// TODO similar concept of preset for paper size, etc., but for the user defined DPI hard-coded to 72
 fn tesseract_init(ocr_lang: &str, tessdata_dir: &str) -> *mut tesseract_plumbing::tesseract_sys::TessBaseAPI {
     let c_lang = CString::new(ocr_lang).unwrap();
     let lang = c_lang.as_bytes().as_ptr() as *mut std::os::raw::c_char;
@@ -553,14 +557,15 @@ fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_rang
             logger.log(progress_value, l10n.gettext_fmt("Extracting page {0} into a PNG image", vec![&idx_text]));
 
             let dest_path = dest_folder.join(format!("page-{}.png", idx));
-            let (w, h) = page.size();
-            let sw = (w * ZOOM_RATIO) as i32;
-            let sh = (h * ZOOM_RATIO) as i32;
+            let current_size = page.size();
+            let target_size = (IMG_MAX_WIDTH, IMG_MAX_HEIGHT);
 
-            let surface_png = ImageSurface::create(Format::Rgb24, sw, sh)?;
+            let (ratio, (new_width, new_height)) = scaling_data(current_size, target_size);
+
+            let surface_png = ImageSurface::create(Format::Rgb24, new_width as i32, new_height as i32)?;
             let ctx = Context::new(&surface_png)?;
 
-            ctx.scale(ZOOM_RATIO, ZOOM_RATIO);
+            ctx.scale(ratio, ratio);
             ctx.set_source_rgb(1.0, 1.0, 1.0);
             ctx.set_antialias(antialias_setting);
             ctx.set_font_options(&font_options);
@@ -572,6 +577,27 @@ fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_rang
     }
 
     Ok(())
+}
+
+fn scaling_data(size_current: (f64, f64), size_target: (f64, f64)) -> (f64, (f64, f64)) {
+    let ratio_width = size_target.0 / size_current.0;
+    let ratio_height = size_target.1 / size_current.1;
+
+    let mut ratio = if ratio_width > ratio_height {
+        ratio_height
+    } else {
+        ratio_width
+    };
+    
+    let (mut new_width, mut new_height) = (size_current.0 * ratio, size_current.1 * ratio);
+    
+    if (new_width as i32) == 0 || (new_height as i32) == 0 {
+        ratio = 1.0;
+        new_width = size_current.0;
+        new_height = size_current.1;
+    }
+
+    (ratio, (new_width, new_height))
 }
 
 fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: &ProgressRange, page_count: usize, input_dir_path: &Path, output_path: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
@@ -764,6 +790,9 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: &Progres
     step_num += 1;
     progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
     logger.log(progress_value, l10n.gettext("Compressing PDF"));
+
+    document.prune_objects();
+    document.delete_zero_length_streams();
     document.compress();
 
     // step 7/7 Save the merged PDF

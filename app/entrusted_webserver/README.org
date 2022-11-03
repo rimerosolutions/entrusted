@@ -34,6 +34,20 @@ This is used for a single workstation, in a "multi virtual machines" scenario (s
   [[./images/architecture.png]]
   
 * What is required?
+  
+** Build requirements
+
+You need to have the [[https://www.rust-lang.org/tools/install][rust compiler tools]] installed in order to compile the code.
+
+It's possible to produce standalone binaries on Linux, with no runtime dependencies (=crt-static= rustc flag)
+- On Windows, in order to avoid dealing with Windows redistributable bundling or pre-installation, use the =x86_64-pc-windows-gnu= target
+- On Linux, you'll need =musl dev= related packages for your distribution
+  
+** Build command
+
+This is the basic command to build dynamically linked binaries: =cargo build=.
+
+For detailed build instructions, please take a look at some of the commands in [[../../ci_cd/][ci_cd]] scripts.
 
 ** Runtime requirements
 
@@ -44,37 +58,7 @@ For the =server= component, any OS that can run the [[https://github.com/rimeros
 You can run the server as follow, once the program is built (Linux assumed below).
 
 #+begin_src sh
-  ./target/x86_64-unknown-linux-musl/release/entrusted-webserver
-#+end_src
-  
-** Build requirements
-
-You need to have the [[https://www.rust-lang.org/tools/install][rust compiler tools]] installed in order to compile the code.
-
-** Linux
-
-It's possible to produce standalone binaries on Linux, with no runtime dependencies.
-- You can either build with a [[https://wiki.musl-libc.org/projects-using-musl.html#name=Linux_distributions_using_musl][Musl Linux distribution]] ([[https://www.alpinelinux.org/][Alpine Linux]], [[https://voidlinux.org/][Void Linux]], etc.)
-- Or you can ensure that the Musl target is installed, along with Musl tools
-
-  #+begin_src sh
-    rustup target add x86_64-unknown-linux-musl
-    RUSTFLAGS="-C target-feature=+crt-static" cargo build --release --target=x86_64-unknown-linux-musl
-  #+end_src
-  
-** Other platforms
-
-*** MacOS
-
-#+begin_src sh
-  RUSTFLAGS="-C target-feature=+crt-static" cargo build --release
-#+end_src
-
-*** Windows
-
-#+begin_src bat
-  set RUSTFLAGS=-C target-feature=+crt-static
-  cargo build --release
+  ./target/debug/entrusted-webserver
 #+end_src
 
 * Is there an API?

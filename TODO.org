@@ -2,15 +2,19 @@
 
 * Milestone: Hardening and features maturity [0%]
 
-- [-] Security
+- [ ] Security
   - [ ] Investigate alternate sandbox approaches
   - [ ] Revisit container security options and practices as part of continuous improvement
 - [ ] User interface
   - [ ] Ability to cancel non-started tasks
   - [ ] Evaluate opportunities to simplify the user interface
 - [ ] Improved conversions
-  - [ ] Address occasional conversion failures
-  - [ ] Evalutate performance optimization opportunities
+  - [ ] Address occasional conversion failures (concurrency? file not found?)
+  - [ ] Evaluate performance optimization opportunities
+  - [ ] Additional settings
+    - [ ] Paper size and image extract quality (maybe LOW, MEDIUM and HIGH?)
+    - [ ] OCR (multiple languages, target DPI)
+    - [ ] Add maybe some kind of profiles or presets for that???      
 - [ ] Builds and releases
   - [ ] Check-in cargo manifest lock files to control dependencies versions
   - [ ] Revisit migration from local shell scripts to GitHub actions
@@ -20,6 +24,7 @@
 - [X] Improved conversions
   - [X] Custom output location for individual documents in the conversion queue
   - [X] Support for password-protected documents
+  - [X] Better control over image quality and clearer understanding of output size expectations
 - [X] User Interface
   - [X] Add overall progress information during conversions
   - [X] Hide command prompts while running processes on Windows, and address file permissions errors

@@ -25,9 +25,12 @@ The CLI can be convenient for "terminal warriors" or to supplement shell scripts
 
 * How to build this?
 
+Please checkout [[https://github.com/rimerosolutions/entrusted/wiki/Build-Instructions][the build instructions on the wiki]] for more information (software dependencies).
+
+On Linux, You'll need to have xorg and libxcb dev libraries (=-dev= or =-devel= packages accordingly to your Linux distribution).
+
 At the root of this project, open a command prompt and type =cargo build --features=gui=.
 
-Please checkout [[https://github.com/rimerosolutions/entrusted/wiki/Build-Instructions][the build instructions on the wiki]] for more information (software dependencies).
 
 * How to run this?
 

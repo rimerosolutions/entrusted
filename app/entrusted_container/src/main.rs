@@ -263,7 +263,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: &ProgressR
                 let filename_pdf: String = {
                     if let Some(basename) = raw_input_path.file_stem().and_then(|i| i.to_str()) {
                         let input_name = format!("{}_input.pdf", basename);
-                        format!("{}", parent_dir.join(input_name.as_str()).display())
+                        parent_dir.join(input_name.as_str()).display().to_string()
                     } else {
                         return Err(l10n.gettext_fmt("Could not determine basename for file {0}", vec![&raw_input_path.display().to_string()]).into());
                     }
@@ -826,11 +826,10 @@ fn imgs_to_pdf(logger: &Box<dyn ConversionLogger>, progress_range: &ProgressRang
 }
 
 fn img_to_pdf(src_format: image::ImageFormat, src_path: &Path, dest_path: &Path) -> Result<(), Box<dyn Error>> {
-    let file_len = src_path.metadata()?.len() as usize;
     let f = fs::File::open(src_path)?;
     let reader = BufReader::new(f);
     let img = image::load(reader, src_format)?;
-    let mut buffer: Vec<u8> = Vec::with_capacity(file_len);
+    let mut buffer: Vec<u8> = Vec::new();
     let buffer_cursor = &mut Cursor::new(&mut buffer);
 
     img.write_to(buffer_cursor, image::ImageOutputFormat::Png)?;

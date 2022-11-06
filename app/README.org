@@ -1,12 +1,10 @@
 #+TITLE: entrusted/app README
 
-This folder contains all the software components of the application.
-
-Everything is written in the [[https://www.rust-lang.org/][Rust]] programming language.
+This folder contains all the software components of the application (written in the [[https://www.rust-lang.org/][Rust]]).
 
 * Components
 
-Most users will interact with the Desktop user interface (=entrusted_client= component).
+Most users will interact with only the Desktop user interface (=entrusted_client= component).
 
 |---------------------+-----------------------------------------------|
 | Component           | Purpose                                       |
@@ -21,13 +19,13 @@ Most users will interact with the Desktop user interface (=entrusted_client= com
 * Architecture overview
 
 Below is a high-level design.
-- The "Entrusted Container Application" is hosted by a container engine
-- The container engine (i.e. [[https://www.docker.com/][Docker]]) is not bundled with the solution, unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][Live CD ISO image]]
+- The "Entrusted Container Application" is hosted by a container engine (i.e. [[https://www.docker.com/][Docker]])
+- The container engine itself is not bundled with the solution, unless you use the [[../ci_cd/live_cd][Live CD ISO image]]
 
 [[./images/architecture.png]]
 
 * Modules relationships
 
-The "Document sanitizer" is the key module of the solution.
+The "Document sanitizer" ([[./entrusted_container][ENTRUSTED-CONTAINER]]) is the key module of the solution.
 
 [[./images/modules.png]]

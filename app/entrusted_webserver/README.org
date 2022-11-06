@@ -67,7 +67,6 @@ Yes, the user interface (simple HTML page) interacts with the Web API of the =en
 
 Please consult the [[./api_specification/openapi.yml][OpenAPI specification]] documentation for further details.
 
-
 * Is there a configuration file?
 
 Yes, the configuration file (=config.toml=) is optional and its location is operating system dependent.
@@ -110,5 +109,3 @@ The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to
 | =port=                 | The server port number                                     |
 | =container-image-name= | A custom container image for conversions (advanced option) |
 |------------------------+------------------------------------------------------------|
-
- 

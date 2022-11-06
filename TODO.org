@@ -18,6 +18,7 @@
 - [ ] Builds and releases
   - [ ] Check-in cargo manifest lock files to control dependencies versions
   - [ ] Revisit migration from local shell scripts to GitHub actions
+  - [ ] Add =rust-version= to cargo manifests and update ci/cd pipeline accordingly for extracting versions
 
 * Milestone: Usability and features stabilization [100%]
 

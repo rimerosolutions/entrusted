@@ -2,11 +2,12 @@
 
 * entrusted-0.2.6 (UNRELEASED)
 
-- enhancement: Add "clickable" hyperlinks in few dialogs (project and release URLs)
+- enhancement: More predictable PDF quality and PDF result size
 - enhancement: Display overall progress information and final status summary
+- enhancement: Add "clickable" hyperlinks in few dialogs (project and release URLs)
+- maintenance: Look and feel consistency improvements (Desktop and "Online Service" interfaces)
 - maintenance: Web framework change from [[https://actix.rs/][actix_web]] to [[https://github.com/tokio-rs/axum][axum]] for the "Online Service"
 - maintenance: Release pipeline improvements towards more reproducible builds
-- maintenance: Look and feel consistency improvements (Desktop and "Online Service" interfaces)
 
 * entrusted-0.2.5
 

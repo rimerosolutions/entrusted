@@ -16,16 +16,16 @@ for CPU_ARCH in $CPU_ARCHS ; do
     ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-macos-${CPU_ARCH}-${APPVERSION}"
     RUST_TARGET="x86_64-apple-darwin"
     BUILD_PREAMBLE="true"
+    ADDITIONAL_PARAMS=""
     RUSTFLAGS_PARAMS="RUSTFLAGS='-C target-feature=+crt-static'"
     EXPORT_PARAMS="export CXX=/usr/local/osxcross/target/bin/o64-clang++; export CC=/usr/local/osxcross/target/bin/o64-clang;"
-    ADDITIONAL_PARAMS="cargo clean;"
     STRIP_COMMAND="x86_64-apple-darwin21.4-strip"
 
     if [ ${CPU_ARCH} != "amd64" ]
     then
         RUST_TARGET="aarch64-apple-darwin"
         EXPORT_PARAMS="export CC=oa64-clang; export CXX=oa64-clang++;"    
-        ADDITIONAL_PARAMS="cargo clean;CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER=arm64-apple-darwin21.4-clang LIBZ_SYS_STATIC=1"
+        ADDITIONAL_PARAMS="CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER=arm64-apple-darwin21.4-clang LIBZ_SYS_STATIC=1"
         BUILD_PREAMBLE="rustup target add aarch64-apple-darwin"
         STRIP_COMMAND="arm64-apple-darwin21.4-strip"
     fi
@@ -46,7 +46,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
            --volume "${PROJECTDIR}":/root/src \
            --workdir /root/src \
            docker.io/uycyjnzgntrn/rust-macos:1.64.0 \
-           sh -c "${EXPORT_PARAMS} ${BUILD_PREAMBLE};cd /root/src/entrusted_webserver && ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --target  ${RUST_TARGET} && cd /root/src/entrusted_client && ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --features=gui --target ${RUST_TARGET} && cd /root/src/entrusted_webclient && ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --target ${RUST_TARGET}"
+           sh -c "${EXPORT_PARAMS} ${BUILD_PREAMBLE}; ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --target  ${RUST_TARGET}  --manifest-path /root/src/entrusted_webserver/Cargo.toml && ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --features=gui --target ${RUST_TARGET} --manifest-path /root/src/entrusted_client/Cargo.toml && ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --target ${RUST_TARGET} --manifest-path /root/src/entrusted_webclient/Cargo.toml"
     retVal=$?
     if [ $retVal -ne 0 ]; then
         echo "Failure"
@@ -58,10 +58,9 @@ for CPU_ARCH in $CPU_ARCHS ; do
     cp ${PROJECTDIR}/entrusted_webclient/target/${RUST_TARGET}/release/entrusted-webclient ${ARTIFACTSDIR}
     cp ${PROJECTDIR}/entrusted_webserver/target/${RUST_TARGET}/release/entrusted-webserver ${ARTIFACTSDIR}
 
-
     # See https://github.com/zhlynn/zsign
     # See https://forums.ivanti.com/s/article/Obtaining-an-Apple-Developer-ID-Certificate-for-macOS-Provisioning?language=en_US&ui-force-components-controllers-recordGlobalValueProvider.RecordGvp.getRecord=1
-    echo "TODO need to create signed app bundle with proper entitlements"
+    # echo "TODO need to create signed app bundle with proper entitlements, do we need to pay to share software for free too??????????????"
 
     echo "Creating Entrusted appbundle"
     cd ${SCRIPTDIR}

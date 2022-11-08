@@ -242,8 +242,8 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
     let run_args:Vec<String> = vec![
         "run".to_string(),
         "--rm".to_string(),
-        "--network".to_string()      , "none".to_string(),
-        "--cap-drop".to_string()     , "all".to_string()
+        "--network".to_string() , "none".to_string(),
+        "--cap-drop".to_string(), "all".to_string()
     ];
 
     let input_file_volume = format!("{}:/tmp/input_file:Z", input_path.display());
@@ -344,7 +344,9 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
 
         if let Ok(_) = exec_crt_command(trans.gettext("Starting document processing"), container_rt, convert_args, tx.clone_box(), true, printer.clone_box(), trans.clone()) {
             if output_path.exists() {
-                fs::remove_file(output_path.clone())?;
+                if let Err(ex) = fs::remove_file(output_path.clone()) {
+                    eprintln!("{}", trans.gettext_fmt("Cannot remove output file: {0}. {1}.", vec![&output_path.display().to_string(), &ex.to_string()]));
+                }
             }
 
             let mut container_output_file_path = dz_tmp_safe.clone();

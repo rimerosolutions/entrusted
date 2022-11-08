@@ -9,7 +9,6 @@
   - [ ] Ability to cancel non-started tasks
   - [ ] Evaluate opportunities to simplify the user interface
 - [ ] Improved conversions
-  - [ ] Address occasional conversion failures (concurrency? file not found?)
   - [ ] Evaluate performance optimization opportunities
   - [ ] Additional settings
     - [ ] Paper size and image extract quality (maybe LOW, MEDIUM and HIGH?)
@@ -21,7 +20,8 @@
 
 * Milestone: Usability and features stabilization [85%]
 
-- [X] Improved conversions
+- [-] Improved conversions  
+  - [ ] Address occasional conversion failures (concurrency? file not found?)
   - [X] Custom output location for individual documents in the conversion queue
   - [X] Support for password-protected documents
   - [X] Better control over image quality and clearer understanding of output size expectations
@@ -32,8 +32,8 @@
   - [X] Display overall conversion results ("X out of Y files were not successfully converted")
   - [X] Prompt for confirmation prior closing the application during conversions (Desktop only)
   - [X] Manual check for release updates (Desktop and command-line clients)
-- [-] Security
-  - [ ] Provide custom container security profile
+- [X] Security
+  - Provide custom container security profile
   - [X] Review container execution options (subject of recurring reviews)
   - [X] Review some of the code and read few security-related articles (subject of recurring reviews)    
   - [X] Document periodic container vulnerability assessments (new =org-mode= file)

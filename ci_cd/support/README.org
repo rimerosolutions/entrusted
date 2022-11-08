@@ -1,4 +1,4 @@
-#+TITLE: cid_cd - support - README
+#+TITLE: entrusted/cid_cd/support
 
 This folder contains container images supporting release builds.
 - The container images are used a base for builds/releases

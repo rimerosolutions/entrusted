@@ -1,7 +1,7 @@
 use serde_json;
 use std::error::Error;
 use std::fs;
-use std::io;
+use std::io::{self, Write};
 use std::process::Child;
 use filetime::FileTime;
 use std::path::PathBuf;
@@ -243,11 +243,10 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         "run".to_string(),
         "--rm".to_string(),
         "--network".to_string()      , "none".to_string(),
-        "--security-opt".to_string() , "label=disable".to_string(),            
         "--cap-drop".to_string()     , "all".to_string()
     ];
 
-    let input_file_volume = format!("{}:/tmp/input_file", input_path.display());
+    let input_file_volume = format!("{}:/tmp/input_file:Z", input_path.display());
     let mut err_msg = String::new();
 
     // TODO for Lima we assume the default VM instance, that might not be true all the time...
@@ -278,12 +277,35 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         dz_tmp.push("entrusted");
         mkdirp(&dz_tmp, trans.clone())?;
         cleanup_dir(&dz_tmp)?;
+        
+        
+        let seccomp_profile_data = include_bytes!("../seccomp-entrusted-profile.json");
+        let seccomp_profile_pathbuf = PathBuf::from(dz_tmp.join("seccomp-entrusted-profile.json"));
+        convert_args.push("--security-opt".to_string());
+        convert_args.push(format!("seccomp={}", seccomp_profile_pathbuf.display()));
+        
+        if !seccomp_profile_pathbuf.exists() {
+            let f_ret = fs::File::create(&seccomp_profile_pathbuf);
+            
+            match f_ret {
+                Ok(mut f) => {
+                    if let Err(ex) = f.write_all(seccomp_profile_data) {
+                        tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;                
+                        return Err(ex.into());
+                    }
+                },
+                Err(ex) => {
+                    tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;                
+                    return Err(ex.into());
+                }            
+            }            
+        }
 
         let mut dz_tmp_safe:PathBuf = dz_tmp.clone();
         dz_tmp_safe.push("safe");
         mkdirp(&dz_tmp_safe, trans.clone())?;
 
-        let safedir_volume = format!("{}:/safezone", dz_tmp_safe.display());
+        let safedir_volume = format!("{}:/safezone:Z", dz_tmp_safe.display());
 
         convert_args.append(&mut vec![
             "-v".to_string(), input_file_volume,

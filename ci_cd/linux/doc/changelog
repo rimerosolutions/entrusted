@@ -1,6 +1,7 @@
 entrusted (0.2.6) stable; urgency=medium
 
   * Make PDF result quality and size more predictable
+  * Provide custom container security profile
   * Display overall progress information and final status summary
   * Add "clickable" hyperlinks in few dialogs
   * Look and feel consistency improvements

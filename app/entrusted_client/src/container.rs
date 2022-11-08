@@ -293,6 +293,11 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
                         tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;                
                         return Err(ex.into());
                     }
+                    
+                    if let Err(ex) = f.sync_all() {
+                        tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;                
+                        return Err(ex.into());
+                    }
                 },
                 Err(ex) => {
                     tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;                
@@ -353,7 +358,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             // This seems to fail on Microsoft Windows with permission denied errors
             let _ = filetime::set_file_handle_times(&output_file, Some(atime), Some(atime));
 
-            if let Err(ex) = cleanup_dir(&dz_tmp) {
+            if let Err(ex) = cleanup_dir(&dz_tmp_safe) {
                 tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, trans.gettext_fmt("Failed to cleanup temporary folder: {0}. {1}.", vec![&dz_tmp.clone().display().to_string(), &ex.to_string()]))))?;
             }
 

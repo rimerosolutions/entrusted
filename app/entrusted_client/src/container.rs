@@ -80,7 +80,7 @@ fn exec_crt_command (cmd_desc: String, container_program: common::ContainerProgr
         .iter()
         .map(|i| {
             if i.contains(common::ENV_VAR_ENTRUSTED_DOC_PASSWD) {
-                "***"
+                "ENTRUSTED_DOC_PASSWD=***"
             } else {
                 i
             }
@@ -280,7 +280,8 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         
         
         let seccomp_profile_data = include_bytes!("../seccomp-entrusted-profile.json");
-        let seccomp_profile_pathbuf = PathBuf::from(dz_tmp.join("seccomp-entrusted-profile.json"));
+        let seccomp_profile_filename = format!("seccomp-entrusted-profile-{}.json", option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"));
+        let seccomp_profile_pathbuf = PathBuf::from(dz_tmp.join(seccomp_profile_filename));
         convert_args.push("--security-opt".to_string());
         convert_args.push(format!("seccomp={}", seccomp_profile_pathbuf.display()));
         

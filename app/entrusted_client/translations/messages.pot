@@ -30,6 +30,9 @@ msgstr ""
 #~ "MIME-Version: 1.0\n"
 #~ "Content-Type: text/plain; charset=UTF-8"
 
+msgid "Potential sanitization process crash detected, the sanitized PDF result was not created."
+msgstr ""
+
 msgid "Cannot remove output file: {0}. {1}."
 msgstr ""
 
@@ -304,10 +307,13 @@ msgstr ""
 msgid "Conversion failed!"
 msgstr ""
 
-msgid "Container process terminated abruptly likely due to memory usage. Are PDF pages too big? Trying increasing the container memory."
+msgid "Container process terminated abruptly potentially due to memory usage. Are PDF pages too big? Try increasing the container engine memory allocation?"
 msgstr ""
 
-msgid "Container process terminated abruptly due to a crash."
+msgid "Container process terminated abruptly potentially due to a memory access fault. Please report the issue at https://github.com/rimerosolutions/entrusted/issues"
+msgstr ""
+
+msgid "Could not save container security profile to {0}. {1}."
 msgstr ""
 
 msgid "Please install Docker."

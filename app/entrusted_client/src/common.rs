@@ -32,6 +32,10 @@ pub trait EventSender: Send {
     fn clone_box(&self) -> Box<dyn EventSender>;
 }
 
+// TODO use a uuid instead of a row index (first usize parameter)
+// This doesn't involve too many changes per previous tests that won't make it in 0.2.6
+// One annoyance overall is performance to quickly map documents IDs to widgets and cleaning up elegantly resources
+// One other detail to watch for is that in case of application crashes we should ensure that all the relevant temporary folders get deleted...
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub enum AppEvent {
     FileOpenEvent(String),

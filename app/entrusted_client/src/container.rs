@@ -303,6 +303,8 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             }
         }
 
+        // TODO dynamic naming for couple of folders overall
+        // This is needed for parallel conversion and not overwritting files among other things
         let mut dz_tmp_safe:PathBuf = dz_tmp.clone();
         dz_tmp_safe.push("safe");
         mkdirp(&dz_tmp_safe, trans.clone())?;
@@ -345,8 +347,11 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
                 }
             }
 
+            // In the case of a container crash, the output file will not be present...
+            // This should be handled upstream by capturing proper exit codes of the sanitization process
             let mut container_output_file_path = dz_tmp_safe.clone();
-            container_output_file_path.push("safe-output-compressed.pdf");
+            container_output_file_path.push("safe-output-compressed.pdf");            
+            
             let atime = FileTime::now();
 
             fs::copy(&container_output_file_path, &output_path)?;

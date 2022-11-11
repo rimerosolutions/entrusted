@@ -350,23 +350,28 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             // In the case of a container crash, the output file will not be present...
             // This should be handled upstream by capturing proper exit codes of the sanitization process
             let mut container_output_file_path = dz_tmp_safe.clone();
-            container_output_file_path.push("safe-output-compressed.pdf");            
-            
-            let atime = FileTime::now();
+            container_output_file_path.push("safe-output-compressed.pdf");
 
-            fs::copy(&container_output_file_path, &output_path)?;
-            fs::remove_file(container_output_file_path)?;
+            if !container_output_file_path.exists() {
+                let msg_info = trans.gettext("Potential sanitization process crash detected, the sanitized PDF result was not created.");
+                err_msg.push_str(&msg_info);
+            } else {
+                let atime = FileTime::now();
 
-            let output_file = fs::File::open(&output_path)?;
+                fs::copy(&container_output_file_path, &output_path)?;
+                fs::remove_file(container_output_file_path)?;
 
-            // This seems to fail on Microsoft Windows with permission denied errors
-            let _ = filetime::set_file_handle_times(&output_file, Some(atime), Some(atime));
+                let output_file = fs::File::open(&output_path)?;
 
-            if let Err(ex) = cleanup_dir(&dz_tmp_safe) {
-                tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, trans.gettext_fmt("Failed to cleanup temporary folder: {0}. {1}.", vec![&dz_tmp.clone().display().to_string(), &ex.to_string()]))))?;
+                // This seems to fail on Microsoft Windows with permission denied errors
+                let _ = filetime::set_file_handle_times(&output_file, Some(atime), Some(atime));
+
+                if let Err(ex) = cleanup_dir(&dz_tmp_safe) {
+                    tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, trans.gettext_fmt("Failed to cleanup temporary folder: {0}. {1}.", vec![&dz_tmp.clone().display().to_string(), &ex.to_string()]))))?;
+                }
+
+                success = true;
             }
-
-            success = true;
         } else {
             err_msg = trans.gettext("Conversion failed!");
         }

@@ -30,6 +30,9 @@ msgstr ""
 #~ "MIME-Version: 1.0\n"
 #~ "Content-Type: text/plain; charset=UTF-8"
 
+msgid "Potential sanitization process crash detected, the sanitized PDF result was not created."
+msgstr ""
+
 msgid "Cannot remove output file: {0}. {1}."
 msgstr ""
 

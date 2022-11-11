@@ -18,10 +18,10 @@
   - [ ] Revisit migration from local shell scripts to GitHub actions
   - [ ] Add =rust-version= to cargo manifests and update ci/cd pipeline accordingly for extracting versions
 
-* Milestone: Usability and features stabilization [85%]
+* Milestone: Usability and features stabilization [100%]
 
-- [-] Improved conversions  
-  - [ ] Address occasional conversion failures (concurrency? file not found?)
+- [X] Improved conversions  
+  - [X] Address occasional conversion failures due to container process crashes
   - [X] Custom output location for individual documents in the conversion queue
   - [X] Support for password-protected documents
   - [X] Better control over image quality and clearer understanding of output size expectations

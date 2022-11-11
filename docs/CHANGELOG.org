@@ -2,7 +2,7 @@
 
 * entrusted-0.2.6 (UNRELEASED)
 
-- bugfix: Intermittent failures in batch conversions since 0.2.4
+- bugfix: Intermittent failures in batch conversions since due to container process crashes
 - enhancement: More predictable PDF quality and PDF result size
 - enhancement: Define a tailored security profile for the container solution
 - enhancement: Display overall progress information and final status summary

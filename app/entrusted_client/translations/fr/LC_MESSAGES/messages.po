@@ -302,11 +302,14 @@ msgstr "La commande a échoué!"
 msgid "Conversion failed!"
 msgstr "La conversion a échoué!"
 
-msgid "Container process terminated abruptly likely due to memory usage. Are PDF pages too big? Trying increasing the container engine memory."
+msgid "Container process terminated abruptly potentially due to memory usage. Are PDF pages too big? Try increasing the container engine memory allocation?"
 msgstr "Le processus de conteneur s'est terminé brusquement probablement en raison de l'utilisation de la mémoire. Les pages PDF sont-elles trop grandes? Vous essayez d'augmenter la mémoire du moteur de conteneur."
 
-msgid "Container process terminated abruptly due to a crash."
-msgstr "Le processus de conteneur s'est terminé brusquement en raison d'un crash."
+msgid "Container process terminated abruptly potentially due to a memory access fault. Please report the issue at https://github.com/rimerosolutions/entrusted/issues"
+msgstr "Le processus de conteneur s'est terminé brusquement, potentiellement en raison d'une erreur d'accès à la mémoire. Veuillez signaler le problème à https://github.com/rimerosolutions/entrusted/issues"
+
+msgid "Could not save container security profile to {0}. {1}."
+msgstr "Impossible d'enregistrer le profil de sécurité du conteneur dans {0}. {1}."
 
 msgid "Please install Docker."
 msgstr "Veuillez installer Docker."

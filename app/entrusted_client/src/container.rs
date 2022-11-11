@@ -119,18 +119,14 @@ fn exec_crt_command (cmd_desc: String, container_program: common::ContainerProgr
                     return Ok(());
                 } else {
                     if let Some(exit_code) = exit_status.code() {
-                        // Mitigate apparent 139 exit codes that don't happen with Debian bullseye
-                        // Sadly it's a much bigger image than with Alpine so we decide to mitigate the issue
-                        // Apparently a vsyscall=emulate argument needs to be added to /proc/cmdline depending on the kernel version
-                        // Essentially not mitigating the issue would be a problem in a non-controlled environment (i.e. Live CD ISO)
-                        // See https://stackoverflow.com/questions/55508604/docker-is-exited-immediately-when-runs-with-error-code-139
-                        // See https://unix.stackexchange.com/questions/478387/running-a-centos-docker-image-on-arch-linux-exits-with-code-139
-                        if exit_code == 139 {
-                            return Ok(());
-                        }
+                        // Please see https://betterprogramming.pub/understanding-docker-container-exit-codes-5ee79a1d58f6
+                        if exit_code == 139 || exit_code == 137 {
+                            let mut explanation = trans.gettext("Container process terminated abruptly potentially due to memory usage. Are PDF pages too big? Try increasing the container engine memory allocation?");
 
-                        if exit_code == 137 {
-                            let explanation = trans.gettext("Container process terminated abruptly likely due to memory usage. Are PDF pages too big? Trying increasing the container memory.");
+                            if exit_code == 139 {
+                                explanation = trans.gettext("Container process terminated abruptly potentially due to a memory access fault. Please report the issue at: https://github.com/rimerosolutions/entrusted/issues");
+                            }
+
                             let lm = common::LogMessage {
                                 data: format!("{} {}", trans.gettext("Conversion failed!"), explanation),
                                 percent_complete: 100
@@ -277,34 +273,34 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         dz_tmp.push("entrusted");
         mkdirp(&dz_tmp, trans.clone())?;
         cleanup_dir(&dz_tmp)?;
-        
-        
+
+
         let seccomp_profile_data = include_bytes!("../seccomp-entrusted-profile.json");
         let seccomp_profile_filename = format!("seccomp-entrusted-profile-{}.json", option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"));
         let seccomp_profile_pathbuf = PathBuf::from(dz_tmp.join(seccomp_profile_filename));
         // convert_args.push("--security-opt".to_string());
         // convert_args.push(format!("seccomp={}", seccomp_profile_pathbuf.display()));
-        
+
         if !seccomp_profile_pathbuf.exists() {
             let f_ret = fs::File::create(&seccomp_profile_pathbuf);
-            
+
             match f_ret {
                 Ok(mut f) => {
                     if let Err(ex) = f.write_all(seccomp_profile_data) {
-                        tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;                
+                        tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
                         return Err(ex.into());
                     }
-                    
+
                     if let Err(ex) = f.sync_all() {
-                        tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;                
+                        tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
                         return Err(ex.into());
                     }
                 },
                 Err(ex) => {
-                    tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;                
+                    tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
                     return Err(ex.into());
-                }            
-            }            
+                }
+            }
         }
 
         let mut dz_tmp_safe:PathBuf = dz_tmp.clone();

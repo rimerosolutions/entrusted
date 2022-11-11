@@ -1,19 +1,15 @@
-FROM docker.io/alpine:3.16.2
+FROM docker.io/rust:1.64-bullseye
 
-RUN apk -U upgrade && \
-    apk add \
-    binutils \
-    leptonica-dev \
-    icu-data-full \
-    tesseract-ocr-dev \
-    libreofficekit \
-    poppler-dev \
-    cairo-dev \
-    clang gcc clang-dev gcc cargo rust \
-    tiff-dev \
-    jpeg-dev \
-    giflib-dev \
+RUN DEBIAN_FRONTEND=noninteractive apt update && DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends -y \
+    libleptonica-dev \
+    libtesseract-dev \
+    libreofficekit-dev \
+    libpoppler-dev \
+    libcairo2-dev \
+    libclang-11-dev llvm gcc \
+    libtiff-dev \
+    libjpeg-dev \
+    libgif-dev \
     libwebp-dev \
-    openjpeg-dev \
-    musl-dev \
-    curl
+    libjpeg-dev \
+    curl libpoppler-glib-dev && apt clean

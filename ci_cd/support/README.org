@@ -43,7 +43,7 @@ There are 2 key expected outcomes:
 |------------------------------+---------------------------|
 | Dockerfile.windows.amd64     | [[https://hub.docker.com/r/uycyjnzgntrn/rust-windows][uycyjnzgntrn/rust-windows]] |
 |------------------------------+---------------------------|
-| Dockerfile.container.builder | [[https://hub.docker.com/r/uycyjnzgntrn/alpine][uycyjnzgntrn/alpine]]       |
+| Dockerfile.container.builder | [[https://hub.docker.com/r/uycyjnzgntrn/debian][uycyjnzgntrn/debian]]       |
 |------------------------------+---------------------------|
 
 ** Further details

@@ -35,7 +35,7 @@ COPY --from=builder /usr/local/bin/entrusted-container /usr/local/bin/entrusted-
 
 RUN find /usr/lib/libreoffice -type f -name "*.py" -exec rm -rf {} \; \
     && rm -rf /usr/lib/python* \
-    && rm -rf /usr/include/* \
+    && rm -rf /usr/include/* /usr/share/icons/* \
     && rm -rf /usr/games /var/cache/apt /var/lib/apt/lists \
     && rm -rf /usr/bin/apt* && rm -rf /usr/bin/dpkg* && rm -rf /usr/bin/dpkg* && rm -rf /usr/bin/dpkg*\
     && rm -rf /usr/share/doc /usr/share/java /usr/share/man /usr/share/info  /var/log \
@@ -45,7 +45,7 @@ RUN find /usr/lib/libreoffice -type f -name "*.py" -exec rm -rf {} \; \
     && rm -rf /usr/lib/libreoffice/program/classes/*.jar
 
 # Add the unprivileged user
-RUN ln -s /usr/share/tesseract-ocr/4.00/tessdata /usr/share/tessdata; useradd -ms /bin/bash entrusted
+RUN useradd -ms /bin/bash entrusted
 USER entrusted
 
 # /tmp/input_file is where the first convert expects the input file to be, and

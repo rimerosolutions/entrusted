@@ -49,16 +49,16 @@ macro_rules! incl_gettext_files {
 #[derive(Clone, Debug)]
 enum ConversionType {
     None,
-    LibreOffice(&'static str), // libreoffice_filter, file_extension
+    LibreOffice(&'static str), // file_extension
     Convert,
 }
 
 struct TessSettings<'a> {
-    lang: &'a str,
-    data_dir: &'a str,
+    lang: &'a str, // tesseract lang code
+    data_dir: &'a str, // tesseract tessdata folder
 }
 
-const TESS_DATA_DIR: &str = "/usr/share/tessdata";
+const TESS_DATA_DIR: &str = "/usr/share/tesseract-ocr/4.00/tessdata";
 
 fn main() -> Result<(), Box<dyn Error>> {
     let timer = Instant::now();

@@ -985,6 +985,11 @@ impl <'a> FileListWidget {
             row.log_link.set_label(&self.trans.gettext("Logs"));
             row.log_link.set_frame(enums::FrameType::ThinUpBox);
             row.log_link.set_down_frame(enums::FrameType::ThinDownBox);
+        }
+    }
+
+    fn activate_log_links(&self) {
+        for row in self.rows.borrow_mut().iter_mut() {
             row.log_link.activate();
         }
     }
@@ -1859,6 +1864,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                         filelist_scroll_ref.redraw();
                         app::awake();
                         app::unlock();
+                        let _ = eventer.send(common::AppEvent::AllConversionEnded);
                     }
                 }
             });
@@ -2546,6 +2552,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
 
                     app::awake();
+                },                
+                common::AppEvent::AllConversionEnded => {                    
+                        filelist_widget.activate_log_links();
                 },
                 common::AppEvent::ConversionSuccessEvent(row_idx, opt_viewer_app, pdf_pathbuf, total) => {
                     filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_SUCCEEDED, enums::Color::DarkGreen);

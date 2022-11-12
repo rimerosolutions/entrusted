@@ -43,7 +43,8 @@ pub enum AppEvent {
     ConversionStartEvent(usize),
     ConversionSuccessEvent(usize, Option<String>, PathBuf, usize),
     ConversionFailureEvent(usize, usize),
-    ConversionFinishedAckEvent
+    ConversionFinishedAckEvent,
+    AllConversionEnded
 }
 
 pub fn executable_find(exe_name: &str) -> Option<PathBuf> {

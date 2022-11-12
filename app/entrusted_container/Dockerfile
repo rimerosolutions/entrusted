@@ -20,7 +20,7 @@ LABEL org.opencontainers.image.version="0.2.6"
 LABEL org.opencontainers.image.url="https://github.com/rimerosolutions/entrusted/tree/main/app/entrusted_container"
 LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrusted.git"
 
-RUN DEBIAN_FRONTEND=noninteractive apt update && apt install --no-install-recommends -y \
+RUN DEBIAN_FRONTEND=noninteractive apt update && apt upgrade && apt install --no-install-recommends -y \
     libleptonica-dev \
     libtesseract-dev \
     libreofficekit-dev \

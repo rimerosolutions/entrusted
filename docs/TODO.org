@@ -9,18 +9,22 @@
   - [ ] Ability to cancel non-started tasks
   - [ ] Evaluate opportunities to simplify the user interface
 - [ ] Improved conversions
+  - [ ] Parallel conversions with both user settings and app-managed guardrails
   - [ ] Evaluate performance optimization opportunities
   - [ ] Additional settings
     - [ ] Paper size and image extract quality (maybe LOW, MEDIUM and HIGH?)
     - [ ] OCR (multiple languages, target DPI)
-    - [ ] Add maybe some kind of profiles or presets for that???      
+    - [ ] Add maybe some kind of profiles or presets? How complex would the UI be?
 - [ ] Builds and releases
-  - [ ] Revisit migration from local shell scripts to GitHub actions
+  - [ ] Revisit migration from local shell scripts to GitHub actions (or something else)
   - [ ] Add =rust-version= to cargo manifests and update ci/cd pipeline accordingly for extracting versions
+- [ ] Code maintenance
+  - [ ] Desktop interface code cleanup for clarity and simplicity
+  - [ ] Use identifiers instead of row indices to enable parallel conversions later
 
 * Milestone: Usability and features stabilization [100%]
 
-- [X] Improved conversions  
+- [X] Improved conversions
   - [X] Address occasional conversion failures due to container process crashes
   - [X] Custom output location for individual documents in the conversion queue
   - [X] Support for password-protected documents
@@ -35,7 +39,7 @@
 - [X] Security
   - Provide custom container security profile
   - [X] Review container execution options (subject of recurring reviews)
-  - [X] Review some of the code and read few security-related articles (subject of recurring reviews)    
+  - [X] Review some of the code and read few security-related articles (subject of recurring reviews)
   - [X] Document periodic container vulnerability assessments (new =org-mode= file)
     - [X] Determine and document schedule
     - [X] Revisit currently used/preferred tool ([[https://trivy.dev/][Trivy]])

@@ -799,7 +799,10 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: &Progres
     step_num += 1;
     progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
     logger.log(progress_value, l10n.gettext("Saving PDF"));
-    document.save(output_path)?;
+    
+    if let Err(ex) = document.save(output_path) {
+        return Err(l10n.gettext_fmt("Could not save PDF file to {0}. {1}.", vec![&output_path.display().to_string(), &ex.to_string()]).into());
+    }
 
     Ok(())
 }

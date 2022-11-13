@@ -18,6 +18,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "Could not save PDF file to {0}. {1}."
+msgstr "Impossible d'enregistrer le fichier PDF dans {0}. {1}."
+
 msgid "Failed to enable password-protected Office document features! {0}"
 msgstr "Échec de l'activation des fonctionnalités de document Office protégés par mot de passe! {0}"
 

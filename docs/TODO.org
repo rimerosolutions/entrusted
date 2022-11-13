@@ -19,6 +19,7 @@
   - [ ] Revisit migration from local shell scripts to GitHub actions (or something else)
   - [ ] Add =rust-version= to cargo manifests and update ci/cd pipeline accordingly for extracting versions
 - [ ] Code maintenance
+  - [ ] Streamline locale handling (=en-CA= detection vs =en_CA= catalog translation)
   - [ ] Desktop interface code cleanup for clarity and simplicity
   - [ ] Use identifiers instead of row indices to enable parallel conversions later
 

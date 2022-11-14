@@ -106,20 +106,22 @@ Assuming that eth0 is your main network interface showing in =ip a=, run the com
   udhcpc eth0
 #+end_src
 
-*** Update the date
-
-In the code below, change the date to your actual /host machine/ date.
-
-#+begin_src sh
-  date --set="2022-11-13 18:40:00"
-#+end_src
-
 *** Configure repositories
 
 #+begin_src sh
   echo "http://dl-cdn.alpinelinux.org/alpine/v3.16/main" >> /etc/apk/repositories
   echo "http://dl-cdn.alpinelinux.org/alpine/v3.16/community" >> /etc/apk/repositories
-  apk update
+  apk update && apk add tzdata
+#+end_src
+
+*** Update the date
+
+In the code below, change the date to your actual /host machine/ date.
+
+#+begin_src sh
+  cp /usr/share/zoneinfo/America/New_York /etc/localtime
+  echo "America/New_York" > /etc/timezone
+  date --set="2022-11-13 18:40:00"
 #+end_src
 
 *** Install required packages

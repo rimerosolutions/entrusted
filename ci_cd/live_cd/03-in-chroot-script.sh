@@ -47,7 +47,7 @@ useradd -ms /bin/bash entrusted
 usermod -G sudo entrusted
 
 echo "Creating entrusted user files and pulling container image"
-/usr/sbin/runuser -l entrusted -c "/files/04-user-chroot-script.sh ${ENTRUSTED_VERSION}"
+runuser -l entrusted -c "/files/04-user-chroot-script.sh ${ENTRUSTED_VERSION}"
 
 echo "Copying entrusted binaries"
 mv /files/entrusted-webserver /files/entrusted-cli /usr/local/bin

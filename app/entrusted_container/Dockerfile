@@ -48,6 +48,10 @@ RUN find /usr/lib/libreoffice -type f -name "*.py" -exec rm -rf {} \; \
 RUN useradd -ms /bin/bash entrusted
 USER entrusted
 
+VOLUME /safezone
+
+# We're not declaring all volumes explicity. input_file might get interpreted as a directory for squashed images somehow
+# Need to revisit the above claim in the future, based on old observations
 # /tmp/input_file is where the first convert expects the input file to be, and
 # /tmp where it will write the pixel files
 #

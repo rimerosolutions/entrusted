@@ -1,0 +1,209 @@
+#+TITLE: Testing
+
+This document describes basic testing notes
+- This serves as general reference
+- This helps understand *how to test arm64 Linux binaries from a typical amd64 system*
+
+* Testing details
+
+All the testing is performed is a set of manual integration tests at this time.
+
+- *Test Environments*
+  - CPU architectures
+    - amd64: Few Linux distributions, Mac OS and Windows 11
+    - arm64: Linux only (Alpine Linux Virtual machine running on an amd64 machine, per arm64 testing instructions to follow)
+  - *Container solutions*
+    - [[https://www.docker.com/][Docker]] (Windows amd64, Linux arm64)
+    - [[https://podman.io/][Podman]] (Linux amd64)
+    - [[https://github.com/lima-vm/lima][Lima]] (Mac OS amd64)
+  - *Components*
+    - =entrusted-client= (Desktop and command-line interfaces)
+    - =entrusted-webserver= (Online Web service with a Web interface)
+      - Standalone binary testing
+      - Live CD testing
+    - =entrusted-webclient= (Command-line client for =entrusted-webserver=)
+- *Test data*
+  - Mostly sample files from the Entrusted [[https://github.com/rimerosolutions/entrusted][GitHub repository]] (=test_data= folder)
+  - Additionally medium-size documents such as the [[https://github.com/void-linux/void-docs/files/4985723/handbook.pdf][Void Linux handbook PDF version]] (~136 pages)
+- *Test machines technical specifications*
+  - RAM: At least 10 GB of RAM
+  - CPU: At least 2 cpus
+
+* Amd64 Testing
+
+- On Windows
+  - Install =Docker= and start it
+  - Convert few files
+- On Linux, install =Podman= and convert few files:
+  - Test with both Fedora and another distribution such as Debian
+  - Due to SELinux or other specifics the program might work fine on Debian (or other Distributions), but fail miserably under Fedora
+- On Mac OS, install Lima
+  - Run =brew install lima= and start it =limactl start=
+  - Convert few files
+
+* Arm64 Linux testing from amd64 hosts
+
+This describes the testing process from a Live CD of Alpine Linux (=aarch64/arm64= ISO image)
+- We setup a QEMU virtual machine from an amd64 computer
+- We don't perform a permanent installation
+- I'm *assuming that you're running a Unix/Linux environment*, in my case it's a =Mac OS= machine
+
+** Download the alpine ISO image
+
+#+begin_src sh
+  curl -L -O https://dl-cdn.alpinelinux.org/alpine/v3.16/releases/aarch64/alpine-standard-3.16.2-aarch64.iso
+#+end_src
+
+*** Generate required files
+
+Source: https://gist.github.com/oznu/ac9efae7c24fd1f37f1d933254587aa4
+
+#+begin_src sh
+  curl -L -O https://releases.linaro.org/components/kernel/uefi-linaro/latest/release/qemu64/QEMU_EFI.fd
+  dd if=/dev/zero of=flash0.img bs=1m count=64
+  dd if=QEMU_EFI.fd of=flash0.img conv=notrunc
+  dd if=/dev/zero of=flash1.img bs=1m count=64
+#+end_src
+
+*** Launch the Alpine system
+
+Create a script with the contents below called =qemu_test_arm64= and make it executable (=chmod +x qemu_test_arm64=).
+- The script below has been tested from a reasonably powerful Mac OS machine (64 GB of RAM and 10 CPUs).
+- Emulating arm64 on amd64 is *very slow*, thus why *we dare allocating  20 GB of RAM and 2 cpus* in the script
+
+#+begin_src sh
+  #!/usr/bin/env sh
+
+  qemu-system-aarch64 -m 20G -smp 2 -cpu cortex-a57 -M virt -nographic \
+    -device intel-hda -device hda-duplex -pflash flash0.img \
+    -pflash flash1.img \
+    -device virtio-scsi-pci,id=scsi0              \
+    -object rng-random,filename=/dev/urandom,id=rng0      \
+    -netdev user,id=user0 -device virtio-net-device,netdev=user0 \
+    -serial mon:stdio -nodefaults            \
+    -drive if=none,id=cd,file=$1 \
+    -device scsi-cd,drive=cd
+#+end_src
+
+Launch the system, this will take some time depending on your machine technical specifications.
+
+#+begin_src sh
+  ./qemu_test_arm64
+#+end_src
+
+** Setup base system
+
+You can login with the user =root= and an empty password once the system boots.
+
+*** Enable networking
+
+Source: https://techoverflow.net/2021/05/03/how-to-check-enable-dhcp-in-alpine-linux-installer/
+
+Assuming that eth0 is your main network interface showing in =ip a=, run the commands below for DHCP.
+
+#+begin_src sh
+  ifconfig eth0 up
+  udhcpc eth0
+#+end_src
+
+*** Update the date
+
+In the code below, change the date to your actual /host machine/ date.
+
+#+begin_src sh
+  date --set="2022-11-13 18:40:00"
+#+end_src
+
+*** Configure repositories
+
+#+begin_src sh
+  echo "http://dl-cdn.alpinelinux.org/alpine/v3.16/main" >> /etc/apk/repositories
+  echo "http://dl-cdn.alpinelinux.org/alpine/v3.16/community" >> /etc/apk/repositories
+  apk update
+#+end_src
+
+*** Install required packages
+
+#+begin_src sh
+  apk add docker debootstrap bash git ca-certificates curl wget
+  service docker start
+#+end_src
+
+*** Create user
+
+#+begin_src sh
+  adduser -h /home/entrusted -s /bin/bash -D entrusted
+  adduser entrusted docker
+  groups entrusted
+#+end_src
+
+*** Switch to new user
+
+#+begin_src sh
+  su - entrusted
+#+end_src
+
+* Test conversions
+
+** Pull the entrusted docker image
+
+#+begin_src sh
+  docker pull docker.io/uycyjnzgntrn/entrusted_container:0.2.6
+#+end_src
+
+** Clone the entrusted source code repository
+
+#+begin_src sh
+  git clone https://github.com/rimerosolutions/entrusted.git  
+#+end_src
+
+** Download a pre-built binaries
+
+Binaries should be obtained from a trusted source. In the example below, I'm transferring files from another virtual machine (ephemeral webserver running on port =8000=).
+
+#+begin_src sh
+  curl -L -O http://10.0.2.2:8000/entrusted-linux-aarch64-0.2.6.tar && tar xvf entrusted-linux-aarch64-0.2.6.tar
+#+end_src
+
+** Run entrusted-cli with test data
+
+*Note*: To the best knowledge, only the CLI can be tested while running the QEMU arm64 image from an amd64 host!
+
+#+begin_src sh
+  ./entrusted-linux-aarch64-0.2.6/entrusted-cli --input-filename ~/entrusted/test_data/sample-pdf.pdf
+#+end_src
+
+** Check the execution results
+
+If all goes well, you should see messages similar to log below.
+
+#+begin_src text
+  localhost:~$ ./entrusted-linux-aarch64-0.2.6/entrusted-cli --input-filename ~/entrusted/test_data/sample-pdf.pdf 
+  Converting /home/entrusted/entrusted/test_data/sample-pdf.pdf
+  Running command: /usr/bin/docker inspect docker.io/uycyjnzgntrn/entrusted_container:0.2.6
+  Checking if container image exists
+  Running command: /usr/bin/docker run --rm --network none --cap-drop all --security-opt=no-new-privileges:true -v /home/entrusted/entrusted/test_data/sample-pdf.pdf:/tmp/input_file:Z -v /tmp/entrusted/safe:/safezone:Z -e LOG_FORMAT=json -e ENTRUSTED_LANGID=en docker.io/uycyjnzgntrn/entrusted_container:0.2.6 /usr/local/bin/entrusted-container
+  Starting document processing
+  Copying PDF input to /tmp/input_file_input.pdf
+  Extract PDF file into 1 PNG image
+  Extracting page 1 into a PNG image
+  Saving 1 PNG image to PDF
+  Saving PNG image 1 to PDF
+  Combining 1 PDF document
+  Collecting PDF pages
+  Updating bookmarks and page numbering
+  Processing PDF structure
+  Updating PDF dictionnary
+  Combining PDF objects
+  Compressing PDF
+  Saving PDF
+  Moving output files to their final destination
+  Conversion succeeded!
+  Elapsed time: 0 hours 0 minutes 2 seconds
+#+end_src
+
+*Notes*:
+- In the above example, we're running without a =seccomp= security profile, because I forgot to uncomment some code prior the dev build...
+  - TODO Leaving this note as a reminder to rebuild arm64 executables
+  - Once retested, update this document
+- Enabling the =seccomp= profile is required and will help verify that we have enumerated the correct allowed system calls (for both amd64 and arm64)

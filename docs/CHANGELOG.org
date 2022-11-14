@@ -6,10 +6,12 @@
 - enhancement: More predictable PDF quality and PDF result size
 - enhancement: Define a tailored security profile for the container solution
 - enhancement: Display overall progress information and final status summary
+- enhancement: Live CD availability for [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]]
 - enhancement: Add "clickable" hyperlinks in few dialogs (project and release URLs)
 - maintenance: Look and feel consistency improvements (Desktop and "Online Service" interfaces)
 - maintenance: Web framework change from [[https://actix.rs/][actix_web]] to [[https://github.com/tokio-rs/axum][axum]] for the "Online Service"
 - maintenance: Release pipeline improvements towards more reproducible builds
+- documentation: Testing notes with a focus on Linux arm64 testing from amd64 machines
 
 * entrusted-0.2.5
 

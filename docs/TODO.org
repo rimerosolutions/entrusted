@@ -1,4 +1,4 @@
-#+TITLE: ROADMAP
+#+TITLE: TODO
 
 * Milestone: Hardening and features maturity [0%]
 
@@ -23,7 +23,7 @@
   - [ ] Desktop interface code cleanup for clarity and simplicity
   - [ ] Use identifiers instead of row indices to enable parallel conversions later
 
-* Milestone: Usability and features stabilization [100%]
+* Milestone: Usability and features stabilization [85%]
 
 - [X] Improved conversions
   - [X] Address occasional conversion failures due to container process crashes
@@ -37,8 +37,14 @@
   - [X] Display overall conversion results ("X out of Y files were not successfully converted")
   - [X] Prompt for confirmation prior closing the application during conversions (Desktop only)
   - [X] Manual check for release updates (Desktop and command-line clients)
-- [X] Security
-  - Provide custom container security profile
+- [-] Security
+  - [-] Provide custom container security profile
+    - [X] Generate [[https://docs.docker.com/engine/security/seccomp/][seccomp]] file
+    - [-] Test on =amd64= machines
+      - [X] Linux
+      - [X] Mac OS
+      - [ ] Windows
+    - [ ] Test on =arm64= (Alpine Linux virtual machine, =entrusted-cli= testing only)
   - [X] Review container execution options (subject of recurring reviews)
   - [X] Review some of the code and read few security-related articles (subject of recurring reviews)
   - [X] Document periodic container vulnerability assessments (new =org-mode= file)
@@ -49,6 +55,7 @@
   - [X] Eliminate shell commands inside the container image
   - [X] Investigate why Firefox now blocks programmatic button clicks for file uploads? (missing =xdg-portal*= packages for [[https://snapcraft.io/about][snap]])
 - [X] CI/CD and packaging
+  - [X] arm64 support for the Live CD ISO image
   - [X] Better reproducible build environment
   - [X] Adopt Git flow and delete all the previous spiral branches
   - [X] Create few specific Linux packages (DEB, RPM)

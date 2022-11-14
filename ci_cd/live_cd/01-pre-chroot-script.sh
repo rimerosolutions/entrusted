@@ -12,7 +12,6 @@ test -d $HOME/LIVE_BOOT-${DEBIAN_ARCH} && sudo rm -rf $HOME/LIVE_BOOT-${DEBIAN_A
 
 echo "Install required packages"
 sudo apt update && sudo apt install -y \
-    fakeroot \
     debootstrap \
     squashfs-tools \
     dosfstools \

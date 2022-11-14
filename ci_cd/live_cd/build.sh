@@ -20,7 +20,6 @@ echo "TODO Cannot yet generate a Live ISO image for arm64, sorry!"
 echo "TODO can also not load the arm64 image from chroot for some reason at this time"
 
 for CPU_ARCH in $CPU_ARCHS ; do
-    ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-livecd-${CPU_ARCH}-${ENTRUSTED_VERSION}"
     LINUX_ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-linux-${CPU_ARCH}-${ENTRUSTED_VERSION}"
     DEBIAN_ARCH="amd64"
 
@@ -37,8 +36,6 @@ for CPU_ARCH in $CPU_ARCHS ; do
     rm -rf ${PROJECTDIR}/entrusted_client/target
     rm -rf ${PROJECTDIR}/entrusted_webclient/target
     rm -rf ${PROJECTDIR}/entrusted_webserver/target
-
-    mkdir -p "${ARTIFACTSDIR}"
 
     ROOT_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
     chmod +x "${ROOT_SCRIPTS_DIR}"/*.sh

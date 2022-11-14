@@ -106,36 +106,53 @@ Assuming that eth0 is your main network interface showing in =ip a=, run the com
   udhcpc eth0
 #+end_src
 
+*** Update the date
+
+In the code below, change the date to your actual /host machine/ date.
+
+**** Setup timezone
+
+Run the =setup-timezone= command and enter =America/New_York=.
+
+**** Create networking file
+
+Create a file at =/etc/network/interfaces=
+#+begin_src text
+  auto lo
+  iface lo inet loopback
+
+  auto eth0
+  iface eth0 inet dhcp
+     udhcpc_opts -O search
+#+end_src
+
+**** Restart ntpd
+#+begin_src sh
+  service ntpd restart
+#+end_src
+
 *** Configure repositories
 
 #+begin_src sh
   echo "http://dl-cdn.alpinelinux.org/alpine/v3.16/main" >> /etc/apk/repositories
   echo "http://dl-cdn.alpinelinux.org/alpine/v3.16/community" >> /etc/apk/repositories
-  apk update && apk add tzdata
-#+end_src
-
-*** Update the date
-
-In the code below, change the date to your actual /host machine/ date.
-
-#+begin_src sh
-  cp /usr/share/zoneinfo/America/New_York /etc/localtime
-  echo "America/New_York" > /etc/timezone
-  date --set="2022-11-13 18:40:00"
+  apk update
 #+end_src
 
 *** Install required packages
 
 #+begin_src sh
-  apk add docker debootstrap bash git ca-certificates curl wget
-  service docker start
+  apk add docker debootstrap bash git ca-certificates curl wget sudo
+  addgroup sudo
+  /etc/init.d/docker start
 #+end_src
 
 *** Create user
 
 #+begin_src sh
-  adduser -h /home/entrusted -s /bin/bash -D entrusted
+  adduser -h /home/entrusted -s /bin/ash -D entrusted
   adduser entrusted docker
+  adduser entrusted sudo
   groups entrusted
 #+end_src
 

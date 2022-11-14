@@ -79,7 +79,6 @@ Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releas
 |           | =entrusted-windows-amd64-<version>.zip=  | Archive with all programs                     |
 |-----------+------------------------------------------+-----------------------------------------------|
 | =Live CD= | =entrusted-livecd-amd64-<version>.iso=   | Web interface Live CD for virtual machines    |
-|           | =entrusted-livecd-aarch64-<version>.iso= |                                               |
 |-----------+------------------------------------------+-----------------------------------------------|
 
 * What is required?

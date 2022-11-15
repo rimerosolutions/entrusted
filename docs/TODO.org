@@ -6,10 +6,10 @@
   - [ ] Investigate alternate sandbox approaches
   - [ ] Revisit container security options and practices as part of continuous improvement
   - [-] Provide custom container security profile
-    - [ ] Generate [[https://docs.docker.com/engine/security/seccomp/][seccomp]] file (doesn't work on arm64 yet...)
-    - [-] Test on =amd64= machines
-      - [X] Linux
-      - [X] Mac OS
+    - [ ] Generate [[https://docs.docker.com/engine/security/seccomp/][seccomp]] file (doesn't work on arm64 yet, test all supported container solutions too...)
+    - [ ] Test on =amd64= machines
+      - [ ] Linux
+      - [ ] Mac OS
       - [ ] Windows
     - [X] Test on =arm64= (Alpine Linux virtual machine, =entrusted-cli= testing only)
 - [ ] User interface

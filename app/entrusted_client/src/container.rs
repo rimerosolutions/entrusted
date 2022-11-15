@@ -274,31 +274,39 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         mkdirp(&dz_tmp, trans.clone())?;
         cleanup_dir(&dz_tmp)?;
 
-        // TODO generate profile for seccomp on arm64
-        // let seccomp_profile_data = include_bytes!("../seccomp-entrusted-profile.json");
-        // let seccomp_profile_filename = format!("seccomp-entrusted-profile-{}.json", option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"));
-        // let seccomp_profile_pathbuf = PathBuf::from(dz_tmp.join(seccomp_profile_filename));
-        // convert_args.push("--security-opt".to_string());
-        // convert_args.push(format!("seccomp={}", seccomp_profile_pathbuf.display()));
+        // TODO Make the seccomp profile work for arm64
+        // There are ongoing tech challenges generating the seccomp profile under QEMU from an amd64 host (Alpine Linux aarch64 ISO)...
+        // Ideally we'll maintain a single JSON seccomp profile JSON file that works for both arm64 and amd64
+        // Also noticed some issue with Docker on Mac OS that are apparently related to the seccomp profile, so it's not just an arm64 issue...
+        // #[cfg(not(target_arch = "aarch64"))]
+        // {
+        //     use std::io::Write;
 
-        // if !seccomp_profile_pathbuf.exists() {
-        //     let f_ret = fs::File::create(&seccomp_profile_pathbuf);
+        //     let seccomp_profile_data = include_bytes!("../seccomp-entrusted-profile.json");
+        //     let seccomp_profile_filename = format!("seccomp-entrusted-profile-{}.json", option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"));
+        //     let seccomp_profile_pathbuf = PathBuf::from(dz_tmp.join(seccomp_profile_filename));
+        //     convert_args.push("--security-opt".to_string());
+        //     convert_args.push(format!("seccomp={}", seccomp_profile_pathbuf.display()));
 
-        //     match f_ret {
-        //         Ok(mut f) => {
-        //             if let Err(ex) = f.write_all(seccomp_profile_data) {
+        //     if !seccomp_profile_pathbuf.exists() {
+        //         let f_ret = fs::File::create(&seccomp_profile_pathbuf);
+
+        //         match f_ret {
+        //             Ok(mut f) => {
+        //                 if let Err(ex) = f.write_all(seccomp_profile_data) {
+        //                     tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
+        //                     return Err(ex.into());
+        //                 }
+
+        //                 if let Err(ex) = f.sync_all() {
+        //                     tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
+        //                     return Err(ex.into());
+        //                 }
+        //             },
+        //             Err(ex) => {
         //                 tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
         //                 return Err(ex.into());
         //             }
-
-        //             if let Err(ex) = f.sync_all() {
-        //                 tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
-        //                 return Err(ex.into());
-        //             }
-        //         },
-        //         Err(ex) => {
-        //             tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
-        //             return Err(ex.into());
         //         }
         //     }
         // }
@@ -308,6 +316,15 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         let mut dz_tmp_safe:PathBuf = dz_tmp.clone();
         dz_tmp_safe.push("safe");
         mkdirp(&dz_tmp_safe, trans.clone())?;
+
+        // Mitigate volume permissions issues with Docker under Linux
+        #[cfg(not(target_os = "windows"))] {
+            use std::ffi::CString;
+            let path_safe_string = dz_tmp_safe.display().to_string();
+            let path_safe_cstring = CString::new(path_safe_string).unwrap();
+            let path_safe = path_safe_cstring.as_bytes().as_ptr() as *mut std::os::raw::c_char;
+            let _ = unsafe { libc::chmod (path_safe, 0o777) };
+        }
 
         let safedir_volume = format!("{}:/safezone:Z", dz_tmp_safe.display());
 

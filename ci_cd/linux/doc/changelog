@@ -5,7 +5,7 @@ entrusted (0.2.6) stable; urgency=medium
   * Make PDF result quality and size more predictable
   * Display overall progress information and final status summary
   * Add "clickable" hyperlinks in few dialogs
-  * Look and feel consistency improvements
+  * Improve look and feel consistency
 
  -- Yves Zoundi <yves_zoundi@hotmail.com>  Wed, 11 Sept 2022 09:38:25 -0400
 

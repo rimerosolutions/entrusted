@@ -5,7 +5,6 @@
 - bugfix: Intermittent failures in batch conversions due to container process crashes
 - bugfix: Permission denied errors at the end of conversions, under Linux with Docker
 - enhancement: More predictable PDF quality and PDF result size
-- enhancement: Define a tailored security profile for the container solution
 - enhancement: Display overall progress information and final status summary
 - enhancement: Add "clickable" hyperlinks in few dialogs (project and release URLs)
 - maintenance: Look and feel consistency improvements (Desktop and "Online Service" interfaces)

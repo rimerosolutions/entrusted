@@ -7,11 +7,7 @@
   - [ ] Revisit container security options and practices as part of continuous improvement
   - [-] Provide custom container security profile
     - [ ] Generate [[https://docs.docker.com/engine/security/seccomp/][seccomp]] file (doesn't work on arm64 yet, test all supported container solutions too...)
-    - [ ] Test on =amd64= machines
-      - [ ] Linux
-      - [ ] Mac OS
-      - [ ] Windows
-    - [X] Test on =arm64= (Alpine Linux virtual machine, =entrusted-cli= testing only)
+    - [ ] Test on =amd64 (Linux, Mac OS, Windows)= and =arm64 (Linux)= machines
 - [ ] User interface
   - [ ] Ability to cancel non-started tasks
   - [ ] Evaluate opportunities to simplify the user interface
@@ -30,10 +26,10 @@
   - [ ] Desktop interface code cleanup for clarity and simplicity
   - [ ] Use identifiers instead of row indices to enable parallel conversions later
 
-* Milestone: Usability and features stabilization [85%]
+* Milestone: Usability and features stabilization [100%]
 
-- [-] Improved conversions
-  - [ ] Address permission denied errors with Docker under Linux (volume permissions)
+- [X] Improved conversions
+  - [X] Address permission denied errors with Docker under Linux (volume permissions)
   - [X] Address occasional conversion failures due to container process crashes
   - [X] Custom output location for individual documents in the conversion queue
   - [X] Support for password-protected documents

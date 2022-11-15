@@ -169,23 +169,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn move_file_to_dir(logger: &Box<dyn ConversionLogger>, progress_range: &ProgressRange, src_file_path: &Path, dest_dir_path: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
-    if let Err(ex) = fs::File::create(&dest_dir_path) {
-        if let Some(dest_dir) = dest_dir_path.parent() {
-            if let Err(_) = fs::create_dir_all(dest_dir) {
-                logger.log(progress_range.min, l10n.gettext_fmt("Failed to copy file from {0} to {1}", vec![&src_file_path.display().to_string(), &dest_dir_path.display().to_string()]));
-            }
-
-            return Err(ex.into());
-        }
-    }
-
     if let Err(ex) = fs::copy(&src_file_path, &dest_dir_path) {
         logger.log(progress_range.min, l10n.gettext_fmt("Failed to copy file from {0} to {1}", vec![&src_file_path.display().to_string(), &dest_dir_path.display().to_string()]));
         return Err(ex.into());
     }
 
     if let Err(ex) = fs::remove_file(&src_file_path) {
-        logger.log(progress_range.min, l10n.gettext_fmt("Failed to copy file from {0} to {1}", vec![&src_file_path.display().to_string(), &dest_dir_path.display().to_string()]));
+        logger.log(progress_range.min, l10n.gettext_fmt("Failed to remove file from {0}.", vec![&src_file_path.display().to_string()]));
         return Err(ex.into());
     }
 

@@ -165,6 +165,9 @@ msgstr[2] ""
 msgid "Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English."
 msgstr ""
 
+msgid "Failed to remove file from {0}."
+msgstr ""
+
 msgid "Failed to copy file from {0} to {1}"
 msgstr ""
 

@@ -45,10 +45,8 @@ RUN find /usr/lib/libreoffice -type f -name "*.py" -exec rm -rf {} \; \
     && rm -rf /usr/lib/libreoffice/program/classes/*.jar
 
 # Add the unprivileged user
-RUN useradd -ms /bin/bash entrusted
+RUN useradd -ms /bin/bash entrusted && mkdir /safezone && chmod -R a+rw /safezone
 USER entrusted
-
-VOLUME /safezone
 
 # We're not declaring all volumes explicity. input_file might get interpreted as a directory for squashed images somehow
 # Need to revisit the above claim in the future, based on old observations

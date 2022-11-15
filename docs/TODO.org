@@ -44,7 +44,7 @@
       - [X] Linux
       - [X] Mac OS
       - [ ] Windows
-    - [ ] Test on =arm64= (Alpine Linux virtual machine, =entrusted-cli= testing only)
+    - [X] Test on =arm64= (Alpine Linux virtual machine, =entrusted-cli= testing only)
   - [X] Review container execution options (subject of recurring reviews)
   - [X] Review some of the code and read few security-related articles (subject of recurring reviews)
   - [X] Document periodic container vulnerability assessments (new =org-mode= file)

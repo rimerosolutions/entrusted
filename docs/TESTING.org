@@ -142,8 +142,7 @@ Create a file at =/etc/network/interfaces=
 *** Install required packages
 
 #+begin_src sh
-  apk add docker debootstrap bash git ca-certificates curl wget sudo
-  addgroup sudo
+  apk add docker debootstrap bash git ca-certificates curl
   /etc/init.d/docker start
 #+end_src
 
@@ -152,8 +151,6 @@ Create a file at =/etc/network/interfaces=
 #+begin_src sh
   adduser -h /home/entrusted -s /bin/ash -D entrusted
   adduser entrusted docker
-  adduser entrusted sudo
-  groups entrusted
 #+end_src
 
 *** Switch to new user

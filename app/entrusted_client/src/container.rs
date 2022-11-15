@@ -1,7 +1,7 @@
 use serde_json;
 use std::error::Error;
 use std::fs;
-use std::io::{self, Write};
+use std::io::{self};
 use std::process::Child;
 use filetime::FileTime;
 use std::path::PathBuf;
@@ -274,33 +274,34 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         mkdirp(&dz_tmp, trans.clone())?;
         cleanup_dir(&dz_tmp)?;
 
-        let seccomp_profile_data = include_bytes!("../seccomp-entrusted-profile.json");
-        let seccomp_profile_filename = format!("seccomp-entrusted-profile-{}.json", option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"));
-        let seccomp_profile_pathbuf = PathBuf::from(dz_tmp.join(seccomp_profile_filename));
-        convert_args.push("--security-opt".to_string());
-        convert_args.push(format!("seccomp={}", seccomp_profile_pathbuf.display()));
+        // TODO generate profile for seccomp on arm64
+        // let seccomp_profile_data = include_bytes!("../seccomp-entrusted-profile.json");
+        // let seccomp_profile_filename = format!("seccomp-entrusted-profile-{}.json", option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"));
+        // let seccomp_profile_pathbuf = PathBuf::from(dz_tmp.join(seccomp_profile_filename));
+        // convert_args.push("--security-opt".to_string());
+        // convert_args.push(format!("seccomp={}", seccomp_profile_pathbuf.display()));
 
-        if !seccomp_profile_pathbuf.exists() {
-            let f_ret = fs::File::create(&seccomp_profile_pathbuf);
+        // if !seccomp_profile_pathbuf.exists() {
+        //     let f_ret = fs::File::create(&seccomp_profile_pathbuf);
 
-            match f_ret {
-                Ok(mut f) => {
-                    if let Err(ex) = f.write_all(seccomp_profile_data) {
-                        tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
-                        return Err(ex.into());
-                    }
+        //     match f_ret {
+        //         Ok(mut f) => {
+        //             if let Err(ex) = f.write_all(seccomp_profile_data) {
+        //                 tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
+        //                 return Err(ex.into());
+        //             }
 
-                    if let Err(ex) = f.sync_all() {
-                        tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
-                        return Err(ex.into());
-                    }
-                },
-                Err(ex) => {
-                    tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
-                    return Err(ex.into());
-                }
-            }
-        }
+        //             if let Err(ex) = f.sync_all() {
+        //                 tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
+        //                 return Err(ex.into());
+        //             }
+        //         },
+        //         Err(ex) => {
+        //             tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
+        //             return Err(ex.into());
+        //         }
+        //     }
+        // }
 
         // TODO dynamic naming for couple of folders overall
         // This is needed for parallel conversion and not overwritting files among other things

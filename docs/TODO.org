@@ -2,9 +2,16 @@
 
 * Milestone: Hardening and features maturity [0%]
 
-- [ ] Security
+- [-] Security
   - [ ] Investigate alternate sandbox approaches
   - [ ] Revisit container security options and practices as part of continuous improvement
+  - [-] Provide custom container security profile
+    - [ ] Generate [[https://docs.docker.com/engine/security/seccomp/][seccomp]] file (doesn't work on arm64 yet...)
+    - [-] Test on =amd64= machines
+      - [X] Linux
+      - [X] Mac OS
+      - [ ] Windows
+    - [X] Test on =arm64= (Alpine Linux virtual machine, =entrusted-cli= testing only)
 - [ ] User interface
   - [ ] Ability to cancel non-started tasks
   - [ ] Evaluate opportunities to simplify the user interface
@@ -25,7 +32,8 @@
 
 * Milestone: Usability and features stabilization [85%]
 
-- [X] Improved conversions
+- [-] Improved conversions
+  - [ ] Address permission denied errors with Docker under Linux (volume permissions)
   - [X] Address occasional conversion failures due to container process crashes
   - [X] Custom output location for individual documents in the conversion queue
   - [X] Support for password-protected documents
@@ -37,14 +45,7 @@
   - [X] Display overall conversion results ("X out of Y files were not successfully converted")
   - [X] Prompt for confirmation prior closing the application during conversions (Desktop only)
   - [X] Manual check for release updates (Desktop and command-line clients)
-- [-] Security
-  - [-] Provide custom container security profile
-    - [X] Generate [[https://docs.docker.com/engine/security/seccomp/][seccomp]] file
-    - [-] Test on =amd64= machines
-      - [X] Linux
-      - [X] Mac OS
-      - [ ] Windows
-    - [X] Test on =arm64= (Alpine Linux virtual machine, =entrusted-cli= testing only)
+- [X] Security
   - [X] Review container execution options (subject of recurring reviews)
   - [X] Review some of the code and read few security-related articles (subject of recurring reviews)
   - [X] Document periodic container vulnerability assessments (new =org-mode= file)

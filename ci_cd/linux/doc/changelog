@@ -1,8 +1,8 @@
 entrusted (0.2.6) stable; urgency=medium
 
+  * Fix Docker permission denied errors at the end of conversions, under Linux
   * Fix intermittent failures in batch conversions due to container process crashes
   * Make PDF result quality and size more predictable
-  * Provide custom container security profile for seccomp
   * Display overall progress information and final status summary
   * Add "clickable" hyperlinks in few dialogs
   * Look and feel consistency improvements

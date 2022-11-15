@@ -223,3 +223,32 @@ If all goes well, you should see messages similar to log below.
   - TODO Leaving this note as a reminder to rebuild arm64 executables
   - Once retested, update this document
 - Enabling the =seccomp= profile is required and will help verify that we have enumerated the correct allowed system calls (for both amd64 and arm64)
+
+  
+* Other notes
+
+It it also possible to use Podman instead of Docker, less straightforward to configure.
+
+Source: https://wiki.alpinelinux.org/wiki/Podman
+
+#+begin_src sh
+  apk add podman cgroups
+  rc-service cgroups start
+  rc-service podman start
+  modprobe tun
+  echo tun >>/etc/modules
+  echo entrusted:100000:65536 >/etc/subuid
+  echo entrusted:100000:65536 >/etc/subgid
+#+end_src
+
+As a regular user =entrusted=
+
+#+begin_src sh
+  podman system migrate
+#+end_src
+
+Then you need first to capture the underlying podman command executed by =entrusted-cli= similarly to =Docker=. You'll also have to remove the =seccomp= security option.
+
+Trying to generate a seccomp profile is problematic, as the Alpine Live CD kernel is not built with =CONFIG_IKHEADERS= which is required by [[https://github.com/containers/oci-seccomp-bpf-hook/][oci-seccomp-bpf-hook]].
+
+Hints: =cat /var/log/messages=

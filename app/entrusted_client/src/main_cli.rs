@@ -19,7 +19,7 @@ const LOG_FORMAT_PLAIN: &str = "plain";
 
 #[derive(Clone)]
 struct CliEventSender {
-    tx: mpsc::SyncSender<common::AppEvent>
+    tx: mpsc::Sender<common::AppEvent>
 }
 
 impl common::EventSender for CliEventSender {
@@ -238,7 +238,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let (exec_handle, rx) = {
-        let (tx, rx) = mpsc::sync_channel::<common::AppEvent>(5);
+        let (tx, rx) = mpsc::channel::<common::AppEvent>();
 
         let exec_handle = thread::spawn({
             let tx = tx.clone();

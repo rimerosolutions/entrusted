@@ -41,7 +41,7 @@ const EVENT_ID_ALL_DESELECTED: i32    = 52;
 
 #[derive(Clone)]
 struct GuiEventSender {
-    tx: mpsc::SyncSender<common::AppEvent>
+    tx: mpsc::Sender<common::AppEvent>
 }
 
 impl common::EventSender for GuiEventSender {
@@ -1021,7 +1021,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let conversion_is_active = Arc::new(AtomicBool::new(false));
 
     let app = app::App::default().with_scheme(app::Scheme::Gleam);
-    let (tx, rx) = mpsc::sync_channel::<common::AppEvent>(1);
+    let (tx, rx) = mpsc::channel::<common::AppEvent>();
     let (app_tx, app_rx) = app::channel::<common::AppEvent>();
 
     #[cfg(target_os = "macos")]

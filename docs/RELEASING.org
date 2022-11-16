@@ -1,23 +1,38 @@
 #+TITLE: RELEASING
 
-General steps:
+* Preparation tasks
 
-- Review and update the README page for impacted components (/if needed/)
-- Bump the version of the application at several places for now... 
-  - Bump the =version= field in all the projects (=Cargo.toml= files)
-    - The container image tag is inferred from the release version to standardize as much as possible
+- Review and update the =README= page for impacted components (/if needed/)
+- Bump the version of the application at several places for now (SAME version number EVERYWHERE)... 
+  - Bump the =version= field in ALL the projects (=Cargo.toml= files)
     - Please try to follow closely [[https://semver.org/][semantic versioning]]
   - Bump the =version= field in the =entrusted_container/Dockerfile= for the label =org.opencontainers.image.version=
   - Bump the version in the HTML title for =entrusted_webserver/web-assets/index.html=
-- Update Debian package changelog entries in =ci_cd/linux/doc/changelog=    
+- Update Debian package changelog entries in =ci_cd/linux/doc/changelog=
+- In revision control, push the changes to =develop= and merge =develop= into =main=
+  
+* Build tasks
+
 - On a recent Ubuntu Linux installation, build all the release artifacts =ci_cd/build.sh=
-  - This generates release artifacts under a new folder called =packages=
-  - You can then test the resulting archives and executables under Linux, Mac OS and Windows
-  - You can test the live CD ISO image with a tool such as [[https://www.qemu.org/][QEMU]] or the software of your choice
-- Merge the current branch into the =main= branch, and push the changes
-- Tag the main branch with the new =release version= (i.e. =1.1.1=) and push the changes
-- Push the container image to [[https://hub.docker.com/r/uycyjnzgntrn/entrusted_container][Docker Hub]] per [[./entrusted_container/README.org][publishing instructions]]
-- Create a new GitHub release from its Web interface:
-  - Add the release notes
-  - Upload all release artifacts (=exe=, =dmg=, =zip=, =tar=, =deb=, =rpm= and =iso= files)
-  - Publish the release
+- This generates release artifacts under a new folder called =packages=
+
+* Testing tasks
+
+- You can then test the resulting archives and executables under Linux, Mac OS and Windows
+- You can test the live CD ISO image with a tool such as [[https://www.qemu.org/][QEMU]] or similar
+
+* DockerHub tasks  
+
+- Push the container image to [[https://hub.docker.com/r/uycyjnzgntrn/entrusted_container][Docker Hub]] per [[../app/entrusted_container/README.org][publishing instructions]]
+- Apply the =latest= tag to the new image version
+  
+* Revision control tasks
+
+- Tag the main branch with the new =release version= (i.e. =1.1.1=) and push the tag  
+
+* GitHub Web interface tasks  
+
+- Draft a new releases associated with the newly created =git= tag
+- Write the release notes based on entries in =CHANGELOG.org=
+- Upload all release artifacts (=exe=, =dmg=, =zip=, =tar=, =deb=, =rpm= and =iso= files)
+- Publish the release

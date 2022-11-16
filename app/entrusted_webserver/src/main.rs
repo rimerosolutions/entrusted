@@ -12,7 +12,7 @@ mod uil10n;
 macro_rules! incl_gettext_files {
     ( $( $x:expr ),* ) => {
         {
-            let mut ret = HashMap::new();
+            let mut ret = HashMap::with_capacity(2);
             $(
                 let data = include_bytes!(concat!("../translations/", $x, "/LC_MESSAGES/messages.mo")).as_slice();
                 ret.insert($x, data);

@@ -1847,6 +1847,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     conversion_is_active_ref.store(false, Ordering::Relaxed);
 
                     let summary_message = trans_ref.ngettext("One file failed to process", "Multiple files failed to process", fail_count);
+
                     let messages_frame_color = if fail_count == 0 {
                         enums::Color::DarkGreen
                     } else {
@@ -2725,7 +2726,7 @@ pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dy
             }
 
             let path_usr_share_applications_orig = PathBuf::from(applications_folder);
-            //let mut ret: HashMap<String, String> = HashMap::new();
+
             let mut path_mimeinfo_cache = path_usr_share_applications_orig.clone();
             path_mimeinfo_cache.push("mimeinfo.cache");
 

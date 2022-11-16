@@ -29,7 +29,7 @@ const CFG_FILENAME: &str = "config.toml";
 macro_rules! incl_gettext_files {
     ( $( $x:expr ),* ) => {
         {
-            let mut ret = HashMap::new();
+            let mut ret = HashMap::with_capacity(2);
             $(
                 let data = include_bytes!(concat!("../translations/", $x, "/LC_MESSAGES/messages.mo")).as_slice();
                 ret.insert($x, data);
@@ -315,7 +315,7 @@ async fn convert_file (
     let client = Client::new();
 
     let resp = client
-        .post(format!("http://{}/upload", addr.clone()))
+        .post(format!("http://{}/api/v1/upload", addr.clone()))
         .header("Accept-Language", l10n.langid())
         .multipart(multipart_form)
         .send()

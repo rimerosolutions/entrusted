@@ -11,15 +11,16 @@
 - [ ] User interface
   - [ ] Ability to cancel non-started tasks
   - [ ] Evaluate opportunities to simplify the user interface
-- [ ] Improved conversions
-  - [ ] Parallel conversions with both user settings and app-managed guardrails
-  - [ ] Evaluate performance optimization opportunities
   - [ ] Additional settings
     - [ ] Paper size and image extract quality (maybe LOW, MEDIUM and HIGH?)
     - [ ] OCR (multiple languages, target DPI)
     - [ ] Add maybe some kind of profiles or presets? How complex would the UI be?
+- [ ] Improved conversions
+  - [ ] Parallel conversions with both user settings and app-managed guardrails
+  - [ ] Evaluate performance optimization opportunities
 - [ ] Builds and releases
   - [ ] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)    
+  - [ ] Better error handling during live CD creation that can result into an unbootable ISO
   - [ ] Revisit migration from local shell scripts to GitHub actions (or something else)
   - [ ] Add =rust-version= to cargo manifests and update ci/cd pipeline accordingly for extracting versions
 - [ ] Code maintenance

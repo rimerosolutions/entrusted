@@ -314,14 +314,14 @@ msgstr "Le processus de conteneur s'est terminé brusquement, potentiellement en
 msgid "Could not save container security profile to {0}. {1}."
 msgstr "Impossible d'enregistrer le profil de sécurité du conteneur dans {0}. {1}."
 
-msgid "Please install Docker."
-msgstr "Veuillez installer Docker."
+msgid "Please install Docker and make sure that it's running."
+msgstr "Veuillez installer Docker et assurez-vous qu'il est en cours d'exécution."
 
-msgid "Please install Docker or Lima."
-msgstr "Veuillez installer Docker ou Lima."
+msgid "Please install Docker or Lima, and make sure that it's running."
+msgstr "Veuillez installer Docker ou Lima et assurez-vous qu'il est en cours d'exécution."
 
-msgid "Please install Docker or Podman."
-msgstr "Veuillez installer Docker ou Podman."
+msgid "Please install Docker or Podman, and make sure that it's running."
+msgstr "Veuillez installer Docker ou Podman et assurez-vous qu'il est en cours d'exécution."
 
 msgid "Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English."
 msgstr "Code de langue inconnu pour le paramètre ocr-lang: {0}. Astuce: Essayez 'eng' pour l'Anglais."

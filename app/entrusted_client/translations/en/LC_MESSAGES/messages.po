@@ -300,13 +300,13 @@ msgstr ""
 msgid "Could not save container security profile to {0}. {1}."
 msgstr ""
 
-msgid "Please install Docker."
+msgid "Please install Docker and make sure that it's running."
 msgstr ""
 
-msgid "Please install Docker or Lima."
+msgid "Please install Docker or Lima, and make sure that it's running."
 msgstr ""
 
-msgid "Please install Docker or Podman."
+msgid "Please install Docker or Podman, and make sure that it's running."
 msgstr ""
 
 msgid "Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English."

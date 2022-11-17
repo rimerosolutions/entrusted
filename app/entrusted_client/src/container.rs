@@ -397,11 +397,11 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         err_msg.push_str("\n");
 
         if cfg!(any(target_os="windows")) {
-            err_msg.push_str(&trans.gettext("Please install Docker."));
+            err_msg.push_str(&trans.gettext("Please install Docker and make sure that it's running."));
         } else if cfg!(any(target_os="macos")) {
-            err_msg.push_str(&trans.gettext("Please install Docker or Lima."));
+            err_msg.push_str(&trans.gettext("Please install Docker or Lima, and make sure that it's running."));
         } else { // Linux and others
-            err_msg.push_str(&trans.gettext("Please install Docker or Podman."));
+            err_msg.push_str(&trans.gettext("Please install Docker or Podman, and make sure that it's running."));
         }
 
         tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, err_msg.clone())))?;

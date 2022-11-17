@@ -705,8 +705,9 @@ async fn run_entrusted(
     }
 
     tracing::info!(
-        "{}: {}",
+        "{}: {} {}",
         l10n.gettext("Running command"),
+        &cmd,
         cmd_args.join(" ")
     );
 

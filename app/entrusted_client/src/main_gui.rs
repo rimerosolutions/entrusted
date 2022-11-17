@@ -2555,7 +2555,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     app::awake();
                 },                
                 common::AppEvent::AllConversionEnded => {                    
-                        filelist_widget.activate_log_links();
+                    filelist_widget.activate_log_links();
                 },
                 common::AppEvent::ConversionSuccessEvent(row_idx, opt_viewer_app, pdf_pathbuf, total) => {
                     filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_SUCCEEDED, enums::Color::DarkGreen);

@@ -242,7 +242,6 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         "--cap-drop".to_string(), "all".to_string()
     ];
 
-    let input_file_volume = format!("{}:/tmp/input_file:Z", input_path.display());
     let mut err_msg = String::new();
 
     // TODO for Lima we assume the default VM instance, that might not be true all the time...
@@ -328,6 +327,32 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
 
         let safedir_volume = format!("{}:/safezone:Z", dz_tmp_safe.display());
 
+        // TODO make Lima handling more explicit but less annoying, abstractions?
+        // Need to ensure that we use /tmp/lima for Lima as other folders are not mounted by default...
+        // Note that this also applies to the default instance and we assume no expert user customization...
+        let mut tmp_input_loc = String::new();
+
+        let input_file_volume = match container_rt.suggested_tmp_dir {
+            Some(ref suggested_dir) => {
+                // This would be /tmp/lima/entrusted/requests
+                let input_dir = suggested_dir.clone().join("entrusted").join("requests");
+
+                if let Err(ex) = fs::create_dir_all(&input_dir) {
+                    return Err(trans.gettext_fmt("Cannot create directory: {0}! Error: {1}", vec![&input_dir.display().to_string(), &ex.to_string()]).into());
+                }
+
+                let filename = input_path.file_name().unwrap().to_str().unwrap();
+                let tmp_input_path = input_dir.join(filename);
+                fs::copy(&input_path, &tmp_input_path)?;
+                tmp_input_loc.push_str(&tmp_input_path.display().to_string());
+
+                format!("{}:/tmp/input_file:Z", tmp_input_loc)
+            },
+            None => {
+                format!("{}:/tmp/input_file:Z", input_path.display())
+            }
+        };
+
         convert_args.append(&mut vec![
             "-v".to_string(), input_file_volume,
             "-v".to_string(), safedir_volume,
@@ -358,6 +383,11 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         ]);
 
         if let Ok(_) = exec_crt_command(trans.gettext("Starting document processing"), container_rt, convert_args, tx.clone_box(), true, printer.clone_box(), trans.clone()) {
+            // Delete file temporarily copied to a visible mount for Lima
+            if !tmp_input_loc.is_empty() {
+                let _ = fs::remove_file(tmp_input_loc);
+            }
+
             if output_path.exists() {
                 if let Err(ex) = fs::remove_file(output_path.clone()) {
                     eprintln!("{}", trans.gettext_fmt("Cannot remove output file: {0}. {1}.", vec![&output_path.display().to_string(), &ex.to_string()]));
@@ -390,6 +420,11 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
                 success = true;
             }
         } else {
+            // Delete file temporarily copied to a visible mount for Lima
+            if !tmp_input_loc.is_empty() {
+                let _ = fs::remove_file(tmp_input_loc);
+            }
+
             err_msg = trans.gettext("Conversion failed!");
         }
     } else {

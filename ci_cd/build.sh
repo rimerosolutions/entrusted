@@ -9,13 +9,6 @@ test -d "${ROOT_SCRIPTDIR}/../artifacts" && rm -rf ${ROOT_SCRIPTDIR}/../artifact
 
 mkdir -p ${ROOT_SCRIPTDIR}/../packages
 
-sh ${ROOT_SCRIPTDIR}/create_container_image.sh
-retVal=$?
-if [ $retVal -ne 0 ]; then
-	echo "Could not build container image"
-  exit 1
-fi
-
 sh ${ROOT_SCRIPTDIR}/windows/build.sh
 retVal=$?
 if [ $retVal -ne 0 ]; then
@@ -34,6 +27,13 @@ sh ${ROOT_SCRIPTDIR}/linux/build.sh
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Linux build failure"
+  exit 1
+fi
+
+sh ${ROOT_SCRIPTDIR}/create_container_image.sh
+retVal=$?
+if [ $retVal -ne 0 ]; then
+	echo "Could not build container image"
   exit 1
 fi
 

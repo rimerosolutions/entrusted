@@ -2678,7 +2678,9 @@ pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dy
 #[cfg(target_os = "windows")]
 pub fn open_web_page(url: &str, _: &l10n::Translations) -> Result<(), Box<dyn Error>> {
     use std::os::windows::process::CommandExt;
-    match Command::new("start")
+    match Command::new("cmd")
+        .arg("/c")
+        .arg("start")
         .arg(url)
         .creation_flags(0x08000000)
         .spawn() {
@@ -2691,7 +2693,7 @@ pub fn open_web_page(url: &str, _: &l10n::Translations) -> Result<(), Box<dyn Er
 pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {
     use freedesktop_entry_parser::parse_entry;
 
-    let known_commands = vec![
+    let known_commands: Vec<(&str, Vec<&str>)> = vec![
         ("xdg-open"   , vec![]),
         ("gio"        , vec!["open"]),
         ("gnome-open" , vec![]),
@@ -2716,10 +2718,38 @@ pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dy
         }
     }
 
+    fn desktop_file_cmd(desktop_file: PathBuf) -> Option<String> {
+        if !desktop_file.exists() {
+            return None;
+        }
+
+        if let Ok(desktop_entry_data) = parse_entry(desktop_file) {
+            let desktop_entry_section = desktop_entry_data.section("Desktop Entry");
+
+            if let (Some(_), Some(cmd_name)) = (
+                &desktop_entry_section.attr("Name"),
+                &desktop_entry_section
+                    .attr("TryExec")
+                    .or(desktop_entry_section.attr("Exec")),
+            ) {
+                let cmd_name_sanitized = cmd_name
+                    .to_string()
+                    .replace("%u", "")
+                    .replace("%U", "")
+                    .replace("%f", "")
+                    .replace("%F", "");
+
+                return Some(cmd_name_sanitized);
+            }
+        }
+
+        None
+    }
+
     // Deeper look at file associations following the XDG specification conventions
     // This is similar to finding the list of PDF viewers on Linux, except that we're looking for default and then registered apps
     if opt_cmd_open.is_none() {
-        let applications_folders = &["/usr/share/applications", "/usr/local/share/applications"];
+        let applications_folders = &["/usr/share/applications", "/usr/local/share/applications", "/var/lib/snapd/desktop/applications"];
         for applications_folder in applications_folders {
             if opt_cmd_open.is_some() {
                 break;
@@ -2729,6 +2759,22 @@ pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dy
 
             let mut path_mimeinfo_cache = path_usr_share_applications_orig.clone();
             path_mimeinfo_cache.push("mimeinfo.cache");
+
+            let defaults_list = path_usr_share_applications_orig.join("defaults.list");
+
+            if defaults_list.exists() {
+                
+                if let Ok(conf) = parse_entry(defaults_list) {
+                    if let Some(mime_pdf_desktop_refs) = conf.section("Default Applications").attr("text/html") {                        
+                        let desktop_file = path_usr_share_applications_orig.join(mime_pdf_desktop_refs);
+
+                        if let Some(desktop_cmd) = desktop_file_cmd(desktop_file) {
+                            opt_cmd_open = Some((desktop_cmd, vec![]));
+                            break;
+                        }
+                    }
+                }
+            }
 
             if path_mimeinfo_cache.exists() {
                 if let Ok(conf) = parse_entry(path_mimeinfo_cache) {
@@ -2743,29 +2789,9 @@ pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dy
                             let mut desktop_file = path_usr_share_applications_orig.clone();
                             desktop_file.push(desktop_entry);
 
-                            if !desktop_file.exists() {
-                                continue;
-                            }
-
-                            if let Ok(desktop_entry_data) = parse_entry(desktop_file) {
-                                let desktop_entry_section = desktop_entry_data.section("Desktop Entry");
-
-                                if let (Some(_), Some(cmd_name)) = (
-                                    &desktop_entry_section.attr("Name"),
-                                    &desktop_entry_section
-                                        .attr("TryExec")
-                                        .or(desktop_entry_section.attr("Exec")),
-                                ) {
-                                    let cmd_name_sanitized = cmd_name
-                                        .to_string()
-                                        .replace("%u", "")
-                                        .replace("%U", "")
-                                        .replace("%f", "")
-                                        .replace("%F", "");
-
-                                    opt_cmd_open = Some((cmd_name_sanitized, vec![]));
-                                    break;
-                                }
+                            if let Some(desktop_cmd) = desktop_file_cmd(desktop_file) {
+                                opt_cmd_open = Some((desktop_cmd, vec![]));
+                                break;
                             }
                         }
                     }
@@ -2774,12 +2800,14 @@ pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dy
         }
     }
 
-    if let Some((cmd_open, cmd_open_args)) = opt_cmd_open {
+    if let Some((cmd_open, _)) = opt_cmd_open {
         let mut new_args = vec![];
-        new_args.extend(&cmd_open_args);
-        new_args.push(url);
+        new_args.push("-c");
+        let mut arguments = cmd_open.clone();
+        arguments.push_str(" ");
+        arguments.push_str(url);
 
-        match Command::new(cmd_open).args(new_args).spawn() {
+        match Command::new("/bin/sh").arg("-c").arg(arguments).spawn() {
             Ok(_)   => Ok(()),
             Err(ex) => Err(ex.into()),
         }

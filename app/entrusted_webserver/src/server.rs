@@ -61,7 +61,7 @@ pub async fn serve(
     ci_image_name: String,
     trans: l10n::Translations,
 ) -> Result<(), Box<dyn Error>> {
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt().with_ansi(false).init();
 
     let state_trans = Arc::new(trans.clone());
     let state_bc = Broadcaster::create();

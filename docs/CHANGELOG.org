@@ -1,6 +1,6 @@
 #+TITLE: CHANGELOG
 
-* entrusted-0.2.6 (UNRELEASED)
+* entrusted-0.2.6
 
 - bugfix: Intermittent failures in batch conversions due to container process crashes
 - bugfix: Permission denied errors at the end of conversions, under Linux with Docker

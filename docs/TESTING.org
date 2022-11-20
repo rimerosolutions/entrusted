@@ -89,7 +89,7 @@ Create a script with the contents below called =qemu_test_arm64= and make it exe
 Launch the system, this will take some time depending on your machine technical specifications.
 
 #+begin_src sh
-  ./qemu_test_arm64
+  ./qemu_test_arm64 alpine-standard-3.16.2-aarch64.iso
 #+end_src
 
 ** Setup base system

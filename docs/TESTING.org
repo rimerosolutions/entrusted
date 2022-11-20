@@ -7,7 +7,7 @@ This document describes basic testing notes
 
 * Testing details
 
-All the testing is performed is a set of manual integration tests at this time.
+All the testing is manual at this time.
 
 - *Test Environments*
   - CPU architectures
@@ -27,7 +27,7 @@ All the testing is performed is a set of manual integration tests at this time.
   - Mostly sample files from the Entrusted [[https://github.com/rimerosolutions/entrusted][GitHub repository]] (=test_data= folder)
   - Additionally medium-size documents such as the [[https://github.com/void-linux/void-docs/files/4985723/handbook.pdf][Void Linux handbook PDF version]] (~136 pages)
 - *Test machines technical specifications*
-  - RAM: At least 10 GB of RAM
+  - RAM: At least 8 GB of RAM
   - CPU: At least 2 cpus
 
 * Amd64 Testing

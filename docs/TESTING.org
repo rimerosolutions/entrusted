@@ -3,6 +3,7 @@
 This document describes basic testing notes
 - This serves as general reference
 - This helps understand *how to test arm64 Linux binaries from a typical amd64 system*
+- This supports research towards Live CD availability for arm64  
 
 * Testing details
 
@@ -163,6 +164,8 @@ Create a file at =/etc/network/interfaces=
 
 ** Pull the entrusted docker image
 
+This is done automatically by the =entrusted-cli= the first time around. We do it explicitly here to check for other potential issues.
+
 #+begin_src sh
   docker pull docker.io/uycyjnzgntrn/entrusted_container:0.2.6
 #+end_src
@@ -217,13 +220,6 @@ If all goes well, you should see messages similar to log below.
   Conversion succeeded!
   Elapsed time: 0 hours 0 minutes 2 seconds
 #+end_src
-
-*Notes*:
-- In the above example, we're running without a =seccomp= security profile, because I forgot to uncomment some code prior the dev build...
-  - TODO Leaving this note as a reminder to rebuild arm64 executables
-  - Once retested, update this document
-- Enabling the =seccomp= profile is required and will help verify that we have enumerated the correct allowed system calls (for both amd64 and arm64)
-
   
 * Other notes
 
@@ -238,7 +234,7 @@ This was mostly interesting to see how quick it could be to generate a =seccomp=
 Source: https://wiki.alpinelinux.org/wiki/Podman
 
 #+begin_src sh
-  apk add podman cgroups
+  apk add podman
   rc-service cgroups start
   rc-service podman start
   modprobe tun
@@ -254,7 +250,3 @@ As a regular user =entrusted=
 #+begin_src sh
   podman system migrate
 #+end_src
-
-Then you need first to capture the underlying podman command executed by =entrusted-cli= similarly to =Docker=. You'll also have to remove the =seccomp= security option.
-
-

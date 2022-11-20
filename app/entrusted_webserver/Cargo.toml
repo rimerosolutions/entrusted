@@ -1,7 +1,7 @@
 [package]
 name = "entrusted-webserver"
 version = "0.2.7"
-edition = "2018"
+edition = "2021"
 description = "Entrusted online service" 
 keywords = ["entrusted", "remoting", "http"]
 license = "GPL"

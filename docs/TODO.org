@@ -18,11 +18,11 @@
 - [ ] Improved conversions
   - [ ] Parallel conversions with both user settings and app-managed guardrails
   - [ ] Evaluate performance optimization opportunities
-- [ ] Builds and releases
+- [-] Builds and releases
   - [ ] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)    
   - [ ] Better error handling during live CD creation that can result into an unbootable ISO
   - [ ] Revisit migration from local shell scripts to GitHub actions (or something else)
-  - [ ] Add =rust-version= to cargo manifests and update ci/cd pipeline accordingly for extracting versions
+  - [X] Bump the cargo edition to =2021= instead of =2018= in cargo manifests
 - [-] Code maintenance
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)
   - [ ] Desktop interface code cleanup for clarity and simplicity?

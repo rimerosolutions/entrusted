@@ -30,9 +30,10 @@ pub fn load_translations(locale_data: HashMap<&str, &[u8]>) {
     if let Ok(mut ret) = CATALOG_PER_LOCALE.lock() {
         for (locale_id, locale_translation_bytes) in locale_data {
             let reader = Cursor::new(locale_translation_bytes);
+            let new_locale_id = locale_id.replace("_", "-").to_string();
 
             if let Ok(catalog) = gettext::Catalog::parse(reader) {
-                ret.insert(locale_id.to_string(), catalog);
+                ret.insert(new_locale_id, catalog);
             }
         }
     }

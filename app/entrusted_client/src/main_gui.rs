@@ -2800,11 +2800,17 @@ pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dy
         }
     }
 
-    if let Some((cmd_open, _)) = opt_cmd_open {
+    if let Some((cmd_open, cmd_args)) = opt_cmd_open {
         let mut new_args = vec![];
         new_args.push("-c");
         let mut arguments = cmd_open.clone();
         arguments.push_str(" ");
+        
+        for cmd_arg in cmd_args.iter() {
+            arguments.push_str(cmd_arg.clone());
+            arguments.push_str(" ");
+        }
+
         arguments.push_str(url);
 
         match Command::new("/bin/sh").arg("-c").arg(arguments).spawn() {

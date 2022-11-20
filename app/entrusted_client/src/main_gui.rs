@@ -1034,7 +1034,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     );
 
     let mut wind = window::Window::default()
-        .with_size(739, 630)
+        .with_size(739, 560)
         .center_screen()
         .with_label(&wind_title);
 
@@ -1213,7 +1213,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_size(300, 20)
         .with_label(&trans.gettext("Enable full-text search? In:"));
     ocrlang_checkbutton.set_tooltip(
-        &trans.gettext("OCR (Optical character recognition) will be applied."),
+        &trans.gettext("OCR (Optical character recognition) will be applied"),
     );
 
     if appconfig.ocr_lang.is_some() {
@@ -2344,7 +2344,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 );
 
                 let ocw = wid.w() - (WIDGET_GAP * 3) - ocrlang_checkbutton.w();
-                let och = (wid.h() as f64 * 0.5) as i32;
+                let och = wid.h() - (WIDGET_GAP * 8) - (30 * 5);
 
                 ociimage_checkbutton_ref.resize(
                     ocrlang_checkbutton_ref.x(),
@@ -2372,7 +2372,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     xx,
                     yy,
                     ocw,
-                    och - (WIDGET_GAP * 2),
+                    och
                 );
 
                 let ociimage_input_rc_y = ociimage_input_rc.borrow().y();
@@ -2411,7 +2411,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 savesettings_button_ref.resize(
                     savesettings_button_ref.x(),
-                    savesettings_button_ref.y(),
+                    wid.y() + wid.h() - WIDGET_GAP - savesettings_button_ref.h(),
                     wid.w() - (WIDGET_GAP * 2),
                     savesettings_button_ref.h(),
                 );

@@ -230,8 +230,8 @@ msgstr "Progrès(%)"
 msgid "Status"
 msgstr "Statut"
 
-msgid "Message"
-msgstr "Message"
+msgid "Messages"
+msgstr "Messages"
 
 msgid "Select PDF viewer program"
 msgstr "Sélectionner le lecteur PDF"

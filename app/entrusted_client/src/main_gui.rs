@@ -1619,7 +1619,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let col_label_filename   = trans.gettext("File name");
     let col_label_progress   = trans.gettext("Progress(%)");
     let col_label_status     = trans.gettext("Status");
-    let col_label_message    = trans.gettext("Message");
+    let col_label_message    = trans.gettext("Messages");
 
     columns_frame.draw({
         let filelist_widget_ref      = filelist_widget.clone();

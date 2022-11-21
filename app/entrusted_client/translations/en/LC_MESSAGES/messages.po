@@ -216,7 +216,7 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-msgid "Message"
+msgid "Messages"
 msgstr ""
 
 msgid "Select PDF viewer program"

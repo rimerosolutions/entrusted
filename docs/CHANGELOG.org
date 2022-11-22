@@ -1,5 +1,9 @@
 #+TITLE: CHANGELOG
 
+* entrusted-0.2.7
+
+- enhancement: Allow multiple language selection for searchable PDFs (OCR)
+
 * entrusted-0.2.6
 
 - bugfix: Intermittent failures in batch conversions due to container process crashes

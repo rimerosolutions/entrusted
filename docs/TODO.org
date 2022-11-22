@@ -15,13 +15,14 @@
     - [ ] Paper size and image extract quality (maybe LOW, MEDIUM and HIGH?)
     - [ ] OCR (multiple languages, target DPI)
     - [ ] Add maybe some kind of profiles or presets? How complex would the UI be?
-- [ ] Improved conversions
+- [-] Improved conversions
+  - [X] Allow multiple language selection for searchable PDFs (OCR)
   - [ ] Parallel conversions with both user settings and app-managed guardrails
   - [ ] Evaluate performance optimization opportunities
 - [-] Builds and releases
   - [ ] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)    
   - [ ] Better error handling during live CD creation as it can result into an unbootable ISO
-  - [ ] Revisit migration from local shell scripts to GitHub actions (or something else)
+  - [ ] Revisit migration from local shell scripts to GitHub actions (or something else). For GitHub actions, the current main issue is cross-builds starting with Mac OS.
   - [X] Bump the cargo edition to =2021= instead of =2018= in cargo manifests
 - [-] Code maintenance
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)

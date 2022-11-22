@@ -5,7 +5,7 @@
 - [ ] Security
   - [ ] Container image
     - [ ] Run an publish vulnerability assessments for container images
-    - [ ] Consider a more frequently updated container image as long as introduce regression with intermittent crashes (Ubuntu instead of Debian, for CVEs?)
+    - [ ] Consider a more frequently updated container image as long as it doesn't introduce regression with intermittent crashes (Ubuntu instead of Debian for less CVEs, monitor processes for exit code 139)
   - [ ] Investigate alternate sandbox approaches
   - [ ] Revisit container security options and practices as part of continuous improvement
   - [ ] Provide custom container security profile

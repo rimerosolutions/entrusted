@@ -3,6 +3,9 @@
 * Milestone: Hardening and features maturity [0%]
 
 - [ ] Security
+  - [ ] Container image
+    - [ ] Run an publish vulnerability assessments for container images
+    - [ ] Consider a more frequently updated container image as long as introduce regression with intermittent crashes (Ubuntu instead of Debian, for CVEs?)
   - [ ] Investigate alternate sandbox approaches
   - [ ] Revisit container security options and practices as part of continuous improvement
   - [ ] Provide custom container security profile
@@ -13,7 +16,7 @@
   - [ ] Evaluate opportunities to simplify the user interface
   - [ ] Additional settings
     - [ ] Paper size and image extract quality (maybe LOW, MEDIUM and HIGH?)
-    - [ ] OCR (multiple languages, target DPI)
+    - [ ] OCR target DPI
     - [ ] Add maybe some kind of profiles or presets? How complex would the UI be?
 - [-] Improved conversions
   - [X] Allow multiple language selection for searchable PDFs (OCR)
@@ -22,12 +25,16 @@
 - [-] Builds and releases
   - [ ] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)    
   - [ ] Better error handling during live CD creation as it can result into an unbootable ISO
-  - [ ] Revisit migration from local shell scripts to GitHub actions (or something else). For GitHub actions, the current main issue is cross-builds starting with Mac OS.
+  - [ ] Revisit migration from local shell scripts to GitHub actions (or something else)
+    - For Github actions, create a YAML workflow file for all required jobs and operating systems
+    - [ ] For GitHub actions, the current Mac OS docker image doesn't detect the right rust toolchain
+    - [ ] For GitHub actions, need to see if arm64 builds work
+    - [ ] For GitHub actions, the Live CD creation should probably be easy enough for amd64
   - [X] Bump the cargo edition to =2021= instead of =2018= in cargo manifests
 - [-] Code maintenance
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)
   - [ ] Desktop interface code cleanup for clarity and simplicity?
-  - [ ] Use identifiers instead of row indices to enable parallel conversions later
+  - [ ] Use identifiers instead of row indices to enable parallel conversions later (maybe initial dumb implementation and then make it fast)
 
 * Milestone: Usability and features stabilization [100%]
 

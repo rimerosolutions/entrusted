@@ -671,10 +671,13 @@ async fn run_entrusted(
     langid: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if let Some(proposed_ocr_lang) = conversion_options.opt_ocr_lang.clone() {
+        let selected_langcodes: Vec<&str> = proposed_ocr_lang.split("+").collect();
         let ocr_lang_by_code = l10n::ocr_lang_key_by_name(&l10n);
 
-        if !ocr_lang_by_code.contains_key(&*proposed_ocr_lang) {
-            return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![&proposed_ocr_lang]).into());
+        for selected_langcode in selected_langcodes {
+            if !ocr_lang_by_code.contains_key(&selected_langcode) {
+                return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![&proposed_ocr_lang]).into());
+            }
         }
     }
 

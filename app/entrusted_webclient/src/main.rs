@@ -172,7 +172,7 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
                 .takes_value(true)
         )
         .arg(
-             Arg::with_name("input-filename")
+            Arg::with_name("input-filename")
                 .long("input-filename")
                 .help(&help_input_filename)
                 .required(true)
@@ -210,24 +210,27 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
     if let Some(proposed_ocr_lang) = &opt_ocr_lang {
         let supported_ocr_languages = l10n::ocr_lang_key_by_name(&trans);
         let proposed_ocr_lang_str = proposed_ocr_lang.as_str();
+        let selected_langcodes: Vec<&str> = proposed_ocr_lang_str.split("+").collect();
 
-        if !supported_ocr_languages.contains_key(&proposed_ocr_lang_str) {
-            let mut ocr_lang_err = String::new();
-            ocr_lang_err.push_str(&trans.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![proposed_ocr_lang]));
+        for selected_langcode in selected_langcodes {
+            if !supported_ocr_languages.contains_key(&selected_langcode) {
+                let mut ocr_lang_err = String::new();
+                ocr_lang_err.push_str(&trans.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![proposed_ocr_lang]));
 
-            ocr_lang_err.push_str(" => ");
-            let mut prev = false;
+                ocr_lang_err.push_str(" => ");
+                let mut prev = false;
 
-            for (lang_code, language) in supported_ocr_languages {
-                if !prev {
-                    ocr_lang_err.push_str(&format!("{} ({})", lang_code, language));
-                    prev = true;
-                } else {
-                    ocr_lang_err.push_str(&format!(", {} ({})", lang_code, language));
+                for (lang_code, language) in supported_ocr_languages {
+                    if !prev {
+                        ocr_lang_err.push_str(&format!("{} ({})", lang_code, language));
+                        prev = true;
+                    } else {
+                        ocr_lang_err.push_str(&format!(", {} ({})", lang_code, language));
+                    }
                 }
-            }
 
-            return Err(ocr_lang_err.into());
+                return Err(ocr_lang_err.into());
+            }
         }
     }
 
@@ -350,7 +353,7 @@ async fn convert_file (
 }
 
 async fn process_notifications(tracking_url: String,
-    l10n: &l10n::Translations) -> Result<String, Box<dyn Error + Send + Sync>> {
+                               l10n: &l10n::Translations) -> Result<String, Box<dyn Error + Send + Sync>> {
     let mut es = EventSource::get(tracking_url);
     let pb = ProgressBar::new(100);
 

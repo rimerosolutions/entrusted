@@ -217,7 +217,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         Ok(())
     }
 
-    pub fn cleanup_dir(dir: &PathBuf) -> Result<(), Box<dyn Error>> {
+    fn cleanup_dir(dir: &PathBuf) -> Result<(), Box<dyn Error>> {
         if dir.exists() && dir.is_dir() {
             let mut files = vec![dir.to_owned()];
 
@@ -359,13 +359,13 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         ]);
 
         convert_args.append(&mut vec![
-            "-e".to_string(), format!("LOG_FORMAT={}", convert_options.log_format),
+            "-e".to_string(), format!("ENTRUSTED_LOG_FORMAT={}", convert_options.log_format),
             "-e".to_string(), format!("{}={}", l10n::ENV_VAR_ENTRUSTED_LANGID, trans.langid())
         ]);
 
         if let Some(ocr_language) = convert_options.opt_ocr_lang {
             convert_args.append(&mut vec![
-                "-e".to_string(), format!("OCR_LANGUAGE={}", ocr_language.to_owned())
+                "-e".to_string(), format!("ENTRUSTED_OCR_LANGUAGE={}", ocr_language.to_owned())
             ]);
         }
 

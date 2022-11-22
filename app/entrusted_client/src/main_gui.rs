@@ -3,6 +3,7 @@
 use serde_json;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::env;
 use std::error::Error;
 use std::ops::{Deref, DerefMut};
@@ -115,6 +116,27 @@ impl DerefMut for FileListWidget {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.container
     }
+}
+
+fn selected_ocr_langcodes(ocr_languages_by_lang: &HashMap<String, &str>, drop_down: &browser::MultiBrowser) -> Vec<String> {    
+    let mut ret: Vec<String> = Vec::new();
+
+    if drop_down.selected_text().is_none() {
+        return ret
+    } else {
+        for i in 0..drop_down.size() {
+                    let idx = i as i32;
+                    if drop_down.selected(idx) {
+                        if let Some(selected_lang) = drop_down.text(idx) {
+                            if let Some(langcode) = ocr_languages_by_lang.get(&selected_lang) {
+                                ret.push(langcode.to_string());
+                            }
+                        }
+                    }
+                }
+    }
+    
+    ret
 }
 
 fn clip_text<S: Into<String>>(txt: S, max_width: i32) -> String {
@@ -1221,7 +1243,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let ocrlang_holdbrowser_rc = Rc::new(RefCell::new(
-        browser::HoldBrowser::default().with_size(240, 60),
+        browser::MultiBrowser::default().with_size(240, 60),
     ));
     let ocr_languages_by_name = l10n::ocr_lang_key_by_name(&trans_ref);
     let ocr_languages_by_name_ref = ocr_languages_by_name.clone();
@@ -1238,23 +1260,29 @@ fn main() -> Result<(), Box<dyn Error>> {
     for v in ocr_languages.iter() {
         ocrlang_holdbrowser_rc.borrow_mut().add(v);
     }
-
-    let selected_ocrlang = if let Some(cur_ocrlangcode) = appconfig.ocr_lang.clone() {
-        let cur_ocrlangcode_str = cur_ocrlangcode.as_str();
-
-        if let Some(cur_ocrlangname) = ocr_languages_by_name_ref.get(cur_ocrlangcode_str) {
-            cur_ocrlangname.to_string()
-        } else {
-            trans.gettext("English")
+     
+    let mut selected_ocr_languages = HashSet::new();
+    
+    if let Some(cur_ocrlangcode) = appconfig.ocr_lang.clone() {
+        let selected_langcodes: Vec<&str> = cur_ocrlangcode.split("+").collect();
+        
+        for selected_langcode in selected_langcodes {
+            if let Some(cur_ocrlangname) = ocr_languages_by_name_ref.get(&selected_langcode) {
+                selected_ocr_languages.insert(cur_ocrlangname.to_string());
+            }
         }
-    } else {
-        trans.gettext("English")
-    };
-
-    if let Some(selected_ocr_language_idx) = ocr_languages.iter().position(|r| r == &selected_ocrlang) {
-        ocrlang_holdbrowser_rc
-            .borrow_mut()
-            .select((selected_ocr_language_idx + 1) as i32);
+    }
+    
+    if selected_ocr_languages.is_empty() {
+        selected_ocr_languages.insert(trans.gettext("English"));
+    }
+    
+    for i in 0..ocr_languages.len() {
+        if selected_ocr_languages.contains(&ocr_languages[i]) {
+            let line = (i + 1) as i32;
+            ocrlang_holdbrowser_rc.borrow_mut().select(line);            
+            ocrlang_holdbrowser_rc.borrow_mut().top_line(line);
+        }
     }
 
     if appconfig.ocr_lang.is_none() {
@@ -1434,10 +1462,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             let mut new_appconfig = config::AppConfig::default();
 
             if ocrlang_checkbutton_ref.is_checked() {
-                if let Some(language_name) = ocrlang_holdbrowser_rc_ref.borrow().selected_text() {
-                    if let Some(langcode) = ocr_languages_by_lang_ref.get(&language_name) {
-                        new_appconfig.ocr_lang = Some(langcode.to_string());
-                    }
+                let ocrlang_dropdown = ocrlang_holdbrowser_rc_ref.borrow();
+                let selected_langcodes = selected_ocr_langcodes(&ocr_languages_by_lang_ref, &ocrlang_dropdown);
+                
+                if !selected_langcodes.is_empty() {
+                    new_appconfig.ocr_lang = Some(selected_langcodes.join("+"));
                 }
             }
 
@@ -1735,15 +1764,16 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             } else {
                 None
-            };
-
+            };                        
+            
             let opt_ocr_lang = if ocrlang_checkbutton_ref.is_checked() {
-                if let Some(selected_lang) = ocrlang_holdbrowser_rc_ref.borrow().selected_text() {
-                    ocr_languages_by_lang
-                        .get(&selected_lang)
-                        .map(|i| i.to_string())
-                } else {
+                let ocrlang_dropdown = ocrlang_holdbrowser_rc_ref.borrow();
+                let selected_langcodes = selected_ocr_langcodes(&ocr_languages_by_lang, &ocrlang_dropdown);
+                
+                if selected_langcodes.is_empty() {
                     None
+                } else {
+                    Some(selected_langcodes.join("+"))
                 }
             } else {
                 None

@@ -36,7 +36,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     l10n::load_translations(incl_gettext_files!("en", "fr"));
 
     let locale = if let Ok(selected_locale) = env::var(l10n::ENV_VAR_ENTRUSTED_LANGID) {
-         selected_locale
+        selected_locale
     } else {
         l10n::sys_locale()
     };
@@ -157,27 +157,30 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     if let Some(proposed_ocr_lang) = &run_matches.value_of("ocr-lang") {
         let supported_ocr_languages = l10n::ocr_lang_key_by_name(&trans);
+        let selected_langcodes: Vec<&str> = cur_ocrlangcode.split("+").collect();
 
-        if supported_ocr_languages.contains_key(proposed_ocr_lang) {
-            ocr_lang = Some(proposed_ocr_lang.to_string());
-        } else {
-            let mut ocr_lang_err = String::new();
-            ocr_lang_err.push_str(&trans.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![proposed_ocr_lang]));
+        for selected_langcode in selected_langcodes {
+            if !supported_ocr_languages.contains_key(&selected_langcode) {
+                let mut ocr_lang_err = String::new();
+                ocr_lang_err.push_str(&trans.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![proposed_ocr_lang]));
 
-            ocr_lang_err.push_str(" => ");
-            let mut prev = false;
+                ocr_lang_err.push_str(" => ");
+                let mut prev = false;
 
-            for (lang_code, language) in supported_ocr_languages {
-                if !prev {
-                    ocr_lang_err.push_str(&format!("{} ({})", lang_code, language));
-                    prev = true;
-                } else {
-                    ocr_lang_err.push_str(&format!(", {} ({})", lang_code, language));
+                for (lang_code, language) in supported_ocr_languages {
+                    if !prev {
+                        ocr_lang_err.push_str(&format!("{} ({})", lang_code, language));
+                        prev = true;
+                    } else {
+                        ocr_lang_err.push_str(&format!(", {} ({})", lang_code, language));
+                    }
                 }
-            }
 
-            return Err(ocr_lang_err.into());
+                return Err(ocr_lang_err.into());
+            }
         }
+        
+        ocr_lang = Some(proposed_ocr_lang.to_string());
     }
 
     // Deal transparently with Windows UNC path returned by fs::canonicalize

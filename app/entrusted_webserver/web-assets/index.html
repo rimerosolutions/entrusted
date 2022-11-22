@@ -868,7 +868,15 @@
         let ocrSettings = {};
 
         if (ocrCheckbox.checked) {
-          ocrSettings.ocrlang = ocrLangSelect.value;
+          let ocrLangValues = [];
+
+          for (let i = 0; i < ocrLangSelect.selectedOptions.length; i++) {
+              ocrLangValues.push(ocrLangSelect.selectedOptions[i].value);                                                  
+          }
+                                                  
+          if (ocrLangValues.length != 0) {
+              ocrSettings.ocrlang = ocrLangValues.join("+");
+          }
         }
 
         dropFileZoneElement.className = "dropFileZoneDisabled";
@@ -1263,6 +1271,10 @@
           display: inline-block;
           font-size: 16px;
       }
+      
+      td.vertical-align-center > * {
+        vertical-align: middle;
+      }
 
       .overallProgressLabel {
           color: #990000;
@@ -1291,9 +1303,9 @@
                   <input type="checkbox" id="ocrCheckbox" name="ocr" onchange="toggleOcrCheckbox(this)" title="OCR (Optical character recognition) will be applied.">
                   <label for="ocrCheckbox" data-l10n="l10n-searchable-pdf-label">Make PDF searchable?</label>
                 </td>
-                <td>
+                <td class="vertical-align-center">
                   <label for="ocrLangSelect" data-l10n="l10n-ocrlang-select-label">Yes, with language:</label>
-                  <select id="ocrLangSelect" name="ocrLangSelect" data-l10n="l10n-ocrlang-option" disabled>
+                  <select id="ocrLangSelect" name="ocrLangSelect" data-l10n="l10n-ocrlang-option" disabled multiple>
                     <option value="ar">Afrikaans</option>
                     <option value="sqi">Albanian</option>
                     <option value="amh">Amharic</option>

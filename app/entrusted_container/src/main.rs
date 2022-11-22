@@ -23,13 +23,13 @@ mod mimetypes;
 const LOCATION_LIBREOFFICE_PROGRAM: &str = "/usr/lib/libreoffice/program";
 
 const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str = "ENTRUSTED_DOC_PASSWD";
-const ENV_VAR_LOG_FORMAT: &str           = "LOG_FORMAT";
-const ENV_VAR_OCR_LANGUAGE: &str         = "OCR_LANGUAGE";
+const ENV_VAR_LOG_FORMAT: &str           = "ENTRUSTED_LOG_FORMAT";
+const ENV_VAR_OCR_LANGUAGE: &str         = "ENTRUSTED_OCR_LANGUAGE";
 
 // A4 150PPI/DPI
 // https://www.a4-size.com/a4-size-in-pixels/?size=a4&unit=px&ppi=150
 // TODO introduce the concept of preset for couple of options (papersize, rendering quality)
-const IMG_MAX_WIDTH: f64 = 1240.0;
+const IMG_MAX_WIDTH: f64  = 1240.0;
 const IMG_MAX_HEIGHT: f64 = 1754.0;
 
 macro_rules! incl_gettext_files {
@@ -54,7 +54,7 @@ enum ConversionType {
 }
 
 struct TessSettings<'a> {
-    lang: &'a str, // tesseract lang code
+    lang: &'a str,     // tesseract lang code
     data_dir: &'a str, // tesseract tessdata folder
 }
 
@@ -124,12 +124,15 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         match env::var(ENV_VAR_OCR_LANGUAGE) {
             Ok(ocr_lang) => {
-                let ocr_lang_text = ocr_lang.as_str();
-
-                if !l10n::ocr_lang_key_by_name(&l10n).contains_key(&ocr_lang_text) {
-                    return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![ocr_lang_text]).into());
+                let ocr_lang_text = ocr_lang.as_str();                
+                let selected_langcodes: Vec<&str> = ocr_lang_text.split("+").collect();
+                
+                for selected_langcode in selected_langcodes {
+                    if !l10n::ocr_lang_key_by_name(&l10n).contains_key(&selected_langcode) {
+                        return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![selected_langcode]).into());
+                    }
                 }
-
+                
                 let tess_settings = TessSettings {
                     lang: ocr_lang_text,
                     data_dir: TESS_DATA_DIR,

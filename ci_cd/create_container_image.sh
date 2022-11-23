@@ -30,4 +30,7 @@ buildah manifest add docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION} do
 
 podman tag docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION} docker.io/uycyjnzgntrn/entrusted_container:latest
 
+podman image prune -f --filter label=stage=entrusted_container_builder
+
+
 cd "${OLD_DIR}"

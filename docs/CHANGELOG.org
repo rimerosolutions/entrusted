@@ -1,6 +1,6 @@
 #+TITLE: CHANGELOG
 
-* entrusted-0.2.7
+* UNRELEASED
 
 - enhancement: Allow multiple language selection for searchable PDFs (OCR)
 

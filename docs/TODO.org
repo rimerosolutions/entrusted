@@ -5,7 +5,10 @@
 - [-] Security
   - [X] Container image
     - [X] Run an publish vulnerability assessments for container images
-    - [X] Consider a more frequently updated container image as long as it doesn't introduce regression with intermittent crashes (Ubuntu instead of Debian for less CVEs, monitor processes for exit code 139)
+    - [X] Evaluate more frequently updated container images for CVEs
+      - [X] Going back to Alpine would require revisiting occasional segmentation faults
+      - [X] Fedora takes a while to build and trimming the image size is rather involved
+      - [X] Debian takes a while to sometimes address issues but it's very stable
   - [ ] Investigate alternate sandbox approaches
   - [ ] Revisit container security options and practices as part of continuous improvement
   - [ ] Provide custom container security profile

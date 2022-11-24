@@ -1,13 +1,13 @@
-FROM docker.io/uycyjnzgntrn/ubuntu:kinetic-rust-1.64.0 as builder
+FROM docker.io/uycyjnzgntrn/debian:bullseye-rust-1.64.0 as builder
 LABEL stage=entrusted_container_builder
 
 WORKDIR /home/rust/entrusted-container
 COPY . .
 
-RUN PKG_CONFIG_ALLOW_CROSS=1 LO_INCLUDE_PATH=/usr/include/LibreOfficeKit /root/.cargo/bin/cargo install --path entrusted_container --root /usr/local \
-    && /root/.cargo/bin/cargo clean --manifest-path entrusted_container/Cargo.toml
+RUN PKG_CONFIG_ALLOW_CROSS=1 LO_INCLUDE_PATH=/usr/include/LibreOfficeKit cargo install --path entrusted_container --root /usr/local \
+    && cargo clean --manifest-path entrusted_container/Cargo.toml
 
-FROM docker.io/ubuntu:22.10
+FROM docker.io/debian:bullseye-slim
 
 LABEL maintainer="Yves Zoundi, Rimero Solutions Inc."
 LABEL org.opencontainers.image.title="Entrusted document sanitizer container image"
@@ -23,7 +23,7 @@ LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrus
 RUN DEBIAN_FRONTEND=noninteractive apt update && apt upgrade -y && DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends -y \
     libleptonica-dev \
     libtesseract-dev \
-    libreoffice-writer libreoffice-calc libreoffice-draw libreoffice-impress \
+    libreoffice-writer libreoffice-draw libreoffice-impress libreoffice-calc \
     libpoppler-dev \
     libcairo2-dev \
     libreoffice \
@@ -32,22 +32,17 @@ RUN DEBIAN_FRONTEND=noninteractive apt update && apt upgrade -y && DEBIAN_FRONTE
 
 COPY --from=builder /usr/local/bin/entrusted-container /usr/local/bin/entrusted-container
 
-RUN find /usr -type f -name '*.py' -o -name '*.png' -o -name '*.xpm' -o -name '*.jar' -o -name '*.pyc' -o -name '*.pdf' -exec rm -rf {} \;
-
-RUN useradd -ms /bin/bash entrusted && mkdir /safezone && chmod -R a+rw /safezone \
-    && rm -rf /usr/bin/python* /usr/lib/x86_64/libpython* /usr/lib/python* \
-    && rm -rf /usr/bin/system* /usr/bin/dbus* \
-    && rm -rf /usr/bin/loffice /usr/bin/soffice /usr/bin/libreoffice \
+RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.png' -o -name '*.xpm' -o -name '*.jar' -o -name '*.pyc' -o -name '*.pdf' -exec rm -rf {} \;" \
+    && rm -rf /usr/lib/python* \
     && rm -rf /usr/include/* /usr/share/icons/* \
     && rm -rf /usr/games /var/cache/apt /var/lib/apt/lists \
     && rm -rf /usr/bin/apt* && rm -rf /usr/bin/dpkg* && rm -rf /usr/bin/dpkg* && rm -rf /usr/bin/dpkg*\
     && rm -rf /usr/share/doc /usr/share/java /usr/share/man /usr/share/info  /var/log \
-    && rm -rf /usr/lib/libreoffice/share/Scripts/* /usr/lib/libreoffice/share/tipoftheday /usr/lib/libreoffice/share/libreofficekit \
-    && rm -rf /usr/lib/libreoffice/share/gallery /usr/lib/libreoffice/share/template \
+    && rm -rf /usr/lib/libreoffice/share/Scripts/* \
+    && rm -rf /usr/lib/libreoffice/share/template  /usr/lib/libreoffice/share/gallery /usr/lib/libreoffice/share/tipoftheday \
     && rm -rf /usr/lib/libreoffice/*.html && rm -rf /usr/lib/libreoffice/*.fodt \
     && rm -rf /usr/lib/libreoffice/program/classes/*.jar \
-    && rm -rf /usr/sbin/add* /usr/sbin/del* /usr/sbin/user* /usr/sbin/groupadd /usr/sbin/groupdel \
-    && ln -sf /usr/bin/dash /usr/bin/bash
+    && useradd -ms /bin/bash entrusted && mkdir /safezone && chmod -R a+rw /safezone
 
 # Drop to unprivileged user
 USER entrusted

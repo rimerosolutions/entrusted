@@ -5,7 +5,7 @@
 - [-] Security
   - [ ] Virtual machine hardening for Live CD
     - [ ] Basic hardening (=Live CD basic edition=) without [[https://gvisor.dev/][gVisor]] as container security platform
-    - [ ] [[https://madaidans-insecurities.github.io/guides/linux-hardening.html][Extra harderning]] (=Live CD secplus edition=), without [[https://gvisor.dev/][gVisor]] (secure but VERY SLOW). Is this work worth it for most users?
+    - [ ] [[https://madaidans-insecurities.github.io/guides/linux-hardening.html][Extra harderning]] (=Live CD secplus edition=), with [[https://gvisor.dev/][gVisor]] (secure but VERY SLOW). Is this work worth it for most users?
     - Security profiles for the container image execution
       - [ ] [[https://docs.docker.com/engine/security/apparmor/][apparmor]] profile for the container image execution      
       - [ ] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile
@@ -38,8 +38,9 @@
 - [-] Builds and releases
   - [ ] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)    
   - [ ] Better error handling during live CD creation as it can result into an unbootable ISO
-  - [ ] Revisit migration from local shell scripts to GitHub actions (or something else)
-    - For Github actions, create a YAML workflow file for all required jobs and operating systems
+  - [ ] Revisit arm64 availability for Live CD (weird error messages in chroot, with both =Podman= or =Docker=)
+  - [ ] Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (or something else)
+    - [ ] For Github actions, create a YAML workflow file for all required jobs and operating systems
     - [ ] For GitHub actions, the current Mac OS docker image doesn't detect the right rust toolchain
     - [ ] For GitHub actions, need to see if arm64 builds work
     - [ ] For GitHub actions, the Live CD creation should probably be easy enough for amd64
@@ -82,16 +83,16 @@
   - [X] Adopt Git flow and delete all the previous spiral branches
   - [X] Create few specific Linux packages (DEB, RPM)
   - [X] Add README notes for [[https://github.com/axtloss/flatpaks][axtloss Flatpak packages]] and later in release notes
-  - [X] Support for different [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]]
+  - [X] Experimental support for [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]] (excluding Windows and the Live CD)
   - [X] For now, stick to custom CI/CD pipeline instead of [[https://github.com/features/actions][GitHub actions]] or similar
 - [X] Mime-type detection and file associations
   - [X] Register file associations with supported document types
   - [X] For now, roll custom mime-type detection system until there is something better available
 - [X] Documentation and Marketing
-  - [X] Move some documentation to wiki pages
+  - [X] Move some documentation to [[https://github.com/rimerosolutions/entrusted/wiki][wiki pages]]
   - [X] Publish presentations
-    - [X] PDF slides
-    - [X] Youtube presentation
+    - [X] [[https://github.com/rimerosolutions/entrusted/files/9892585/entrusted_document_sanitizer.pdf][PDF slides]]
+    - [X] [[https://www.youtube.com/watch?v=InEsPLyFsKQ][Youtube presentation]]
 
 * Milestone: Initial document sanitization tool [100%]
 

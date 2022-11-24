@@ -49,6 +49,7 @@ RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.gz' -o -name '*.png' 
     && rm /usr/bin/text2image \
     && rm /usr/bin/unicharset_extractor \
     && rm /usr/bin/wordlist2dawg \
+    && rm -rf /usr/share/perl* /usr/bin/perl* /usr/lib/x86_64-linux-gnu/perl* \
     && rm -rf /usr/lib/python* /usr/bin/python* /usr/share/python* \
     && rm -rf /usr/sbin/*add* /usr/sbin/*del* \
     && rm -rf /usr/include/* /usr/share/icons/* /usr/share/applications/* /usr/share/pixmaps/* \

@@ -7,18 +7,19 @@
     - [ ] Basic hardening (=Live CD basic edition=) without [[https://gvisor.dev/][gVisor]] as container security platform
     - [ ] [[https://madaidans-insecurities.github.io/guides/linux-hardening.html][Extra harderning]] (=Live CD secplus edition=), without [[https://gvisor.dev/][gVisor]] (secure but VERY SLOW). Is this work worth it for most users?
     - Security profiles for the container image execution
-      - [ ] AppArmor profile for the container image execution      
-      - [ ] seccomp security profile
-        - [ ] Use existing [[https://docs.docker.com/engine/security/seccomp/][seccomp]] file in Live CD mode and possibly enable it in less controlled environments (=entrusted-gui= or =entrusted-gui=)
+      - [ ] [[https://docs.docker.com/engine/security/apparmor/][apparmor]] profile for the container image execution      
+      - [ ] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile
+        - [ ] Use existing =seccomp= file in Live CD mode and possibly enable it in less controlled environments (=entrusted-gui= or =entrusted-gui=)
         - [ ] Test on =amd64 (Linux, Mac OS, Windows)=
-        - [ ] Evaluate opportunities to also make it work for arm64 (previous tests between 0.2.5 and 0.2.6 releases)        
+        - [ ] Evaluate opportunities to also make it work for arm64 (previous tests between =0.2.5= and =0.2.6= releases)        
         - [ ] [[https://wiki.archlinux.org/title/User:NetSysFire/systemd_sandboxing][Systemd sandboxing]] for the "Online Service (=entrusted-webserver=)      
   - [X] Container image
     - [X] Run an publish vulnerability assessments for container images
+    - [X] Trim even more container image size
     - [X] Evaluate more frequently updated container images for CVEs
-      - [X] Going back to Alpine would require revisiting occasional segmentation faults
-      - [X] Fedora takes a while to build and trimming the image size is rather involved
-      - [X] Debian takes a while to sometimes address issues but it's very stable
+      - [X] Debian takes a while to sometimes address issues but it's very stable (PREFERRED)
+      - [X] Alpine would require revisiting occasional segmentation faults (exit code =139=)
+      - [X] Fedora takes a while to build (dnf is VERY slow) and trimming the image size is rather involved
   - [ ] Revisit other general security options and practices as part of continuous improvement
   - [ ] Investigate alternate sandbox approaches
 - [ ] User interface
@@ -29,9 +30,10 @@
     - [ ] OCR target DPI
     - [ ] Add maybe some kind of profiles or presets? How complex would the UI be?
   - [ ] Smooth scrolling as files are being processed to highlight the current document
+  - [ ] For the Web interface, sticky "status bar" to match Desktop client UI message notifications
 - [-] Improved conversions
   - [X] Allow multiple language selection for searchable PDFs (OCR)
-  - [ ] Parallel conversions with both user settings and app-managed guardrails
+  - [ ] Parallel conversions with both user settings and application-managed guardrails
   - [ ] Evaluate performance optimization opportunities
 - [-] Builds and releases
   - [ ] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)    
@@ -42,11 +44,12 @@
     - [ ] For GitHub actions, need to see if arm64 builds work
     - [ ] For GitHub actions, the Live CD creation should probably be easy enough for amd64
   - [X] Bump the cargo edition to =2021= instead of =2018= in cargo manifests
-- [-] Code maintenance
+- [-] Code maintenance and other practices
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)
   - [ ] Desktop interface code cleanup for clarity and simplicity?
   - [ ] Some level of testing? (scripts at least with exit code capture?)
-  - [ ] Use identifiers instead of row indices to enable parallel conversions later (maybe initial "dumb implementation")
+  - [ ] Use identifiers instead of row indices to enable parallel conversions later (maybe initial "dumb implementation")    
+  - [ ] Sign revision control commits and container images?
 
 * Milestone: Usability and features stabilization [100%]
 

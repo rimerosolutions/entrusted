@@ -26,23 +26,41 @@ RUN DEBIAN_FRONTEND=noninteractive apt update && apt upgrade -y && DEBIAN_FRONTE
     libreoffice-writer libreoffice-draw libreoffice-impress libreoffice-calc \
     libpoppler-dev \
     libcairo2-dev \
-    libreoffice \
     tesseract-ocr-all \
     fonts-dejavu libpoppler-glib-dev && apt clean
 
 COPY --from=builder /usr/local/bin/entrusted-container /usr/local/bin/entrusted-container
 
-RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.png' -o -name '*.xpm' -o -name '*.jar' -o -name '*.pyc' -o -name '*.pdf' -exec rm -rf {} \;" \
-    && rm -rf /usr/lib/python* \
-    && rm -rf /usr/include/* /usr/share/icons/* \
-    && rm -rf /usr/games /var/cache/apt /var/lib/apt/lists \
-    && rm -rf /usr/bin/apt* && rm -rf /usr/bin/dpkg* && rm -rf /usr/bin/dpkg* && rm -rf /usr/bin/dpkg*\
+RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.gz' -o -name '*.png' -o -name '*.xpm' -o -name '*.jar' -o -name '*.pyc' -o -name '*.pdf' -exec rm -rf {} \;" \
+    && useradd -ms /bin/dash entrusted && mkdir /safezone && chmod -R a+rw /safezone \
+    && rm /usr/bin/ambiguous_words \
+    && rm /usr/bin/classifier_tester \
+    && rm /usr/bin/cntraining \
+    && rm /usr/bin/combine_lang_model \
+    && rm /usr/bin/combine_tessdata \
+    && rm /usr/bin/dawg2wordlist \
+    && rm /usr/bin/lstmeval \
+    && rm /usr/bin/lstmtraining \
+    && rm /usr/bin/merge_unicharsets \
+    && rm /usr/bin/mftraining \
+    && rm /usr/bin/set_unicharset_properties \
+    && rm /usr/bin/shapeclustering \
+    && rm /usr/bin/tesseract \
+    && rm /usr/bin/text2image \
+    && rm /usr/bin/unicharset_extractor \
+    && rm /usr/bin/wordlist2dawg \
+    && rm -rf /usr/lib/python* /usr/bin/python* /usr/share/python* \
+    && rm -rf /usr/sbin/*add* /usr/sbin/*del* \
+    && rm -rf /usr/include/* /usr/share/icons/* /usr/share/applications/* /usr/share/pixmaps/* \
+    && rm -rf /usr/games /var/cache/apt /var/lib/apt/lists /usr/sbin/dpkg* \
+    && rm -rf /usr/bin/apt* /usr/lib/apt/* /usr/bin/dpkg* /usr/bin/debconf* \
     && rm -rf /usr/share/doc /usr/share/java /usr/share/man /usr/share/info  /var/log \
-    && rm -rf /usr/lib/libreoffice/share/Scripts/* \
+    && rm -rf /usr/lib/libreoffice/share/Scripts/* /usr/lib/libreoffice/share/palette/* /usr/lib/libreoffice/share/wizards/* \
+    && rm -rf /usr/lib/libreoffice/share/theme_definitions/*/usr/lib/libreoffice/share/autocorr/* \
+    && rm -rf /usr/lib/libreoffice/program/*.png \
     && rm -rf /usr/lib/libreoffice/share/template  /usr/lib/libreoffice/share/gallery /usr/lib/libreoffice/share/tipoftheday \
     && rm -rf /usr/lib/libreoffice/*.html && rm -rf /usr/lib/libreoffice/*.fodt \
-    && rm -rf /usr/lib/libreoffice/program/classes/*.jar \
-    && useradd -ms /bin/bash entrusted && mkdir /safezone && chmod -R a+rw /safezone
+    && rm -rf /usr/lib/libreoffice/program/classes/*.jar
 
 # Drop to unprivileged user
 USER entrusted

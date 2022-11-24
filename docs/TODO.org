@@ -3,6 +3,7 @@
 * Milestone: Hardening and features maturity [0%]
 
 - [-] Security
+  - [ ] Virtual machine hardening for Live CD
   - [X] Container image
     - [X] Run an publish vulnerability assessments for container images
     - [X] Evaluate more frequently updated container images for CVEs

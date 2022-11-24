@@ -4,6 +4,8 @@
 
 - [-] Security
   - [ ] Virtual machine hardening for Live CD
+    - [ ] Basic hardening (=Live CD basic edition=) without [[https://gvisor.dev/][gVisor]] as container security platform
+    - [ ] Extra harderning, but sadly significantly slower conversion times (=Live CD secplus edition=)
   - [X] Container image
     - [X] Run an publish vulnerability assessments for container images
     - [X] Evaluate more frequently updated container images for CVEs

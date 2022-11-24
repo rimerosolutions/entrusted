@@ -75,4 +75,38 @@ rm -rf /files
 
 echo "apm power_off=1" >> /etc/modules
 
+# See https://madaidans-insecurities.github.io/guides/linux-hardening.html
+echo "Hardening system"
+
+echo "kernel.kptr_restrict=2" >> /etc/sysctl.conf
+echo "kernel.dmesg_restrict=1" >> /etc/sysctl.conf
+echo "kernel.unprivileged_bpf_disabled=1" >> /etc/sysctl.conf
+echo "net.core.bpf_jit_harden=2" >> /etc/sysctl.conf
+echo "kernel.kexec_load_disabled=1" >> /etc/sysctl.conf
+echo "vm.unprivileged_userfaultfd=0" >> /etc/sysctl.conf
+echo "kernel.sysrq=4" >> /etc/sysctl.conf
+echo "net.ipv4.tcp_syncookies=1" >> /etc/sysctl.conf
+
+echo "net.ipv4.tcp_rfc1337=1" >> /etc/sysctl.conf
+echo "net.ipv4.conf.all.rp_filter=1" >> /etc/sysctl.conf
+echo "net.ipv4.conf.default.rp_filter=1" >> /etc/sysctl.conf
+echo "net.ipv4.icmp_echo_ignore_all=1" >> /etc/sysctl.conf
+echo "net.ipv4.conf.all.accept_source_route=0" >> /etc/sysctl.conf
+echo "net.ipv4.conf.default.accept_source_route=0" >> /etc/sysctl.conf
+echo "net.ipv6.conf.all.accept_source_route=0" >> /etc/sysctl.conf
+echo "net.ipv6.conf.default.accept_source_route=0" >> /etc/sysctl.conf
+echo "net.ipv6.conf.all.accept_ra=0" >> /etc/sysctl.conf
+echo "net.ipv6.conf.default.accept_ra=0" >> /etc/sysctl.conf
+echo "net.ipv4.tcp_sack=0" >> /etc/sysctl.conf
+echo "net.ipv4.tcp_dsack=0" >> /etc/sysctl.conf
+echo "net.ipv4.tcp_fack=0" >> /etc/sysctl.conf
+
+echo "kernel.yama.ptrace_scope=2" >> /etc/sysctl.conf
+echo "vm.mmap_rnd_bits=32" >> /etc/sysctl.conf
+echo "vm.mmap_rnd_compat_bits=16" >> /etc/sysctl.conf
+echo "fs.protected_symlinks=1" >> /etc/sysctl.conf
+echo "fs.protected_hardlinks=1" >> /etc/sysctl.conf
+echo "fs.protected_fifos=2" >> /etc/sysctl.conf
+echo "fs.protected_regular=2" >> /etc/sysctl.conf
+
 exit

@@ -13,13 +13,13 @@
         - [ ] Evaluate opportunities to also make it work for arm64 (previous tests between =0.2.5= and =0.2.6= releases)        
     - [ ] [[https://docs.arbitrary.ch/security/systemd.html][Systemd sandboxing]] for the "Online Service (=entrusted-webserver=)
   - [ ] Revisit other general security options and practices as part of continuous improvement
-  - [X] Investigate alternate sandbox approaches
-    - [X] Run an publish vulnerability assessments for container images
-    - [X] Trim even more container image size
-    - [X] Evaluate more frequently updated container images for CVEs
-      - [X] Debian takes a while to sometimes address issues but it's very stable (PREFERRED)
-      - [X] Alpine would require revisiting occasional segmentation faults (exit code =139=)
-      - [X] Fedora takes a while to build (dnf is VERY slow) and trimming the image size is rather involved
+  - [ ] Investigate alternate sandbox approaches
+  - [X] Run an publish vulnerability assessments for container images
+  - [X] Trim even more container image size
+  - [X] Evaluate more frequently updated container images for CVEs
+    - [X] Debian takes a while to sometimes address issues but it's very stable (PREFERRED)
+    - [X] Alpine would require revisiting occasional segmentation faults (exit code =139=)
+    - [X] Fedora takes a while to build (dnf is VERY slow) and trimming the image size is rather involved
 - [ ] User interface
   - [ ] Ability to cancel non-started tasks
   - [ ] Evaluate opportunities to simplify the user interface

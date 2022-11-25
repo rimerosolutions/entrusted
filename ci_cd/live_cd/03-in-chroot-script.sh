@@ -109,4 +109,7 @@ echo "fs.protected_hardlinks=1" >> /etc/sysctl.conf
 echo "fs.protected_fifos=2" >> /etc/sysctl.conf
 echo "fs.protected_regular=2" >> /etc/sysctl.conf
 
+echo "Trim filesystem"
+rm -rf /usr/share/man/* /usr/share/doc/* /usr/share/info/*
+
 exit

@@ -61,3 +61,16 @@ if [ $retVal -ne 0 ]; then
 	echo "Unable to export container image to tar archive!"
   exit 1
 fi
+
+test -d /tmp/hardened_malloc-${DEBIAN_ARCH} && rm -rf /tmp/hardened_malloc-${DEBIAN_ARCH}
+mkdir -p /tmp/hardened_malloc-${DEBIAN_ARCH}
+
+podman run --platform linux/${DEBIAN_ARCH} --rm -v "/tmp/hardened_malloc-${DEBIAN_ARCH}":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c "mkdir -p /src && cd /src && git clone https://github.com/GrapheneOS/hardened_malloc.git && cd hardened_malloc && make N_ARENA=1 CONFIG_EXTENDED_SIZE_CLASSES=false && cp out/libhardened_malloc.so /artifacts/"
+
+retVal=$?
+if [ $retVal -ne 0 ]; then
+	echo "Could not build hardened_malloc!"
+  exit 1
+fi
+
+cp /tmp/hardened_malloc-${DEBIAN_ARCH}/libhardened_malloc.so /tmp/live-libhardened_malloc.so && rm -rf /tmp/hardened_malloc-${DEBIAN_ARCH}

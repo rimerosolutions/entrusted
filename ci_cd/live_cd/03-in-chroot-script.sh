@@ -55,6 +55,9 @@ cp /files/usr/local/bin/entrusted-fw-enable /usr/local/bin/entrusted-fw-enable
 cp /files/usr/local/bin/entrusted-fw-disable /usr/local/bin/entrusted-fw-disable
 chmod +x /usr/local/bin/entrusted-*
 
+cp /files/libhardened_malloc.so /usr/lib/
+mkdir -p /var/log/entrusted-webserver
+
 echo "Updating default screen messages"
 cp /files/etc/motd /etc/motd
 cp /files/etc/issue /etc/issue

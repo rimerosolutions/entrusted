@@ -157,7 +157,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     if let Some(proposed_ocr_lang) = &run_matches.value_of("ocr-lang") {
         let supported_ocr_languages = l10n::ocr_lang_key_by_name(&trans);
-        let selected_langcodes: Vec<&str> = cur_ocrlangcode.split("+").collect();
+        let selected_langcodes: Vec<&str> = proposed_ocr_lang.split("+").collect();
 
         for selected_langcode in selected_langcodes {
             if !supported_ocr_languages.contains_key(&selected_langcode) {

@@ -3,24 +3,23 @@
 * Milestone: Hardening and features maturity [0%]
 
 - [-] Security
-  - [ ] Virtual machine hardening for Live CD
-    - [ ] sysctl flags
+  - [-] Virtual machine hardening for Live CD
+    - [X] [[https://madaidans-insecurities.github.io/guides/linux-hardening.html][sysctl]] flags
     - Security profiles for the container image execution
-      - [ ] [[https://docs.docker.com/engine/security/apparmor/][apparmor]] profile for the container image execution      
+      - [ ] [[https://docs.docker.com/engine/security/apparmor/][apparmor]] security profile
       - [ ] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile
         - [ ] Use existing =seccomp= file in Live CD mode and possibly enable it in less controlled environments (=entrusted-gui= or =entrusted-gui=)
         - [ ] Test on =amd64 (Linux, Mac OS, Windows)=
         - [ ] Evaluate opportunities to also make it work for arm64 (previous tests between =0.2.5= and =0.2.6= releases)        
-      - [ ] [[https://docs.arbitrary.ch/security/systemd.html][Systemd sandboxing]] for the "Online Service (=entrusted-webserver=)
-  - [X] Container image
+    - [ ] [[https://docs.arbitrary.ch/security/systemd.html][Systemd sandboxing]] for the "Online Service (=entrusted-webserver=)
+  - [ ] Revisit other general security options and practices as part of continuous improvement
+  - [X] Investigate alternate sandbox approaches
     - [X] Run an publish vulnerability assessments for container images
     - [X] Trim even more container image size
     - [X] Evaluate more frequently updated container images for CVEs
       - [X] Debian takes a while to sometimes address issues but it's very stable (PREFERRED)
       - [X] Alpine would require revisiting occasional segmentation faults (exit code =139=)
       - [X] Fedora takes a while to build (dnf is VERY slow) and trimming the image size is rather involved
-  - [ ] Revisit other general security options and practices as part of continuous improvement
-  - [ ] Investigate alternate sandbox approaches
 - [ ] User interface
   - [ ] Ability to cancel non-started tasks
   - [ ] Evaluate opportunities to simplify the user interface
@@ -31,9 +30,9 @@
   - [ ] Smooth scrolling as files are being processed to highlight the current document
   - [ ] For the Web interface, sticky "status bar" to match Desktop client UI message notifications
 - [-] Improved conversions
-  - [X] Allow multiple language selection for searchable PDFs (OCR)
   - [ ] Parallel conversions with both user settings and application-managed guardrails
   - [ ] Evaluate performance optimization opportunities
+  - [X] Allow multiple language selection for searchable PDFs (OCR)
 - [-] Builds and releases
   - [ ] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)    
   - [ ] Better error handling during live CD creation as it can result into an unbootable ISO
@@ -45,11 +44,11 @@
     - [ ] For GitHub actions, the Live CD creation should probably be easy enough for amd64
   - [X] Bump the cargo edition to =2021= instead of =2018= in cargo manifests
 - [-] Code maintenance and other practices
-  - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)
   - [ ] Desktop interface code cleanup for clarity and simplicity?
   - [ ] Some level of testing? (scripts at least with exit code capture?)
   - [ ] Use identifiers instead of row indices to enable parallel conversions later (maybe initial "dumb implementation")    
-  - [ ] Sign revision control commits and container images?
+  - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)
+  - [X] Sign revision control commits and container images
 
 * Milestone: Usability and features stabilization [100%]
 

@@ -4,15 +4,14 @@
 
 - [-] Security
   - [ ] Virtual machine hardening for Live CD
-    - [ ] Basic hardening (=Live CD basic edition=) without [[https://gvisor.dev/][gVisor]] as container security platform
-    - [ ] [[https://madaidans-insecurities.github.io/guides/linux-hardening.html][Extra harderning]] (=Live CD secplus edition=), with [[https://gvisor.dev/][gVisor]] (secure but VERY SLOW). Is this work worth it for most users?
+    - [ ] sysctl flags
     - Security profiles for the container image execution
       - [ ] [[https://docs.docker.com/engine/security/apparmor/][apparmor]] profile for the container image execution      
       - [ ] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile
         - [ ] Use existing =seccomp= file in Live CD mode and possibly enable it in less controlled environments (=entrusted-gui= or =entrusted-gui=)
         - [ ] Test on =amd64 (Linux, Mac OS, Windows)=
         - [ ] Evaluate opportunities to also make it work for arm64 (previous tests between =0.2.5= and =0.2.6= releases)        
-        - [ ] [[https://wiki.archlinux.org/title/User:NetSysFire/systemd_sandboxing][Systemd sandboxing]] for the "Online Service (=entrusted-webserver=)      
+      - [ ] [[https://docs.arbitrary.ch/security/systemd.html][Systemd sandboxing]] for the "Online Service (=entrusted-webserver=)
   - [X] Container image
     - [X] Run an publish vulnerability assessments for container images
     - [X] Trim even more container image size

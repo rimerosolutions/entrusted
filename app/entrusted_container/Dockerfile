@@ -5,7 +5,7 @@ WORKDIR /home/rust/entrusted-container
 COPY . .
 
 RUN PKG_CONFIG_ALLOW_CROSS=1 LO_INCLUDE_PATH=/usr/include/LibreOfficeKit cargo install --path entrusted_container --root /usr/local \
-    && cargo clean --manifest-path entrusted_container/Cargo.toml
+    && cargo clean --manifest-path entrusted_container/Cargo.toml && strip --strip-unneeded /usr/local/bin/entrusted-container
 
 FROM docker.io/debian:bullseye-slim
 
@@ -53,15 +53,19 @@ RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.gz' -o -name '*.png' 
     && rm -rf /usr/lib/python* /usr/bin/python* /usr/share/python* \
     && rm -rf /usr/sbin/*add* /usr/sbin/*del* \
     && rm -rf /usr/include/* /usr/share/icons/* /usr/share/applications/* /usr/share/pixmaps/* \
-    && rm -rf /usr/games /var/cache/apt /var/lib/apt/lists /usr/sbin/dpkg* \
+    && rm -rf /usr/games /var/cache/apt /var/lib/apt/lists /usr/sbin/dpkg* /usr/lib/dpkg* \
     && rm -rf /usr/bin/apt* /usr/lib/apt/* /usr/bin/dpkg* /usr/bin/debconf* \
     && rm -rf /usr/share/doc /usr/share/java /usr/share/man /usr/share/info  /var/log \
     && rm -rf /usr/lib/libreoffice/share/Scripts/* /usr/lib/libreoffice/share/palette/* /usr/lib/libreoffice/share/wizards/* \
-    && rm -rf /usr/lib/libreoffice/share/theme_definitions/*/usr/lib/libreoffice/share/autocorr/* \
+    && rm -rf /usr/lib/libreoffice/share/theme_definitions /usr/lib/libreoffice/share/autocorr \
     && rm -rf /usr/lib/libreoffice/program/*.png \
     && rm -rf /usr/lib/libreoffice/share/template  /usr/lib/libreoffice/share/gallery /usr/lib/libreoffice/share/tipoftheday \
     && rm -rf /usr/lib/libreoffice/*.html && rm -rf /usr/lib/libreoffice/*.fodt \
-    && rm -rf /usr/lib/libreoffice/program/classes/*.jar
+    && rm -rf /usr/lib/libreoffice/program/classes/*.jar \
+    && rm -rf /usr/local/games /usrlocal/include /usr/local/etc /usr/local/lib /usr/local/man /usr/local/share /usr/local/sbin /usr/local/src \
+    && rm -rf /usr/bin/libreoffice /usr/bin/lp_solve /usr/bin/lowriter /usr/bin/loweb /usr/bin/loimpress \
+    && rm -rf /usr/bin/py* /usr/bin/pod2* /usr/bin/loffice /usr/bin/lofromtemplate \
+    && rm -rf /usr/lib/libreoffice/share/basic/FormWizard /usr/lib/libreoffice/share/basic/Template
 
 # Drop to unprivileged user
 USER entrusted

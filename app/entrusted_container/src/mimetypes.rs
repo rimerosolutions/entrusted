@@ -160,8 +160,6 @@ fn office_mime<'a>(data: Vec<u8>) -> Result<Option<&'a str>, Box<dyn Error>> {
                     }
 
                     probe_count_ooxml += 1;
-
-                    
                 }
             }
 

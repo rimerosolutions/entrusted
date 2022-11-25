@@ -13,15 +13,15 @@ authors = [
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-image = { version = "0.24.3", default-features = false, features = ["gif", "jpeg", "png", "tiff", "jpeg_rayon" ]}
-poppler-rs = "0.19.0"
-cairo-rs = { version = "0.15.11", features = ["png", "pdf"] }
-tesseract-plumbing = "0.6.1"
+image = { version = "0.24.5", default-features = false, features = ["gif", "jpeg", "png", "tiff", "jpeg_rayon" ]}
+poppler-rs = "0.20.0"
+cairo-rs = { version = "0.16.3", features = ["png", "pdf"] }
+tesseract-plumbing = "0.7.1"
 lopdf = { version = "0.27.0", default-features = false, features = ["chrono_time", "nom_parser"] }
 cfb = "0.7.3"
-zip = { version = "0.6.2", default-features = false, features = ["deflate"] }
-serde = { version = "1.0.136", features = ["derive"] }
-serde_json = "1.0.79"
+zip = { version = "0.6.3", default-features = false, features = ["deflate"] }
+serde = { version = "1.0.147", features = ["derive"] }
+serde_json = "1.0.89"
 libreoffice-rs = { git = "https://github.com/undeflife/libreoffice-rs", branch = "master" }
 entrusted_l10n = { path = "../entrusted_l10n" }
 

@@ -122,27 +122,24 @@ fn main() -> Result<(), Box<dyn Error>> {
         // step 3 (45%-90%)
         progress_range.update(45, 90);
 
-        match env::var(ENV_VAR_OCR_LANGUAGE) {
-            Ok(ocr_lang) => {
-                let ocr_lang_text = ocr_lang.as_str();                
-                let selected_langcodes: Vec<&str> = ocr_lang_text.split("+").collect();
-                
-                for selected_langcode in selected_langcodes {
-                    if !l10n::ocr_lang_key_by_name(&l10n).contains_key(&selected_langcode) {
-                        return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![selected_langcode]).into());
-                    }
-                }
-                
-                let tess_settings = TessSettings {
-                    lang: ocr_lang_text,
-                    data_dir: TESS_DATA_DIR,
-                };
+        if let Ok(ocr_lang)= env::var(ENV_VAR_OCR_LANGUAGE) {
+            let ocr_lang_text = ocr_lang.as_str();
+            let selected_langcodes: Vec<&str> = ocr_lang_text.split("+").collect();
 
-                ocr_imgs_to_pdf(&logger, &progress_range, page_count, tess_settings, &output_dir_path, &output_dir_path, l10n.clone())?;
-            },
-            Err(_) => {
-                imgs_to_pdf(&logger, &progress_range, page_count, output_dir_path, output_dir_path, l10n.clone())?;
+            for selected_langcode in selected_langcodes {
+                if !l10n::ocr_lang_key_by_name(&l10n).contains_key(&selected_langcode) {
+                    return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![selected_langcode]).into());
+                }
             }
+
+            let tess_settings = TessSettings {
+                lang: ocr_lang_text,
+                data_dir: TESS_DATA_DIR,
+            };
+
+            ocr_imgs_to_pdf(&logger, &progress_range, page_count, tess_settings, &output_dir_path, &output_dir_path, l10n.clone())?;
+        } else {
+            imgs_to_pdf(&logger, &progress_range, page_count, output_dir_path, output_dir_path, l10n.clone())?;
         }
 
         // step 4 (90%-98%)
@@ -581,9 +578,9 @@ fn scaling_data(size_current: (f64, f64), size_target: (f64, f64)) -> (f64, (f64
     } else {
         ratio_width
     };
-    
+
     let (mut new_width, mut new_height) = (size_current.0 * ratio, size_current.1 * ratio);
-    
+
     if (new_width as i32) == 0 || (new_height as i32) == 0 {
         ratio = 1.0;
         new_width = size_current.0;
@@ -792,7 +789,7 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: &Progres
     step_num += 1;
     progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
     logger.log(progress_value, l10n.gettext("Saving PDF"));
-    
+
     if let Err(ex) = document.save(output_path) {
         return Err(l10n.gettext_fmt("Could not save PDF file to {0}. {1}.", vec![&output_path.display().to_string(), &ex.to_string()]).into());
     }

@@ -1,4 +1,4 @@
-use clap::{App, Arg};
+use clap::{Command, Arg, ArgAction, builder::PossibleValue };
 use std::env;
 use std::error::Error;
 use std::path::PathBuf;
@@ -9,6 +9,7 @@ use serde_json;
 use indicatif::ProgressBar;
 use rpassword;
 use std::collections::HashMap;
+use once_cell::sync::OnceCell;
 use entrusted_l10n as l10n;
 
 mod common;
@@ -16,6 +17,9 @@ mod config;
 mod container;
 
 const LOG_FORMAT_PLAIN: &str = "plain";
+
+static INSTANCE_DEFAULT_IMAGE: OnceCell<String> = OnceCell::new();
+static INSTANCE_FILESUFFIX: OnceCell<String> = OnceCell::new();
 
 #[derive(Clone)]
 struct CliEventSender {
@@ -30,6 +34,14 @@ impl common::EventSender for CliEventSender {
     fn clone_box(&self) -> Box<dyn common::EventSender> {
         Box::new(self.clone())
     }
+}
+
+fn default_container_image_to_str() -> &'static str {
+    &INSTANCE_DEFAULT_IMAGE.get().expect("Image value not set!")
+}
+
+fn filesuffix_to_str() -> &'static str {
+    &INSTANCE_FILESUFFIX.get().expect("filesuffix value not set!")
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -59,68 +71,77 @@ fn main() -> Result<(), Box<dyn Error>> {
     let help_file_suffix = trans.gettext("Default file suffix (entrusted)");
     let help_password_prompt = trans.gettext("Prompt for document password");
     let help_update_checks = trans.gettext("Check for updates");
-
-    let app = App::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
+    
+    let cmd_help_template = trans.gettext(&format!("{}\n{}\n{}\n\n{}\n\n{}\n{}", 
+                                                  "{bin} {version}",
+                                                  "{author}",
+                                                  "{about}",
+                                                  "Usage: {usage}",
+                                                  "Options:",
+                                                  "{options}"));
+    
+    INSTANCE_DEFAULT_IMAGE.set(default_container_image_name)?;
+    INSTANCE_FILESUFFIX.set(app_config.file_suffix.to_string())?;
+    
+    let app = Command::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
+        .help_template(&cmd_help_template)
         .author(option_env!("CARGO_PKG_AUTHORS").unwrap_or("Unknown"))
         .about(option_env!("CARGO_PKG_DESCRIPTION").unwrap_or("Unknown"))
         .arg(
-            Arg::with_name("output-filename")
+            Arg::new("output-filename")
                 .long("output-filename")
                 .help(&help_output_filename)
                 .required(false)
-                .takes_value(true)
         ).arg(
-            Arg::with_name("ocr-lang")
+            Arg::new("ocr-lang")
                 .long("ocr-lang")
                 .help(&help_ocr_lang)
                 .required(false)
-                .takes_value(true)
         ).arg(
-            Arg::with_name("update-checks")
+            Arg::new("update-checks")
                 .long("update-checks")
                 .help(&help_update_checks)
                 .required(false)
-                .takes_value(false)
+                .action(ArgAction::SetTrue)
         ).arg(
-            Arg::with_name("input-filename")
+            Arg::new("input-filename")
                 .long("input-filename")
                 .help(&help_input_filename)
-                .takes_value(true)
-                .required_unless("update-checks")
+                .required_unless_present("update-checks")
         ).arg(
-            Arg::with_name("container-image-name")
+            Arg::new("container-image-name")
                 .long("container-image-name")
                 .help(&help_container_image_name)
-                .default_value(&default_container_image_name)
+                .default_value(&default_container_image_to_str())
                 .required(false)
-                .takes_value(true)
         ).arg(
-            Arg::with_name("log-format")
+            Arg::new("log-format")
                 .long("log-format")
                 .help(&help_log_format)
-                .possible_values(&[common::LOG_FORMAT_JSON, LOG_FORMAT_PLAIN])
+                .value_parser([
+                    PossibleValue::new(common::LOG_FORMAT_JSON), 
+                    PossibleValue::new(LOG_FORMAT_PLAIN)                
+                ])
                 .default_value(LOG_FORMAT_PLAIN)
                 .required(false)
-                .takes_value(true)
         ).arg(
-            Arg::with_name("file-suffix")
+            Arg::new("file-suffix")
                 .long("file-suffix")
                 .help(&help_file_suffix)
-                .default_value(&app_config.file_suffix)
+                .default_value(&filesuffix_to_str())
                 .required(false)
-                .takes_value(true)
         ).arg(
-            Arg::with_name("passwd-prompt")
+            Arg::new("passwd-prompt")
                 .long("passwd-prompt")
                 .help(&help_password_prompt)
                 .required(false)
-                .takes_value(false)
+                .action(ArgAction::SetTrue)
         );
 
     let run_matches= app.to_owned().get_matches();
 
-    if run_matches.is_present("update-checks") {
+    if run_matches.get_flag("update-checks") {
         match common::update_check(&trans) {
             Ok(opt_new_release) => {
                 if let Some(new_release) = opt_new_release {
@@ -141,11 +162,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut input_filename = "";
     let mut output_filename = PathBuf::from("");
 
-    if let Some(proposed_input_filename) = run_matches.value_of("input-filename") {
+    if let Some(proposed_input_filename) = run_matches.get_one::<String>("input-filename") {
         input_filename = proposed_input_filename;
     }
 
-    if let Some(proposed_output_filename) = run_matches.value_of("output-filename") {
+    if let Some(proposed_output_filename) = run_matches.get_one::<String>("output-filename") {
         output_filename = PathBuf::from(proposed_output_filename);
     }
 
@@ -155,7 +176,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut ocr_lang = None;
 
-    if let Some(proposed_ocr_lang) = &run_matches.value_of("ocr-lang") {
+    if let Some(proposed_ocr_lang) = &run_matches.get_one::<String>("ocr-lang") {
         let supported_ocr_languages = l10n::ocr_lang_key_by_name(&trans);
         let selected_langcodes: Vec<&str> = proposed_ocr_lang.split("+").collect();
 
@@ -196,7 +217,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     };
 
-    let file_suffix = if let Some(proposed_file_suffix) = &run_matches.value_of("file-suffix") {
+    let file_suffix = if let Some(proposed_file_suffix) = &run_matches.get_one::<String>("file-suffix") {
         proposed_file_suffix.to_string()
     } else {
         app_config.file_suffix.to_string()
@@ -208,7 +229,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         output_filename = abs_output_filename;
     }
 
-    let container_image_name = match &run_matches.value_of("container-image-name") {
+    let container_image_name = match &run_matches.get_one::<String>("container-image-name") {
         Some(img) => img.to_string(),
         None      => if let Some(container_image_name_saved) = app_config.container_image_name {
             container_image_name_saved.clone()
@@ -217,13 +238,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     };
 
-    let log_format = if let Some(fmt) = &run_matches.value_of("log-format") {
+    let log_format = if let Some(fmt) = &run_matches.get_one::<String>("log-format") {
         fmt
     } else {
         LOG_FORMAT_PLAIN
     };
 
-    let opt_passwd = if run_matches.is_present("passwd-prompt") {
+    let opt_passwd = if run_matches.get_flag("passwd-prompt") {
         // Simplification for password entry from the Web interface and similar non-TTY use-cases
         if let Ok(env_passwd) = env::var("ENTRUSTED_AUTOMATED_PASSWORD_ENTRY") {
             Some(env_passwd)

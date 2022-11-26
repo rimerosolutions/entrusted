@@ -30,6 +30,15 @@ msgstr ""
 #~ "MIME-Version: 1.0\n"
 #~ "Content-Type: text/plain; charset=UTF-8"
 
+msgid ""
+"{bin} {version}\n"
+"{author}\n"
+"{about}\n\n"
+"Usage: {usage}\n\n"
+"Options:\n"
+"{options}"
+msgstr ""
+
 msgid "Potential sanitization process crash detected, the sanitized PDF result was not created."
 msgstr ""
 

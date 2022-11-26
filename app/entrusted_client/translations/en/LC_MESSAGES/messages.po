@@ -18,6 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid ""
+"{bin} {version}\n"
+"{author}\n"
+"{about}\n\n"
+"Usage: {usage}\n\n"
+"Options:\n"
+"{options}"
+msgstr ""
+
 msgid "Potential sanitization process crash detected, the sanitized PDF result was not created."
 msgstr ""
 

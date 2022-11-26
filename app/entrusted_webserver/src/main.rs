@@ -2,6 +2,7 @@ use clap;
 use entrusted_l10n as l10n;
 use std::collections::HashMap;
 use std::env;
+use once_cell::sync::OnceCell;
 
 mod config;
 mod model;
@@ -24,6 +25,22 @@ macro_rules! incl_gettext_files {
     };
 }
 
+static INSTANCE_DEFAULT_HOST: OnceCell<String>  = OnceCell::new();
+static INSTANCE_DEFAULT_PORT: OnceCell<String>  = OnceCell::new();
+static INSTANCE_DEFAULT_IMAGE: OnceCell<String> = OnceCell::new();
+
+fn default_host_to_str() -> &'static str {
+    &INSTANCE_DEFAULT_HOST.get().expect("Host value not set!")
+}
+
+fn default_port_to_str() -> &'static str {
+    &INSTANCE_DEFAULT_PORT.get().expect("Port value not set!")
+}
+
+fn default_container_image_to_str() -> &'static str {
+    &INSTANCE_DEFAULT_IMAGE.get().expect("Image value not set!")
+}
+
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     l10n::load_translations(incl_gettext_files!("en", "fr"));
@@ -41,44 +58,54 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let appconfig: config::AppConfig = config::load_config()?;
     let port_number_text = format!("{}", appconfig.port);
     let app_version = option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown");
+    
+    INSTANCE_DEFAULT_HOST.set(appconfig.host.to_owned())?;
+    INSTANCE_DEFAULT_PORT.set(port_number_text.to_owned())?;
+    INSTANCE_DEFAULT_IMAGE.set(appconfig.container_image_name.to_owned())?;
+    
+    let cmd_help_template = l10n.gettext(&format!("{}\n{}\n{}\n\n{}\n\n{}\n{}",
+                                                  "{bin} {version}",
+                                                  "{author}",
+                                                  "{about}",
+                                                  "Usage: {usage}",
+                                                  "Options:",
+                                                  "{options}"));
 
-    let app = clap::App::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
+    let app = clap::Command::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(app_version)
+        .help_template(&cmd_help_template)
         .author(option_env!("CARGO_PKG_AUTHORS").unwrap_or("Unknown"))
         .about(option_env!("CARGO_PKG_DESCRIPTION").unwrap_or("Unknown"))
         .arg(
-            clap::Arg::with_name("host")
+            clap::Arg::new("host")
                 .long("host")
                 .help(&help_host)
-                .required(true)
-                .default_value(&appconfig.host)
-                .takes_value(true),
+                .required(false)
+                .default_value(&default_host_to_str())
         )
         .arg(
-            clap::Arg::with_name("port")
+            clap::Arg::new("port")
                 .long("port")
                 .help(&help_port)
-                .required(true)
-                .default_value(&port_number_text)
-                .takes_value(true),
+                .required(false)
+                .default_value(&default_port_to_str())
         )
         .arg(
-            clap::Arg::with_name("container-image-name")
+            clap::Arg::new("container-image-name")
                 .long("container-image-name")
                 .help(&help_container_image_name)
-                .required(true)
-                .default_value(&appconfig.container_image_name)
-                .takes_value(true),
+                .required(false)
+                .default_value(&default_container_image_to_str())
         );
 
     let run_matches = app.to_owned().get_matches();
 
-    let ci_image_name = match run_matches.value_of("container-image-name") {
-        Some(img_name) => img_name.to_string(),
+    let ci_image_name = match run_matches.get_one::<String>("container-image-name") {
+        Some(img_name) => img_name.to_owned(),
         _              => appconfig.container_image_name.clone(),
     };
 
-    if let (Some(host), Some(port)) = (run_matches.value_of("host"), run_matches.value_of("port")) {
+    if let (Some(host), Some(port)) = (run_matches.get_one::<String>("host"), run_matches.get_one::<String>("port")) {
         if let Err(ex) = port.parse::<u16>() {
             return Err(format!(
                 "{}: {}. {}",

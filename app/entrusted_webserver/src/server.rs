@@ -73,10 +73,10 @@ pub async fn serve(
     let app = Router::new()
         .route("/", get(index))
         .route("/api/v1/uitranslations", get(uitranslations))
-        .route("/api/v1/upload", post(upload))
         .route("/api/v1/events/:request_id", get(events))
         .route("/api/v1/downloads/:request_id", get(downloads))
-        .fallback(get(notfound))
+        .route("/api/v1/upload", post(upload))
+        .fallback(notfound)
         .layer(CorsLayer::permissive())
         .layer(Extension(state_ci_image))
         .layer(Extension(state_bc))
@@ -131,9 +131,9 @@ async fn uitranslations(headers: HeaderMap, uri: Uri) -> Result<Json<model::Tran
 async fn upload(
     headers: HeaderMap,
     uri: Uri,
-    payload: Multipart,
     ci_image_name: Extension<Arc<String>>,
     trans_ref: Extension<Arc<l10n::Translations>>,
+    payload: Multipart,
 ) -> Result<impl IntoResponse, AppError> {
     let trans = &*(trans_ref.0.clone());
     let langid = if let Some(req_language) = headers.get(header::ACCEPT_LANGUAGE) {
@@ -366,27 +366,27 @@ fn output_filename_for(request_id: String) -> String {
 }
 
 fn problem_not_found(reason: String, uri: &Uri) -> http_api_problem::HttpApiProblem {
-    http_api_problem::HttpApiProblem::with_title_and_type_from_status(
+    http_api_problem::HttpApiProblem::with_title_and_type(
         http_api_problem::StatusCode::NOT_FOUND,
     )
-        .set_detail(reason)
-        .set_instance(uri.to_string())
+        .detail(reason)
+        .instance(uri.to_string())
 }
 
 fn problem_bad_request(reason: String, uri: &Uri) -> http_api_problem::HttpApiProblem {
-    http_api_problem::HttpApiProblem::with_title_and_type_from_status(
+    http_api_problem::HttpApiProblem::with_title_and_type(
         http_api_problem::StatusCode::BAD_REQUEST,
     )
-        .set_detail(reason)
-        .set_instance(uri.to_string())
+        .detail(reason)
+        .instance(uri.to_string())
 }
 
 fn problem_internal_server_error(reason: String, uri: &Uri) -> http_api_problem::HttpApiProblem {
-    http_api_problem::HttpApiProblem::with_title_and_type_from_status(
+    http_api_problem::HttpApiProblem::with_title_and_type(
         http_api_problem::StatusCode::INTERNAL_SERVER_ERROR,
     )
-        .set_detail(reason)
-        .set_instance(uri.to_string())
+        .detail(reason)
+        .instance(uri.to_string())
 }
 
 fn parse_accept_language(req_language: &HeaderValue, fallback_lang: String) -> String {

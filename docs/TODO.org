@@ -1,7 +1,7 @@
 #+TITLE: TODO
 
 * Milestone: Hardening and features maturity [20%]
-
+- [ ] URGENT-potentially revert settings for image size, etc. seems much slower to run...
 - [-] Security
   - [-] Virtual machine hardening for Live CD
     - Security profiles for the container image execution

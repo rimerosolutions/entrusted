@@ -46,7 +46,7 @@ winreg = "0.10.1"
 dunce = "1.0.3"
 
 [build-dependencies]
-embed-resource = "1.7.2"
+embed-resource = "1.7.2" # stuck with 1.7.2 instead of latest now due to conflicts for toml > 0.5.8
 polib = "0.1.0"
 
 [[bin]]

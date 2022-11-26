@@ -31,7 +31,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt update && apt upgrade -y && DEBIAN_FRONTE
 
 COPY --from=builder /usr/local/bin/entrusted-container /usr/local/bin/entrusted-container
 
-RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.gz' -o -name '*.png' -o -name '*.xpm' -o -name '*.jar' -o -name '*.pyc' -o -name '*.pdf' -exec rm -rf {} \;" \
+RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.zip' -o -name '*.gz' -o -name '*.png' -o -name '*.xpm' -o -name '*.jar' -o -name '*.pyc' -o -name '*.pdf' -exec rm -rf {} \;" \
     && useradd -ms /bin/dash entrusted && mkdir /safezone && chmod -R a+rw /safezone \
     && rm /usr/bin/ambiguous_words \
     && rm /usr/bin/classifier_tester \
@@ -53,7 +53,7 @@ RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.gz' -o -name '*.png' 
     && rm -rf /usr/lib/python* /usr/bin/python* /usr/share/python* \
     && rm -rf /usr/sbin/*add* /usr/sbin/*del* \
     && rm -rf /usr/include/* /usr/share/icons/* /usr/share/applications/* /usr/share/pixmaps/* \
-    && rm -rf /usr/games /var/cache/apt /var/lib/apt/lists /usr/sbin/dpkg* /usr/lib/dpkg* \
+    && rm -rf /usr/games /var/cache/apt /var/lib/apt/lists /usr/sbin/dpkg* /usr/lib/dpkg* /var/lib/dpkg \
     && rm -rf /usr/bin/apt* /usr/lib/apt/* /usr/bin/dpkg* /usr/bin/debconf* \
     && rm -rf /usr/share/doc /usr/share/java /usr/share/man /usr/share/info  /var/log \
     && rm -rf /usr/lib/libreoffice/share/Scripts/* /usr/lib/libreoffice/share/palette/* /usr/lib/libreoffice/share/wizards/* \
@@ -61,7 +61,8 @@ RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.gz' -o -name '*.png' 
     && rm -rf /usr/lib/libreoffice/program/*.png \
     && rm -rf /usr/lib/libreoffice/share/template  /usr/lib/libreoffice/share/gallery /usr/lib/libreoffice/share/tipoftheday \
     && rm -rf /usr/lib/libreoffice/*.html && rm -rf /usr/lib/libreoffice/*.fodt \
-    && rm -rf /usr/lib/libreoffice/program/classes/*.jar \
+    && rm -rf /usr/lib/libreoffice/basic/Tutorials && rm -rf /usr/lib/libreoffice/basic/ImportWizard \
+    && rm -rf /usr/lib/libreoffice/program/classes/*.jar /usr/lib/libreoffice/program/wizards \
     && rm -rf /usr/local/games /usrlocal/include /usr/local/etc /usr/local/lib /usr/local/man /usr/local/share /usr/local/sbin /usr/local/src \
     && rm -rf /usr/bin/libreoffice /usr/bin/lp_solve /usr/bin/lowriter /usr/bin/loweb /usr/bin/loimpress \
     && rm -rf /usr/bin/py* /usr/bin/pod2* /usr/bin/loffice /usr/bin/lofromtemplate \

@@ -1,10 +1,9 @@
 #+TITLE: TODO
 
-* Milestone: Hardening and features maturity [0%]
+* Milestone: Hardening and features maturity [20%]
 
 - [-] Security
   - [-] Virtual machine hardening for Live CD
-    - [X] [[https://madaidans-insecurities.github.io/guides/linux-hardening.html][sysctl]] flags
     - Security profiles for the container image execution
       - [ ] [[https://docs.docker.com/engine/security/apparmor/][apparmor]] security profile
       - [ ] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile
@@ -12,6 +11,7 @@
         - [ ] Test on =amd64 (Linux, Mac OS, Windows)=
         - [ ] Evaluate opportunities to also make it work for arm64 (previous tests between =0.2.5= and =0.2.6= releases)        
     - [ ] [[https://docs.arbitrary.ch/security/systemd.html][Systemd sandboxing]] for the "Online Service (=entrusted-webserver=)
+    - [X] [[https://madaidans-insecurities.github.io/guides/linux-hardening.html][sysctl]] settings and kernel boot parameters, [[https://github.com/GrapheneOS/hardened_malloc][hardened_malloc]]
   - [ ] Revisit other general security options and practices as part of continuous improvement
   - [ ] Investigate alternate sandbox approaches
   - [X] Run an publish vulnerability assessments for container images
@@ -33,15 +33,9 @@
   - [ ] Parallel conversions with both user settings and application-managed guardrails
   - [ ] Evaluate performance optimization opportunities
   - [X] Allow multiple language selection for searchable PDFs (OCR)
-- [-] Builds and releases
-  - [ ] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)    
-  - [ ] Better error handling during live CD creation as it can result into an unbootable ISO
-  - [ ] Revisit arm64 availability for Live CD (weird error messages in chroot, with both =Podman= or =Docker=)
-  - [ ] Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (or something else)
-    - [ ] For Github actions, create a YAML workflow file for all required jobs and operating systems
-    - [ ] For GitHub actions, the current Mac OS docker image doesn't detect the right rust toolchain
-    - [ ] For GitHub actions, need to see if arm64 builds work
-    - [ ] For GitHub actions, the Live CD creation should probably be easy enough for amd64
+- [X] Builds and releases
+  - [X] Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (rejected for lack of flexibility, cross-builds multi-arch annoyances)
+  - [X] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)    
   - [X] Bump the cargo edition to =2021= instead of =2018= in cargo manifests
 - [-] Code maintenance and other practices
   - [ ] Desktop interface code cleanup for clarity and simplicity?

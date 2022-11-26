@@ -40,13 +40,13 @@ for CPU_ARCH in $CPU_ARCHS ; do
     cd ${PROJECTDIR}
 
     echo "Building all Mac OS binaries for ${CPU_ARCH}"
-    echo "TODO check stripping binaries later after more testing"
 
     podman run --rm \
            --volume "${PROJECTDIR}":/root/src \
            --workdir /root/src \
            docker.io/uycyjnzgntrn/rust-macos:1.64.0 \
-           sh -c "${EXPORT_PARAMS} ${BUILD_PREAMBLE}; ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --target  ${RUST_TARGET}  --manifest-path /root/src/entrusted_webserver/Cargo.toml && ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --features=gui --target ${RUST_TARGET} --manifest-path /root/src/entrusted_client/Cargo.toml && ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --target ${RUST_TARGET} --manifest-path /root/src/entrusted_webclient/Cargo.toml"
+           sh -c "${EXPORT_PARAMS} ${BUILD_PREAMBLE}; ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --target  ${RUST_TARGET}  --manifest-path /root/src/entrusted_webserver/Cargo.toml && ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --features=gui --target ${RUST_TARGET} --manifest-path /root/src/entrusted_client/Cargo.toml && ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --target ${RUST_TARGET} --manifest-path /root/src/entrusted_webclient/Cargo.toml && ${STRIP_COMMAND} /root/src/entrusted_client/target/${RUST_TARGET}/release/entrusted-cli && ${STRIP_COMMAND} /root/src/entrusted_client/target/${RUST_TARGET}/release/entrusted-gui && ${STRIP_COMMAND} /root/src/entrusted_webclient/target/${RUST_TARGET}/release/entrusted-webclient && ${STRIP_COMMAND} /root/src/entrusted_webserver/target/${RUST_TARGET}/release/entrusted-webserver"    
+    
     retVal=$?
     if [ $retVal -ne 0 ]; then
         echo "Failure"

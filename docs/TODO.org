@@ -7,13 +7,8 @@
     - Security profiles for the container image execution
       - [ ] [[https://docs.docker.com/engine/security/apparmor/][apparmor]] security profile
       - [ ] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile
-        - [ ] Use existing =seccomp= file in Live CD mode and possibly enable it in less controlled environments (=entrusted-gui= or =entrusted-gui=)
-        - [ ] Test on =amd64 (Linux, Mac OS, Windows)=
-        - [ ] Evaluate opportunities to also make it work for arm64 (previous tests between =0.2.5= and =0.2.6= releases)        
     - [ ] [[https://docs.arbitrary.ch/security/systemd.html][Systemd sandboxing]] for the "Online Service (=entrusted-webserver=)
     - [X] [[https://madaidans-insecurities.github.io/guides/linux-hardening.html][sysctl]] settings and kernel boot parameters, [[https://github.com/GrapheneOS/hardened_malloc][hardened_malloc]]
-  - [ ] Revisit other general security options and practices as part of continuous improvement
-  - [ ] Investigate alternate sandbox approaches
   - [X] Run an publish vulnerability assessments for container images
   - [X] Trim even more container image size
   - [X] Evaluate more frequently updated container images for CVEs
@@ -28,21 +23,20 @@
     - [ ] OCR target DPI
     - [ ] Add maybe some kind of profiles or presets? How complex would the UI be?
   - [ ] Smooth scrolling as files are being processed to highlight the current document
-  - [ ] For the Web interface, sticky "status bar" to match Desktop client UI message notifications
 - [-] Improved conversions
   - [ ] Parallel conversions with both user settings and application-managed guardrails
   - [ ] Evaluate performance optimization opportunities
   - [X] Allow multiple language selection for searchable PDFs (OCR)
+- [-] Code maintenance and other practices
+  - [ ] Use identifiers instead of row indices to enable parallel conversions later (maybe initial "dumb implementation")    
+  - [ ] Some level of testing? (scripts at least with exit code capture?)
+  - [ ] Desktop interface code cleanup for clarity and simplicity?
+  - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)
+  - [X] Sign revision control commits and container images
 - [X] Builds and releases
   - [X] Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (rejected for lack of flexibility, cross-builds multi-arch annoyances)
   - [X] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)    
   - [X] Bump the cargo edition to =2021= instead of =2018= in cargo manifests
-- [-] Code maintenance and other practices
-  - [ ] Desktop interface code cleanup for clarity and simplicity?
-  - [ ] Some level of testing? (scripts at least with exit code capture?)
-  - [ ] Use identifiers instead of row indices to enable parallel conversions later (maybe initial "dumb implementation")    
-  - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)
-  - [X] Sign revision control commits and container images
 
 * Milestone: Usability and features stabilization [100%]
 

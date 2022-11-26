@@ -11,11 +11,10 @@ permitted by applicable law.
  
 This is a live CD of entrusted
 - 'doas' is installed instead of 'sudo', the general usage is similar 
-- Standard service management: systemctl <action> entrusted-webserver 
-- The relevant binaries are in /usr/local/bin 
-- By default the server binds to ALL interfaces on port 13000 
-- The Web interface is available at http://127.0.0.1:13000
+- 'mg' is installed instead of 'vim' or 'nano' for text editing
+- Standard service management: systemctl <action> entrusted-webserver
+- By default entrusted-webserver binds to ALL interfaces on port 13000 
 - By default internet connectivity is forbidden 
   - As root, run 'entrusted-fw-disable' to allow internet access 
   - As root, run 'entrusted-fw-enable' to restore firewall rules
-
+- The Web interface is available at http://127.0.0.1:13000

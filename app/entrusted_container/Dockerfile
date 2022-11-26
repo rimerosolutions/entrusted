@@ -70,6 +70,8 @@ RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.gz' -o -name '*.png' 
 # Drop to unprivileged user
 USER entrusted
 
+ENV ENTRUSTED_LIBREOFFICE_PROGRAM_DIR /usr/lib/libreoffice/program
+ENV ENTRUSTED_TESSERACT_TESSDATA_DIR  /usr/share/tesseract-ocr/4.00/tessdata
 # We're not declaring all volumes explicity. input_file might get interpreted as a directory for squashed images somehow
 # Need to revisit the above claim in the future, based on old observations
 # /tmp/input_file is where the first convert expects the input file to be, and

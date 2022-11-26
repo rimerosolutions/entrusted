@@ -20,17 +20,22 @@ use entrusted_l10n as l10n;
 
 mod mimetypes;
 
-const LOCATION_LIBREOFFICE_PROGRAM: &str = "/usr/lib/libreoffice/program";
+const DEFAULT_DIR_TESSERACT_TESSDATA: &str  = "NOT_SET";
+const DEFAULT_DIR_LIBREOFFICE_PROGRAM: &str = "NOT_SET";
 
-const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str = "ENTRUSTED_DOC_PASSWD";
-const ENV_VAR_LOG_FORMAT: &str           = "ENTRUSTED_LOG_FORMAT";
-const ENV_VAR_OCR_LANGUAGE: &str         = "ENTRUSTED_OCR_LANGUAGE";
+// TODO command line parameters of the program instead of vars?
+const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str              = "ENTRUSTED_DOC_PASSWD";
+const ENV_VAR_LOG_FORMAT: &str                        = "ENTRUSTED_LOG_FORMAT";
+const ENV_VAR_OCR_LANGUAGE: &str                      = "ENTRUSTED_OCR_LANGUAGE";
+const ENV_VAR_ENTRUSTED_IMAGE_QUALITY: &str           = "ENTRUSTED_IMAGE_QUALITY";
+const ENV_VAR_ENTRUSTED_TESSERACT_TESSDATA_DIR: &str  = "ENTRUSTED_TESSERACT_TESSDATA_DIR";
+const ENV_VAR_ENTRUSTED_LIBREOFFICE_PROGRAM_DIR: &str = "ENTRUSTED_LIBREOFFICE_PROGRAM_DIR";
 
 // A4 150PPI/DPI
-// https://www.a4-size.com/a4-size-in-pixels/?size=a4&unit=px&ppi=150
-// TODO introduce the concept of preset for couple of options (papersize, rendering quality)
-const IMG_MAX_WIDTH: f64  = 1240.0;
-const IMG_MAX_HEIGHT: f64 = 1754.0;
+// See https://www.a4-size.com/a4-size-in-pixels/?size=a4&unit=px&ppi=150
+const IMAGE_SIZE_QUALITY_LOW: (f64, f64)    = (595.0, 842.0);
+const IMAGE_SIZE_QUALITY_MEDIUM: (f64, f64) = (1240.0, 1754.0);
+const IMAGE_SIZE_QUALITY_HIGH: (f64, f64)   = (4961.0, 7016.0);
 
 macro_rules! incl_gettext_files {
     ( $( $x:expr ),* ) => {
@@ -58,8 +63,6 @@ struct TessSettings<'a> {
     data_dir: &'a str, // tesseract tessdata folder
 }
 
-const TESS_DATA_DIR: &str = "/usr/share/tesseract-ocr/4.00/tessdata";
-
 fn main() -> Result<(), Box<dyn Error>> {
     let timer = Instant::now();
 
@@ -81,6 +84,20 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     } else {
         None
+    };
+    
+    let image_quality = if let Ok(env_img_quality) = env::var(ENV_VAR_ENTRUSTED_IMAGE_QUALITY) {
+        let img_quality = env_img_quality.to_lowercase();
+        let img_quality_str = img_quality.as_str();
+        
+        match img_quality_str {
+            "low"    => IMAGE_SIZE_QUALITY_LOW,
+            "medium" => IMAGE_SIZE_QUALITY_MEDIUM,
+            "high"   => IMAGE_SIZE_QUALITY_HIGH,
+            _        => IMAGE_SIZE_QUALITY_MEDIUM                
+        }
+    } else {
+        IMAGE_SIZE_QUALITY_MEDIUM
     };
 
     let logger: Box<dyn ConversionLogger> = if let Ok(dgz_logformat_value) = env::var(ENV_VAR_LOG_FORMAT) {
@@ -117,7 +134,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         // step 2 (20%-45%)
         progress_range.update(20, 45);
-        split_pdf_pages_into_images(&logger, &progress_range, page_count, doc, &output_dir_path, l10n.clone())?;
+        split_pdf_pages_into_images(&logger, &progress_range, page_count, doc, image_quality, &output_dir_path, l10n.clone())?;
 
         // step 3 (45%-90%)
         progress_range.update(45, 90);
@@ -132,9 +149,15 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             }
 
+            let provided_tessdata_dir = if let Ok(tessdata_dir) = env::var(ENV_VAR_ENTRUSTED_TESSERACT_TESSDATA_DIR) {
+                tessdata_dir
+            } else {
+                DEFAULT_DIR_TESSERACT_TESSDATA.to_string()
+            };
+            
             let tess_settings = TessSettings {
                 lang: ocr_lang_text,
-                data_dir: TESS_DATA_DIR,
+                data_dir: &provided_tessdata_dir
             };
 
             ocr_imgs_to_pdf(&logger, &progress_range, page_count, tess_settings, &output_dir_path, &output_dir_path, l10n.clone())?;
@@ -283,7 +306,13 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: &ProgressR
                         let new_input_path = Path::new(&new_input_loc);
                         fs::copy(&raw_input_path, &new_input_path)?;
 
-                        let mut office = Office::new(LOCATION_LIBREOFFICE_PROGRAM)?;
+                        let libreoffice_program_dir = if let Ok(env_libreoffice_program_dir) = env::var(ENV_VAR_ENTRUSTED_LIBREOFFICE_PROGRAM_DIR) {
+                            env_libreoffice_program_dir
+                        } else {
+                            DEFAULT_DIR_LIBREOFFICE_PROGRAM.to_string()
+                        };
+
+                        let mut office = Office::new(&libreoffice_program_dir)?;
                         let input_uri = urls::local_into_abs(&new_input_path.display().to_string())?;
                         let password_was_set = AtomicBool::new(false);
                         let failed_password_input = Arc::new(AtomicBool::new(false));
@@ -399,7 +428,6 @@ fn ocr_imgs_to_pdf(
     Ok(())
 }
 
-// TODO multiple language selection in the front-end with format pattern: lang1+lang2 (i.e. eng+deu)
 // TODO similar concept of preset for paper size, etc., but for the user defined DPI hard-coded to 72
 fn tesseract_init(ocr_lang: &str, tessdata_dir: &str) -> *mut tesseract_plumbing::tesseract_sys::TessBaseAPI {
     let c_lang = CString::new(ocr_lang).unwrap();
@@ -523,7 +551,7 @@ impl ProgressRange {
     }
 }
 
-fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_range: &ProgressRange, page_count: usize, doc: Document, dest_folder: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
+fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_range: &ProgressRange, page_count: usize, doc: Document, target_size: (f64, f64), dest_folder: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
     let mut progress_value: usize = progress_range.min;
 
     logger.log(progress_value, l10n.ngettext("Extract PDF file into one image",
@@ -548,7 +576,6 @@ fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_rang
 
             let dest_path = dest_folder.join(format!("page-{}.png", idx));
             let current_size = page.size();
-            let target_size = (IMG_MAX_WIDTH, IMG_MAX_HEIGHT);
 
             let (ratio, (new_width, new_height)) = scaling_data(current_size, target_size);
 

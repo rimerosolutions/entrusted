@@ -1,4 +1,4 @@
-use clap::{App, Arg};
+use clap::{Command, Arg, ArgAction};
 use futures::stream::StreamExt;
 use reqwest::{Body, Client};
 use reqwest_eventsource::{Event, EventSource};
@@ -8,8 +8,8 @@ use std::collections::HashMap;
 use std::io::Write;
 use indicatif::ProgressBar;
 use rpassword;
-
 use std::env;
+use once_cell::sync::OnceCell;
 
 use std::{
     fs,
@@ -25,6 +25,23 @@ use entrusted_l10n as l10n;
 
 const PROGRAM_GROUP: &str = "com.rimerosolutions.entrusted.entrusted_webclient";
 const CFG_FILENAME: &str = "config.toml";
+
+
+static INSTANCE_HOST: OnceCell<String> = OnceCell::new();
+static INSTANCE_PORT: OnceCell<String> = OnceCell::new();
+static INSTANCE_FILESUFFIX: OnceCell<String> = OnceCell::new();
+
+fn host_to_str() -> &'static str {
+    &INSTANCE_HOST.get().expect("host value not set!")
+}
+
+fn port_to_str() -> &'static str {
+    &INSTANCE_PORT.get().expect("port value not set!")
+}
+
+fn filesuffix_to_str() -> &'static str {
+    &INSTANCE_FILESUFFIX.get().expect("filesuffix value not set!")
+}
 
 macro_rules! incl_gettext_files {
     ( $( $x:expr ),* ) => {
@@ -134,7 +151,6 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
 
     let appconfig_ret = load_config();
     let appconfig = appconfig_ret.unwrap_or(AppConfig::default());
-    let port_number_text = appconfig.port.to_string();
 
     let help_host = trans.gettext("Server host or IP address");
     let help_port = trans.gettext("Server port number");
@@ -143,65 +159,72 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
     let help_ocr_lang = trans.gettext("Optional language for OCR (i.e. 'eng' for English)");
     let help_file_suffix = trans.gettext("Default file suffix (entrusted)");
     let help_password_prompt = trans.gettext("Prompt for document password");
-
-    let app = App::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
+    
+    INSTANCE_HOST.set(appconfig.host.to_owned())?;
+    INSTANCE_PORT.set(appconfig.port.to_string())?;
+    INSTANCE_FILESUFFIX.set(appconfig.file_suffix.to_owned())?;
+    
+    let cmd_help_template = trans.gettext(&format!("{}\n{}\n{}\n\n{}\n\n{}\n{}", 
+                                                  "{bin} {version}",
+                                                  "{author}",
+                                                  "{about}",
+                                                  "Usage: {usage}",
+                                                  "Options:",
+                                                  "{options}"));
+    
+    let app = Command::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
+        .help_template(&cmd_help_template)
         .author(option_env!("CARGO_PKG_AUTHORS").unwrap_or("Unknown"))
         .about(option_env!("CARGO_PKG_DESCRIPTION").unwrap_or("Unknown"))
         .arg(
-            Arg::with_name("host")
+            Arg::new("host")
                 .long("host")
                 .help(&help_host)
-                .required(true)
-                .default_value(&appconfig.host)
-                .takes_value(true),
+                .required(false)
+                .default_value(&host_to_str())
         )
         .arg(
-            Arg::with_name("port")
+            Arg::new("port")
                 .long("port")
                 .help(&help_port)
-                .required(true)
-                .default_value(&port_number_text)
-                .takes_value(true),
+                .required(false)
+                .default_value(&port_to_str())
         )
         .arg(
-            Arg::with_name("ocr-lang")
+            Arg::new("ocr-lang")
                 .long("ocr-lang")
                 .help(&help_ocr_lang)
                 .required(false)
-                .takes_value(true)
         )
         .arg(
-            Arg::with_name("input-filename")
+            Arg::new("input-filename")
                 .long("input-filename")
                 .help(&help_input_filename)
                 .required(true)
-                .takes_value(true)
         )
         .arg(
-            Arg::with_name("output-filename")
+            Arg::new("output-filename")
                 .long("output-filename")
                 .help(&help_output_filename)
                 .required(false)
-                .takes_value(true)
         ).arg(
-            Arg::with_name("file-suffix")
+            Arg::new("file-suffix")
                 .long("file-suffix")
                 .help(&help_file_suffix)
-                .default_value(&appconfig.file_suffix)
+                .default_value(&filesuffix_to_str())
                 .required(false)
-                .takes_value(true)
         ).arg(
-            Arg::with_name("passwd-prompt")
+            Arg::new("passwd-prompt")
                 .long("passwd-prompt")
                 .help(&help_password_prompt)
                 .required(false)
-                .takes_value(false)
+                .action(ArgAction::SetTrue)
         );
 
     let run_matches = app.to_owned().get_matches();
 
-    let opt_ocr_lang = if let Some(proposed_ocr_lang) = run_matches.value_of("ocr-lang") {
+    let opt_ocr_lang = if let Some(proposed_ocr_lang) = run_matches.get_one::<String>("ocr-lang") {
         Some(proposed_ocr_lang.to_string())
     } else {
         appconfig.ocr_lang
@@ -234,22 +257,22 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
         }
     }
 
-    let output_path_opt = if let Some(proposed_output_filename) = run_matches.value_of("output-filename") {
+    let output_path_opt = if let Some(proposed_output_filename) = run_matches.get_one::<String>("output-filename") {
         Some(PathBuf::from(proposed_output_filename))
     } else {
         None
     };
 
-    let file_suffix = if let Some(proposed_file_suffix) = run_matches.value_of("file-suffix") {
+    let file_suffix = if let Some(proposed_file_suffix) = run_matches.get_one::<String>("file-suffix") {
         proposed_file_suffix.to_string()
     } else {
         appconfig.file_suffix.clone()
     };
 
     if let (Some(host), Some(port), Some(file)) = (
-        run_matches.value_of("host"),
-        run_matches.value_of("port"),
-        run_matches.value_of("input-filename"),
+        run_matches.get_one::<String>("host"),
+        run_matches.get_one::<String>("port"),
+        run_matches.get_one::<String>("input-filename"),
     ) {
         let p = PathBuf::from(file);
 
@@ -261,7 +284,7 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
             return Err(trans.gettext("The input file doesn't exists!").into());
         }
 
-        let opt_passwd = if run_matches.is_present("passwd-prompt") {
+        let opt_passwd = if run_matches.get_flag("passwd-prompt") {
             println!("{}", trans.gettext("Please enter the password for the document"));
             if let Ok(password) = rpassword::read_password() {
                 Some(password)

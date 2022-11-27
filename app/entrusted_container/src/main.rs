@@ -27,7 +27,7 @@ const DEFAULT_DIR_LIBREOFFICE_PROGRAM: &str = "NOT_SET";
 const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str              = "ENTRUSTED_DOC_PASSWD";
 const ENV_VAR_LOG_FORMAT: &str                        = "ENTRUSTED_LOG_FORMAT";
 const ENV_VAR_OCR_LANGUAGE: &str                      = "ENTRUSTED_OCR_LANGUAGE";
-const ENV_VAR_ENTRUSTED_IMAGE_QUALITY: &str           = "ENTRUSTED_IMAGE_QUALITY";
+const ENV_VAR_ENTRUSTED_VISUAL_QUALITY: &str          = "ENTRUSTED_VISUAL_QUALITY";
 const ENV_VAR_ENTRUSTED_TESSERACT_TESSDATA_DIR: &str  = "ENTRUSTED_TESSERACT_TESSDATA_DIR";
 const ENV_VAR_ENTRUSTED_LIBREOFFICE_PROGRAM_DIR: &str = "ENTRUSTED_LIBREOFFICE_PROGRAM_DIR";
 
@@ -86,7 +86,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         None
     };
     
-    let image_quality = if let Ok(env_img_quality) = env::var(ENV_VAR_ENTRUSTED_IMAGE_QUALITY) {
+    let image_quality = if let Ok(env_img_quality) = env::var(ENV_VAR_ENTRUSTED_VISUAL_QUALITY) {
         let img_quality = env_img_quality.to_lowercase();
         let img_quality_str = img_quality.as_str();
         

@@ -1244,7 +1244,20 @@ fn main() -> Result<(), Box<dyn Error>> {
         result_visual_quality_menuchoice_rc.borrow_mut().add_choice(&item_translated);
     }
 
-    result_visual_quality_menuchoice_rc.borrow_mut().set_value(common::IMAGE_QUALITY_DEFAULT_CHOICE_INDEX);
+    let visual_quality_idx = {
+        let vq = &appconfig.visual_quality;
+        let mut ret = common::IMAGE_QUALITY_DEFAULT_CHOICE_INDEX;
+        
+        for (idx, item) in common::IMAGE_QUALITY_CHOICES.iter().enumerate() {
+            if item == vq {
+                ret = idx as i32;
+                break;
+            }
+        }
+        
+        ret
+    };
+    result_visual_quality_menuchoice_rc.borrow_mut().set_value(visual_quality_idx);
     result_visual_quality_pack.end();
 
     let mut ocrlang_pack = group::Pack::default()
@@ -1468,6 +1481,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_align(enums::Align::Inside | enums::Align::Center);
 
     savesettings_button.set_callback({
+        let result_visual_quality_menuchoice_rc_ref = result_visual_quality_menuchoice_rc.clone();
         let ocrlang_checkbutton_ref = ocrlang_checkbutton.clone();
         let ocrlang_holdbrowser_rc_ref = ocrlang_holdbrowser_rc.clone();
         let filesuffix_input_rc_ref = filesuffix_input_rc.clone();
@@ -1481,6 +1495,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         move|_| {
             let mut new_appconfig = config::AppConfig::default();
+            
+            let image_quality_idx = result_visual_quality_menuchoice_rc_ref.borrow().value();
+            let image_quality_value = common::IMAGE_QUALITY_CHOICES[image_quality_idx as usize].to_string();
+            new_appconfig.visual_quality = image_quality_value;
 
             if ocrlang_checkbutton_ref.is_checked() {
                 let ocrlang_dropdown = ocrlang_holdbrowser_rc_ref.borrow();

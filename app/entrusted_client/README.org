@@ -1,4 +1,4 @@
-#+TITLE: entrusted/app/entrusted-client
+#+TITLE: entrusted/app/entrusted_client
 
 * What is this?
 
@@ -112,6 +112,7 @@ The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to
 | =file-suffix=            | Custom file suffix for converted files (defaults to =entrusted=)  |
 | =container-image-name=   | A custom container image for conversions (advanced option)        |
 | =preview-result-appname= | The PDF viewer as identified by the GUI to open converted files   |
+| =visual-quality=         | The result visual quality (file size, processing time, visuals)   |
 |--------------------------+-------------------------------------------------------------------|
 
 In CLI mode (=entrusted-cli=), the =preview-result-appname= parameter is ignored. It's only intended for Desktop usage ("Save current settings as defaults" in the GUI client).

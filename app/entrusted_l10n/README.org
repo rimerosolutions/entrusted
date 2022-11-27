@@ -1,4 +1,4 @@
-#+TITLE: entrusted/app/entrusted-l10n
+#+TITLE: entrusted/app/entrusted_l10n
 
 * What is this?
 

@@ -19,7 +19,9 @@ pub struct AppConfig {
     #[serde(rename(serialize = "container-image-name", deserialize = "container-image-name"))]
     pub container_image_name: Option<String>,
     #[serde(rename(serialize = "preview-result-appname", deserialize = "preview-result-appname"))]
-    pub openwith_appname: Option<String>
+    pub openwith_appname: Option<String>,
+    #[serde(rename(serialize = "visual-quality", deserialize = "visual-quality"))]
+    pub visual_quality: String
 }
 
 pub fn default_container_image_name() -> String {
@@ -35,6 +37,7 @@ impl Default for AppConfig {
             file_suffix: DEFAULT_FILE_SUFFIX.to_string(),
             container_image_name: None,
             openwith_appname: None,
+            visual_quality: "medium".to_string()
         }
     }
 }

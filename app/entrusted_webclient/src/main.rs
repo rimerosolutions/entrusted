@@ -69,6 +69,8 @@ pub struct AppConfig {
     pub port: u16,
     #[serde(rename(serialize = "file-suffix", deserialize = "file-suffix"))]
     pub file_suffix: String,
+    #[serde(rename(serialize = "visual-quality", deserialize = "visual-quality"))]
+    pub visual_quality: String
 }
 
 impl Default for AppConfig {
@@ -77,7 +79,8 @@ impl Default for AppConfig {
             ocr_lang: None,
             host: "localhost".to_string(),
             port: 13000,
-            file_suffix: "entrusted".to_string()
+            file_suffix: "entrusted".to_string(),
+            visual_quality: IMAGE_QUALITY_CHOICES[IMAGE_QUALITY_DEFAULT_CHOICE_INDEX].to_string()
         }
     }
 }
@@ -109,7 +112,7 @@ fn load_config <T> () -> Result<T, Box<dyn Error>> where T: Default + Deserializ
 pub struct ConversionOptions {
     pub host: String,
     pub port: String,
-    pub image_quality: String,
+    pub visual_quality: String,
     pub opt_ocr_lang: Option<String>,
     pub opt_passwd: Option<String>,
     pub file_suffix: String,
@@ -245,16 +248,16 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
         appconfig.ocr_lang
     };
 
-    let image_quality = if let Some(v) = &run_matches.get_one::<String>("visual-quality") {
-        v
+    let visual_quality = if let Some(v) = &run_matches.get_one::<String>("visual-quality") {
+        v.to_string()
     } else {
-        IMAGE_QUALITY_CHOICES[IMAGE_QUALITY_DEFAULT_CHOICE_INDEX]
+        appconfig.visual_quality
     };
     
     if let Some(proposed_ocr_lang) = &opt_ocr_lang {
         let supported_ocr_languages = l10n::ocr_lang_key_by_name(&trans);
         let proposed_ocr_lang_str = proposed_ocr_lang.as_str();
-        let selected_langcodes: Vec<&str> = proposed_ocr_lang_str.split("+").collect();
+        let selected_langcodes: Vec<&str> = proposed_ocr_lang_str.split('+').collect();
 
         for selected_langcode in selected_langcodes {
             if !supported_ocr_languages.contains_key(&selected_langcode) {
@@ -322,7 +325,7 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
             let conversion_options = ConversionOptions {
                 host: host.to_string(), 
                 port: port.to_string(), 
-                image_quality: image_quality.to_string(),
+                visual_quality: visual_quality.to_string(),
                 opt_ocr_lang: opt_ocr_lang, 
                 opt_passwd: opt_passwd, 
                 file_suffix: file_suffix,
@@ -354,7 +357,7 @@ async fn convert_file (
 
     let mut multipart_form = reqwest::multipart::Form::new()
         .text("filename", filename)
-        .text("visualquality", conversion_options.image_quality.clone())
+        .text("visualquality", conversion_options.visual_quality.clone())
         .part("file", stream_part);
 
     if let Some(ocr_lang) = conversion_options.opt_ocr_lang {

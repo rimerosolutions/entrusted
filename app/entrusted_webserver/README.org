@@ -1,4 +1,4 @@
-#+TITLE: entrusted/app/entrusted-webserver
+#+TITLE: entrusted/app/entrusted_webserver
 
 * What is this?
 

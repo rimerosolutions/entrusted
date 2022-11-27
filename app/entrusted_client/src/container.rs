@@ -377,9 +377,9 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             }
         }
         
-        let image_quality = convert_options.image_quality;
+        let image_quality = convert_options.visual_quality;
         convert_args.append(&mut vec![
-            "-e".to_string(), format!("{}={}", "ENTRUSTED_IMAGE_QUALITY", image_quality)
+            "-e".to_string(), format!("{}={}", "ENTRUSTED_VISUAL_QUALITY", image_quality)
         ]);
 
         convert_args.append(&mut vec![

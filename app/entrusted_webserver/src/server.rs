@@ -587,8 +587,14 @@ pub async fn save_file(
                     docpassword.push_str(&chunk);
                 }
             } else if fname == "visualquality" {
-                if let Ok(chunk) = field.text().await {
-                    visualquality = chunk.to_owned();
+                if let Ok(chunk) = field.text().await {                    
+                    if !chunk.trim().is_empty() {
+                        visualquality = chunk.to_owned();
+                        
+                        if !(visualquality == "low" || visualquality == "medium" || visualquality == "high") {
+                            return Err(l10n.gettext_fmt("Invalid 'visualquality' {0} in form data. It should be one of 'low', 'medium' or 'high'.", vec![&visualquality]).into());
+                        }
+                    }
                 }
             } else {
                 tracing::warn!(

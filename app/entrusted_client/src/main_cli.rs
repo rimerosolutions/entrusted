@@ -190,7 +190,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     if let Some(proposed_ocr_lang) = &run_matches.get_one::<String>("ocr-lang") {
         let supported_ocr_languages = l10n::ocr_lang_key_by_name(&trans);
-        let selected_langcodes: Vec<&str> = proposed_ocr_lang.split("+").collect();
+        let selected_langcodes: Vec<&str> = proposed_ocr_lang.split('+').collect();
 
         for selected_langcode in selected_langcodes {
             if !supported_ocr_languages.contains_key(&selected_langcode) {
@@ -257,9 +257,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
     
     let image_quality = if let Some(v) = &run_matches.get_one::<String>("visual-quality") {
-        v
+        v.to_string()
     } else {
-        common::IMAGE_QUALITY_CHOICES[common::IMAGE_QUALITY_DEFAULT_CHOICE_INDEX as usize]
+        app_config.visual_quality
     };
 
     let opt_passwd = if run_matches.get_flag("passwd-prompt") {
@@ -281,7 +281,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let (exec_handle, rx) = {
         let (tx, rx) = mpsc::channel::<common::AppEvent>();
-        let image_quality_value = image_quality.to_string();
+        let image_quality_value = image_quality.to_owned();
 
         let exec_handle = thread::spawn({
             let tx = tx.clone();

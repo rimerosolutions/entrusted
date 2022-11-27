@@ -1,4 +1,4 @@
-#+TITLE: entrusted/app/entrusted-container
+#+TITLE: entrusted/app/entrusted_container
 
 * What is this?
 

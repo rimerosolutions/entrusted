@@ -18,6 +18,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "Invalid 'visualquality' {0} in form data. It should be one of 'low', 'medium' or 'high'."
+msgstr "Invalide 'visualquality' {0} dans les données de formulaire. Cela devrait être 'low', 'medium' ou 'high'."
+
 msgid ""
 "{bin} {version}\n"
 "{author}\n"
@@ -85,10 +88,10 @@ msgid "Processing failure"
 msgstr "Échec du traitement"
 
 msgid "Missing 'file' in form data"
-msgstr "Paramètre de fichier binaire manquant"
+msgstr "Paramètre de fichier binaire manquant 'file'"
 
 msgid "Missing 'filename' in form data"
-msgstr "Paramètre de nom de fichier source manquant"
+msgstr "Paramètre de nom de fichier source manquant 'filename'"
 
 msgid "Invalid port number"
 msgstr "Numéro de port non valide"

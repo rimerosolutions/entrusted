@@ -30,6 +30,9 @@ msgstr ""
 #~ "MIME-Version: 1.0\n"
 #~ "Content-Type: text/plain; charset=UTF-8"
 
+msgid "Invalid 'visualquality' {0} in form data. It should be one of 'low', 'medium' or 'high'."
+""
+
 msgid ""
 "{bin} {version}\n"
 "{author}\n"

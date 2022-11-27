@@ -75,7 +75,7 @@ pub struct LogMessage {
 pub struct ConvertOptions {
     pub container_image_name: String,
     pub log_format: String,
-    pub image_quality: String,
+    pub visual_quality: String,
     pub opt_ocr_lang: Option<String>,
     pub opt_passwd: Option<String>
 }
@@ -83,13 +83,13 @@ pub struct ConvertOptions {
 impl ConvertOptions {
     pub fn new(container_image_name: String,
                log_format: String,
-               image_quality: String,
+               visual_quality: String,
                opt_ocr_lang: Option<String>,
                opt_passwd: Option<String>) -> Self {
         Self {
             container_image_name,
             log_format,
-            image_quality,
+            visual_quality,
             opt_ocr_lang,
             opt_passwd
         }

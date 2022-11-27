@@ -47,6 +47,10 @@ paths:
                 docpasswd:
                   type: string
                   description: Optional password for the encrypted Office or PDF document
+                visualquality:
+                  type: string
+                  enum: [low, medium, high]
+                  description: The desired PDF result visual quality
               required: ['file', 'filename']
       responses:
         202:

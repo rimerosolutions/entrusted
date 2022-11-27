@@ -30,6 +30,12 @@ msgstr ""
 #~ "MIME-Version: 1.0\n"
 #~ "Content-Type: text/plain; charset=UTF-8"
 
+msgid "The conversion was cancelled!"
+msgstr ""
+
+msgid "Try cancelling remaining tasks as soon as possible"
+msgstr ""
+
 msgid "PDF result visual quality"
 msgstr ""
 

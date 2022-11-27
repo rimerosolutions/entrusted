@@ -40,13 +40,13 @@ pub trait EventSender: Send {
 // One other detail to watch for is that in case of application crashes we should ensure that all the relevant temporary folders get deleted...
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub enum AppEvent {
-    FileOpenEvent(String),
-    ConversionProgressEvent(String),
-    ConversionStartEvent(usize),
-    ConversionSuccessEvent(usize, Option<String>, PathBuf, usize),
-    ConversionFailureEvent(usize, usize),
+    FileOpenEvent(String), // file_path
+    ConversionProgressEvent(String), // message in JSON format
+    ConversionStartEvent(usize), // tasks_index
+    ConversionSuccessEvent(usize, Option<String>, PathBuf, usize), // tasks_index, app_viewer, result_path, tasks_count
+    ConversionFailureEvent(usize, usize), // tasks_index, tasks_count
     ConversionFinishedAckEvent,
-    AllConversionEnded
+    AllConversionEnded(usize, usize, usize) // tasks_completed, tasks_failed, tasks_count
 }
 
 pub fn executable_find(exe_name: &str) -> Option<PathBuf> {

@@ -35,6 +35,13 @@ const FILELIST_ROW_STATUS_PENDING    :&str = "Pending";
 const FILELIST_ROW_STATUS_INPROGRESS :&str = "InProgress";
 const FILELIST_ROW_STATUS_SUCCEEDED  :&str = "Succeeded";
 const FILELIST_ROW_STATUS_FAILED     :&str = "Failed";
+const FILELIST_ROW_STATUS_CANCELLED  :&str = "Cancelled";
+
+const FILELIST_ROW_COLOR_PENDING: enums::Color    = enums::Color::Magenta;
+const FILELIST_ROW_COLOR_INPROGRESS: enums::Color = enums::Color::DarkYellow;
+const FILELIST_ROW_COLOR_SUCCEEDED: enums::Color  = enums::Color::DarkGreen;
+const FILELIST_ROW_COLOR_FAILED: enums::Color     = enums::Color::Red;
+const FILELIST_ROW_COLOR_CANCELLED: enums::Color  = enums::Color::from_rgb(153, 0, 0);
 
 const EVENT_ID_SELECTION_CHANGED: i32 = 50;
 const EVENT_ID_ALL_SELECTED: i32      = 51;
@@ -94,6 +101,11 @@ impl FileListRow {
         self.progressbar.set_label(&format!("{}%", percent_complete));
         self.logs.borrow_mut().push(data);
     }
+
+    pub fn mark_as_cancelled(&mut self) {
+        self.status.set_label_color(FILELIST_ROW_COLOR_CANCELLED);
+        self.status.set_label(FILELIST_ROW_STATUS_CANCELLED);
+    }
 }
 
 #[derive(Clone)]
@@ -118,24 +130,24 @@ impl DerefMut for FileListWidget {
     }
 }
 
-fn selected_ocr_langcodes(ocr_languages_by_lang: &HashMap<String, &str>, drop_down: &browser::MultiBrowser) -> Vec<String> {    
+fn selected_ocr_langcodes(ocr_languages_by_lang: &HashMap<String, &str>, drop_down: &browser::MultiBrowser) -> Vec<String> {
     let mut ret: Vec<String> = Vec::new();
 
     if drop_down.selected_text().is_none() {
         return ret
     } else {
         for i in 0..drop_down.size() {
-                    let idx = i as i32;
-                    if drop_down.selected(idx) {
-                        if let Some(selected_lang) = drop_down.text(idx) {
-                            if let Some(langcode) = ocr_languages_by_lang.get(&selected_lang) {
-                                ret.push(langcode.to_string());
-                            }
-                        }
+            let idx = i as i32;
+            if drop_down.selected(idx) {
+                if let Some(selected_lang) = drop_down.text(idx) {
+                    if let Some(langcode) = ocr_languages_by_lang.get(&selected_lang) {
+                        ret.push(langcode.to_string());
                     }
                 }
+            }
+        }
     }
-    
+
     ret
 }
 
@@ -606,7 +618,7 @@ impl <'a> FileListWidget {
             .with_size(width_status, row_height)
             .with_label(FILELIST_ROW_STATUS_PENDING)
             .with_align(enums::Align::Inside | enums::Align::Left);
-        status_frame.set_label_color(enums::Color::Magenta);
+        status_frame.set_label_color(FILELIST_ROW_COLOR_PENDING);
 
         let mut logs_button = button::Button::default()
             .with_size(width_logs, row_height)
@@ -1017,6 +1029,15 @@ impl <'a> FileListWidget {
         }
     }
 
+    fn mark_as_cancelled_starting_from_index(&self, completed_count: usize) {
+        let mut rows = self.rows.borrow_mut();
+
+        for row_index in completed_count..rows.len() {
+            let row = &mut rows[row_index];
+            row.mark_as_cancelled();
+        }
+    }
+
     fn update_progress(&self, row_index: usize, data: String, percent_complete: usize) {
         let mut rows = self.rows.borrow_mut();
         let row = &mut rows[row_index];
@@ -1040,6 +1061,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let appconfig = appconfig_ret.unwrap_or(config::AppConfig::default());
 
     let current_row_idx = Arc::new(AtomicI32::new(0));
+    let converstion_stop_requested = Arc::new(AtomicBool::new(false));
     let is_converting = Arc::new(AtomicBool::new(false));
     let conversion_is_active = Arc::new(AtomicBool::new(false));
 
@@ -1226,7 +1248,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     filesuffix_pack.end();
-    
+
     let mut result_visual_quality_pack = group::Pack::default()
         .with_size(570, 40)
         .with_type(group::PackType::Horizontal);
@@ -1237,8 +1259,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_align(enums::Align::Left | enums::Align::Inside);
     let result_visual_quality_menuchoice_rc = Rc::new(RefCell::new(
         menu::Choice::default().with_size(240, 40),
-    ));    
-    
+    ));
+
     for item in common::IMAGE_QUALITY_CHOICES.iter() {
         let item_translated = trans.gettext(item);
         result_visual_quality_menuchoice_rc.borrow_mut().add_choice(&item_translated);
@@ -1247,14 +1269,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let visual_quality_idx = {
         let vq = &appconfig.visual_quality;
         let mut ret = common::IMAGE_QUALITY_DEFAULT_CHOICE_INDEX;
-        
+
         for (idx, item) in common::IMAGE_QUALITY_CHOICES.iter().enumerate() {
             if item == vq {
                 ret = idx as i32;
                 break;
             }
         }
-        
+
         ret
     };
     result_visual_quality_menuchoice_rc.borrow_mut().set_value(visual_quality_idx);
@@ -1294,27 +1316,27 @@ fn main() -> Result<(), Box<dyn Error>> {
     for v in ocr_languages.iter() {
         ocrlang_holdbrowser_rc.borrow_mut().add(v);
     }
-     
+
     let mut selected_ocr_languages = HashSet::new();
-    
+
     if let Some(cur_ocrlangcode) = appconfig.ocr_lang.clone() {
         let selected_langcodes: Vec<&str> = cur_ocrlangcode.split('+').collect();
-        
+
         for selected_langcode in selected_langcodes {
             if let Some(cur_ocrlangname) = ocr_languages_by_name_ref.get(&selected_langcode) {
                 selected_ocr_languages.insert(cur_ocrlangname.to_string());
             }
         }
     }
-    
+
     if selected_ocr_languages.is_empty() {
         selected_ocr_languages.insert(trans.gettext("English"));
     }
-    
+
     for i in 0..ocr_languages.len() {
         if selected_ocr_languages.contains(&ocr_languages[i]) {
             let line = (i + 1) as i32;
-            ocrlang_holdbrowser_rc.borrow_mut().select(line);            
+            ocrlang_holdbrowser_rc.borrow_mut().select(line);
             ocrlang_holdbrowser_rc.borrow_mut().top_line(line);
         }
     }
@@ -1495,7 +1517,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         move|_| {
             let mut new_appconfig = config::AppConfig::default();
-            
+
             let image_quality_idx = result_visual_quality_menuchoice_rc_ref.borrow().value();
             let image_quality_value = common::IMAGE_QUALITY_CHOICES[image_quality_idx as usize].to_string();
             new_appconfig.visual_quality = image_quality_value;
@@ -1503,7 +1525,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             if ocrlang_checkbutton_ref.is_checked() {
                 let ocrlang_dropdown = ocrlang_holdbrowser_rc_ref.borrow();
                 let selected_langcodes = selected_ocr_langcodes(&ocr_languages_by_lang_ref, &ocrlang_dropdown);
-                
+
                 if !selected_langcodes.is_empty() {
                     new_appconfig.ocr_lang = Some(selected_langcodes.join("+"));
                 }
@@ -1657,16 +1679,31 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_size(wind.w(), 40)
         .below_of(&row_convert_button, 30)
         .with_type(group::PackType::Horizontal);
-    overall_progress_pack.set_spacing(WIDGET_GAP/2);
+    overall_progress_pack.set_spacing(WIDGET_GAP / 2);
     overall_progress_pack.set_label_color(enums::Color::White);
     overall_progress_pack.set_color(enums::Color::Black);
 
     let mut overall_progress_frame = frame::Frame::default()
         .with_size(120, 40)
         .with_label(&trans.gettext("Overall progress"));
-    overall_progress_frame.set_label_color(enums::Color::from_rgb(153, 0, 0));
+    overall_progress_frame.set_label_color(FILELIST_ROW_COLOR_SUCCEEDED);
     overall_progress_frame.set_frame(enums::FrameType::FlatBox);
     overall_progress_frame.hide();
+
+    let mut cancel_tasks_button = button::Button::default()
+        .with_size(40, 40);
+    cancel_tasks_button.set_color(FILELIST_ROW_COLOR_CANCELLED);
+    cancel_tasks_button.set_tooltip(&trans.gettext("Try cancelling remaining tasks as soon as possible"));
+    cancel_tasks_button.hide();
+
+    cancel_tasks_button.set_callback({
+        let converstion_stop_requested_ref = converstion_stop_requested.clone();
+
+        move |wid| {
+            converstion_stop_requested_ref.store(true, Ordering::Relaxed);
+            wid.deactivate();
+        }
+    });
 
     let mut overall_progress_progressbar = misc::Progress::default_fill()
         .with_size(200, 40)
@@ -1766,6 +1803,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let filesuffix_input_rc_ref = filesuffix_input_rc.clone();
         let is_converting_ref = is_converting.clone();
         let conversion_is_active_ref = conversion_is_active.clone();
+        let converstion_stop_requested_ref = converstion_stop_requested.clone();
         let openwith_checkbutton_ref = openwith_checkbutton.clone();
         let mut selectall_frame_ref = selectall_frame.clone();
         let mut deselectall_frame_ref = deselectall_frame.clone();
@@ -1773,11 +1811,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         let trans_ref = trans_ref.clone();
         let app_config_ref = appconfig.clone();
         let current_row_idx = current_row_idx.clone();
-        let messages_frame_ref = messages_frame.clone();
         let mut updatechecks_button_ref = updatechecks_button.clone();
         let mut helpinfo_button_ref = helpinfo_button.clone();
         let mut overall_progress_pack_ref  = overall_progress_pack.clone();
         let mut overall_progress_frame_ref  = overall_progress_frame.clone();
+        let mut cancel_tasks_button_ref = cancel_tasks_button.clone();
         let mut overall_progress_progressbar_ref  = overall_progress_progressbar.clone();
         let result_visual_quality_menuchoice_rc_ref = result_visual_quality_menuchoice_rc.clone();
         let tx = tx.clone();
@@ -1794,7 +1832,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             convert_frame_ref.deactivate();
             is_converting_ref.store(true, Ordering::Relaxed);
             conversion_is_active_ref.store(true, Ordering::Relaxed);
-            
+
             let image_quality_value_index = result_visual_quality_menuchoice_rc_ref.borrow().value();
             let image_quality = common::IMAGE_QUALITY_CHOICES[image_quality_value_index as usize].to_lowercase().to_string();
 
@@ -1807,12 +1845,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             } else {
                 None
-            };                        
-            
+            };
+
             let opt_ocr_lang = if ocrlang_checkbutton_ref.is_checked() {
                 let ocrlang_dropdown = ocrlang_holdbrowser_rc_ref.borrow();
                 let selected_langcodes = selected_ocr_langcodes(&ocr_languages_by_lang, &ocrlang_dropdown);
-                
+
                 if selected_langcodes.is_empty() {
                     None
                 } else {
@@ -1852,9 +1890,16 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if !overall_progress_frame_ref.visible() {
                     overall_progress_progressbar_ref.set_value(0.0);
                     overall_progress_progressbar_ref.set_label("");
+                    overall_progress_frame_ref.set_label_color(FILELIST_ROW_COLOR_SUCCEEDED);
                     overall_progress_frame_ref.show();
+
+                    if !cancel_tasks_button_ref.active() {
+                        cancel_tasks_button_ref.activate();
+                    }
+                    cancel_tasks_button_ref.show();
+
                     overall_progress_progressbar_ref.show();
-                    overall_progress_pack_ref.redraw();                    
+                    overall_progress_pack_ref.redraw();
                 }
             }
 
@@ -1862,15 +1907,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let tasks = tasks.clone();
                 let trans_ref = trans_ref.clone();
                 let tx = tx.clone();
-                let mut messages_frame_ref = messages_frame_ref.clone();
                 let app_rcv = app_rx.clone();
                 let current_row_idx = current_row_idx.clone();
-                let mut tabsettings_button_ref = tabsettings_button_ref.clone();
-                let mut filelist_scroll_ref = filelist_scroll_ref.clone();
-                let mut convert_frame_ref = convert_frame_ref.clone();
-                let mut helpinfo_button_ref = helpinfo_button_ref.clone();
-                let mut updatechecks_button_ref = updatechecks_button_ref.clone();
                 let conversion_is_active_ref = conversion_is_active_ref.clone();
+                let converstion_stop_requested_ref = converstion_stop_requested_ref.clone();
 
                 let eventer: Box<dyn common::EventSender> = Box::new(GuiEventSender {
                     tx: tx.clone()
@@ -1880,9 +1920,15 @@ fn main() -> Result<(), Box<dyn Error>> {
                     let mut idx = 0;
                     let mut move_next = true;
                     let mut fail_count = 0;
+                    let mut completed_count = 0;
 
                     while idx < task_count {
                         if move_next {
+                            if converstion_stop_requested_ref.load(Ordering::Relaxed) {
+                                converstion_stop_requested_ref.store(false, Ordering::Relaxed);
+                                break;
+                            }
+
                             let task = &tasks[idx];
                             let input_path = task.input_path.clone();
                             let output_path = task.output_path.clone();
@@ -1896,9 +1942,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                                                                convert_options,
                                                                eventer.clone_box(),
                                                                trans_ref.clone()) {
+                                completed_count += 1;
                                 let _ = eventer.send(common::AppEvent::ConversionSuccessEvent(idx, task.viewer_app_option.clone(), output_path.clone(), task_count));
                             } else {
                                 fail_count += 1;
+                                completed_count += 1;
                                 let _ = eventer.send(common::AppEvent::ConversionFailureEvent(idx, task_count));
                             }
                         }
@@ -1911,6 +1959,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                             thread::yield_now();
                         }
 
+
                         if let Ok(_) = app::lock() {
                             app::awake();
                             app::unlock();
@@ -1920,26 +1969,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                     current_row_idx.store(0, Ordering::Relaxed);
                     conversion_is_active_ref.store(false, Ordering::Relaxed);
 
-                    let summary_message = trans_ref.ngettext("One file failed to process", "Multiple files failed to process", fail_count);
-
-                    let messages_frame_color = if fail_count == 0 {
-                        enums::Color::DarkGreen
-                    } else {
-                        enums::Color::Red
-                    };
-
                     if let Ok(_) = app::lock() {
-                        messages_frame_ref.set_label(&summary_message);
-                        messages_frame_ref.set_label_color(messages_frame_color);
-                        tabsettings_button_ref.activate();
-                        helpinfo_button_ref.activate();
-                        updatechecks_button_ref.activate();
-                        convert_frame_ref.activate();
-                        filelist_scroll_ref.scroll_to(0, 0);
-                        filelist_scroll_ref.redraw();
-                        app::awake();
+                        let _ = eventer.send(common::AppEvent::AllConversionEnded(completed_count, fail_count, task_count));
                         app::unlock();
-                        let _ = eventer.send(common::AppEvent::AllConversionEnded);
                     }
                 }
             });
@@ -2231,11 +2263,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             let mut close_window = true;
 
             if convertion_is_active_ref.load(Ordering::Relaxed) {
-                if let Some(choice) = dialog::choice2(wid.x(), 
-                                                      wid.y() + wid.h()/2, 
-                                                      &trans_ref.gettext("Really close"), 
-                                                      &trans_ref.gettext("No"), 
-                                                      &trans_ref.gettext("Yes"), 
+                if let Some(choice) = dialog::choice2(wid.x(),
+                                                      wid.y() + wid.h()/2,
+                                                      &trans_ref.gettext("Really close"),
+                                                      &trans_ref.gettext("No"),
+                                                      &trans_ref.gettext("Yes"),
                                                       "") {
                     if choice == 0 {
                         close_window = false;
@@ -2260,7 +2292,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         let mut result_visual_quality_pack_ref = result_visual_quality_pack.clone();
         let mut result_visual_quality_frame_ref = result_visual_quality_frame.clone();
-        
+
         let mut ocrlang_pack_ref = ocrlang_pack.clone();
         let mut ocrlang_checkbutton_ref = ocrlang_checkbutton.clone();
         let ocrlang_holdbrowser_rc_ref = ocrlang_holdbrowser_rc.clone();
@@ -2298,8 +2330,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut overall_progress_pack_ref = overall_progress_pack.clone();
         let mut overall_progress_frame_ref  = overall_progress_frame.clone();
         let mut overall_progress_progressbar_ref  = overall_progress_progressbar.clone();
+        let mut cancel_tasks_button_ref = cancel_tasks_button.clone();
         let mut savesettings_button_ref = savesettings_button.clone();
         let mut divider_ref = divider.clone();
+
+        let mut tabconvert_button_ref = tabconvert_button.clone();
+        let mut tabsettings_button_ref = tabsettings_button.clone();
 
         move |wid, ev| match ev {
             enums::Event::Move => {
@@ -2315,8 +2351,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 );
 
                 let tabs_width = tabconvert_button.w();
-                tabsettings_button.resize(WIDGET_GAP, top_group_ref.y(), tabs_width, 30);
-                tabconvert_button.resize(tabsettings_button.x() + WIDGET_GAP, top_group_ref.y(), tabs_width, 30);
+                tabsettings_button_ref.resize(WIDGET_GAP, top_group_ref.y(), tabs_width, 30);
+                tabconvert_button_ref.resize(tabsettings_button_ref.x() + WIDGET_GAP, top_group_ref.y(), tabs_width, 30);
 
                 helpinfo_pack_ref.resize(tabconvert_button.x() + WIDGET_GAP, top_group_ref.y(), wid.w() - (WIDGET_GAP * 4) - (tabs_width * 2), 30);
                 spacer_frame.resize(helpinfo_pack_ref.x(), helpinfo_pack_ref.y(), helpinfo_pack_ref.w() - (WIDGET_GAP/4 * 2) - (30 * 2), 30);
@@ -2341,7 +2377,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                     wid.h() - top_group_ref.h() + WIDGET_GAP,
                 );
 
-
                 row_convert_button_ref.resize(
                     WIDGET_GAP, row_convert_button_ref.y(), wid.w() - (WIDGET_GAP * 2), row_convert_button_ref.h()
                 );
@@ -2355,8 +2390,15 @@ fn main() -> Result<(), Box<dyn Error>> {
                     WIDGET_GAP, overall_progress_frame_ref.y(), ow, overall_progress_frame_ref.h()
                 );
 
+                cancel_tasks_button_ref.resize(WIDGET_GAP + ow + WIDGET_GAP,
+                                               cancel_tasks_button_ref.y(),
+                                               40, 40);
+
                 overall_progress_progressbar_ref.resize(
-                    (WIDGET_GAP * 2) + ow, overall_progress_progressbar_ref.y(), wid.w() - (WIDGET_GAP * 2) - (WIDGET_GAP /2) - ow, overall_progress_progressbar_ref.h()
+                    (WIDGET_GAP * 2) + ow,
+                    overall_progress_progressbar_ref.y(),
+                    wid.w() - (WIDGET_GAP * 3) - ow - 40,
+                    overall_progress_progressbar_ref.h()
                 );
 
                 convert_button_ref.resize(
@@ -2384,14 +2426,14 @@ fn main() -> Result<(), Box<dyn Error>> {
                 filelist_widget_ref.resize(filelist_scroll_ref.x(), filelist_scroll_ref.y(), wval, 0);
 
                 filelist_scroll_ref.redraw();
-                
+
                 result_visual_quality_pack_ref.resize(
                     result_visual_quality_pack_ref.x(),
                     result_visual_quality_pack_ref.y(),
                     wid.w() - (WIDGET_GAP * 2),
                     result_visual_quality_pack_ref.h()
                 );
-                
+
                 result_visual_quality_frame_ref.resize(
                     result_visual_quality_frame_ref.x(),
                     result_visual_quality_frame_ref.y(),
@@ -2529,6 +2571,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                         overall_progress_frame_ref.hide();
                         overall_progress_progressbar_ref.hide();
+                        cancel_tasks_button_ref.hide();
                     }
 
                     filelist_widget_ref.container.redraw();
@@ -2642,9 +2685,43 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
 
                     app::awake();
-                },                
-                common::AppEvent::AllConversionEnded => {                    
+                },
+                common::AppEvent::AllConversionEnded(completed_count, fail_count, total_count) => {
+                    let summary_message = if completed_count != total_count {
+                        trans_ref.gettext("The conversion was cancelled!")
+                    } else {
+                        trans_ref.ngettext("One file failed to process", "Multiple files failed to process", fail_count as u64)
+                    };
+
+                    let messages_frame_color = if completed_count != total_count {
+                        FILELIST_ROW_COLOR_CANCELLED
+                    } else if fail_count == 0 {
+                        FILELIST_ROW_COLOR_SUCCEEDED
+                    } else {
+                        FILELIST_ROW_COLOR_FAILED
+                    };
+
+                    messages_frame.set_label(&summary_message);
+                    messages_frame.set_label_color(messages_frame_color);
+                    tabsettings_button.activate();
+                    helpinfo_button.activate();
+                    updatechecks_button.activate();
+                    convert_frame.activate();
+                    filelist_scroll.scroll_to(0, 0);
+                    filelist_scroll.redraw();
                     filelist_widget.activate_log_links();
+
+                    if cancel_tasks_button.active() {
+                        cancel_tasks_button.deactivate();
+                    }
+
+                    if completed_count != total_count {
+                        overall_progress_frame.set_label_color(FILELIST_ROW_COLOR_CANCELLED);
+                        filelist_widget.mark_as_cancelled_starting_from_index(completed_count);
+                        overall_progress_frame.redraw();
+                    }
+
+                    app::awake();
                 },
                 common::AppEvent::ConversionSuccessEvent(row_idx, opt_viewer_app, pdf_pathbuf, total) => {
                     filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_SUCCEEDED, enums::Color::DarkGreen);
@@ -2666,9 +2743,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                     app_tx.send(common::AppEvent::ConversionFinishedAckEvent);
                 },
                 common::AppEvent::ConversionFailureEvent(row_idx, total) => {
-                    filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_FAILED, enums::Color::Red);
+                    filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_FAILED, FILELIST_ROW_COLOR_FAILED);
 
                     if overall_progress_progressbar.visible() {
+                        overall_progress_frame.set_label_color(FILELIST_ROW_COLOR_FAILED);
+                        overall_progress_frame.redraw();
                         let percent_complete = ( (row_idx + 1) as f64 * 100.0) / (total as f64);
                         overall_progress_progressbar.set_value(percent_complete);
                         overall_progress_progressbar.set_label(&format!("{:.0}%", percent_complete));
@@ -2678,7 +2757,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     app_tx.send(common::AppEvent::ConversionFinishedAckEvent);
                 },
                 common::AppEvent::ConversionStartEvent(row_idx) => {
-                    filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_INPROGRESS, enums::Color::DarkYellow);
+                    filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_INPROGRESS, FILELIST_ROW_COLOR_INPROGRESS);
                     let mut row_ypos = filelist_widget.ypos(row_idx);
                     let scroll_height = filelist_scroll.h();
 
@@ -2852,9 +2931,9 @@ pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dy
             let defaults_list = path_usr_share_applications_orig.join("defaults.list");
 
             if defaults_list.exists() {
-                
+
                 if let Ok(conf) = parse_entry(defaults_list) {
-                    if let Some(mime_pdf_desktop_refs) = conf.section("Default Applications").attr("text/html") {                        
+                    if let Some(mime_pdf_desktop_refs) = conf.section("Default Applications").attr("text/html") {
                         let desktop_file = path_usr_share_applications_orig.join(mime_pdf_desktop_refs);
 
                         if let Some(desktop_cmd) = desktop_file_cmd(desktop_file) {
@@ -2894,7 +2973,7 @@ pub fn open_web_page(url: &str, trans: &l10n::Translations) -> Result<(), Box<dy
         new_args.push("-c");
         let mut arguments = cmd_open.clone();
         arguments.push_str(" ");
-        
+
         for cmd_arg in cmd_args.iter() {
             arguments.push_str(cmd_arg.clone());
             arguments.push_str(" ");

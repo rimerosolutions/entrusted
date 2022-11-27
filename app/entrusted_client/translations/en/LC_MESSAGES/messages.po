@@ -18,6 +18,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "The conversion was cancelled!"
+msgstr ""
+
+msgid "Try cancelling remaining tasks as soon as possible"
+msgstr ""
+
 msgid "PDF result visual quality"
 msgstr ""
 

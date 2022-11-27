@@ -30,6 +30,18 @@ msgstr ""
 #~ "MIME-Version: 1.0\n"
 #~ "Content-Type: text/plain; charset=UTF-8"
 
+msgid "PDF result visual quality"
+msgstr ""
+
+msgid "low"
+msgstr ""
+
+msgid "medium"
+msgstr ""
+
+msgid "high"
+msgstr ""
+
 msgid ""
 "{bin} {version}\n"
 "{author}\n"

@@ -18,6 +18,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "PDF result visual quality"
+msgstr "Qualité visuelle du résultat PDF"
+
+msgid "low"
+msgstr "basse"
+
+msgid "medium"
+msgstr "moyenne"
+
+msgid "high"
+msgstr "haute"
+
 msgid ""
 "{bin} {version}\n"
 "{author}\n"

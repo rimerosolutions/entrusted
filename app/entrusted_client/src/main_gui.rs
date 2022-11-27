@@ -16,7 +16,7 @@ use std::sync::Arc;
 use std::thread;
 
 use fltk::{
-    app, browser, button, dialog, draw, enums, frame, group, input, misc, prelude::*, text, window, image
+    app, browser, button, dialog, draw, enums, frame, group, input, misc, prelude::*, text, window, image, menu
 };
 
 use entrusted_l10n as l10n;
@@ -1233,15 +1233,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     result_visual_quality_pack.set_spacing(WIDGET_GAP);
     let result_visual_quality_frame = frame::Frame::default()
         .with_size(100, 40)
-        .with_label("PDF result visual quality")
+        .with_label(&trans.gettext("PDF result visual quality"))
         .with_align(enums::Align::Left | enums::Align::Inside);
-    let result_visual_quality_inputchoice_rc = Rc::new(RefCell::new(
-        misc::InputChoice::default().with_size(240, 40),
+    let result_visual_quality_menuchoice_rc = Rc::new(RefCell::new(
+        menu::Choice::default().with_size(240, 40),
     ));    
-    result_visual_quality_inputchoice_rc.borrow_mut().add("LOW");
-    result_visual_quality_inputchoice_rc.borrow_mut().add("MEDIUM");
-    result_visual_quality_inputchoice_rc.borrow_mut().add("HIGH");
-    result_visual_quality_inputchoice_rc.borrow_mut().set_value("MEDIUM");
+    
+    for item in common::IMAGE_QUALITY_CHOICES.iter() {
+        let item_translated = trans.gettext(item);
+        result_visual_quality_menuchoice_rc.borrow_mut().add_choice(&item_translated);
+    }
+
+    result_visual_quality_menuchoice_rc.borrow_mut().set_value(common::IMAGE_QUALITY_DEFAULT_CHOICE_INDEX);
     result_visual_quality_pack.end();
 
     let mut ocrlang_pack = group::Pack::default()
@@ -1758,7 +1761,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut overall_progress_pack_ref  = overall_progress_pack.clone();
         let mut overall_progress_frame_ref  = overall_progress_frame.clone();
         let mut overall_progress_progressbar_ref  = overall_progress_progressbar.clone();
-        let result_visual_quality_inputchoice_rc_ref = result_visual_quality_inputchoice_rc.clone();
+        let result_visual_quality_menuchoice_rc_ref = result_visual_quality_menuchoice_rc.clone();
         let tx = tx.clone();
 
         move |b| {
@@ -1774,7 +1777,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             is_converting_ref.store(true, Ordering::Relaxed);
             conversion_is_active_ref.store(true, Ordering::Relaxed);
             
-            let image_quality = result_visual_quality_inputchoice_rc_ref.borrow().value().unwrap();
+            let image_quality_value_index = result_visual_quality_menuchoice_rc_ref.borrow().value();
+            let image_quality = common::IMAGE_QUALITY_CHOICES[image_quality_value_index as usize].to_lowercase().to_string();
 
             let opt_viewer_app = if openwith_checkbutton_ref.is_checked() {
                 let viewer_app_name = pdf_viewer_list_ref.borrow_mut().input().value();
@@ -1926,8 +1930,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     #[cfg(target_os = "macos")] {
-        use fltk::menu;
-
         app::raw_open_callback(Some(|s| {
             let tx = app::Sender::<String>::get();
             let _ = tx.send({
@@ -2378,15 +2380,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                     ocrlang_checkbutton.w(),
                     result_visual_quality_frame_ref.h()
                 );
-                
-                // let xxx = result_visual_quality_inputchoice_rc_ref.borrow().x();
-                // let yyy = result_visual_quality_inputchoice_rc_ref.borrow().y();
-                // result_visual_quality_inputchoice_rc_ref.borrow_mut().resize(
-                //     xxx,
-                //     yyy,
-                //     wid.w() - (WIDGET_GAP * 2),
-                //     result_visual_quality_inputchoice_rc.borrow().h()
-                // );
 
                 let xx = ocrlang_holdbrowser_rc_ref.borrow_mut().x();
 

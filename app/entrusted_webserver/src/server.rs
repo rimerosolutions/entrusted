@@ -167,6 +167,12 @@ async fn upload(
         let langid_ref = langid.clone();
 
         tokio::spawn(async move {
+            let image_quality = if new_upload_info.visualquality.is_empty() {
+                "medium".to_string()
+            } else {
+                new_upload_info.visualquality.clone()
+            };
+            
             let opt_passwd = if new_upload_info.docpassword.is_empty() {
                 None
             } else {
@@ -185,7 +191,7 @@ async fn upload(
                 PathBuf::from(tmpdir).join(output_filename_for(new_upload_info.location.clone()));
             let container_image_name = ci_image_name.to_string();
             let conversion_options =
-                model::ConversionOptions::new(container_image_name, ocr_lang_opt, opt_passwd);
+                model::ConversionOptions::new(container_image_name, ocr_lang_opt, opt_passwd, image_quality);
 
             if let Err(ex) = run_entrusted(
                 request_id,
@@ -559,6 +565,7 @@ pub async fn save_file(
     let mut fileext     = String::new();
     let mut ocrlang     = String::new();
     let mut docpassword = String::new();
+    let mut visualquality = "medium".to_string();
 
     while let Ok(Some(field)) = payload.next_field().await {
         if let Some(fname) = field.name() {
@@ -578,6 +585,10 @@ pub async fn save_file(
             } else if fname == "docpasswd" {
                 if let Ok(chunk) = field.text().await {
                     docpassword.push_str(&chunk);
+                }
+            } else if fname == "visualquality" {
+                if let Ok(chunk) = field.text().await {
+                    visualquality = chunk.to_owned();
                 }
             } else {
                 tracing::warn!(
@@ -635,6 +646,7 @@ pub async fn save_file(
         location,
         ocrlang,
         fileext,
+        visualquality
     })
 }
 
@@ -690,6 +702,8 @@ async fn run_entrusted(
     let mut cmd_args = vec![
         "--log-format".to_string(),
         "json".to_string(),
+        "--visual-quality".to_string(),
+        conversion_options.visualquality.to_owned(),
         "--container-image-name".to_string(),
         conversion_options.ci_image_name,
         "--output-filename".to_string(),

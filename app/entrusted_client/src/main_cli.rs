@@ -1,4 +1,4 @@
-use clap::{Command, Arg, ArgAction, builder::PossibleValue };
+use clap::{Command, Arg, ArgAction, builder::PossibleValue};
 use std::env;
 use std::error::Error;
 use std::path::PathBuf;
@@ -66,6 +66,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let help_output_filename = trans.gettext("Optional output filename defaulting to <filename>-entrusted.pdf.");
     let help_ocr_lang = trans.gettext("Optional language for OCR (i.e. 'eng' for English)");
     let help_input_filename = trans.gettext("Input filename");
+    let help_visual_quality = trans.gettext("PDF result visual quality");
     let help_container_image_name = trans.gettext("Optional custom Docker or Podman image name");
     let help_log_format = trans.gettext("Log format (json or plain)");
     let help_file_suffix = trans.gettext("Default file suffix (entrusted)");
@@ -131,6 +132,17 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .help(&help_file_suffix)
                 .default_value(&filesuffix_to_str())
                 .required(false)
+        ).arg(
+            Arg::new("visual-quality")
+                .long("visual-quality")
+                .help(&help_visual_quality)
+                .required(false)                
+                .value_parser([
+                    PossibleValue::new(common::IMAGE_QUALITY_CHOICES[0]),
+                    PossibleValue::new(common::IMAGE_QUALITY_CHOICES[1]),
+                    PossibleValue::new(common::IMAGE_QUALITY_CHOICES[2]),                    
+                ])
+                .default_value(common::IMAGE_QUALITY_CHOICES[common::IMAGE_QUALITY_DEFAULT_CHOICE_INDEX as usize])
         ).arg(
             Arg::new("passwd-prompt")
                 .long("passwd-prompt")
@@ -238,10 +250,16 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     };
 
-    let log_format = if let Some(fmt) = &run_matches.get_one::<String>("log-format") {
-        fmt
+    let log_format = if let Some(v) = &run_matches.get_one::<String>("log-format") {
+        v
     } else {
         LOG_FORMAT_PLAIN
+    };
+    
+    let image_quality = if let Some(v) = &run_matches.get_one::<String>("visual-quality") {
+        v
+    } else {
+        common::IMAGE_QUALITY_CHOICES[common::IMAGE_QUALITY_DEFAULT_CHOICE_INDEX as usize]
     };
 
     let opt_passwd = if run_matches.get_flag("passwd-prompt") {
@@ -263,12 +281,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let (exec_handle, rx) = {
         let (tx, rx) = mpsc::channel::<common::AppEvent>();
+        let image_quality_value = image_quality.to_string();
 
         let exec_handle = thread::spawn({
             let tx = tx.clone();
 
             move || {
-                let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), "MEDIUM".to_string(), ocr_lang, opt_passwd);
+                let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), image_quality_value, ocr_lang, opt_passwd);
                 let eventer = Box::new(CliEventSender {
                     tx
                 });

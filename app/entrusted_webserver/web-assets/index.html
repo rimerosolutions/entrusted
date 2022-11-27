@@ -20,10 +20,10 @@
       let translations = {
         "locale": "en",
         "data": {
-          "l10n-imgquality-label": "Visual quality",
-          "l10n-imgquality-option-low": "LOW",
-          "l10n-imgquality-option-medium": "MEDIUM",
-          "l10n-imgquality-option-high": "HIGH",
+          "l10n-imgquality-label": "PDF result visual quality",
+          "l10n-imgquality-option-low": "low",
+          "l10n-imgquality-option-medium": "medium",
+          "l10n-imgquality-option-high": "high",
           "l10n-overall-progress": "Overall progress",
           "l10n-conversion-summary-succeeded": "All files processed successfully",
           "l10n-conversion-summary-one-failed": "file failed to process",
@@ -681,7 +681,7 @@
         element.className = value.toLowerCase();
       }
 
-      function submitOneFile(idx, failCount, fileObj, ocrSettings, uploadUrl) {
+      function submitOneFile(idx, failCount, fileObj, visualQuality, ocrSettings, uploadUrl) {
         let file = fileObj.file;
         let fileObjId = fileObj.id;
         let filename = fileObj.fileName;
@@ -690,13 +690,14 @@
         let formData = new FormData();
         formData.append("file", file);
         formData.append("docpasswd", fileObj.passwd);
+        formData.append("visualquality", visualQuality);
         formData.append("filename", filename);
 
 
         if (ocrSettings["ocrlang"] != null && ocrSettings["ocrlang"] != undefined) {
           formData.append("ocrlang", ocrSettings["ocrlang"]);
         }
-
+                            
         let progressElement = document.getElementById("progress-" + fileObjId);
         let processingStatusElement = document.getElementById("processing-status-" + fileObjId);
         let progressMessageElement = document.getElementById("progress-message-" + fileObjId);
@@ -755,7 +756,7 @@
             let passwdElement = document.getElementById("passwd-" + nextFileObj.id);
             checkboxElement.disabled = true;
             passwdElement.disabled = true;
-            submitOneFile(++idx, newFailCount, nextFileObj, ocrSettings, uploadUrl);
+            submitOneFile(++idx, newFailCount, nextFileObj, visualQuality, ocrSettings, uploadUrl);
           } else {
             let dropFileZoneElement = document.getElementById("dropFileZone");
             dropFileZoneElement.className = "dropFileZoneEnabled";
@@ -867,6 +868,8 @@
         let ocrCheckbox = document.getElementById("ocrCheckbox");
         let ocrLangSelect = document.getElementById("ocrLangSelect");
         let uploadForm = document.getElementById("uploadForm");
+        let imgQualitySelectElement = document.getElementById("imgQualitySelect");
+        let imageQuality = imgQualitySelectElement.value;
         let uploadUrl = uploadForm.action;
 
         let ocrSettings = {};
@@ -900,7 +903,7 @@
            overallProgressTable.className = "visible";
         }
 
-        submitOneFile(0, 0, fileObj, ocrSettings, uploadUrl);
+        submitOneFile(0, 0, fileObj, imageQuality, ocrSettings, uploadUrl);
       }
 
       function clearModalContents() {
@@ -1303,12 +1306,12 @@
           <table style="width:100%">
             <tbody>
               <tr style="width:100%">
-                <td style="width:15%"><label for="imgQualitySelect"  data-l10n="l10n-imgquality-label">Visual quality</label></td>
+                <td style="width:15%"><label for="imgQualitySelect"  data-l10n="l10n-imgquality-label">PDF result visual quality</label></td>
                 <td>
                   <select id="imgQualitySelect" name="imgQualitySelect" data-l10n="l10n-imgquality-option">
-                    <option value="low">LOW</option>
-                    <option value="medium" selected>MEDIUM</option>
-                    <option value="high">HIGH</option>
+                    <option value="low">low</option>
+                    <option value="medium" selected>medium</option>
+                    <option value="high">high</option>
                   </select>
                 </td>
               </tr>

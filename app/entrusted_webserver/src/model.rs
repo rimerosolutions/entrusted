@@ -12,6 +12,7 @@ pub struct ConversionOptions {
     pub ci_image_name: String,
     pub opt_ocr_lang: Option<String>,
     pub opt_passwd: Option<String>,
+    pub visualquality: String
 }
 
 impl ConversionOptions {
@@ -19,11 +20,13 @@ impl ConversionOptions {
         ci_image_name: String,
         opt_ocr_lang: Option<String>,
         opt_passwd: Option<String>,
+        visualquality: String
     ) -> Self {
         Self {
             ci_image_name,
             opt_ocr_lang,
             opt_passwd,
+            visualquality
         }
     }
 }
@@ -74,4 +77,5 @@ pub struct UploadedFile {
     pub location: String,
     pub ocrlang: String,
     pub fileext: String,
+    pub visualquality: String
 }

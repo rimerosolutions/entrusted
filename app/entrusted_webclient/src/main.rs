@@ -1,4 +1,4 @@
-use clap::{Command, Arg, ArgAction};
+use clap::{Command, Arg, ArgAction, builder::PossibleValue};
 use futures::stream::StreamExt;
 use reqwest::{Body, Client};
 use reqwest_eventsource::{Event, EventSource};
@@ -26,6 +26,8 @@ use entrusted_l10n as l10n;
 const PROGRAM_GROUP: &str = "com.rimerosolutions.entrusted.entrusted_webclient";
 const CFG_FILENAME: &str = "config.toml";
 
+pub const IMAGE_QUALITY_CHOICES: [&str; 3] = ["low", "medium", "high"];
+pub const IMAGE_QUALITY_DEFAULT_CHOICE_INDEX: usize = 1;
 
 static INSTANCE_HOST: OnceCell<String> = OnceCell::new();
 static INSTANCE_PORT: OnceCell<String> = OnceCell::new();
@@ -107,6 +109,7 @@ fn load_config <T> () -> Result<T, Box<dyn Error>> where T: Default + Deserializ
 pub struct ConversionOptions {
     pub host: String,
     pub port: String,
+    pub image_quality: String,
     pub opt_ocr_lang: Option<String>,
     pub opt_passwd: Option<String>,
     pub file_suffix: String,
@@ -159,6 +162,7 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
     let help_ocr_lang = trans.gettext("Optional language for OCR (i.e. 'eng' for English)");
     let help_file_suffix = trans.gettext("Default file suffix (entrusted)");
     let help_password_prompt = trans.gettext("Prompt for document password");
+    let help_visual_quality = trans.gettext("PDF result visual quality");
     
     INSTANCE_HOST.set(appconfig.host.to_owned())?;
     INSTANCE_PORT.set(appconfig.port.to_string())?;
@@ -215,6 +219,17 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
                 .default_value(&filesuffix_to_str())
                 .required(false)
         ).arg(
+            Arg::new("visual-quality")
+                .long("visual-quality")
+                .help(&help_visual_quality)
+                .required(false)                
+                .value_parser([
+                    PossibleValue::new(IMAGE_QUALITY_CHOICES[0]),
+                    PossibleValue::new(IMAGE_QUALITY_CHOICES[1]),
+                    PossibleValue::new(IMAGE_QUALITY_CHOICES[2]),                    
+                ])
+                .default_value(IMAGE_QUALITY_CHOICES[IMAGE_QUALITY_DEFAULT_CHOICE_INDEX as usize])
+        ).arg(
             Arg::new("passwd-prompt")
                 .long("passwd-prompt")
                 .help(&help_password_prompt)
@@ -230,6 +245,12 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
         appconfig.ocr_lang
     };
 
+    let image_quality = if let Some(v) = &run_matches.get_one::<String>("visual-quality") {
+        v
+    } else {
+        IMAGE_QUALITY_CHOICES[IMAGE_QUALITY_DEFAULT_CHOICE_INDEX]
+    };
+    
     if let Some(proposed_ocr_lang) = &opt_ocr_lang {
         let supported_ocr_languages = l10n::ocr_lang_key_by_name(&trans);
         let proposed_ocr_lang_str = proposed_ocr_lang.as_str();
@@ -299,7 +320,12 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
             let filename = p.file_name().unwrap().to_str().unwrap();
 
             let conversion_options = ConversionOptions {
-                host:host.to_string(), port:port.to_string(), opt_ocr_lang, opt_passwd, file_suffix,
+                host: host.to_string(), 
+                port: port.to_string(), 
+                image_quality: image_quality.to_string(),
+                opt_ocr_lang: opt_ocr_lang, 
+                opt_passwd: opt_passwd, 
+                file_suffix: file_suffix,
             };
             convert_file(conversion_options, output_dir.to_path_buf(), p.clone(), filename.to_string(), output_path_opt, trans.clone()).await
         } else {
@@ -328,6 +354,7 @@ async fn convert_file (
 
     let mut multipart_form = reqwest::multipart::Form::new()
         .text("filename", filename)
+        .text("visualquality", conversion_options.image_quality.clone())
         .part("file", stream_part);
 
     if let Some(ocr_lang) = conversion_options.opt_ocr_lang {

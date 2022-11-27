@@ -1,10 +1,10 @@
 {
   "locale": "en",
   "data": {
-    "l10n-imgquality-label": "Visual quality",
-    "l10n-imgquality-option-low": "LOW",
-    "l10n-imgquality-option-medium": "MEDIUM",
-    "l10n-imgquality-option-high": "HIGH",
+    "l10n-imgquality-label": "PDF result visual quality",
+    "l10n-imgquality-option-low": "low",
+    "l10n-imgquality-option-medium": "medium",
+    "l10n-imgquality-option-high": "high",
     "l10n-overall-progress": "Overall progress",
     "l10n-conversion-summary-succeeded": "All files processed successfully",
     "l10n-conversion-summary-one-failed": "file failed to process",

@@ -10,6 +10,9 @@ pub const CONTAINER_IMAGE_EXE: &str = "/usr/local/bin/entrusted-container";
 pub const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str = "ENTRUSTED_DOC_PASSWD";
 pub const LOG_FORMAT_JSON: &str = "json";
 
+pub const IMAGE_QUALITY_CHOICES: [&str; 3] = ["low", "medium", "high"];
+pub const IMAGE_QUALITY_DEFAULT_CHOICE_INDEX: i32 = 1;
+
 #[macro_export]
 macro_rules! incl_gettext_files {
     ( $( $x:expr ),* ) => {

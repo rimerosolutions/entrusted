@@ -20,6 +20,10 @@
       let translations = {
         "locale": "en",
         "data": {
+          "l10n-imgquality-label": "Visual quality",
+          "l10n-imgquality-option-low": "LOW",
+          "l10n-imgquality-option-medium": "MEDIUM",
+          "l10n-imgquality-option-high": "HIGH",
           "l10n-overall-progress": "Overall progress",
           "l10n-conversion-summary-succeeded": "All files processed successfully",
           "l10n-conversion-summary-one-failed": "file failed to process",
@@ -1296,16 +1300,26 @@
       <form id="uploadForm" action="./api/v1/upload" method="post" enctype="multipart/form-data" onsubmit="preventDefaults(event)">
         <fieldset>
           <legend data-l10n="l10n-settings">Settings</legend>
-          <table>
+          <table style="width:100%">
             <tbody>
-              <tr>
+              <tr style="width:100%">
+                <td style="width:15%"><label for="imgQualitySelect"  data-l10n="l10n-imgquality-label">Visual quality</label></td>
                 <td>
+                  <select id="imgQualitySelect" name="imgQualitySelect" data-l10n="l10n-imgquality-option">
+                    <option value="low">LOW</option>
+                    <option value="medium" selected>MEDIUM</option>
+                    <option value="high">HIGH</option>
+                  </select>
+                </td>
+              </tr>
+              <tr style="width:100%">
+                <td style="width:15%">
                   <input type="checkbox" id="ocrCheckbox" name="ocr" onchange="toggleOcrCheckbox(this)" title="OCR (Optical character recognition) will be applied.">
                   <label for="ocrCheckbox" data-l10n="l10n-searchable-pdf-label">Make PDF searchable?</label>
-                </td>
-                <td class="vertical-align-center">
                   <label for="ocrLangSelect" data-l10n="l10n-ocrlang-select-label">Yes, with language:</label>
-                  <select id="ocrLangSelect" name="ocrLangSelect" data-l10n="l10n-ocrlang-option" disabled multiple>
+                </td>
+                <td class="vertical-align-center">                  
+                  <select id="ocrLangSelect" name="ocrLangSelect" data-l10n="l10n-ocrlang-option" size="3" disabled multiple>
                     <option value="ar">Afrikaans</option>
                     <option value="sqi">Albanian</option>
                     <option value="amh">Amharic</option>

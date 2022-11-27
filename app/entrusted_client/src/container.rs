@@ -376,6 +376,11 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
                 ]);
             }
         }
+        
+        let image_quality = convert_options.image_quality;
+        convert_args.append(&mut vec![
+            "-e".to_string(), format!("{}={}", "ENTRUSTED_IMAGE_QUALITY", image_quality)
+        ]);
 
         convert_args.append(&mut vec![
             convert_options.container_image_name.to_owned(),

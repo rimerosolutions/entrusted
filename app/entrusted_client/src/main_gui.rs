@@ -175,7 +175,7 @@ fn paint_underline<W: WidgetExt>(wid: &mut W) {
     }
 }
 
-fn row_to_task(viewer_app_opt: &Option<String>, active_ociimage_option: &String, active_ocrlang_option: &Option<String>, active_file_suffix: &String, active_row: &FileListRow) -> ConversionTask {
+fn row_to_task(viewer_app_opt: &Option<String>, active_ociimage_option: &String, image_quality: String,  active_ocrlang_option: &Option<String>, active_file_suffix: &String, active_row: &FileListRow) -> ConversionTask {
     let input_path = active_row.file.clone();
 
     let output_path = if let Some(custom_output_path) = active_row.opt_output_file.borrow().clone() {
@@ -188,6 +188,7 @@ fn row_to_task(viewer_app_opt: &Option<String>, active_ociimage_option: &String,
     let options = common::ConvertOptions::new(
         active_ociimage_option.to_owned(),
         common::LOG_FORMAT_JSON.to_string(),
+        image_quality,
         active_ocrlang_option.to_owned(),
         opt_row_passwd);
     let viewer_app_option = viewer_app_opt.clone();
@@ -1225,6 +1226,23 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     filesuffix_pack.end();
+    
+    let mut result_visual_quality_pack = group::Pack::default()
+        .with_size(570, 40)
+        .with_type(group::PackType::Horizontal);
+    result_visual_quality_pack.set_spacing(WIDGET_GAP);
+    let result_visual_quality_frame = frame::Frame::default()
+        .with_size(100, 40)
+        .with_label("PDF result visual quality")
+        .with_align(enums::Align::Left | enums::Align::Inside);
+    let result_visual_quality_inputchoice_rc = Rc::new(RefCell::new(
+        misc::InputChoice::default().with_size(240, 40),
+    ));    
+    result_visual_quality_inputchoice_rc.borrow_mut().add("LOW");
+    result_visual_quality_inputchoice_rc.borrow_mut().add("MEDIUM");
+    result_visual_quality_inputchoice_rc.borrow_mut().add("HIGH");
+    result_visual_quality_inputchoice_rc.borrow_mut().set_value("MEDIUM");
+    result_visual_quality_pack.end();
 
     let mut ocrlang_pack = group::Pack::default()
         .with_size(570, 60)
@@ -1740,6 +1758,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut overall_progress_pack_ref  = overall_progress_pack.clone();
         let mut overall_progress_frame_ref  = overall_progress_frame.clone();
         let mut overall_progress_progressbar_ref  = overall_progress_progressbar.clone();
+        let result_visual_quality_inputchoice_rc_ref = result_visual_quality_inputchoice_rc.clone();
         let tx = tx.clone();
 
         move |b| {
@@ -1754,6 +1773,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             convert_frame_ref.deactivate();
             is_converting_ref.store(true, Ordering::Relaxed);
             conversion_is_active_ref.store(true, Ordering::Relaxed);
+            
+            let image_quality = result_visual_quality_inputchoice_rc_ref.borrow().value().unwrap();
 
             let opt_viewer_app = if openwith_checkbutton_ref.is_checked() {
                 let viewer_app_name = pdf_viewer_list_ref.borrow_mut().input().value();
@@ -1794,6 +1815,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             let tasks: Vec<ConversionTask> = filelist_widget_ref.rows.borrow().iter().map(|row| {
                 row_to_task(&opt_viewer_app,
                             &opt_oci_image,
+                            image_quality.clone(),
                             &opt_ocr_lang,
                             &file_suffix,
                             &row
@@ -2216,6 +2238,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut filesuffix_checkbutton_ref = filesuffix_checkbutton.clone();
         let filesuffix_input_rc_ref = filesuffix_input_rc.clone();
 
+        let mut result_visual_quality_pack_ref = result_visual_quality_pack.clone();
+        let mut result_visual_quality_frame_ref = result_visual_quality_frame.clone();
+        
         let mut ocrlang_pack_ref = ocrlang_pack.clone();
         let mut ocrlang_checkbutton_ref = ocrlang_checkbutton.clone();
         let ocrlang_holdbrowser_rc_ref = ocrlang_holdbrowser_rc.clone();
@@ -2339,6 +2364,29 @@ fn main() -> Result<(), Box<dyn Error>> {
                 filelist_widget_ref.resize(filelist_scroll_ref.x(), filelist_scroll_ref.y(), wval, 0);
 
                 filelist_scroll_ref.redraw();
+                
+                result_visual_quality_pack_ref.resize(
+                    result_visual_quality_pack_ref.x(),
+                    result_visual_quality_pack_ref.y(),
+                    wid.w() - (WIDGET_GAP * 2),
+                    result_visual_quality_pack_ref.h()
+                );
+                
+                result_visual_quality_frame_ref.resize(
+                    result_visual_quality_frame_ref.x(),
+                    result_visual_quality_frame_ref.y(),
+                    ocrlang_checkbutton.w(),
+                    result_visual_quality_frame_ref.h()
+                );
+                
+                // let xxx = result_visual_quality_inputchoice_rc_ref.borrow().x();
+                // let yyy = result_visual_quality_inputchoice_rc_ref.borrow().y();
+                // result_visual_quality_inputchoice_rc_ref.borrow_mut().resize(
+                //     xxx,
+                //     yyy,
+                //     wid.w() - (WIDGET_GAP * 2),
+                //     result_visual_quality_inputchoice_rc.borrow().h()
+                // );
 
                 let xx = ocrlang_holdbrowser_rc_ref.borrow_mut().x();
 
@@ -2374,7 +2422,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 );
 
                 let ocw = wid.w() - (WIDGET_GAP * 3) - ocrlang_checkbutton.w();
-                let och = wid.h() - (WIDGET_GAP * 8) - (30 * 5);
+                let och = wid.h() - (WIDGET_GAP * 9) - (30 * 7);
 
                 ociimage_checkbutton_ref.resize(
                     ocrlang_checkbutton_ref.x(),

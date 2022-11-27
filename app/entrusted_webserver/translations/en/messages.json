@@ -1,6 +1,10 @@
 {
   "locale": "en",
   "data": {
+    "l10n-imgquality-label": "Visual quality",
+    "l10n-imgquality-option-low": "LOW",
+    "l10n-imgquality-option-medium": "MEDIUM",
+    "l10n-imgquality-option-high": "HIGH",
     "l10n-overall-progress": "Overall progress",
     "l10n-conversion-summary-succeeded": "All files processed successfully",
     "l10n-conversion-summary-one-failed": "file failed to process",

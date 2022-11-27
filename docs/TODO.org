@@ -1,40 +1,33 @@
 #+TITLE: TODO
 
 * Milestone: Hardening and features maturity [20%]
-- [ ] URGENT-potentially revert settings for image size, etc. seems much slower to run...
 - [-] Security
+  - Security profiles for the container image execution
+    - [ ] [[https://docs.docker.com/engine/security/apparmor/][apparmor]] security profile
+    - [ ] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile
   - [-] Virtual machine hardening for Live CD
-    - Security profiles for the container image execution
-      - [ ] [[https://docs.docker.com/engine/security/apparmor/][apparmor]] security profile
-      - [ ] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile
     - [ ] [[https://docs.arbitrary.ch/security/systemd.html][Systemd sandboxing]] for the "Online Service (=entrusted-webserver=)
-    - [X] [[https://madaidans-insecurities.github.io/guides/linux-hardening.html][sysctl]] settings and kernel boot parameters, [[https://github.com/GrapheneOS/hardened_malloc][hardened_malloc]]
+    - [X] [[https://madaidans-insecurities.github.io/guides/linux-hardening.html][sysctl]] settings, kernel boot parameters, [[https://github.com/GrapheneOS/hardened_malloc][hardened_malloc]]
   - [X] Run an publish vulnerability assessments for container images
-  - [X] Trim even more container image size
   - [X] Evaluate more frequently updated container images for CVEs
     - [X] Debian takes a while to sometimes address issues but it's very stable (PREFERRED)
     - [X] Alpine would require revisiting occasional segmentation faults (exit code =139=)
     - [X] Fedora takes a while to build (dnf is VERY slow) and trimming the image size is rather involved
-- [ ] User interface
+- [-] User interface
   - [ ] Ability to cancel non-started tasks
   - [ ] Evaluate opportunities to simplify the user interface
-  - [ ] Additional settings
-    - [ ] Paper size and image extract quality (maybe LOW, MEDIUM and HIGH?)
-    - [ ] OCR target DPI
-    - [ ] Add maybe some kind of profiles or presets? How complex would the UI be?
-  - [ ] Smooth scrolling as files are being processed to highlight the current document
+  - [X] PDF result visual quality parameter (LOW, MEDIUM, HIGH)
 - [-] Improved conversions
-  - [ ] Parallel conversions with both user settings and application-managed guardrails
   - [ ] Evaluate performance optimization opportunities
   - [X] Allow multiple language selection for searchable PDFs (OCR)
 - [-] Code maintenance and other practices
-  - [ ] Use identifiers instead of row indices to enable parallel conversions later (maybe initial "dumb implementation")    
   - [ ] Some level of testing? (scripts at least with exit code capture?)
   - [ ] Desktop interface code cleanup for clarity and simplicity?
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)
+  - [X] Smaller container image size  
   - [X] Sign revision control commits and container images
 - [X] Builds and releases
-  - [X] Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (rejected for lack of flexibility, cross-builds multi-arch annoyances)
+  - [X] Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (REJECTED for lack of flexibility, cross-builds multi-arch annoyances)
   - [X] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)    
   - [X] Bump the cargo edition to =2021= instead of =2018= in cargo manifests
 

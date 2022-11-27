@@ -268,7 +268,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             let tx = tx.clone();
 
             move || {
-                let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), ocr_lang, opt_passwd);
+                let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), "MEDIUM".to_string(), ocr_lang, opt_passwd);
                 let eventer = Box::new(CliEventSender {
                     tx
                 });

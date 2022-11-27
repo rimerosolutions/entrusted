@@ -5,9 +5,9 @@ use std::path::PathBuf;
 use std::fs;
 use std::sync::mpsc;
 use std::thread;
-use serde_json;
+
 use indicatif::ProgressBar;
-use rpassword;
+
 use std::collections::HashMap;
 use once_cell::sync::OnceCell;
 use entrusted_l10n as l10n;
@@ -37,11 +37,11 @@ impl common::EventSender for CliEventSender {
 }
 
 fn default_container_image_to_str() -> &'static str {
-    &INSTANCE_DEFAULT_IMAGE.get().expect("Image value not set!")
+    INSTANCE_DEFAULT_IMAGE.get().expect("Image value not set!")
 }
 
 fn filesuffix_to_str() -> &'static str {
-    &INSTANCE_FILESUFFIX.get().expect("filesuffix value not set!")
+    INSTANCE_FILESUFFIX.get().expect("filesuffix value not set!")
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -55,7 +55,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let trans = l10n::new_translations(locale);
     let app_config_ret = config::load_config();
-    let app_config = app_config_ret.unwrap_or(config::AppConfig::default());
+    let app_config: config::AppConfig = app_config_ret.unwrap_or_default();
 
     let default_container_image_name = if let Some(img_name) = app_config.container_image_name.clone() {
         img_name
@@ -114,7 +114,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             Arg::new("container-image-name")
                 .long("container-image-name")
                 .help(&help_container_image_name)
-                .default_value(&default_container_image_to_str())
+                .default_value(default_container_image_to_str())
                 .required(false)
         ).arg(
             Arg::new("log-format")
@@ -130,7 +130,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             Arg::new("file-suffix")
                 .long("file-suffix")
                 .help(&help_file_suffix)
-                .default_value(&filesuffix_to_str())
+                .default_value(filesuffix_to_str())
                 .required(false)
         ).arg(
             Arg::new("visual-quality")
@@ -151,7 +151,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .action(ArgAction::SetTrue)
         );
 
-    let run_matches= app.to_owned().get_matches();
+    let run_matches= app.get_matches();
 
     if run_matches.get_flag("update-checks") {
         match common::update_check(&trans) {
@@ -182,7 +182,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         output_filename = PathBuf::from(proposed_output_filename);
     }
 
-    if !fs::metadata(input_filename).is_ok() {
+    if fs::metadata(input_filename).is_err() {
         return Err(trans.gettext_fmt("The selected file does not exists! {0}", vec![input_filename]).into());
     }
 
@@ -244,7 +244,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let container_image_name = match &run_matches.get_one::<String>("container-image-name") {
         Some(img) => img.to_string(),
         None      => if let Some(container_image_name_saved) = app_config.container_image_name {
-            container_image_name_saved.clone()
+            container_image_name_saved
         } else {
             config::default_container_image_name()
         }
@@ -281,18 +281,15 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let (exec_handle, rx) = {
         let (tx, rx) = mpsc::channel::<common::AppEvent>();
-        let image_quality_value = image_quality.to_owned();
 
         let exec_handle = thread::spawn({
-            let tx = tx.clone();
-
             move || {
-                let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), image_quality_value, ocr_lang, opt_passwd);
+                let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), image_quality, ocr_lang, opt_passwd);
                 let eventer = Box::new(CliEventSender {
                     tx
                 });
 
-                if let Err(ex) = container::convert(src_path.clone(), output_filename, convert_options, eventer, trans.clone()) {
+                if let Err(ex) = container::convert(src_path.clone(), output_filename, convert_options, eventer, trans) {
                     Some(ex.to_string())
                 } else {
                     None

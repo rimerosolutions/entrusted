@@ -57,14 +57,19 @@ Yes, the configuration file (=config.toml=) is optional and its location is oper
 
 The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to [[https://en.wikipedia.org/wiki/INI_file][INI]] files syntax.
 
-*** Example
+*** COMMENT Example
 
 #+begin_src conf-toml
   # Unless you need OCR all the time for a known language, do not set ocr-lang
+  # This must be a valid tesseract langcode
   ocr-lang = "eng"
   host = "localhost"    
   port = 13000
   file-suffix = "entrusted"
+
+  # The requested visual quality of the PDF result influences processing time and result size
+  # This is one of 'low', 'medium' or 'high' with a default of 'medium'
+  visual-quality = "medium"
 #+end_src
 
 *** Overview

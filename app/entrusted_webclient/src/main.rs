@@ -3,11 +3,11 @@ use futures::stream::StreamExt;
 use reqwest::{Body, Client};
 use reqwest_eventsource::{Event, EventSource};
 use serde::{Deserialize, Serialize};
-use serde_json;
+
 use std::collections::HashMap;
 use std::io::Write;
 use indicatif::ProgressBar;
-use rpassword;
+
 use std::env;
 use once_cell::sync::OnceCell;
 
@@ -18,8 +18,6 @@ use std::{
 };
 
 use serde::de::DeserializeOwned;
-
-use dirs;
 
 use entrusted_l10n as l10n;
 
@@ -34,15 +32,15 @@ static INSTANCE_PORT: OnceCell<String> = OnceCell::new();
 static INSTANCE_FILESUFFIX: OnceCell<String> = OnceCell::new();
 
 fn host_to_str() -> &'static str {
-    &INSTANCE_HOST.get().expect("host value not set!")
+    INSTANCE_HOST.get().expect("host value not set!")
 }
 
 fn port_to_str() -> &'static str {
-    &INSTANCE_PORT.get().expect("port value not set!")
+    INSTANCE_PORT.get().expect("port value not set!")
 }
 
 fn filesuffix_to_str() -> &'static str {
-    &INSTANCE_FILESUFFIX.get().expect("filesuffix value not set!")
+    INSTANCE_FILESUFFIX.get().expect("filesuffix value not set!")
 }
 
 macro_rules! incl_gettext_files {
@@ -141,7 +139,7 @@ async fn main() {
     l10n::load_translations(incl_gettext_files!("en", "fr"));
 
     if let Err(ex) = process_cli_args().await {
-        eprintln!("{}", ex.to_string());
+        eprintln!("{}", ex);
         std::process::exit(1);
     }
 }
@@ -156,7 +154,7 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
     let trans = l10n::new_translations(locale);
 
     let appconfig_ret = load_config();
-    let appconfig = appconfig_ret.unwrap_or(AppConfig::default());
+    let appconfig: AppConfig = appconfig_ret.unwrap_or_default();
 
     let help_host = trans.gettext("Server host or IP address");
     let help_port = trans.gettext("Server port number");
@@ -189,14 +187,14 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
                 .long("host")
                 .help(&help_host)
                 .required(false)
-                .default_value(&host_to_str())
+                .default_value(host_to_str())
         )
         .arg(
             Arg::new("port")
                 .long("port")
                 .help(&help_port)
                 .required(false)
-                .default_value(&port_to_str())
+                .default_value(port_to_str())
         )
         .arg(
             Arg::new("ocr-lang")
@@ -219,7 +217,7 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
             Arg::new("file-suffix")
                 .long("file-suffix")
                 .help(&help_file_suffix)
-                .default_value(&filesuffix_to_str())
+                .default_value(filesuffix_to_str())
                 .required(false)
         ).arg(
             Arg::new("visual-quality")
@@ -281,11 +279,7 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
         }
     }
 
-    let output_path_opt = if let Some(proposed_output_filename) = run_matches.get_one::<String>("output-filename") {
-        Some(PathBuf::from(proposed_output_filename))
-    } else {
-        None
-    };
+    let output_path_opt = run_matches.get_one::<String>("output-filename").map(PathBuf::from);
 
     let file_suffix = if let Some(proposed_file_suffix) = run_matches.get_one::<String>("file-suffix") {
         proposed_file_suffix.to_string()
@@ -301,7 +295,7 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
         let p = PathBuf::from(file);
 
         if let Err(e) = port.parse::<u16>() {
-            return Err(format!("{}: {}! {}.", trans.gettext("Invalid port number"), port, e.to_string()).into());
+            return Err(format!("{}: {}! {}.", trans.gettext("Invalid port number"), port, e).into());
         }
 
         if !p.exists() {
@@ -326,9 +320,9 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
                 host: host.to_string(), 
                 port: port.to_string(), 
                 visual_quality: visual_quality.to_string(),
-                opt_ocr_lang: opt_ocr_lang, 
-                opt_passwd: opt_passwd, 
-                file_suffix: file_suffix,
+                opt_ocr_lang,
+                opt_passwd,
+                file_suffix,
             };
             convert_file(conversion_options, output_dir.to_path_buf(), p.clone(), filename.to_string(), output_path_opt, trans.clone()).await
         } else {
@@ -391,12 +385,10 @@ async fn convert_file (
 
     let output_path = if let Some(output_path_value) = output_path_opt {
         output_path_value
-    } else {
-        if let Some(filename_noext) = input_path.file_stem().and_then(|i| i.to_str()) {
+    } else if let Some(filename_noext) = input_path.file_stem().and_then(|i| i.to_str()) {
             output_dir.join([filename_noext.to_string(), "-".to_string(), conversion_options.file_suffix, ".pdf".to_string()].concat())
-        } else {
-            return Err(l10n.gettext("Could not determine input file base name!").into());
-        }
+    } else {
+        return Err(l10n.gettext("Could not determine input file base name!").into());
     };
 
     let mut output_file = fs::File::create(output_path)?;

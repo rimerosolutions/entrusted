@@ -3,7 +3,6 @@ use std::error::Error;
 use serde::{Serialize, Deserialize};
 use std::fs;
 use std::io::Write;
-use dirs;
 
 pub const PROGRAM_GROUP: &str = "com.rimerosolutions.entrusted.entrusted_client";
 pub const CFG_FILENAME: &str = "config.toml";
@@ -74,16 +73,16 @@ where T: Default + Serialize {
 
         if !config_appdir.exists() {
             if let Err(ex) = fs::create_dir_all(&config_appdir) {
-                return Err(format!("Couldn't create configuration folder: {}. {}", config_appdir.display(), ex.to_string()).into())
+                return Err(format!("Couldn't create configuration folder: {}. {}", config_appdir.display(), ex).into())
             }
         }
 
         let config_appfile = config_appdir.join(CFG_FILENAME);
-        let mut f = fs::OpenOptions::new().create(true).write(true).truncate(true).open(config_appfile.clone())?;
+        let mut f = fs::OpenOptions::new().create(true).write(true).truncate(true).open(config_appfile)?;
         let config_appdata = toml::to_vec(&config_instance)?;
 
         if let Err(e) = f.write(&config_appdata) {
-            Err(format!("Could not save configuration! {}", e.to_string()).into())
+            Err(format!("Could not save configuration! {}", e).into())
         } else {
             Ok(())
         }

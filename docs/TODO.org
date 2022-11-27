@@ -23,7 +23,7 @@
 - [-] Code maintenance and other practices
   - [ ] Some level of testing? (scripts at least with exit code capture?)
   - [ ] Desktop interface code cleanup for clarity and simplicity?
-  - [ ] Apply [[https://github.com/rust-lang/rust-clippy][clippy]] suggested code changes  
+  - [X] Apply most of [[https://github.com/rust-lang/rust-clippy][clippy]] suggested code changes  
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)
   - [X] Smaller container image size  
   - [X] Sign revision control commits and container images

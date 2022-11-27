@@ -1298,7 +1298,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut selected_ocr_languages = HashSet::new();
     
     if let Some(cur_ocrlangcode) = appconfig.ocr_lang.clone() {
-        let selected_langcodes: Vec<&str> = cur_ocrlangcode.split("+").collect();
+        let selected_langcodes: Vec<&str> = cur_ocrlangcode.split('+').collect();
         
         for selected_langcode in selected_langcodes {
             if let Some(cur_ocrlangname) = ocr_languages_by_name_ref.get(&selected_langcode) {

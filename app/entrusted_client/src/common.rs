@@ -1,9 +1,8 @@
 use std::{error::Error, sync::mpsc::SendError};
 use std::path::PathBuf;
-use which;
+
 use serde::{Deserialize, Serialize};
-use minreq;
-use semver;
+
 use crate::l10n;
 
 pub const CONTAINER_IMAGE_EXE: &str = "/usr/local/bin/entrusted-container";
@@ -132,18 +131,15 @@ pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
         ContainerProgramStub::Nerdctl("nerdctl", vec![], vec!["--security-opt", "no-new-privileges"], None),
     ];
 
-    for i in 0..container_program_stubs.len() {
-        match &container_program_stubs[i] {
+    for item in container_program_stubs {
+        match item {
             ContainerProgramStub::Docker(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) |
             ContainerProgramStub::Podman(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) |
             ContainerProgramStub::Lima(cmd, sub_cmd_args, cmd_args, tmp_dir_opt)   |
             ContainerProgramStub::Nerdctl(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) => {
                 if let Some(path_container_exe) = executable_find(cmd) {
-                    let suggested_tmp_dir = if let Some(tmp_dir) = tmp_dir_opt {
-                        Some(PathBuf::from(tmp_dir))
-                    } else {
-                        None
-                    };
+                    let suggested_tmp_dir = tmp_dir_opt.as_ref().map(PathBuf::from);
+
                     return Some(ContainerProgram::new(path_container_exe, sub_cmd_args.clone(), cmd_args.clone(), suggested_tmp_dir));
                 }
             }
@@ -186,9 +182,9 @@ pub fn update_check(trans: &l10n::Translations) -> Result<Option<ReleaseInfo>, B
         if let Ok(version_req) = semver::VersionReq::parse(&current_version_text) {
             if let Ok(ver_latest) = semver::Version::parse(latest_version_text) {
                 if version_req.matches(&ver_latest) {
-                    return Ok(Some(release_info));
+                    Ok(Some(release_info))
                 } else {
-                    return Ok(None);
+                    Ok(None)
                 }
             } else {
                 Err(trans.gettext("Could not read latest release version!").into())

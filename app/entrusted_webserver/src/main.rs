@@ -1,4 +1,3 @@
-use clap;
 use entrusted_l10n as l10n;
 use std::collections::HashMap;
 use std::env;
@@ -30,15 +29,15 @@ static INSTANCE_DEFAULT_PORT: OnceCell<String>  = OnceCell::new();
 static INSTANCE_DEFAULT_IMAGE: OnceCell<String> = OnceCell::new();
 
 fn default_host_to_str() -> &'static str {
-    &INSTANCE_DEFAULT_HOST.get().expect("Host value not set!")
+    INSTANCE_DEFAULT_HOST.get().expect("Host value not set!")
 }
 
 fn default_port_to_str() -> &'static str {
-    &INSTANCE_DEFAULT_PORT.get().expect("Port value not set!")
+    INSTANCE_DEFAULT_PORT.get().expect("Port value not set!")
 }
 
 fn default_container_image_to_str() -> &'static str {
-    &INSTANCE_DEFAULT_IMAGE.get().expect("Image value not set!")
+    INSTANCE_DEFAULT_IMAGE.get().expect("Image value not set!")
 }
 
 #[tokio::main]
@@ -81,21 +80,21 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .long("host")
                 .help(&help_host)
                 .required(false)
-                .default_value(&default_host_to_str())
+                .default_value(default_host_to_str())
         )
         .arg(
             clap::Arg::new("port")
                 .long("port")
                 .help(&help_port)
                 .required(false)
-                .default_value(&default_port_to_str())
+                .default_value(default_port_to_str())
         )
         .arg(
             clap::Arg::new("container-image-name")
                 .long("container-image-name")
                 .help(&help_container_image_name)
                 .required(false)
-                .default_value(&default_container_image_to_str())
+                .default_value(default_container_image_to_str())
         );
 
     let run_matches = app.to_owned().get_matches();
@@ -111,14 +110,14 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "{}: {}. {}",
                 l10n.gettext("Invalid port number"),
                 port,
-                ex.to_string()
+                ex
             )
             .into());
         }
 
         match server::serve(host, port, ci_image_name, l10n.clone()).await {
             Ok(_)   => Ok(()),
-            Err(ex) => Err(ex.into()),
+            Err(ex) => Err(ex),
         }
     } else {
         Err(l10n.gettext("Runtime error, missing parameters!").into())

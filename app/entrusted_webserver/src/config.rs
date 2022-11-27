@@ -1,4 +1,3 @@
-use dirs;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
@@ -50,7 +49,7 @@ where
             let config_path = config_dir_dgz.join("config.toml");
 
             if config_path.exists() {
-                let mut f = fs::File::open(config_path.clone())?;
+                let mut f = fs::File::open(config_path)?;
                 let mut config_data = Vec::new();
 
                 let ret = {

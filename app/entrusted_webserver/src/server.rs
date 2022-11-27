@@ -34,14 +34,10 @@ use futures::{self, Stream};
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::time::{interval_at, Instant};
 
-use serde_json;
-
 use std::sync::Arc;
 use uuid::Uuid;
 
-use http_api_problem;
 use percent_encoding::{percent_encode, NON_ALPHANUMERIC};
-use bs58;
 
 use crate::process;
 use entrusted_l10n as l10n;
@@ -52,7 +48,9 @@ use crate::uil10n;
 
 const SPA_INDEX_HTML: &[u8] = include_bytes!("../web-assets/index.html");
 
-static NOTIFICATIONS_PER_REFID: Lazy<Mutex<HashMap<String, Arc<Mutex<Vec<model::Notification>>>>>> =
+type NotificationByIdLazyMutex = Lazy<Mutex<HashMap<String, Arc<Mutex<Vec<model::Notification>>>>>>;
+
+static NOTIFICATIONS_PER_REFID: NotificationByIdLazyMutex =
     Lazy::new(|| Mutex::new(HashMap::<String, Arc<Mutex<Vec<model::Notification>>>>::new()));
 
 pub async fn serve(
@@ -94,7 +92,7 @@ pub async fn serve(
             }
         }
         None => {
-            return Err(trans.gettext("Cannot resolve server address").into());
+            Err(trans.gettext("Cannot resolve server address").into())
         }
     }
 }
@@ -123,7 +121,7 @@ async fn uitranslations(headers: HeaderMap, uri: Uri) -> Result<Json<model::Tran
             Ok(Json(translation_response))
         },
         Err(ex) => {
-            Err(AppError::InternalServerError(problem_internal_server_error(ex.to_string(), &uri)).into())
+            Err(AppError::InternalServerError(problem_internal_server_error(ex.to_string(), &uri)))
         }
     }
 }
@@ -187,8 +185,7 @@ async fn upload(
 
             let request_id = new_upload_info.id.clone();
             let input_path = PathBuf::from(&new_upload_info.location);
-            let output_path =
-                PathBuf::from(tmpdir).join(output_filename_for(new_upload_info.location.clone()));
+            let output_path = tmpdir.join(output_filename_for(new_upload_info.location.clone()));
             let container_image_name = ci_image_name.to_string();
             let conversion_options =
                 model::ConversionOptions::new(container_image_name, ocr_lang_opt, opt_passwd, image_quality);
@@ -215,12 +212,11 @@ async fn upload(
             StatusCode::ACCEPTED,
             Json(model::UploadResponse::new(
                 uploaded_file.id.clone(),
-                format!("/api/v1/events/{}", uploaded_file.id.clone()),
+                format!("/api/v1/events/{}", uploaded_file.id),
             )),
         ))
     } else {
-
-        Err(AppError::InternalServerError(problem_internal_server_error(err_msg, &uri)).into())
+        Err(AppError::InternalServerError(problem_internal_server_error(err_msg, &uri)))
     }
 }
 
@@ -230,15 +226,14 @@ async fn events(
     broadcaster: Extension<Arc<Mutex<Broadcaster>>>,
     l10n: Extension<Arc<l10n::Translations>>,
 ) -> Result<Sse<impl Stream<Item = Result<Event, Infallible>>>, AppError> {
-    let ref_id = request_id.to_owned();
 
     if let Ok(notifications_per_refid) = NOTIFICATIONS_PER_REFID.lock() {
-        if !notifications_per_refid.contains_key(&ref_id) {
-            return Err(AppError::NotFound(problem_not_found(l10n.gettext("Resource not found"), &uri)).into());
+        if !notifications_per_refid.contains_key(&request_id) {
+            return Err(AppError::NotFound(problem_not_found(l10n.gettext("Resource not found"), &uri)));
         }
     }
 
-    let stream = broadcaster.lock().unwrap().new_client(ref_id);
+    let stream = broadcaster.lock().unwrap().new_client(request_id);
 
     Ok(Sse::new(stream).keep_alive(KeepAlive::default()))
 }
@@ -259,7 +254,7 @@ async fn downloads(
         Ok(request_id_inner_bytes) => {
             if let Ok(request_id_inner) = std::str::from_utf8(&request_id_inner_bytes) {
                 let file_data_parts = request_id_inner
-                    .split(";")
+                    .split(';')
                     .map(|i| i.to_string())
                     .collect::<Vec<String>>();
 
@@ -291,8 +286,7 @@ async fn downloads(
 
     if request_err_found {
         return Err(AppError::BadRequest(
-            problem_bad_request(l10n_ref.gettext("Invalid request identifier or perhaps the file name atrociously long"), &uri))
-                   .into());
+            problem_bad_request(l10n_ref.gettext("Invalid request identifier or perhaps the file name atrociously long"), &uri)));
     }
 
     let file_loc = env::temp_dir()
@@ -300,14 +294,14 @@ async fn downloads(
         .join(fileid.clone());
 
     if !file_loc.exists() {
-        return Err(AppError::NotFound(problem_not_found(l10n_ref.gettext("Resource not found"), &uri).into()));
+        Err(AppError::NotFound(problem_not_found(l10n_ref.gettext("Resource not found"), &uri)))
     } else {
         match fs::read(file_loc.clone()) {
             Ok(data) => {
                 let _ = fs::remove_file(file_loc);
 
                 if let Ok(mut notifs_by_ref_id) = NOTIFICATIONS_PER_REFID.lock() {
-                    notifs_by_ref_id.remove(&request_id.to_string());
+                    notifs_by_ref_id.remove(&request_id);
                 }
 
                 let mut headers = HeaderMap::with_capacity(3);
@@ -317,7 +311,7 @@ async fn downloads(
                 }
 
                 if let Ok(header_value) =
-                    HeaderValue::from_str(&format!("attachment; filename*=UTF-8''{}", percent_encode(filename.as_bytes(), NON_ALPHANUMERIC).to_string()))
+                    HeaderValue::from_str(&format!("attachment; filename*=UTF-8''{}", percent_encode(filename.as_bytes(), NON_ALPHANUMERIC)))
                 {
                     headers.insert(header::CONTENT_DISPOSITION, header_value);
                 }
@@ -345,12 +339,12 @@ async fn downloads(
                 }
 
                 if let Ok(mut notifs_per_refid) = NOTIFICATIONS_PER_REFID.lock() {
-                    notifs_per_refid.remove(&request_id.to_string());
+                    notifs_per_refid.remove(&request_id);
                 }
 
-                return Err(
-                    AppError::InternalServerError(problem_internal_server_error(l10n_ref.gettext("Internal error"), &uri)).into(),
-                );
+                Err(
+                    AppError::InternalServerError(problem_internal_server_error(l10n_ref.gettext("Internal error"), &uri))
+                )
             }
         }
     }
@@ -397,10 +391,10 @@ fn problem_internal_server_error(reason: String, uri: &Uri) -> http_api_problem:
 
 fn parse_accept_language(req_language: &HeaderValue, fallback_lang: String) -> String {
     if let Ok(req_language_str) = req_language.to_str() {
-        let language_list = req_language_str.split(",").collect::<Vec<&str>>();
+        let language_list = req_language_str.split(',').collect::<Vec<&str>>();
 
         if !language_list.is_empty() {
-            let first_language = language_list[0].split(";").collect::<Vec<&str>>();
+            let first_language = language_list[0].split(';').collect::<Vec<&str>>();
             first_language[0].to_string()
         } else {
             fallback_lang
@@ -447,7 +441,7 @@ impl Broadcaster {
         for client in self.clients.iter() {
             let result = client.try_send(msg.clone());
 
-            if let Ok(_) = result {
+            if result.is_ok() {
                 ok_clients.push(client.clone());
             }
         }
@@ -689,7 +683,7 @@ async fn run_entrusted(
     langid: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if let Some(proposed_ocr_lang) = conversion_options.opt_ocr_lang.clone() {
-        let selected_langcodes: Vec<&str> = proposed_ocr_lang.split("+").collect();
+        let selected_langcodes: Vec<&str> = proposed_ocr_lang.split('+').collect();
         let ocr_lang_by_code = l10n::ocr_lang_key_by_name(&l10n);
 
         for selected_langcode in selected_langcodes {
@@ -775,12 +769,10 @@ async fn run_entrusted(
                 }
             }
             result = child.wait() => {
-                match result {
-                    Ok(exit_code) => {
-                        success = exit_code.success();
-                    },
-                    _ => (),
+                if let Ok(exit_code) = result {
+                    success = exit_code.success();
                 }
+
                 break // child process exited
             }
         };

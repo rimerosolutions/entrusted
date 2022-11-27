@@ -1,4 +1,3 @@
-use serde_json;
 use std::error::Error;
 use std::fs;
 use std::io::{self};
@@ -27,7 +26,8 @@ impl common::EventSender for NoOpEventSender {
     }
 }
 
-fn read_cmd_output<R>(thread_name: &str, stream: R, tx: Box<dyn common::EventSender>) -> Result<JoinHandle<Result<(), Box<dyn Error + Send + Sync>>>, io::Error>
+type JoinHandleResult = Result<JoinHandle<Result<(), Box<dyn Error + Send + Sync>>>, io::Error>;
+fn read_cmd_output<R>(thread_name: &str, stream: R, tx: Box<dyn common::EventSender>) -> JoinHandleResult
 where
     R: Read + Send + 'static {
     thread::Builder::new()
@@ -74,7 +74,7 @@ fn exec_crt_command (cmd_desc: String, container_program: common::ContainerProgr
 
     let mut cmd = Vec::with_capacity(sub_commands.len() + args.len());
     cmd.extend(sub_commands);
-    cmd.extend(args.clone());
+    cmd.extend(args);
 
     let cmd_masked: Vec<&str> = cmd
         .iter()
@@ -145,7 +145,7 @@ fn exec_crt_command (cmd_desc: String, container_program: common::ContainerProgr
                 thread::yield_now();
             },
             Err(ex) => {
-                return Err(format!("{} {}", trans.gettext("Command failed!"), ex.to_string()).into());
+                return Err(format!("{} {}", trans.gettext("Command failed!"), ex).into());
             }
         }
     }
@@ -175,7 +175,7 @@ impl LogPrinter for PlainLogPrinter {
     }
 
     fn clone_box(&self) -> Box<dyn LogPrinter> {
-        Box::new(self.clone())
+        Box::new(*self)
     }
 }
 
@@ -188,7 +188,7 @@ impl LogPrinter for JsonLogPrinter {
     }
 
     fn clone_box(&self) -> Box<dyn LogPrinter> {
-        Box::new(self.clone())
+        Box::new(*self)
     }
 }
 
@@ -197,7 +197,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         return Err(trans.gettext_fmt("The selected file does not exists: {0}!", vec![&input_path.display().to_string()]).into());
     }
 
-    let printer: Box<dyn LogPrinter> = if convert_options.log_format == "plain".to_string() {
+    let printer: Box<dyn LogPrinter> = if convert_options.log_format == *"plain" {
         Box::new(PlainLogPrinter)
     } else {
         Box::new(JsonLogPrinter)
@@ -209,7 +209,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
 
     fn mkdirp(p: &PathBuf, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
         if !p.exists() {
-            if let Err(ex) = fs::create_dir_all(&p) {
+            if let Err(ex) = fs::create_dir_all(p) {
                 return Err(trans.gettext_fmt("Cannot create directory: {0}! Error: {1}", vec![&p.display().to_string(), &ex.to_string()]).into());
             }
         }
@@ -235,7 +235,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         Ok(())
     }
 
-    let run_args:Vec<String> = vec![
+    let mut run_args:Vec<String> = vec![
         "run".to_string(),
         "--rm".to_string(),
         "--network".to_string() , "none".to_string(),
@@ -253,14 +253,14 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
 
             if let Err(exe) = exec_crt_command(trans.gettext("Please wait, downloading sandbox image (roughly 600 MB)"), container_rt.clone(), ensure_image_args, tx.clone_box(), false, printer.clone_box(), trans.clone()) {
                 tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, trans.gettext("Couldn't download container image!"))))?;
-                return Err(exe.into());
+                return Err(exe);
             }
 
             tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext("Container image download completed..."))))?;
         }
 
         let mut convert_args = Vec::with_capacity(run_args.len() + container_rt.suggested_run_args.len());
-        convert_args.append(&mut run_args.clone());
+        convert_args.append(&mut run_args);
         convert_args.append(&mut container_rt.suggested_run_args.iter().map(|i| i.to_string()).collect());
 
         // TODO potentially this needs to be configurable
@@ -365,14 +365,14 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
 
         if let Some(ocr_language) = convert_options.opt_ocr_lang {
             convert_args.append(&mut vec![
-                "-e".to_string(), format!("ENTRUSTED_OCR_LANGUAGE={}", ocr_language.to_owned())
+                "-e".to_string(), format!("ENTRUSTED_OCR_LANGUAGE={}", ocr_language)
             ]);
         }
 
         if let Some(passwd) = convert_options.opt_passwd {
             if !passwd.is_empty() {
                 convert_args.append(&mut vec![
-                    "-e".to_string(), format!("{}={}", common::ENV_VAR_ENTRUSTED_DOC_PASSWD, passwd.to_owned())
+                    "-e".to_string(), format!("{}={}", common::ENV_VAR_ENTRUSTED_DOC_PASSWD, passwd)
                 ]);
             }
         }
@@ -387,7 +387,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             common::CONTAINER_IMAGE_EXE.to_string()
         ]);
 
-        if let Ok(_) = exec_crt_command(trans.gettext("Starting document processing"), container_rt, convert_args, tx.clone_box(), true, printer.clone_box(), trans.clone()) {
+        if exec_crt_command(trans.gettext("Starting document processing"), container_rt, convert_args, tx.clone_box(), true, printer.clone_box(), trans.clone()).is_ok() {
             // Delete file temporarily copied to a visible mount for Lima
             if !tmp_input_loc.is_empty() {
                 let _ = fs::remove_file(tmp_input_loc);
@@ -434,7 +434,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         }
     } else {
         err_msg.push_str(&trans.gettext("No container runtime executable found!"));
-        err_msg.push_str("\n");
+        err_msg.push('\n');
 
         if cfg!(any(target_os="windows")) {
             err_msg.push_str(&trans.gettext("Please install Docker and make sure that it's running."));

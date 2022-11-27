@@ -12,8 +12,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         if input.exists() {
             println!(
-                "cargo:info={}",
-                format!("Processing translation PO file: {}", &input.display())
+                "cargo:info=Processing translation PO file: {}", &input.display()
             );
 
             let output = path.join("LC_MESSAGES").join("messages.mo");
@@ -25,7 +24,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                         return Err(format!(
                             "Failed to compile MO file for {}.\n{}",
                             &input.display(),
-                            ex.to_string()
+                            ex
                         )
                         .into());
                     }
@@ -34,7 +33,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     return Err(format!(
                         "Failed to parse PO file {}.\n{}",
                         &input.display(),
-                        ex.to_string()
+                        ex
                     )
                     .into());
                 }

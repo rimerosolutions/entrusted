@@ -11,7 +11,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let input = path.join("LC_MESSAGES").join("messages.po");
 
         if input.exists() {
-            println!("cargo:info={}", format!("Processing translation PO file: {}", &input.display()));
+            println!("cargo:info=Processing translation PO file: {}", &input.display());
                 
             let output = path.join("LC_MESSAGES").join("messages.mo");
             let catalog_ret = po_file::parse(Path::new(&input));
@@ -19,11 +19,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             match catalog_ret {
                 Ok(catalog) => {                    
                     if let Err(ex) = mo_file::write(&catalog, Path::new(&output)) {
-                        return Err(format!("Failed to compile MO file for {}.\n{}", &input.display(), ex.to_string()).into());
+                        return Err(format!("Failed to compile MO file for {}.\n{}", &input.display(), ex).into());
                     }                    
                 },
                 Err(ex) => {
-                    return Err(format!("Failed to parse PO file {}.\n{}", &input.display(), ex.to_string()).into());
+                    return Err(format!("Failed to parse PO file {}.\n{}", &input.display(), ex).into());
                 }
             }
         }

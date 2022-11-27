@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::process::Stdio;
 use tokio::process::{Child, Command};
-use which;
 
 pub fn exe_find(exe_name: &str) -> Option<PathBuf> {
     if let Ok(path_location) = which::which(exe_name) {

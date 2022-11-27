@@ -100,7 +100,11 @@ The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to
   # "Acrobat Reader" is the name of the PDF viewer "as identified" in the GUI client
   # That name isn't just random: the name, spacing and case ALL matter...
   # Only configure this manually if you know what you're doing
-  # preview-result-appname=Acrobat Reader
+  # preview-result-appname="Acrobat Reader"
+
+  # The requested visual quality of the PDF result influences processing time and result size
+  # This is one of 'low', 'medium' or 'high' with a default of 'medium'  
+  visual-quality = "medium"
 #+end_src
 
 *** Overview

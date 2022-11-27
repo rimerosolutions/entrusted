@@ -2,12 +2,11 @@ use std::io::{Cursor, BufReader, Read};
 use std::error::Error;
 use std::path::Path;
 use std::fs;
-use zip;
-use cfb;
 
+#[allow(clippy::unused_io_amount)]    
 pub fn detect_from_path (path: &Path) -> Result<Option<&str>, Box<dyn Error>> {
     let mut data = [0u8; 8];
-    let mut f: fs::File = fs::File::open(path)?;    
+    let mut f: fs::File = fs::File::open(path)?;
     f.read(&mut data)?;
 
     if is_png(&data) {
@@ -36,8 +35,8 @@ pub fn detect_from_path (path: &Path) -> Result<Option<&str>, Box<dyn Error>> {
 fn bytes_range(data: &[u8], lo: usize, hi: usize) -> Vec<u8> {
     let mut ret = Vec::with_capacity(hi - lo);
 
-    for i in lo..hi {
-        ret.push(data[i]);
+    for item in data.iter().skip(lo).take(hi) {
+        ret.push(*item);
     }
 
     ret
@@ -46,8 +45,8 @@ fn bytes_range(data: &[u8], lo: usize, hi: usize) -> Vec<u8> {
 fn hex_encode_upper(data: &[u8]) -> String {
     let mut hex_vec = String::with_capacity(data.len() * 2);
 
-    for i in 0..data.len() {
-        let hex = format!("{:02X}", data[i]);
+    for item in data {
+        let hex = format!("{:02X}", item);
         hex_vec.push_str(&hex);
     }
 
@@ -61,9 +60,9 @@ fn byte_range_matches(data: &[u8], lo: usize, hi: usize, sig: &str) -> bool {
 
     let file_sig = bytes_range(data, lo, hi);
     let hex_file_sig = hex_encode_upper(&file_sig);
-    let sig_trimmed = sig.replace(" ", "");
+    let sig_trimmed = sig.replace(' ', "");
 
-    return hex_file_sig == sig_trimmed
+    hex_file_sig == sig_trimmed
 }
 
 fn is_zip(data: &[u8]) -> bool {
@@ -132,13 +131,13 @@ fn office_mime<'a>(data: Vec<u8>) -> Result<Option<&'a str>, Box<dyn Error>> {
                         let mut tmp_buf = String::new();
                         zip_reader.read_to_string(&mut tmp_buf)?;
 
-                        if tmp_buf.find("application/vnd.oasis.opendocument.text").is_some() {
+                        if tmp_buf.contains("application/vnd.oasis.opendocument.text") {
                             ret_odt = "application/vnd.oasis.opendocument.text";
-                        } else if tmp_buf.find("application/vnd.oasis.opendocument.spreadsheet").is_some() {
+                        } else if tmp_buf.contains("application/vnd.oasis.opendocument.spreadsheet") {
                             ret_odt = "application/vnd.oasis.opendocument.spreadsheet";
-                        } else if tmp_buf.find("application/vnd.oasis.opendocument.presentation").is_some() {
+                        } else if tmp_buf.contains("application/vnd.oasis.opendocument.presentation") {
                             ret_odt = "application/vnd.oasis.opendocument.presentation";
-                        } else if tmp_buf.find("application/vnd.oasis.opendocument.graphics").is_some() {
+                        } else if tmp_buf.contains("application/vnd.oasis.opendocument.graphics") {
                             ret_odt = "application/vnd.oasis.opendocument.graphics";
                         }
                     }
@@ -150,11 +149,11 @@ fn office_mime<'a>(data: Vec<u8>) -> Result<Option<&'a str>, Box<dyn Error>> {
                         let mut tmp_buf = String::new();
                         zip_reader.read_to_string(&mut tmp_buf)?;
 
-                        if tmp_buf.find("ppt/presentation.xml").is_some() {
+                        if tmp_buf.contains("ppt/presentation.xml") {
                             ret_ooxml = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-                        } else if tmp_buf.find("word/document.xml").is_some() {
+                        } else if tmp_buf.contains("word/document.xml") {
                             ret_ooxml = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-                        } else if tmp_buf.find("xl/workbook.xml").is_some() {
+                        } else if tmp_buf.contains("xl/workbook.xml") {
                             ret_ooxml = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
                         }
                     }

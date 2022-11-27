@@ -1,8 +1,6 @@
 use cairo::{Context, Format, ImageSurface, PdfSurface};
 use std::env;
-use image;
 
-use lopdf;
 use poppler::Document;
 use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
@@ -15,7 +13,7 @@ use std::time::Instant;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use libreoffice_rs::{Office, LibreOfficeKitOptionalFeatures, urls};
-use tesseract_plumbing;
+
 use entrusted_l10n as l10n;
 
 mod mimetypes;
@@ -103,12 +101,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let logger: Box<dyn ConversionLogger> = if let Ok(dgz_logformat_value) = env::var(ENV_VAR_LOG_FORMAT) {
         match dgz_logformat_value.as_str() {
             "json" => {
-                Box::new(JsonConversionLogger)
+                Box::new(JsonConversionLogger) 
             },
-            _ => Box::new(PlainConversionLogger)
+            _ => Box::new(PlainConversionLogger) 
         }
     } else {
-        Box::new(PlainConversionLogger)
+        Box::new(PlainConversionLogger) 
     };
 
     let ret = || -> Result<(), Box<dyn Error>> {
@@ -119,7 +117,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         // step 1 (0%-20%)
         let mut progress_range = ProgressRange::new(0, 20);
-        let input_file_path = input_as_pdf_to_pathbuf_uri(&logger, &progress_range, &raw_input_path, document_password.clone(), l10n.clone())?;
+        let input_file_path = input_as_pdf_to_pathbuf_uri(&*logger, &progress_range, raw_input_path, document_password.clone(), l10n.clone())?;
 
         let doc = if let Some(passwd) = document_password {
             // We only care about originally encrypted PDF files
@@ -134,14 +132,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         // step 2 (20%-45%)
         progress_range.update(20, 45);
-        split_pdf_pages_into_images(&logger, &progress_range, page_count, doc, image_quality, &output_dir_path, l10n.clone())?;
+        split_pdf_pages_into_images(&*logger, &progress_range, page_count, doc, image_quality, output_dir_path, l10n.clone())?;
 
         // step 3 (45%-90%)
         progress_range.update(45, 90);
 
         if let Ok(ocr_lang)= env::var(ENV_VAR_OCR_LANGUAGE) {
             let ocr_lang_text = ocr_lang.as_str();
-            let selected_langcodes: Vec<&str> = ocr_lang_text.split("+").collect();
+            let selected_langcodes: Vec<&str> = ocr_lang_text.split('+').collect();
 
             for selected_langcode in selected_langcodes {
                 if !l10n::ocr_lang_key_by_name(&l10n).contains_key(&selected_langcode) {
@@ -160,18 +158,18 @@ fn main() -> Result<(), Box<dyn Error>> {
                 data_dir: &provided_tessdata_dir
             };
 
-            ocr_imgs_to_pdf(&logger, &progress_range, page_count, tess_settings, &output_dir_path, &output_dir_path, l10n.clone())?;
+            ocr_imgs_to_pdf(&*logger, &progress_range, page_count, tess_settings, output_dir_path, output_dir_path, l10n.clone())?;
         } else {
-            imgs_to_pdf(&logger, &progress_range, page_count, output_dir_path, output_dir_path, l10n.clone())?;
+            imgs_to_pdf(&*logger, &progress_range, page_count, output_dir_path, output_dir_path, l10n.clone())?;
         }
 
         // step 4 (90%-98%)
         progress_range.update(90, 98);
-        pdf_combine_pdfs(&logger, &progress_range, page_count, &output_dir_path, &output_file_path, l10n.clone())?;
+        pdf_combine_pdfs(&*logger, &progress_range, page_count, output_dir_path, output_file_path, l10n.clone())?;
 
         // step 5 (98%-98%)
         progress_range.update(98, 98);
-        move_file_to_dir(&logger, &progress_range, &output_file_path, &safe_dir_path, l10n.clone())
+        move_file_to_dir(&*logger, &progress_range, output_file_path, safe_dir_path, l10n.clone())
     };
 
     let mut exit_code = 0;
@@ -191,13 +189,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     std::process::exit(exit_code);
 }
 
-fn move_file_to_dir(logger: &Box<dyn ConversionLogger>, progress_range: &ProgressRange, src_file_path: &Path, dest_dir_path: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
-    if let Err(ex) = fs::copy(&src_file_path, &dest_dir_path) {
+fn move_file_to_dir(logger: &dyn ConversionLogger, progress_range: &ProgressRange, src_file_path: &Path, dest_dir_path: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
+    if let Err(ex) = fs::copy(src_file_path, dest_dir_path) {
         logger.log(progress_range.min, l10n.gettext_fmt("Failed to copy file from {0} to {1}", vec![&src_file_path.display().to_string(), &dest_dir_path.display().to_string()]));
         return Err(ex.into());
     }
 
-    if let Err(ex) = fs::remove_file(&src_file_path) {
+    if let Err(ex) = fs::remove_file(src_file_path) {
         logger.log(progress_range.min, l10n.gettext_fmt("Failed to remove file from {0}.", vec![&src_file_path.display().to_string()]));
         return Err(ex.into());
     }
@@ -207,7 +205,7 @@ fn move_file_to_dir(logger: &Box<dyn ConversionLogger>, progress_range: &Progres
     Ok(())
 }
 
-fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: &ProgressRange, raw_input_path: &Path, opt_passwd: Option<String>, l10n: l10n::Translations) -> Result<PathBuf, Box<dyn Error>> {
+fn input_as_pdf_to_pathbuf_uri(logger: &dyn ConversionLogger, _: &ProgressRange, raw_input_path: &Path, opt_passwd: Option<String>, l10n: l10n::Translations) -> Result<PathBuf, Box<dyn Error>> {
     let conversion_by_mimetype: HashMap<&str, ConversionType> = [
         ("application/pdf", ConversionType::None),
         (
@@ -270,7 +268,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: &ProgressR
         return Err(l10n.gettext_fmt("Cannot find file at {0}", vec![&raw_input_path.display().to_string()]).into());
     }
 
-    if let Some(mime_type) = mimetypes::detect_from_path(&raw_input_path)? {
+    if let Some(mime_type) = mimetypes::detect_from_path(raw_input_path)? {
         if let Some(conversion_type) = conversion_by_mimetype.get(mime_type) {
             if let Some(parent_dir) = raw_input_path.parent() {
                 let filename_pdf: String = {
@@ -285,7 +283,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: &ProgressR
                 match conversion_type {
                     ConversionType::None => {
                         logger.log(5, l10n.gettext_fmt("Copying PDF input to {0}", vec![&filename_pdf]));
-                        fs::copy(&raw_input_path, &filename_pdf)?;
+                        fs::copy(raw_input_path, &filename_pdf)?;
                     }
                     ConversionType::Convert => {
                         logger.log(5, l10n.gettext("Converting input image to PDF"));
@@ -298,13 +296,13 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: &ProgressR
                             "image/x-tiff" => Ok(image::ImageFormat::Tiff),
                             unknown_img_t  => Err(l10n.gettext_fmt("Unsupported image type {0}", vec![unknown_img_t])),
                         }?;
-                        img_to_pdf(img_format, &raw_input_path, &Path::new(&filename_pdf))?;
+                        img_to_pdf(img_format, raw_input_path, Path::new(&filename_pdf))?;
                     }
                     ConversionType::LibreOffice(fileext) => {
                         logger.log(5, l10n.gettext("Converting to PDF using LibreOffice"));
                         let new_input_loc = format!("/tmp/input.{}", fileext);
                         let new_input_path = Path::new(&new_input_loc);
-                        fs::copy(&raw_input_path, &new_input_path)?;
+                        fs::copy(raw_input_path, new_input_path)?;
 
                         let libreoffice_program_dir = if let Ok(env_libreoffice_program_dir) = env::var(ENV_VAR_ENTRUSTED_LIBREOFFICE_PROGRAM_DIR) {
                             env_libreoffice_program_dir
@@ -331,11 +329,9 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: &ProgressR
                                     if !password_was_set.load(Ordering::Acquire) {
                                         let _ = office.set_document_password(input_uri.clone(), &passwd);
                                         password_was_set.store(true, Ordering::Release);
-                                    } else {
-                                        if !failed_password_input.load(Ordering::Acquire) {
-                                            failed_password_input.store(true, Ordering::Release);
-                                            let _ = office.unset_document_password(input_uri.clone());
-                                        }
+                                    } else if !failed_password_input.load(Ordering::Acquire) {
+                                        failed_password_input.store(true, Ordering::Release);
+                                        let _ = office.unset_document_password(input_uri.clone());                                        
                                     }
                                 }
                             }) {
@@ -370,13 +366,13 @@ fn input_as_pdf_to_pathbuf_uri(logger: &Box<dyn ConversionLogger>, _: &ProgressR
 
                 Ok(PathBuf::from(format!("file://{}", filename_pdf)))
             } else {
-                return Err(l10n.gettext("Cannot find input parent directory!").into());
+                Err(l10n.gettext("Cannot find input parent directory!").into())
             }
         } else {
-            return Err(l10n.gettext_fmt("Unsupported mime type: {0}", vec![mime_type]).into());
+            Err(l10n.gettext_fmt("Unsupported mime type: {0}", vec![mime_type]).into())
         }
     } else {
-        return Err(l10n.gettext("Mime type error! Does the input have a 'known' file extension?").into());
+        Err(l10n.gettext("Mime type error! Does the input have a 'known' file extension?").into())
     }
 }
 
@@ -387,9 +383,9 @@ fn elapsed_time_string(millis: u128, l10n: l10n::Translations) -> String {
     let mins_in_millis = secs_in_millis * 60;
     let hrs_in_millis = mins_in_millis * 60;
     let hours = diff / hrs_in_millis;
-    diff = diff % hrs_in_millis;
+    diff %= hrs_in_millis;
     let minutes = diff / mins_in_millis;
-    diff = diff % mins_in_millis;
+    diff %= mins_in_millis;
     let seconds = diff / secs_in_millis;
 
     format!("{} {} {}",
@@ -399,7 +395,7 @@ fn elapsed_time_string(millis: u128, l10n: l10n::Translations) -> String {
 }
 
 fn ocr_imgs_to_pdf(
-    logger: &Box<dyn ConversionLogger>,
+    logger: &dyn ConversionLogger,
     progress_range: &ProgressRange,
     page_count: usize,
     tess_settings: TessSettings,
@@ -463,13 +459,13 @@ fn ocr_img_to_pdf(
     input_path: &Path,
     output_path: &Path,
 ) -> Result<(), Box<dyn Error>> {
-    let c_inputname = CString::new(input_path.clone().display().to_string().as_str())?;
+    let c_inputname = CString::new(input_path.display().to_string().as_str())?;
     let inputname = c_inputname.as_bytes().as_ptr() as *mut std::os::raw::c_char;
 
     let c_outputbase = CString::new(output_path.display().to_string().as_str())?;
     let outputbase = c_outputbase.as_bytes().as_ptr() as *mut std::os::raw::c_char;
 
-    let c_input_name = CString::new(input_path.clone().file_name().unwrap().to_str().unwrap()).unwrap();
+    let c_input_name = CString::new(input_path.file_name().unwrap().to_str().unwrap()).unwrap();
     let input_name = c_input_name.as_bytes().as_ptr() as *mut std::os::raw::c_char;
 
     let do_not_care = CString::new("").unwrap().as_bytes().as_ptr() as *mut std::os::raw::c_char;
@@ -551,7 +547,7 @@ impl ProgressRange {
     }
 }
 
-fn split_pdf_pages_into_images(logger: &Box<dyn ConversionLogger>, progress_range: &ProgressRange, page_count: usize, doc: Document, target_size: (f64, f64), dest_folder: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
+fn split_pdf_pages_into_images(logger: &dyn ConversionLogger, progress_range: &ProgressRange, page_count: usize, doc: Document, target_size: (f64, f64), dest_folder: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
     let mut progress_value: usize = progress_range.min;
 
     logger.log(progress_value, l10n.ngettext("Extract PDF file into one image",
@@ -617,7 +613,7 @@ fn scaling_data(size_current: (f64, f64), size_target: (f64, f64)) -> (f64, (f64
     (ratio, (new_width, new_height))
 }
 
-fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: &ProgressRange, page_count: usize, input_dir_path: &Path, output_path: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
+fn pdf_combine_pdfs(logger: &dyn ConversionLogger, progress_range: &ProgressRange, page_count: usize, input_dir_path: &Path, output_path: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
     logger.log(progress_range.min,
                l10n.ngettext("Combining one PDF document",
                              "Combining few PDF documents",
@@ -795,10 +791,8 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: &Progres
 
         //Set all bookmarks to the PDF Object tree then set the Outlines to the Bookmark content map.
         if let Some(n) = document.build_outline() {
-            if let Ok(x) = document.get_object_mut(catalog_object.0) {
-                if let lopdf::Object::Dictionary(ref mut dict) = x {
-                    dict.set("Outlines", lopdf::Object::Reference(n));
-                }
+            if let Ok(lopdf::Object::Dictionary(ref mut dict)) = document.get_object_mut(catalog_object.0) {
+                dict.set("Outlines", lopdf::Object::Reference(n));
             }
         }
     }
@@ -824,7 +818,7 @@ fn pdf_combine_pdfs(logger: &Box<dyn ConversionLogger>, progress_range: &Progres
     Ok(())
 }
 
-fn imgs_to_pdf(logger: &Box<dyn ConversionLogger>, progress_range: &ProgressRange, page_count: usize, input_path: &Path, output_path: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
+fn imgs_to_pdf(logger: &dyn ConversionLogger, progress_range: &ProgressRange, page_count: usize, input_path: &Path, output_path: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
     let progress_delta = progress_range.delta();
     let mut progress_value: usize = progress_range.min;
 
@@ -858,7 +852,7 @@ fn img_to_pdf(src_format: image::ImageFormat, src_path: &Path, dest_path: &Path)
 
     let surface_png = ImageSurface::create_from_png(buffer_cursor)?;
     let (w, h) = (surface_png.width() as f64, surface_png.height() as f64);
-    let surface_pdf = PdfSurface::new(w, h, &dest_path)?;
+    let surface_pdf = PdfSurface::new(w, h, dest_path)?;
     let ctx = Context::new(&surface_pdf)?;
 
     ctx.set_source_rgb(1.0, 1.0, 1.0);

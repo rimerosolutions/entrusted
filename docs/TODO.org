@@ -7,21 +7,15 @@
     - [ ] Minimal malware testing?
   - Security profiles for the container image execution
     - [ ] [[https://docs.docker.com/engine/security/apparmor/][apparmor]] security profile
-    - [ ] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile
+    - [X] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile
   - [-] Virtual machine hardening for Live CD
-    - [ ] [[https://docs.arbitrary.ch/security/systemd.html][Systemd sandboxing]] for the "Online Service (=entrusted-webserver=)
+    - [ ] [[https://docs.arbitrary.ch/security/systemd.html][systemd]] sandboxing for the "Online Service (=entrusted-webserver=)
     - [X] [[https://madaidans-insecurities.github.io/guides/linux-hardening.html][sysctl]] settings, kernel boot parameters, [[https://github.com/GrapheneOS/hardened_malloc][hardened_malloc]]
   - [X] Run an publish vulnerability assessments for container images
   - [X] Evaluate more frequently updated container images for CVEs
     - [X] Debian takes a while to sometimes address issues but it's very stable (PREFERRED)
     - [X] Alpine would require revisiting occasional segmentation faults (exit code =139=)
     - [X] Fedora takes a while to build (dnf is VERY slow) and trimming the image size is rather involved
-- [X] User interface
-  - [X] Few visual improvements in the Desktop and Web interfaces
-  - [X] Ability to cancel pending conversion tasks
-    - [X] Implementation for the Desktop graphical user interface
-    - [X] Implementation for the Web interface
-  - [X] PDF result visual quality parameter (LOW, MEDIUM, HIGH)
 - [-] Improved conversions
   - [ ] Evaluate performance optimization opportunities
   - [X] Allow multiple language selection for searchable PDFs (OCR)
@@ -33,6 +27,12 @@
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)
   - [X] Smaller container image size
   - [X] Sign revision control commits and container images
+- [X] User interface
+  - [X] Few visual improvements in the Desktop and Web interfaces
+  - [X] Ability to cancel pending conversion tasks
+    - [X] Implementation for the Desktop graphical user interface
+    - [X] Implementation for the Web interface
+  - [X] PDF result visual quality parameter (LOW, MEDIUM, HIGH)    
 - [X] Builds and releases
   - [X] Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (REJECTED for lack of flexibility, cross-builds multi-arch annoyances)
   - [X] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)

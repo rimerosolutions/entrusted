@@ -17,9 +17,13 @@
       let fileList = new Array();
       let logByFileId = new Map();
       let isConverting = false;
+      let cancelPendingTasksRequested = false;
       let translations = {
         "locale": "en",
         "data": {
+          "l10n-searchable-pdf-title": "OCR (Optical character recognition) will be applied",
+          "l10n-cancel-pending-tasks-button-title": "Try cancelling remaining tasks as soon as possible",
+          "l10n-conversion-summary-cancelled": "The conversion was cancelled!",
           "l10n-imgquality-label": "PDF result visual quality",
           "l10n-imgquality-option-low": "low",
           "l10n-imgquality-option-medium": "medium",
@@ -285,6 +289,12 @@
 
         return ret;
       }
+      
+      function cancelPendingTasks(event) {
+        cancelPendingTasksRequested = true;
+        let source = event.target;
+        source.disabled = true;
+      }
 
       function deleteSelection() {
         let indices = selectedIndices();
@@ -322,6 +332,11 @@
           if (fileList.length == 0) {
             let submitButton = document.getElementById("submitButton");
             submitButton.disabled = true;
+            let overallProgressLabelElement = document.getElementById("overallProgressLabel");
+            overallProgressLabelElement.className = "succeeded";
+            let cancelPendingTasksButtonElement = document.getElementById("cancelPendingTasksButton");
+            cancelPendingTasksButtonElement.disabled = false;
+            cancelPendingTasksButtonElement.className = "button-cancelled";
             let overallProgressElement = document.getElementById("overallProgress");
             overallProgressElement.value = 0;
             let conversionContainerElement = document.getElementById("conversionContainer");
@@ -387,7 +402,11 @@
 
           if (isConverting) {
             isConverting = false;
-            fileList.clear();
+
+            while (fileList.length != 0) {
+              fileList.pop();
+            }
+            
             let conversionSummaryElement = document.getElementById("conversionSummary");
             conversionSummaryElement.innerText = "";
             conversionSummaryElement.removeAttribute("class");
@@ -398,7 +417,7 @@
       }
 
       function resetFileListTable() {
-        if (fileList.length == 0) {
+        if (fileList.length == 0) {          
           logByFileId.clear();
           let fileListTableBodyElement = document.getElementById("fileListTableBody");
 
@@ -409,10 +428,14 @@
           let fileListTableElement = document.getElementById("conversionContainer");
           fileListTableElement.className = "invisible";
           let overallProgressElement = document.getElementById("overallProgress");
-          overallProgressElement.value = 0;
+          overallProgressElement.value = 0;          
+          let overallProgressLabelElement = document.getElementById("overallProgressLabel");
+          overallProgressLabelElement.className = "succeeded";
           let overallProgressTableElement = document.getElementById("overallProgressTable");
           overallProgressTableElement.className = "invisible";
-
+          let cancelPendingTasksButtonElement = document.getElementById("cancelPendingTasksButton");
+          cancelPendingTasksButtonElement.disabled = false;
+          cancelPendingTasksButtonElement.className = "button-cancelled";
           let conversionSummaryElement = document.getElementById("conversionSummary");
           conversionSummaryElement.innerText = "";
           conversionSummaryElement.removeAttribute("class");
@@ -703,11 +726,15 @@
         let progressMessageElement = document.getElementById("progress-message-" + fileObjId);
         let conversionSummaryElement = document.getElementById("conversionSummary");
         let overallProgressTableElement = document.getElementById("overallProgressTable");
-
+        let overallProgressElement = document.getElementById("overallProgress");
+        let overallProgressLabelElement = document.getElementById("overallProgressLabel");              
+          
         logByFileId.set(fileObjId, new Array());
 
         function onComplete(fileObjId, fileStatus, downloadLocation) {
           if (fileStatus.toLowerCase() == "failed") {
+            document.getElementById("overallProgress").className = "failed";
+            document.getElementById("overallProgressLabel").className = "failed";
             newFailCount++;
           }
 
@@ -744,7 +771,7 @@
           });
           fprocessingMessageElement.appendChild(fullLogElement);
 
-          if (fileList.length != 0) {
+          if (fileList.length != 0 && !cancelPendingTasksRequested) {
             let total = idx + fileList.length + 1;
             if (overallProgressTableElement.className != "invisible") {
               let percentComplete = Math.max(1, ((idx + 1) * 100) / total);
@@ -758,6 +785,8 @@
             passwdElement.disabled = true;
             submitOneFile(++idx, newFailCount, nextFileObj, visualQuality, ocrSettings, uploadUrl);
           } else {
+            let cancelPendingTasksButtonElement = document.getElementById("cancelPendingTasksButton");
+            cancelPendingTasksButtonElement.disabled = true;
             let dropFileZoneElement = document.getElementById("dropFileZone");
             dropFileZoneElement.className = "dropFileZoneEnabled";
             dropFileZoneElement.disabled = false;
@@ -766,20 +795,43 @@
               overallProgressElement.value = 100;
             }
 
-            let conversionSummaryClassName = (newFailCount != 0)? "failed" : "succeeded";
-            conversionSummaryElement.className = conversionSummaryClassName;
-
+            let conversionSummaryClassName = "succeeded";
             let conversionSummaryText = translations["data"]["l10n-conversion-summary-succeeded"];
 
-            if (newFailCount == 1) {
+            if (cancelPendingTasksRequested) {
+              conversionSummaryText = translations["data"]["l10n-conversion-summary-cancelled"];
+              conversionSummaryClassName = "cancelled";
+            } else if (newFailCount == 1) {
               let tmp = translations["data"]["l10n-conversion-summary-one-failed"];
               conversionSummaryText = `${newFailCount} ${tmp}`;
+              conversionSummaryClassName = "failed";
             } else if (newFailCount > 1) {
               let tmp = translations["data"]["l10n-conversion-summary-multiple-failed"];
               conversionSummaryText = `${newFailCount} ${tmp}`;
+              conversionSummaryClassName = "failed";
             }
 
+            conversionSummaryElement.className = conversionSummaryClassName;
             conversionSummaryElement.innerText = conversionSummaryText;
+            
+            if (cancelPendingTasksRequested) {
+              overallProgressElement.className = "cancelled";
+              let fileListTableBodyElement = document.getElementById("fileListTableBody");
+              overallProgressLabelElement.className = "cancelled";
+              
+              for (let i = idx + 1; i < fileListTableBodyElement.children.length; i++) {
+                let rowElement = fileListTableBodyElement.children[i];
+                let statusElement = rowElement.children[3];
+                statusElement.className = "cancelled";
+                statusElement.innerText = "Cancelled";
+              }
+            }
+
+            while (fileList.length != 0) {
+              fileList.pop();
+            }
+            
+            cancelPendingTasksRequested = false;
           }
         }
 
@@ -954,6 +1006,26 @@
           };
         }
 
+        let l10ElementsTitles = document.querySelectorAll('[data-l10n-title]');
+
+        if (l10ElementsTitles) {
+          for (let i = 0; i < l10ElementsTitles.length; i++) {
+            let currentElement = l10ElementsTitles[i];
+            let currentNodeName = currentElement.nodeName.toLowerCase();
+
+            if (      currentNodeName == "p"
+                      || currentNodeName == "label"
+                      || currentNodeName == "span"
+                      || currentNodeName == "h3"
+                      || currentNodeName == "button"
+                      || currentNodeName == "legend"
+                      || currentNodeName == "th"
+                      || currentNodeName == "a") {
+              let l10nKey = currentElement.getAttribute("data-l10n-title");
+              currentElement.title = translations["data"][l10nKey];
+            }
+          };
+        }
 
         document.body.className = "visible";
       }
@@ -984,8 +1056,6 @@
           updateUiControls(translations);
         }
       }
-
-
 
       window.addEventListener("DOMContentLoaded", function(event) {
         applyTranslationsOnPageLoad();
@@ -1097,7 +1167,7 @@
       }
 
       progress {
-          width:80%;
+          width:100%;
           accent-color: yellow;
       }
 
@@ -1199,6 +1269,11 @@
           accent-color: green;
           color: green;
       }
+      
+      .cancelled {
+          accent-color: #990000;
+          color: #990000;
+      }
 
       .pending {
           color: magenta;
@@ -1208,6 +1283,22 @@
       .failed {
           color: red;
           accent-color: red;
+      }
+
+      .button-succeeded {
+          background-color: green;
+      }
+      
+      .button-cancelled {
+          background-color: #990000;
+      }
+
+      .button-pending {
+          background-color: magenta;
+      }
+
+      .button-failed {
+          background-color: red;
       }
 
       .inprogress {
@@ -1237,7 +1328,7 @@
           right: 1%;
           top: 2%;
           color: white;
-          width: 1%;
+          width: 2em;
           background: blue;
           text-align: center;
       }
@@ -1267,6 +1358,15 @@
       .actionButton:disabled {
           background: #dbdbdb;
       }
+      
+      #cancelPendingTasksButton {
+        height: 1em;
+        width: 1em;
+      }
+
+      #cancelPendingTasksButton:disabled {
+        background: #dbdbdb;
+      }
 
       .actionButton {
           border: none;
@@ -1282,10 +1382,6 @@
       td.vertical-align-center > * {
         vertical-align: middle;
       }
-
-      .overallProgressLabel {
-          color: #990000;
-      }
     </style>
   </head>
   <body class="invisible">
@@ -1296,17 +1392,15 @@
       </div>
     </div>
     <h3 class="title-text" data-l10n="l10n-app-name">Entrusted Web</h3>
-    <br/>
     <div>
-      <div class="helpContainer" onclick="showHelpDialog(event)"><p class="help">?</p></div>
-      <br/>
+      <div class="helpContainer" onclick="showHelpDialog(event)"><span class="help" data-l10n-title="l10n-window-help-title">?</span></div>
       <form id="uploadForm" action="./api/v1/upload" method="post" enctype="multipart/form-data" onsubmit="preventDefaults(event)">
         <fieldset>
           <legend data-l10n="l10n-settings">Settings</legend>
           <table style="width:100%">
             <tbody>
               <tr style="width:100%">
-                <td style="width:15%"><label for="imgQualitySelect"  data-l10n="l10n-imgquality-label">PDF result visual quality</label></td>
+                <td style="width:45%"><label for="imgQualitySelect"  data-l10n="l10n-imgquality-label">PDF result visual quality</label></td>
                 <td>
                   <select id="imgQualitySelect" name="imgQualitySelect" data-l10n="l10n-imgquality-option">
                     <option value="low">low</option>
@@ -1318,7 +1412,7 @@
               <tr style="width:100%">
                 <td style="width:15%">
                   <input type="checkbox" id="ocrCheckbox" name="ocr" onchange="toggleOcrCheckbox(this)" title="OCR (Optical character recognition) will be applied.">
-                  <label for="ocrCheckbox" data-l10n="l10n-searchable-pdf-label">Make PDF searchable?</label>
+                  <label for="ocrCheckbox" data-l10n="l10n-searchable-pdf-label" data-l10n-title="l10n-searchable-pdf-title">Enable full-text search?</label>
                   <label for="ocrLangSelect" data-l10n="l10n-ocrlang-select-label">Yes, with language:</label>
                 </td>
                 <td class="vertical-align-center">                  
@@ -1522,10 +1616,13 @@
       <table width="100%" id="overallProgressTable" class="invisible">
         <tbody>
           <tr>
-            <td width="15%">
-              <span data-l10n="l10n-overall-progress" class="overallProgressLabel">Overall progress</span>
+            <td width="15%" class="vertical-align-center">
+              <span data-l10n="l10n-overall-progress" class="succeeded" id="overallProgressLabel">Overall progress</span>
             </td>
-            <td width="85%">
+            <td width="5%" class="vertical-align-center">
+              <button id = "cancelPendingTasksButton" name = "cancelPendingTasksButton" onclick="cancelPendingTasks(event)" class="button-succeeded" data-l10n-title="l10n-cancel-pending-tasks-button-title"></button>
+            </td>
+            <td width="80%"  class="vertical-align-center">
               <progress id="overallProgress" value="0" max="100"></progress>
             </td>
           </tr>

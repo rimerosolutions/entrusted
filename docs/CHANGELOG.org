@@ -2,7 +2,7 @@
 
 * UNRELEASED
 
-- enhancement: Allow multiple language selection for searchable PDFs (OCR)
+The next release is focused on security concerns, but there are also few user visible features.
 
 * entrusted-0.2.6
 

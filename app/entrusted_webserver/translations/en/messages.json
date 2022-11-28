@@ -1,6 +1,9 @@
 {
   "locale": "en",
   "data": {
+    "l10n-searchable-pdf-title": "OCR (Optical character recognition) will be applied",
+    "l10n-cancel-pending-tasks-button-title": "Try cancelling remaining tasks as soon as possible",
+    "l10n-conversion-summary-cancelled": "The conversion was cancelled!",
     "l10n-imgquality-label": "PDF result visual quality",
     "l10n-imgquality-option-low": "low",
     "l10n-imgquality-option-medium": "medium",

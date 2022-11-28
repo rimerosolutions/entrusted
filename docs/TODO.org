@@ -1,6 +1,6 @@
 #+TITLE: TODO
 
-* Milestone: Hardening and features maturity [20%]
+* Milestone: Hardening and features maturity [40%]
 - [-] Security
   - Basic attacks testing?
     - [ ] Minimal Web penetration testing?
@@ -16,11 +16,11 @@
     - [X] Debian takes a while to sometimes address issues but it's very stable (PREFERRED)
     - [X] Alpine would require revisiting occasional segmentation faults (exit code =139=)
     - [X] Fedora takes a while to build (dnf is VERY slow) and trimming the image size is rather involved
-- [-] User interface
-  - [ ] Evaluate opportunities to simplify the user interface
-  - [-] Ability to cancel non-started tasks
+- [X] User interface
+  - [X] Few visual improvements in the Desktop and Web interfaces
+  - [X] Ability to cancel pending conversion tasks
     - [X] Implementation for the Desktop graphical user interface
-    - [ ] Implementation for the Web interface
+    - [X] Implementation for the Web interface
   - [X] PDF result visual quality parameter (LOW, MEDIUM, HIGH)
 - [-] Improved conversions
   - [ ] Evaluate performance optimization opportunities

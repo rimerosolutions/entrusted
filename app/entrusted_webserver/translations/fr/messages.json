@@ -1,6 +1,9 @@
 {
   "locale": "fr",
   "data": {
+    "l10n-searchable-pdf-title": "La ROC (reconnaissance optique de caractères) sera appliquée",
+    "l10n-cancel-pending-tasks-button-title": "Essayer d'annuler les tâches restantes dès que possible",
+    "l10n-conversion-summary-cancelled": "La conversion a été annulée!",
     "l10n-imgquality-label": "Qualité visuelle du résultat PDF",
     "l10n-imgquality-option-low": "basse",
     "l10n-imgquality-option-medium": "moyenne",

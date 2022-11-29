@@ -195,7 +195,7 @@ The ephemeral server in question is just =python3 -m http.server=.
 *Note*: To the best of my knowledge, only the CLI can be tested while running the QEMU arm64 image from an amd64 host!
 
 #+begin_src sh
-  ./entrusted-linux-aarch64-0.2.7/entrusted-cli --input-filename ~/entrusted/test_data/sample-pdf.pdf
+  ./entrusted-linux-aarch64-0.2.7/entrusted-cli --input-filename ~/entrusted/test_data/sample-doc.doc
 #+end_src
 
 ** Check the execution results
@@ -203,7 +203,7 @@ The ephemeral server in question is just =python3 -m http.server=.
 If all goes well, you should see messages similar to the log below.
 
 #+begin_src text
-  localhost:~$ ./entrusted-linux-aarch64-0.2.6/entrusted-cli --input-filename ~/entrusted/test_data/sample-pdf.pdf 
+  localhost:~$ ./entrusted-linux-aarch64-0.2.6/entrusted-cli --input-filename ~/entrusted/test_data/sample-doc.doc
   Converting /home/entrusted/entrusted/test_data/sample-doc.doc
   Running command: /usr/bin/podman inspect docker.io/uycyjnzgntrn/entrusted_container:0.2.7
   Checking if container image exists

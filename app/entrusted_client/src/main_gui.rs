@@ -1268,7 +1268,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let visual_quality_idx = {
         let vq = &appconfig.visual_quality;
-        let mut ret = common::IMAGE_QUALITY_DEFAULT_CHOICE_INDEX;
+        let mut ret = 1; // TODO magic number 'medium'
 
         for (idx, item) in common::IMAGE_QUALITY_CHOICES.iter().enumerate() {
             if item == vq {

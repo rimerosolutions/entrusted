@@ -285,7 +285,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         // Need to retest once in a while on all supported operating systems with Lima, Docker and Podman
         let seccomp_profile_data = include_bytes!("../seccomp-entrusted-profile.json");
         let seccomp_profile_filename = format!("seccomp-entrusted-profile-{}.json", option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"));
-        let seccomp_profile_pathbuf = PathBuf::from(dz_tmp.join(seccomp_profile_filename));
+        let seccomp_profile_pathbuf = dz_tmp.join(seccomp_profile_filename);
         convert_args.push("--security-opt".to_string());
         convert_args.push(format!("seccomp={}", seccomp_profile_pathbuf.display()));
 

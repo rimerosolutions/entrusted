@@ -5,9 +5,9 @@
   - Basic attacks testing?
     - [ ] Minimal Web penetration testing?
     - [ ] Minimal malware testing?
-  - Security profiles for the container image execution
-    - [ ] [[https://docs.docker.com/engine/security/apparmor/][apparmor]] security profile
+  - Security profiles for the container image execution (seccomp only)
     - [X] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile
+    - [ ] This needs to be explicit opt-in until it's deemed stable, if this fails without workarounds nothing will work...
   - [-] Virtual machine hardening for Live CD
     - [ ] [[https://docs.arbitrary.ch/security/systemd.html][systemd]] sandboxing for the "Online Service (=entrusted-webserver=)
     - [X] [[https://madaidans-insecurities.github.io/guides/linux-hardening.html][sysctl]] settings, kernel boot parameters, [[https://github.com/GrapheneOS/hardened_malloc][hardened_malloc]]

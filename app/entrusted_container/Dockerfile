@@ -60,8 +60,9 @@ RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.zip' -o -name '*.gz' 
     && rm -rf /usr/lib/libreoffice/share/theme_definitions /usr/lib/libreoffice/share/autocorr \
     && rm -rf /usr/lib/libreoffice/program/*.png \
     && rm -rf /usr/lib/libreoffice/share/template  /usr/lib/libreoffice/share/gallery /usr/lib/libreoffice/share/tipoftheday \
-    && rm -rf /usr/lib/libreoffice/*.html && rm -rf /usr/lib/libreoffice/*.fodt \
-    && rm -rf /usr/lib/libreoffice/basic/Tutorials && rm -rf /usr/lib/libreoffice/basic/ImportWizard \
+    && rm -rf /usr/lib/libreoffice/*.html /usr/lib/libreoffice/*.fodt \
+    && rm -rf /usr/lib/libreoffice/program/shell/* \
+    && rm -rf /usr/lib/libreoffice/basic/Tutorials /usr/lib/libreoffice/share/basic/Tutorials /usr/lib/libreoffice/basic/ImportWizard \
     && rm -rf /usr/lib/libreoffice/program/classes/*.jar /usr/lib/libreoffice/program/wizards \
     && rm -rf /usr/local/games /usrlocal/include /usr/local/etc /usr/local/lib /usr/local/man /usr/local/share /usr/local/sbin /usr/local/src \
     && rm -rf /usr/bin/libreoffice /usr/bin/lp_solve /usr/bin/lowriter /usr/bin/loweb /usr/bin/loimpress \
@@ -73,6 +74,7 @@ USER entrusted
 
 ENV ENTRUSTED_LIBREOFFICE_PROGRAM_DIR /usr/lib/libreoffice/program
 ENV ENTRUSTED_TESSERACT_TESSDATA_DIR  /usr/share/tesseract-ocr/4.00/tessdata
+
 # We're not declaring all volumes explicity. input_file might get interpreted as a directory for squashed images somehow
 # Need to revisit the above claim in the future, based on old observations
 # /tmp/input_file is where the first convert expects the input file to be, and

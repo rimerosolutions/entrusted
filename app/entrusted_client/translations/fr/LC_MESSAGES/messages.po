@@ -18,6 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "Potentially sacrifice visual quality for processing time (quick preview first, etc.)"
+msgstr "Sacrifiez potentiellement la qualité visuelle pour le temps de traitement (aperçu rapide en premier, etc.)"
+
+msgid "Experimental additional container image runtime hardening"
+msgstr "Renforcement expérimental supplémentaire de l'exécution de l'image du conteneur"
+
+msgid "Seccomp security profile is an opt-in for now. If it works consistently enable it , otherwise uncheck if you experience abrupt conversion failures."
+msgstr "Le profil de sécurité Seccomp est un opt-in pour l'instant. S'il fonctionne de manière cohérente, activez-le, sinon décochez-le si vous rencontrez des échecs de conversion brusques."
+
 msgid "The conversion was cancelled!"
 msgstr "La conversion a été annulée!"
 
@@ -209,7 +218,7 @@ msgstr "Le fichier adhère au format suivant: fichier-<suffixe>.pdf"
 msgid "Enable full-text search? In:"
 msgstr "Activer la recherche en texte intégral? En:"
 
-msgid "OCR (Optical character recognition) will be applied."
+msgid "OCR (Optical character recognition) will be applied"
 msgstr "La ROC (reconnaissance optique de caractères) sera appliquée"
 
 msgid "Open resulting PDF with"

@@ -18,6 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "Potentially sacrifice visual quality for processing time (quick preview first, etc.)"
+msgstr ""
+
+msgid "Experimental additional container image runtime hardening"
+msgstr ""
+
+msgid "Seccomp security profile is an opt-in for now. If it works consistently enable it , otherwise uncheck if you experience abrupt conversion failures."
+msgstr ""
+
 msgid "The conversion was cancelled!"
 msgstr ""
 

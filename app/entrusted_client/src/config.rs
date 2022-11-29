@@ -14,13 +14,15 @@ pub struct AppConfig {
     #[serde(rename(serialize = "ocr-lang", deserialize = "ocr-lang"))]
     pub ocr_lang: Option<String>,
     #[serde(rename(serialize = "file-suffix", deserialize = "file-suffix"))]
-    pub file_suffix: String,
+    pub file_suffix: Option<String>,
     #[serde(rename(serialize = "container-image-name", deserialize = "container-image-name"))]
     pub container_image_name: Option<String>,
     #[serde(rename(serialize = "preview-result-appname", deserialize = "preview-result-appname"))]
     pub openwith_appname: Option<String>,
     #[serde(rename(serialize = "visual-quality", deserialize = "visual-quality"))]
-    pub visual_quality: String
+    pub visual_quality: Option<String>,
+    #[serde(rename(serialize = "seccomp-profile-enabled", deserialize = "seccomp-profile-enabled"))]
+    pub seccomp_profile_enabled: Option<bool>,
 }
 
 pub fn default_container_image_name() -> String {
@@ -33,10 +35,11 @@ impl Default for AppConfig {
     fn default() -> Self {
         Self {
             ocr_lang: None,
-            file_suffix: DEFAULT_FILE_SUFFIX.to_string(),
+            file_suffix: Some(DEFAULT_FILE_SUFFIX.to_string()),
             container_image_name: None,
             openwith_appname: None,
-            visual_quality: "medium".to_string()
+            visual_quality: Some("medium".to_string()),
+            seccomp_profile_enabled: None
         }
     }
 }

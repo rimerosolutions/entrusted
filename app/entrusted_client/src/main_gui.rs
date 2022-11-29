@@ -187,7 +187,7 @@ fn paint_underline<W: WidgetExt>(wid: &mut W) {
     }
 }
 
-fn row_to_task(viewer_app_opt: &Option<String>, active_ociimage_option: &String, image_quality: String,  active_ocrlang_option: &Option<String>, active_file_suffix: &String, active_row: &FileListRow) -> ConversionTask {
+fn row_to_task(viewer_app_opt: &Option<String>, active_ociimage_option: &String, image_quality: String,  active_ocrlang_option: &Option<String>, active_file_suffix: &String, active_seccomp: bool, active_row: &FileListRow) -> ConversionTask {
     let input_path = active_row.file.clone();
 
     let output_path = if let Some(custom_output_path) = active_row.opt_output_file.borrow().clone() {
@@ -202,7 +202,9 @@ fn row_to_task(viewer_app_opt: &Option<String>, active_ociimage_option: &String,
         common::LOG_FORMAT_JSON.to_string(),
         image_quality,
         active_ocrlang_option.to_owned(),
-        opt_row_passwd);
+        opt_row_passwd,
+        active_seccomp
+    );
     let viewer_app_option = viewer_app_opt.clone();
 
     ConversionTask {
@@ -1212,6 +1214,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     ));
     settings_pack_rc.borrow_mut().set_spacing(WIDGET_GAP);
 
+    // User settings - PDF result file suffix
     let mut filesuffix_pack = group::Pack::default()
         .with_size(570, 40)
         .with_type(group::PackType::Horizontal);
@@ -1223,15 +1226,19 @@ fn main() -> Result<(), Box<dyn Error>> {
     filesuffix_checkbutton
         .set_tooltip(&trans.gettext("The safe PDF will be named <input>-<suffix>.pdf by default."));
 
-    if &appconfig.file_suffix != config::DEFAULT_FILE_SUFFIX {
-        filesuffix_checkbutton.set_checked(true);
+    if let Some(file_suffix_cfg) = appconfig.clone().file_suffix {
+        if &file_suffix_cfg != config::DEFAULT_FILE_SUFFIX {
+            filesuffix_checkbutton.set_checked(true);
+        }
     }
 
     let filesuffix_input_rc = Rc::new(RefCell::new(input::Input::default().with_size(290, 20)));
-    filesuffix_input_rc.borrow_mut().set_value(&appconfig.file_suffix);
+    filesuffix_input_rc.borrow_mut().set_value(&appconfig.clone().file_suffix.unwrap_or(config::DEFAULT_FILE_SUFFIX.to_string()));
 
-    if &appconfig.file_suffix == config::DEFAULT_FILE_SUFFIX {
-        filesuffix_input_rc.borrow_mut().deactivate();
+    if let Some(v) = appconfig.clone().file_suffix {
+        if &v == config::DEFAULT_FILE_SUFFIX {
+            filesuffix_input_rc.borrow_mut().deactivate();
+        }
     }
 
     filesuffix_checkbutton.set_callback({
@@ -1249,14 +1256,16 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     filesuffix_pack.end();
 
+    // User settings - Visual quality of PDF result
     let mut result_visual_quality_pack = group::Pack::default()
         .with_size(570, 40)
         .with_type(group::PackType::Horizontal);
     result_visual_quality_pack.set_spacing(WIDGET_GAP);
-    let result_visual_quality_frame = frame::Frame::default()
+    let mut result_visual_quality_frame = frame::Frame::default()
         .with_size(100, 40)
         .with_label(&trans.gettext("PDF result visual quality"))
         .with_align(enums::Align::Left | enums::Align::Inside);
+    result_visual_quality_frame.set_tooltip("Potentially sacrifice visual quality for processing time (quick preview first, etc.)");
     let result_visual_quality_menuchoice_rc = Rc::new(RefCell::new(
         menu::Choice::default().with_size(240, 40),
     ));
@@ -1268,20 +1277,24 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let visual_quality_idx = {
         let vq = &appconfig.visual_quality;
-        let mut ret = 1; // TODO magic number 'medium'
+        let mut ret = common::IMAGE_QUALITY_CHOICE_DEFAULT_INDEX as i32;
 
-        for (idx, item) in common::IMAGE_QUALITY_CHOICES.iter().enumerate() {
-            if item == vq {
-                ret = idx as i32;
-                break;
+        if let Some(v) = vq {
+            for (idx, item) in common::IMAGE_QUALITY_CHOICES.iter().enumerate() {
+                if item == v {
+                    ret = idx as i32;
+                    break;
+                }
             }
         }
 
         ret
     };
+
     result_visual_quality_menuchoice_rc.borrow_mut().set_value(visual_quality_idx);
     result_visual_quality_pack.end();
 
+    // User settings - OCR
     let mut ocrlang_pack = group::Pack::default()
         .with_size(570, 60)
         .below_of(&filesuffix_pack, WIDGET_GAP)
@@ -1358,6 +1371,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
     ocrlang_pack.end();
 
+    // User settings - Open PDF result with a given application
     let mut openwith_pack = group::Pack::default()
         .with_size(570, 40)
         .with_type(group::PackType::Horizontal);
@@ -1445,6 +1459,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     openwith_pack.end();
 
+    // User settings - custom container image
     let mut ociimage_pack = group::Pack::default()
         .with_size(550, 40)
         .below_of(&ocrlang_pack, WIDGET_GAP)
@@ -1476,8 +1491,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         ociimage_input_rc.borrow_mut().deactivate();
     }
 
-    ociimage_pack.end();
-
     ociimage_checkbutton.set_callback({
         let ociimage_input_rc_ref = ociimage_input_rc.clone();
 
@@ -1491,6 +1504,26 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
+    ociimage_pack.end();
+
+    // User settings - enable seccomp profile for container image
+    let seccomp_pack = group::Pack::default()
+        .with_size(550, 40)
+        .below_of(&ocrlang_pack, WIDGET_GAP)
+        .with_type(group::PackType::Horizontal);
+
+    ociimage_pack.set_spacing(WIDGET_GAP);
+    let mut seccomp_checkbutton = button::CheckButton::default()
+        .with_size(100, 20)
+        .with_pos(0, 0)
+        .with_align(enums::Align::Inside | enums::Align::Left);
+    seccomp_checkbutton.set_label(&trans.gettext("Experimental additional container image runtime hardening"));
+    seccomp_checkbutton.set_label_color(enums::Color::Red);
+    seccomp_checkbutton.set_tooltip(&trans.gettext("Seccomp security profile is an opt-in for now. If it works consistently enable it , otherwise uncheck if you experience abrupt conversion failures."));
+
+    seccomp_pack.end();
+
+    // User settings - save
     let savesettings_pack = group::Pack::default()
         .with_size(150, 30)
         .below_of(&ociimage_pack, WIDGET_GAP)
@@ -1520,7 +1553,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             let image_quality_idx = result_visual_quality_menuchoice_rc_ref.borrow().value();
             let image_quality_value = common::IMAGE_QUALITY_CHOICES[image_quality_idx as usize].to_string();
-            new_appconfig.visual_quality = image_quality_value;
+            new_appconfig.visual_quality = Some(image_quality_value);
 
             if ocrlang_checkbutton_ref.is_checked() {
                 let ocrlang_dropdown = ocrlang_holdbrowser_rc_ref.borrow();
@@ -1543,7 +1576,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let selected_filesuffix = filesuffix_input_rc_ref.borrow().value();
 
                 if selected_filesuffix != String::from(config::DEFAULT_FILE_SUFFIX) {
-                    new_appconfig.file_suffix = selected_filesuffix;
+                    new_appconfig.file_suffix = Some(selected_filesuffix);
                 }
             }
 
@@ -1818,6 +1851,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut cancel_tasks_button_ref = cancel_tasks_button.clone();
         let mut overall_progress_progressbar_ref  = overall_progress_progressbar.clone();
         let result_visual_quality_menuchoice_rc_ref = result_visual_quality_menuchoice_rc.clone();
+        let seccomp_checkbutton_ref = seccomp_checkbutton.clone();
+
         let tx = tx.clone();
 
         move |b| {
@@ -1869,8 +1904,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             let mut file_suffix = filesuffix_input_rc_ref.borrow().value().to_owned();
             if file_suffix.trim().is_empty() {
-                file_suffix = app_config_ref.file_suffix.to_owned();
+                file_suffix = app_config_ref.file_suffix.to_owned().unwrap_or(common::DEFAULT_FILE_SUFFIX.to_string());
             }
+
+            let seccomp_enabled = seccomp_checkbutton_ref.is_checked();
 
             let tasks: Vec<ConversionTask> = filelist_widget_ref.rows.borrow().iter().map(|row| {
                 row_to_task(&opt_viewer_app,
@@ -1878,6 +1915,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                             image_quality.clone(),
                             &opt_ocr_lang,
                             &file_suffix,
+                            seccomp_enabled,
                             &row
                 )
             }).collect();
@@ -2333,6 +2371,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut cancel_tasks_button_ref = cancel_tasks_button.clone();
         let mut savesettings_button_ref = savesettings_button.clone();
         let mut divider_ref = divider.clone();
+        
+        let mut seccomp_checkbutton_ref = seccomp_checkbutton.clone();
 
         let mut tabconvert_button_ref = tabconvert_button.clone();
         let mut tabsettings_button_ref = tabsettings_button.clone();
@@ -2475,7 +2515,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 );
 
                 let ocw = wid.w() - (WIDGET_GAP * 3) - ocrlang_checkbutton.w();
-                let och = wid.h() - (WIDGET_GAP * 9) - (30 * 7);
+                let och = wid.h() - (WIDGET_GAP * 10) - (30 * 8);
 
                 ociimage_checkbutton_ref.resize(
                     ocrlang_checkbutton_ref.x(),
@@ -2531,6 +2571,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                     openwith_button_rc_ref_y,
                     openwith_button_rc_ref_w,
                     openwith_button_rc_ref_h
+                );
+                
+                seccomp_checkbutton_ref.resize(
+                    seccomp_checkbutton_ref.x(), seccomp_checkbutton_ref.h(),
+                    wid.w() - (WIDGET_GAP * 2), seccomp_checkbutton_ref.h()
                 );
 
                 messages_frame_ref.resize(

@@ -18,8 +18,11 @@ mod container;
 
 const LOG_FORMAT_PLAIN: &str = "plain";
 
-static INSTANCE_DEFAULT_IMAGE: OnceCell<String> = OnceCell::new();
-static INSTANCE_FILESUFFIX: OnceCell<String> = OnceCell::new();
+// Annoying changes in the 'clap' dependency translating into this kind of stuff...
+// Reference: https://github.com/clap-rs/clap/discussions/4252
+static INSTANCE_DEFAULT_CONTAINER_IMAGE: OnceCell<String> = OnceCell::new();
+static INSTANCE_DEFAULT_FILE_SUFFIX: OnceCell<String> = OnceCell::new();
+static INSTANCE_DEFAULT_VISUAL_QUALITY: OnceCell<String> = OnceCell::new();
 
 #[derive(Clone)]
 struct CliEventSender {
@@ -37,11 +40,15 @@ impl common::EventSender for CliEventSender {
 }
 
 fn default_container_image_to_str() -> &'static str {
-    INSTANCE_DEFAULT_IMAGE.get().expect("Image value not set!")
+    INSTANCE_DEFAULT_CONTAINER_IMAGE.get().expect("INSTANCE_DEFAULT_CONTAINER_IMAGE value not set!")
 }
 
-fn filesuffix_to_str() -> &'static str {
-    INSTANCE_FILESUFFIX.get().expect("filesuffix value not set!")
+fn default_file_suffix_to_str() -> &'static str {
+    INSTANCE_DEFAULT_FILE_SUFFIX.get().expect("INSTANCE_DEFAULT_FILE_SUFFIX value not set!")
+}
+
+fn default_visual_quality_to_str() -> &'static str {
+    INSTANCE_DEFAULT_VISUAL_QUALITY.get().expect("INSTANCE_VISUAL_QUALITY value not set!")
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -72,6 +79,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let help_file_suffix = trans.gettext("Default file suffix (entrusted)");
     let help_password_prompt = trans.gettext("Prompt for document password");
     let help_update_checks = trans.gettext("Check for updates");
+    let help_enable_seccomp_profile = trans.gettext("Enable experimental seccomp security profile");
     
     let cmd_help_template = trans.gettext(&format!("{}\n{}\n{}\n\n{}\n\n{}\n{}", 
                                                   "{bin} {version}",
@@ -81,9 +89,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                                                   "Options:",
                                                   "{options}"));
     
-    INSTANCE_DEFAULT_IMAGE.set(default_container_image_name)?;
-    INSTANCE_FILESUFFIX.set(app_config.file_suffix.to_string())?;
-    
+    INSTANCE_DEFAULT_CONTAINER_IMAGE.set(default_container_image_name)?;
+    INSTANCE_DEFAULT_FILE_SUFFIX.set(app_config.file_suffix.clone().unwrap())?;
+    INSTANCE_DEFAULT_VISUAL_QUALITY.set(app_config.visual_quality.clone().unwrap_or_else(|| common::IMAGE_QUALITY_CHOICES[common::IMAGE_QUALITY_CHOICE_DEFAULT_INDEX].to_string()))?;
+        
     let app = Command::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
         .help_template(&cmd_help_template)
@@ -130,7 +139,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             Arg::new("file-suffix")
                 .long("file-suffix")
                 .help(&help_file_suffix)
-                .default_value(filesuffix_to_str())
+                .default_value(default_file_suffix_to_str())
                 .required(false)
         ).arg(
             Arg::new("visual-quality")
@@ -142,10 +151,17 @@ fn main() -> Result<(), Box<dyn Error>> {
                     PossibleValue::new(common::IMAGE_QUALITY_CHOICES[1]),
                     PossibleValue::new(common::IMAGE_QUALITY_CHOICES[2]),                    
                 ])
+                .default_value(default_visual_quality_to_str())
         ).arg(
             Arg::new("passwd-prompt")
                 .long("passwd-prompt")
                 .help(&help_password_prompt)
+                .required(false)
+                .action(ArgAction::SetTrue)
+        ).arg(
+            Arg::new("enable-seccomp-profile")
+                .long("enable-seccomp-profile")
+                .help(&help_enable_seccomp_profile)
                 .required(false)
                 .action(ArgAction::SetTrue)
         );
@@ -231,7 +247,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let file_suffix = if let Some(proposed_file_suffix) = &run_matches.get_one::<String>("file-suffix") {
         proposed_file_suffix.to_string()
     } else {
-        app_config.file_suffix.to_string()
+        app_config.file_suffix.unwrap_or_else(|| common::DEFAULT_FILE_SUFFIX.to_string())
     };
 
     let abs_output_filename = common::default_output_path(src_path.clone(), file_suffix)?;
@@ -255,10 +271,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         LOG_FORMAT_PLAIN
     };
         
-    let image_quality = if let Some(v) = &run_matches.get_one::<String>("visual-quality") {
+    let image_quality = if let Some(v) = &run_matches.get_one::<String>("visual-quality") {        
         v.to_string()
     } else {
-        app_config.visual_quality
+        app_config.visual_quality.clone().unwrap_or_else(|| common::IMAGE_QUALITY_CHOICES[common::IMAGE_QUALITY_CHOICE_DEFAULT_INDEX].to_string())
     };
 
     let opt_passwd = if run_matches.get_flag("passwd-prompt") {
@@ -277,13 +293,19 @@ fn main() -> Result<(), Box<dyn Error>> {
     }  else {
         None
     };
+    
+    let seccomp_profile_enabled = if run_matches.get_flag("enable-seccomp-profile") {
+        true
+    } else {
+        app_config.seccomp_profile_enabled.unwrap_or(false)
+    };
 
     let (exec_handle, rx) = {
         let (tx, rx) = mpsc::channel::<common::AppEvent>();
 
         let exec_handle = thread::spawn({
             move || {
-                let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), image_quality, ocr_lang, opt_passwd);
+                let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), image_quality, ocr_lang, opt_passwd, seccomp_profile_enabled);
                 let eventer = Box::new(CliEventSender {
                     tx
                 });

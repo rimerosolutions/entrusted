@@ -272,7 +272,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         dz_tmp.push("entrusted");
         mkdirp(&dz_tmp, trans.clone())?;
 
-        // seccomp file generation steps with podman (test with Lima, Docker and Podman): 
+        // seccomp file generation steps with podman (test with Lima, Docker and Podman):
         // 1. Install a hook https://github.com/containers/oci-seccomp-bpf-hook, this is easier on Fedora (dependencies, enabled kernel modules, etc.). Need to use PREFIX=/usr, i.e. "make PREFIX=/usr binary""
         // 2. On amd64, run few representative tests (.doc, one image and one PDF) and merge syscalls (sort, remove duplicates, merge syscalls in emacs)
         // 3. On arm64, write a brute-force program that allows all amd64 calls and then disable selectively all allowed syscalls (https://chromium.googlesource.com/chromiumos/docs/+/master/constants/syscalls.md#arm64-64_bit)
@@ -285,28 +285,31 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         // Need to retest once in a while on all supported operating systems with Lima, Docker and Podman
         let seccomp_profile_data = include_bytes!("../seccomp-entrusted-profile.json");
         let seccomp_profile_filename = format!("seccomp-entrusted-profile-{}.json", option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"));
-        let seccomp_profile_pathbuf = dz_tmp.join(seccomp_profile_filename);
-        convert_args.push("--security-opt".to_string());
-        convert_args.push(format!("seccomp={}", seccomp_profile_pathbuf.display()));
 
-        if !seccomp_profile_pathbuf.exists() {
-            let f_ret = fs::File::create(&seccomp_profile_pathbuf);
+        if convert_options.seccomp_profile_enabled {
+            let seccomp_profile_pathbuf = dz_tmp.join(seccomp_profile_filename);
+            convert_args.push("--security-opt".to_string());
+            convert_args.push(format!("seccomp={}", seccomp_profile_pathbuf.display()));
 
-            match f_ret {
-                Ok(mut f) => {
-                    if let Err(ex) = f.write_all(seccomp_profile_data) {
+            if !seccomp_profile_pathbuf.exists() {
+                let f_ret = fs::File::create(&seccomp_profile_pathbuf);
+
+                match f_ret {
+                    Ok(mut f) => {
+                        if let Err(ex) = f.write_all(seccomp_profile_data) {
+                            tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
+                            return Err(ex.into());
+                        }
+
+                        if let Err(ex) = f.sync_all() {
+                            tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
+                            return Err(ex.into());
+                        }
+                    },
+                    Err(ex) => {
                         tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
                         return Err(ex.into());
                     }
-
-                    if let Err(ex) = f.sync_all() {
-                        tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
-                        return Err(ex.into());
-                    }
-                },
-                Err(ex) => {
-                    tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
-                    return Err(ex.into());
                 }
             }
         }

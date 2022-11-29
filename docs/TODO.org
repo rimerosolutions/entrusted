@@ -1,6 +1,6 @@
 #+TITLE: TODO
 
-* Milestone: Hardening and features maturity [40%]
+* Milestone: Hardening and features maturity [60%]
 - [-] Security
   - Basic attacks testing?
     - [ ] Minimal Web penetration testing?
@@ -16,13 +16,14 @@
     - [X] Debian takes a while to sometimes address issues but it's very stable (PREFERRED)
     - [X] Alpine would require revisiting occasional segmentation faults (exit code =139=)
     - [X] Fedora takes a while to build (dnf is VERY slow) and trimming the image size is rather involved
-- [-] Improved conversions
-  - [ ] Evaluate performance optimization opportunities
+- [X] Improved conversions
+  - [X] Evaluate performance optimization opportunities
   - [X] Allow multiple language selection for searchable PDFs (OCR)
 - [-] Code maintenance and other practices
   - [ ] Some level of testing? (scripts at least with exit code capture?)
   - [ ] Desktop interface code cleanup for clarity and simplicity?
   - [ ] Review input validation all over the place
+  - [ ] Review command-line flags default values after upgrading command-line arguments library
   - [X] Apply most of [[https://github.com/rust-lang/rust-clippy][clippy]] suggested code changes
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)
   - [X] Smaller container image size

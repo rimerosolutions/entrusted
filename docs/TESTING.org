@@ -143,15 +143,19 @@ Create a file at =/etc/network/interfaces=
 *** Install required packages
 
 #+begin_src sh
-  apk add docker debootstrap bash git ca-certificates curl
-  /etc/init.d/docker start
+  apk add debootstrap bash git ca-certificates curl podman
+  rc-service cgroups start
+  rc-service podman start
+  modprobe tun
+  echo tun >>/etc/modules
+  echo entrusted:100000:65536 >/etc/subuid
+  echo entrusted:100000:65536 >/etc/subgid
 #+end_src
 
 *** Create user
 
 #+begin_src sh
   adduser -h /home/entrusted -s /bin/ash -D entrusted
-  adduser entrusted docker
 #+end_src
 
 *** Switch to new user
@@ -160,15 +164,15 @@ Create a file at =/etc/network/interfaces=
   su - entrusted
 #+end_src
 
-* Test conversions
+*** Fix anticipated runtime errors
 
-** Pull the entrusted docker image
-
-This is done automatically by the =entrusted-cli= the first time around. We do it explicitly here to check for other potential issues.
+As a regular user =entrusted=
 
 #+begin_src sh
-  docker pull docker.io/uycyjnzgntrn/entrusted_container:0.2.6
+  podman system migrate
 #+end_src
+
+* Test conversions
 
 ** Clone the entrusted source code repository
 
@@ -180,28 +184,30 @@ This is done automatically by the =entrusted-cli= the first time around. We do i
 
 Binaries should be obtained from a trusted source. In the example below, I'm transferring files from another virtual machine (ephemeral webserver running on port =8000=).
 
+The ephemeral server in question is just =python3 -m http.server=.
+
 #+begin_src sh
-  curl -L -O http://10.0.2.2:8000/entrusted-linux-aarch64-0.2.6.tar && tar xvf entrusted-linux-aarch64-0.2.6.tar
+  curl -L -O http://10.0.2.2:8000/entrusted-linux-aarch64-0.2.7.tar && tar xvf entrusted-linux-aarch64-0.2.7.tar
 #+end_src
 
 ** Run entrusted-cli with test data
 
-*Note*: To the best knowledge, only the CLI can be tested while running the QEMU arm64 image from an amd64 host!
+*Note*: To the best of my knowledge, only the CLI can be tested while running the QEMU arm64 image from an amd64 host!
 
 #+begin_src sh
-  ./entrusted-linux-aarch64-0.2.6/entrusted-cli --input-filename ~/entrusted/test_data/sample-pdf.pdf
+  ./entrusted-linux-aarch64-0.2.7/entrusted-cli --input-filename ~/entrusted/test_data/sample-pdf.pdf
 #+end_src
 
 ** Check the execution results
 
-If all goes well, you should see messages similar to log below.
+If all goes well, you should see messages similar to the log below.
 
 #+begin_src text
   localhost:~$ ./entrusted-linux-aarch64-0.2.6/entrusted-cli --input-filename ~/entrusted/test_data/sample-pdf.pdf 
-  Converting /home/entrusted/entrusted/test_data/sample-pdf.pdf
-  Running command: /usr/bin/docker inspect docker.io/uycyjnzgntrn/entrusted_container:0.2.6
+  Converting /home/entrusted/entrusted/test_data/sample-doc.doc
+  Running command: /usr/bin/podman inspect docker.io/uycyjnzgntrn/entrusted_container:0.2.7
   Checking if container image exists
-  Running command: /usr/bin/docker run --rm --network none --cap-drop all --security-opt=no-new-privileges:true -v /home/entrusted/entrusted/test_data/sample-pdf.pdf:/tmp/input_file:Z -v /tmp/entrusted/safe:/safezone:Z -e LOG_FORMAT=json -e ENTRUSTED_LANGID=en docker.io/uycyjnzgntrn/entrusted_container:0.2.6 /usr/local/bin/entrusted-container
+  Running command: /usr/bin/podman run --rm --network none --cap-drop all --userns keep-id --security-opt no-new-privileges --security-opt seccomp=/tmp/seccomp-entrusted-profile-0.2.7.json -v /home/entrusted/entrusted/test_data/sample-doc.doc:/tmp/input_file:Z -v /tmp/entrusted/safe:/safezone:Z -e ENTRUSTED_LOG_FORMAT=json -e ENTRUSTED_LANGID=en -e ENTRUSTED_VISUAL_QUALITY=low docker.io/uycyjnzgntrn/entrusted_container:0.2.7 /usr/local/bin/entrusted-container
   Starting document processing
   Copying PDF input to /tmp/input_file_input.pdf
   Extract PDF file into 1 PNG image
@@ -221,32 +227,3 @@ If all goes well, you should see messages similar to log below.
   Elapsed time: 0 hours 0 minutes 2 seconds
 #+end_src
   
-* Other notes
-
-It it also possible to use =Podman= instead of =Docker=, less straightforward to configure.
-
-This was mostly interesting to see how quick it could be to generate a =seccomp= security profile Live CD for arm64, among other things.
-- Trying to generate a seccomp profile is problematic, as the Alpine Live CD kernel is not built with =CONFIG_IKHEADERS= which is required by [[https://github.com/containers/oci-seccomp-bpf-hook/][oci-seccomp-bpf-hook]].
-- Hints: Google and =cat /var/log/messages=
-
-** Install and configure podman
-
-Source: https://wiki.alpinelinux.org/wiki/Podman
-
-#+begin_src sh
-  apk add podman
-  rc-service cgroups start
-  rc-service podman start
-  modprobe tun
-  echo tun >>/etc/modules
-  echo entrusted:100000:65536 >/etc/subuid
-  echo entrusted:100000:65536 >/etc/subgid
-#+end_src
-
-** Fix anticipated runtime errors
-
-As a regular user =entrusted=
-
-#+begin_src sh
-  podman system migrate
-#+end_src

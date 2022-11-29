@@ -142,7 +142,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                     PossibleValue::new(common::IMAGE_QUALITY_CHOICES[1]),
                     PossibleValue::new(common::IMAGE_QUALITY_CHOICES[2]),                    
                 ])
-                .default_value(common::IMAGE_QUALITY_CHOICES[common::IMAGE_QUALITY_DEFAULT_CHOICE_INDEX as usize])
         ).arg(
             Arg::new("passwd-prompt")
                 .long("passwd-prompt")
@@ -255,7 +254,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     } else {
         LOG_FORMAT_PLAIN
     };
-    
+        
     let image_quality = if let Some(v) = &run_matches.get_one::<String>("visual-quality") {
         v.to_string()
     } else {

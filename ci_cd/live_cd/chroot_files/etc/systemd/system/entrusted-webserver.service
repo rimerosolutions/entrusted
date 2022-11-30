@@ -4,6 +4,7 @@ After=network.target
 
 [Service]
 Environment=LD_PRELOAD=/usr/lib/libhardened_malloc.so
+Environment=ENTRUSTED_AUTOMATED_SECCOMP_ENABLEMENT=true
 Type=simple
 User=entrusted
 ExecStart=/usr/local/bin/entrusted-webserver --host 0.0.0.0 --port 13000

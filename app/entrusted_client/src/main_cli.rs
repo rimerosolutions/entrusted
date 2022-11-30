@@ -297,7 +297,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     let seccomp_profile_enabled = if run_matches.get_flag("enable-seccomp-profile") {
         true
     } else {
-        app_config.seccomp_profile_enabled.unwrap_or(false)
+        if let Ok(env_seccomp_enablement) = env::var("ENTRUSTED_AUTOMATED_SECCOMP_ENABLEMENT") {
+            if env_seccomp_enablement.to_lowercase() == "true" {
+                true
+            } else {
+                false
+            }
+        } else {
+            app_config.seccomp_profile_enabled.unwrap_or(false)
+        }
     };
 
     let (exec_handle, rx) = {

@@ -559,7 +559,7 @@ pub async fn save_file(
     let mut fileext     = String::new();
     let mut ocrlang     = String::new();
     let mut docpassword = String::new();
-    let mut visualquality = "medium".to_string();
+    let mut visualquality = "low".to_string();
 
     while let Ok(Some(field)) = payload.next_field().await {
         if let Some(fname) = field.name() {

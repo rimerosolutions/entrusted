@@ -22,9 +22,11 @@
         "locale": "en",
         "data": {
           "l10n-searchable-pdf-title": "OCR (Optical character recognition) will be applied",
+          "l10n-imgquality-title": "Potentially sacrifice visual quality for processing time (quick preview first, etc.)",
           "l10n-cancel-pending-tasks-button-title": "Try cancelling remaining tasks as soon as possible",
           "l10n-conversion-summary-cancelled": "The conversion was cancelled!",
-          "l10n-imgquality-label": "PDF result visual quality",
+          "l10n-imgquality-label": "Custom PDF result visual quality",
+          "l10n-imgquality-title": "Potentially sacrifice visual quality for processing time (quick preview first, etc.)",
           "l10n-imgquality-option-low": "low",
           "l10n-imgquality-option-medium": "medium",
           "l10n-imgquality-option-high": "high",
@@ -531,6 +533,11 @@
         fileNameCountElement.innerText = "[" + fileList.length + "]";
       }
 
+      function toggleImgQualityCheckbox(source) {
+        let imgQualitySelectElement = document.getElementById("imgQualitySelect");
+        imgQualitySelectElement.disabled = !(source.checked);
+      }
+
       function toggleOcrCheckbox(source) {
         let ocrLangSelect = document.getElementById("ocrLangSelect");
         ocrLangSelect.disabled = !(source.checked);
@@ -713,7 +720,11 @@
         let formData = new FormData();
         formData.append("file", file);
         formData.append("docpasswd", fileObj.passwd);
-        formData.append("visualquality", visualQuality);
+        
+        if (visualQuality != null) {
+          formData.append("visualquality", visualQuality);
+        }
+
         formData.append("filename", filename);
 
 
@@ -921,10 +932,15 @@
         let ocrLangSelect = document.getElementById("ocrLangSelect");
         let uploadForm = document.getElementById("uploadForm");
         let imgQualitySelectElement = document.getElementById("imgQualitySelect");
+        let imgQualityCheckboxElement = document.getElementById("imgQualityCheckbox");
         let imageQuality = imgQualitySelectElement.value;
         let uploadUrl = uploadForm.action;
 
         let ocrSettings = {};
+        
+        if (!imgQualityCheckboxElement.checked) {
+          imgQuality = null;
+        }
 
         if (ocrCheckbox.checked) {
           let ocrLangValues = [];
@@ -1400,18 +1416,21 @@
           <table style="width:100%">
             <tbody>
               <tr style="width:100%">
-                <td style="width:45%"><label for="imgQualitySelect"  data-l10n="l10n-imgquality-label">PDF result visual quality</label></td>
+                <td style="width:45%">
+                  <input type="checkbox" id="imgQualityCheckbox" name="imgQualityCheckbox" onchange="toggleImgQualityCheckbox(this)">
+                  <label for="imgQualityCheckbox"  data-l10n="l10n-imgquality-label" data-l10n-title="l10n-imgquality-title">Custom PDF result visual quality</label>
+                </td>
                 <td>
-                  <select id="imgQualitySelect" name="imgQualitySelect" data-l10n="l10n-imgquality-option">
-                    <option value="low">low</option>
-                    <option value="medium" selected>medium</option>
+                  <select id="imgQualitySelect" name="imgQualitySelect" data-l10n="l10n-imgquality-option" disabled>
+                    <option value="low" selected>low</option>
+                    <option value="medium">medium</option>
                     <option value="high">high</option>
                   </select>
                 </td>
               </tr>
               <tr style="width:100%">
                 <td style="width:15%">
-                  <input type="checkbox" id="ocrCheckbox" name="ocr" onchange="toggleOcrCheckbox(this)" title="OCR (Optical character recognition) will be applied.">
+                  <input type="checkbox" id="ocrCheckbox" name="ocrCheckbox" onchange="toggleOcrCheckbox(this)">
                   <label for="ocrCheckbox" data-l10n="l10n-searchable-pdf-label" data-l10n-title="l10n-searchable-pdf-title">Enable full-text search?</label>
                   <label for="ocrLangSelect" data-l10n="l10n-ocrlang-select-label">Yes, with language:</label>
                 </td>

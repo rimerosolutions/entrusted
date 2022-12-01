@@ -33,7 +33,7 @@ msgstr ""
 msgid "Try cancelling remaining tasks as soon as possible"
 msgstr ""
 
-msgid "PDF result visual quality"
+msgid "Custom PDF result visual quality"
 msgstr ""
 
 msgid "low"

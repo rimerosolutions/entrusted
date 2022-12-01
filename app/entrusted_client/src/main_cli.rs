@@ -298,11 +298,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         true
     } else {
         if let Ok(env_seccomp_enablement) = env::var("ENTRUSTED_AUTOMATED_SECCOMP_ENABLEMENT") {
-            if env_seccomp_enablement.to_lowercase() == "true" {
-                true
-            } else {
-                false
-            }
+            env_seccomp_enablement.to_lowercase() == "true" || env_seccomp_enablement.to_lowercase() == "yes"
         } else {
             app_config.seccomp_profile_enabled.unwrap_or(false)
         }

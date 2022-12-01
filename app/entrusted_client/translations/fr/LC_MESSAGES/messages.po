@@ -33,8 +33,8 @@ msgstr "La conversion a été annulée!"
 msgid "Try cancelling remaining tasks as soon as possible"
 msgstr "Essayer d'annuler les tâches restantes dès que possible"
 
-msgid "PDF result visual quality"
-msgstr "Qualité visuelle du résultat PDF"
+msgid "Custom PDF result visual quality"
+msgstr "Qualité visuelle du résultat PDF personnalisée"
 
 msgid "low"
 msgstr "basse"

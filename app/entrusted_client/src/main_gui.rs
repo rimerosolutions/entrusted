@@ -1261,11 +1261,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_size(570, 40)
         .with_type(group::PackType::Horizontal);
     result_visual_quality_pack.set_spacing(WIDGET_GAP);
-    let mut result_visual_quality_frame = frame::Frame::default()
+    let mut result_visual_quality_checkbutton = button::CheckButton::default()
         .with_size(100, 40)
-        .with_label(&trans.gettext("PDF result visual quality"))
+        .with_label(&trans.gettext("Custom PDF result visual quality"))
         .with_align(enums::Align::Left | enums::Align::Inside);
-    result_visual_quality_frame.set_tooltip("Potentially sacrifice visual quality for processing time (quick preview first, etc.)");
+    result_visual_quality_checkbutton.set_tooltip("Potentially sacrifice visual quality for processing time (quick preview first, etc.)");
     let result_visual_quality_menuchoice_rc = Rc::new(RefCell::new(
         menu::Choice::default().with_size(240, 40),
     ));
@@ -1292,6 +1292,26 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     result_visual_quality_menuchoice_rc.borrow_mut().set_value(visual_quality_idx);
+
+    if visual_quality_idx == common::IMAGE_QUALITY_CHOICE_DEFAULT_INDEX as i32 {
+        result_visual_quality_menuchoice_rc.borrow_mut().deactivate();
+    } else {
+        result_visual_quality_checkbutton.set_checked(true);
+    }
+
+    result_visual_quality_checkbutton.set_callback({
+        let result_visual_quality_menuchoice_rc_ref = result_visual_quality_menuchoice_rc.clone();
+
+        move |wid| {
+            if !wid.is_checked() {
+                result_visual_quality_menuchoice_rc_ref.borrow_mut().deactivate();
+                result_visual_quality_menuchoice_rc_ref.borrow_mut().set_value(common::IMAGE_QUALITY_CHOICE_DEFAULT_INDEX as i32);
+            } else {
+                result_visual_quality_menuchoice_rc_ref.borrow_mut().activate();
+            }
+        }
+    });
+
     result_visual_quality_pack.end();
 
     // User settings - OCR
@@ -1546,14 +1566,20 @@ fn main() -> Result<(), Box<dyn Error>> {
         let ociimage_checkbutton_ref = ociimage_checkbutton.clone();
         let ociimage_input_rc_ref = ociimage_input_rc.clone();
         let ocr_languages_by_lang_ref = ocr_languages_by_lang.clone();
+        let result_visual_quality_checkbutton_ref = result_visual_quality_checkbutton.clone();
         let wind_ref = wind.clone();
 
         move|_| {
             let mut new_appconfig = config::AppConfig::default();
 
-            let image_quality_idx = result_visual_quality_menuchoice_rc_ref.borrow().value();
-            let image_quality_value = common::IMAGE_QUALITY_CHOICES[image_quality_idx as usize].to_string();
-            new_appconfig.visual_quality = Some(image_quality_value);
+            if result_visual_quality_checkbutton_ref.is_checked() {
+                let image_quality_idx = result_visual_quality_menuchoice_rc_ref.borrow().value();
+
+                if image_quality_idx != common::IMAGE_QUALITY_CHOICE_DEFAULT_INDEX as i32 {
+                    let image_quality_value = common::IMAGE_QUALITY_CHOICES[image_quality_idx as usize].to_string();
+                    new_appconfig.visual_quality = Some(image_quality_value);
+                }
+            }
 
             if ocrlang_checkbutton_ref.is_checked() {
                 let ocrlang_dropdown = ocrlang_holdbrowser_rc_ref.borrow();
@@ -2329,7 +2355,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let filesuffix_input_rc_ref = filesuffix_input_rc.clone();
 
         let mut result_visual_quality_pack_ref = result_visual_quality_pack.clone();
-        let mut result_visual_quality_frame_ref = result_visual_quality_frame.clone();
+        let mut result_visual_quality_checkbutton_ref = result_visual_quality_checkbutton.clone();
 
         let mut ocrlang_pack_ref = ocrlang_pack.clone();
         let mut ocrlang_checkbutton_ref = ocrlang_checkbutton.clone();
@@ -2371,7 +2397,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut cancel_tasks_button_ref = cancel_tasks_button.clone();
         let mut savesettings_button_ref = savesettings_button.clone();
         let mut divider_ref = divider.clone();
-        
+
         let mut seccomp_checkbutton_ref = seccomp_checkbutton.clone();
 
         let mut tabconvert_button_ref = tabconvert_button.clone();
@@ -2474,11 +2500,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                     result_visual_quality_pack_ref.h()
                 );
 
-                result_visual_quality_frame_ref.resize(
-                    result_visual_quality_frame_ref.x(),
-                    result_visual_quality_frame_ref.y(),
+                result_visual_quality_checkbutton_ref.resize(
+                    result_visual_quality_checkbutton_ref.x(),
+                    result_visual_quality_checkbutton_ref.y(),
                     ocrlang_checkbutton.w(),
-                    result_visual_quality_frame_ref.h()
+                    result_visual_quality_checkbutton_ref.h()
                 );
 
                 let xx = ocrlang_holdbrowser_rc_ref.borrow_mut().x();
@@ -2572,7 +2598,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     openwith_button_rc_ref_w,
                     openwith_button_rc_ref_h
                 );
-                
+
                 seccomp_checkbutton_ref.resize(
                     seccomp_checkbutton_ref.x(), seccomp_checkbutton_ref.h(),
                     wid.w() - (WIDGET_GAP * 2), seccomp_checkbutton_ref.h()

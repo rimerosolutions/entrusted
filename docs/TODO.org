@@ -1,11 +1,8 @@
 #+TITLE: TODO
 
 * Milestone: Hardening and features maturity [60%]
-- [-] Security
-  - [ ] Troubleshooting
-    - [ ] Occasional segfaults when security profiles are enabled (is it because of agressive container image size reduction and having deleted critical stuff?? likely note)
-    - [ ] https://www.containiq.com/post/sigsegv-segmentation-fault-linux-containers-exit-code-139
-  - Basic attacks testing?
+- [-] Security  
+  - [ ] Basic attacks testing?
     - [ ] Minimal Web penetration testing?
     - [ ] Minimal malware testing?
   - [X] +Security profiles for the container image execution (COMMENTED OUT due to random crashes - sigsegv)+
@@ -13,8 +10,8 @@
     - [X] This needs to be explicit opt-in until it's deemed stable, if this fails without workarounds nothing will work...
       - [X] Enable by default in the Live CD via "magic environment variable" for now...
       - [X] Opt-in in the client (GUI or CLI)
-  - [-] Virtual machine hardening for Live CD
-    - [ ] [[https://docs.arbitrary.ch/security/systemd.html][systemd]] sandboxing for the "Online Service (=entrusted-webserver=)
+  - [X] Virtual machine hardening for Live CD
+    - [X] Minimal [[https://docs.arbitrary.ch/security/systemd.html][systemd]] sandboxing for the "Online Service (=entrusted-webserver=), just =PrivateTmp= for now
     - [X] [[https://madaidans-insecurities.github.io/guides/linux-hardening.html][sysctl]] settings, kernel boot parameters, [[https://github.com/GrapheneOS/hardened_malloc][hardened_malloc]]
   - [X] Run an publish vulnerability assessments for container images
   - [X] Evaluate more frequently updated container images for CVEs
@@ -26,8 +23,6 @@
   - [X] Allow multiple language selection for searchable PDFs (OCR)
 - [-] Code maintenance and other practices
   - [ ] Some level of testing? (scripts at least with exit code capture?)
-  - [ ] Desktop interface code cleanup for clarity and simplicity?
-  - [ ] Review input validation all over the place
   - [X] Review command-line flags default values after upgrading command-line arguments library
   - [X] Apply most of [[https://github.com/rust-lang/rust-clippy][clippy]] suggested code changes
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)

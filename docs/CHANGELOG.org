@@ -4,6 +4,10 @@
 
 The next release is focused on security concerns, but there are also few user visible features.
 
+The preference is to release with =seccomp= security profile features AND without random conversions failures...
+- The root cause of conversion failures with =seccomp= is not yet known
+- So far, it's fair to say that the application doesn't crash without =seccomp= custom security profiles...
+
 * entrusted-0.2.6
 
 - bugfix: Intermittent failures in batch conversions due to container process crashes

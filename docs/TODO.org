@@ -1,7 +1,10 @@
 #+TITLE: TODO
 
-* Milestone: Hardening and features maturity [60%]
+* Milestone: Hardening and features maturity [40%]
 - [-] Security
+  - [ ] Troubleshooting
+    - [ ] Occasional segfaults when security profiles are enabled (is it because of agressive container image size reduction and having deleted critical stuff?? likely note)
+    - [ ] https://www.containiq.com/post/sigsegv-segmentation-fault-linux-containers-exit-code-139
   - Basic attacks testing?
     - [ ] Minimal Web penetration testing?
     - [ ] Minimal malware testing?
@@ -30,12 +33,13 @@
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)
   - [X] Smaller container image size
   - [X] Sign revision control commits and container images
-- [X] User interface
+- [-] User interface
   - [X] Few visual improvements in the Desktop and Web interfaces
   - [X] Ability to cancel pending conversion tasks
     - [X] Implementation for the Desktop graphical user interface
     - [X] Implementation for the Web interface
-  - [X] PDF result visual quality parameter (LOW, MEDIUM, HIGH)    
+  - [X] PDF result visual quality parameter (LOW, MEDIUM, HIGH)
+  - [ ] Make PDF result visual quality parameter a checkbox in the Desktop and Web UI (UX consistency)    
 - [X] Builds and releases
   - [X] Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (REJECTED for lack of flexibility, cross-builds multi-arch annoyances)
   - [X] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)

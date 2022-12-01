@@ -44,10 +44,10 @@ All the testing is manual at this time.
 
 * Arm64 Linux testing from amd64 hosts
 
-This describes the testing process from a Live CD of Alpine Linux (=aarch64/arm64= ISO image)
-- We setup a QEMU virtual machine from an amd64 computer
+This describes the testing process from a Live CD of [[https://www.alpinelinux.org/][Alpine Linux]] (=aarch64/arm64= ISO image)
+- We setup a [[https://www.qemu.org/][QEMU]] virtual machine from an =amd64= computer
 - We don't perform a permanent installation
-- I'm *assuming that you're running a Unix/Linux environment*, in my case it's a =Mac OS= machine
+- I'm *assuming that you're running a Unix/Linux environment*, in my case it's a =Mac OS= host machine
 
 ** Download the alpine ISO image
 
@@ -70,7 +70,7 @@ Source: https://gist.github.com/oznu/ac9efae7c24fd1f37f1d933254587aa4
 
 Create a script with the contents below called =qemu_test_arm64= and make it executable (=chmod +x qemu_test_arm64=).
 - The script below has been tested from a reasonably powerful Mac OS machine (64 GB of RAM and 10 CPUs).
-- Emulating arm64 on amd64 is *very slow*, thus why *we dare allocating  20 GB of RAM and 2 cpus* in the script
+- Emulating =arm64= on =amd64= is *very slow*, thus why *we dare allocating  20 GB of RAM and 2 cpus* in the script
 
 #+begin_src sh
   #!/usr/bin/env sh
@@ -86,7 +86,7 @@ Create a script with the contents below called =qemu_test_arm64= and make it exe
     -device scsi-cd,drive=cd
 #+end_src
 
-Launch the system, this will take some time depending on your machine technical specifications.
+Launch the system, this will take some time depending on your machine hardware specification.
 
 #+begin_src sh
   ./qemu_test_arm64 alpine-standard-3.16.2-aarch64.iso
@@ -94,13 +94,13 @@ Launch the system, this will take some time depending on your machine technical 
 
 ** Setup base system
 
-You can login with the user =root= and an empty password once the system boots.
+You can login with the user =root= (empty password) once the system boots.
 
 *** Enable networking
 
 Source: https://techoverflow.net/2021/05/03/how-to-check-enable-dhcp-in-alpine-linux-installer/
 
-Assuming that eth0 is your main network interface showing in =ip a=, run the commands below for DHCP.
+Assuming that =eth0= is your main network interface showing in =ip a=, run the commands below for DHCP.
 
 #+begin_src sh
   ifconfig eth0 up
@@ -117,7 +117,8 @@ Run the =setup-timezone= command and enter =America/New_York=.
 
 **** Create networking file
 
-Create a file at =/etc/network/interfaces=
+Create a file at =/etc/network/interfaces=.
+
 #+begin_src text
   auto lo
   iface lo inet loopback
@@ -128,11 +129,16 @@ Create a file at =/etc/network/interfaces=
 #+end_src
 
 **** Restart ntpd
+
+Update the time by restarting the Network Time Protocol Daemon ([[https://en.wikipedia.org/wiki/Ntpd][NTPD]]).
+
 #+begin_src sh
   service ntpd restart
 #+end_src
 
 *** Configure repositories
+
+We enable some remote repositories for installing additional software.
 
 #+begin_src sh
   echo "http://dl-cdn.alpinelinux.org/alpine/v3.16/main" >> /etc/apk/repositories
@@ -142,8 +148,10 @@ Create a file at =/etc/network/interfaces=
 
 *** Install required packages
 
+Install =Podman= and other software.
+
 #+begin_src sh
-  apk add debootstrap bash git ca-certificates curl podman
+  apk add podman bash git ca-certificates curl
   rc-service cgroups start
   rc-service podman start
   modprobe tun
@@ -153,6 +161,8 @@ Create a file at =/etc/network/interfaces=
 #+end_src
 
 *** Create user
+
+Add a regular non-privileged user called =entrusted=.
 
 #+begin_src sh
   adduser -h /home/entrusted -s /bin/ash -D entrusted
@@ -176,6 +186,8 @@ As a regular user =entrusted=
 
 ** Clone the entrusted source code repository
 
+Clone the =entrusted= Git repository for sample test data.
+
 #+begin_src sh
   git clone https://github.com/rimerosolutions/entrusted.git  
 #+end_src
@@ -192,7 +204,7 @@ The ephemeral server in question is just =python3 -m http.server=.
 
 ** Run entrusted-cli with test data
 
-*Note*: To the best of my knowledge, only the CLI can be tested while running the QEMU arm64 image from an amd64 host!
+*Note*: To the best of my knowledge, only the =CLI= can be tested while running the =QEMU= =arm64= image from an amd64 host!
 
 #+begin_src sh
   ./entrusted-linux-aarch64-0.2.7/entrusted-cli --input-filename ~/entrusted/test_data/sample-doc.doc

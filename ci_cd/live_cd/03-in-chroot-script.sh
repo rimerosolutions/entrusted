@@ -40,6 +40,7 @@ apt clean
 echo "Setting up system files"
 cp /files/etc/iptables/rules.v4 /etc/iptables/
 cp /files/etc/doas.conf /etc/ && chmod 400 /etc/doas.conf
+cp /files/etc/security/limits.conf /etc/security/
 cp /files/etc/systemd/system/entrusted-webserver.service /etc/systemd/system/
 
 echo "Creating entrusted user"
@@ -79,8 +80,11 @@ rm -rf /files
 echo "apm power_off=1" >> /etc/modules
 
 # See https://madaidans-insecurities.github.io/guides/linux-hardening.html
-echo "Hardening system"
+# See https://www.pluralsight.com/blog/it-ops/linux-hardening-secure-server-checklist
+echo "Hardening sysctl configuration"
 
+echo "kernel.randomize_va_space=1" >> /etc/sysctl.conf
+echo "fs.suid_dumpable=0" >> /etc/sysctl.conf
 echo "kernel.kptr_restrict=2" >> /etc/sysctl.conf
 echo "kernel.dmesg_restrict=1" >> /etc/sysctl.conf
 echo "kernel.unprivileged_bpf_disabled=1" >> /etc/sysctl.conf
@@ -111,6 +115,13 @@ echo "fs.protected_symlinks=1" >> /etc/sysctl.conf
 echo "fs.protected_hardlinks=1" >> /etc/sysctl.conf
 echo "fs.protected_fifos=2" >> /etc/sysctl.conf
 echo "fs.protected_regular=2" >> /etc/sysctl.conf
+
+echo "Hardening SSH configuration"
+
+echo "PermitEmptyPasswords no" >> /etc/ssh/sshd_config
+echo "PermitRootLogin no" >> /etc/ssh/sshd_config
+echo "Protocol 2" >> /etc/ssh/sshd_config
+echo "X11Forwarding no" >> /etc/ssh/sshd_config
 
 echo "Trim filesystem"
 rm -rf /usr/share/man/* /usr/share/doc/* /usr/share/info/*

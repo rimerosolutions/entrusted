@@ -18,8 +18,8 @@ use entrusted_l10n as l10n;
 
 mod mimetypes;
 
-const DEFAULT_DIR_TESSERACT_TESSDATA: &str  = "NOT_SET";
-const DEFAULT_DIR_LIBREOFFICE_PROGRAM: &str = "NOT_SET";
+const DEFAULT_DIR_TESSERACT_TESSDATA: &str  = "/usr/share/tesseract-ocr/4.00/tessdata";
+const DEFAULT_DIR_LIBREOFFICE_PROGRAM: &str = "/usr/lib/libreoffice/program";
 
 // TODO command line parameters of the program instead of vars?
 const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str              = "ENTRUSTED_DOC_PASSWD";
@@ -31,9 +31,9 @@ const ENV_VAR_ENTRUSTED_LIBREOFFICE_PROGRAM_DIR: &str = "ENTRUSTED_LIBREOFFICE_P
 
 // A4 150PPI/DPI
 // See https://www.a4-size.com/a4-size-in-pixels/?size=a4&unit=px&ppi=150
-const IMAGE_SIZE_QUALITY_LOW: (f64, f64)    = (595.0, 842.0);
-const IMAGE_SIZE_QUALITY_MEDIUM: (f64, f64) = (1240.0, 1754.0);
-const IMAGE_SIZE_QUALITY_HIGH: (f64, f64)   = (4961.0, 7016.0);
+const IMAGE_SIZE_QUALITY_LOW: (f64, f64)    = (794.0  , 1123.0);
+const IMAGE_SIZE_QUALITY_MEDIUM: (f64, f64) = (1240.0 , 1754.0);
+const IMAGE_SIZE_QUALITY_HIGH: (f64, f64)   = (4961.0 , 7016.0);
 
 macro_rules! incl_gettext_files {
     ( $( $x:expr ),* ) => {
@@ -92,10 +92,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             "low"    => IMAGE_SIZE_QUALITY_LOW,
             "medium" => IMAGE_SIZE_QUALITY_MEDIUM,
             "high"   => IMAGE_SIZE_QUALITY_HIGH,
-            _        => IMAGE_SIZE_QUALITY_MEDIUM                
+            _        => IMAGE_SIZE_QUALITY_LOW                
         }
     } else {
-        IMAGE_SIZE_QUALITY_MEDIUM
+        IMAGE_SIZE_QUALITY_LOW
     };
 
     let logger: Box<dyn ConversionLogger> = if let Ok(dgz_logformat_value) = env::var(ENV_VAR_LOG_FORMAT) {

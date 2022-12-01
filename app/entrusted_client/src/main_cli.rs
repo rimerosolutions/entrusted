@@ -79,7 +79,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let help_file_suffix = trans.gettext("Default file suffix (entrusted)");
     let help_password_prompt = trans.gettext("Prompt for document password");
     let help_update_checks = trans.gettext("Check for updates");
-    let help_enable_seccomp_profile = trans.gettext("Enable experimental seccomp security profile");
+    // let help_enable_seccomp_profile = trans.gettext("Enable experimental seccomp security profile");
     
     let cmd_help_template = trans.gettext(&format!("{}\n{}\n{}\n\n{}\n\n{}\n{}", 
                                                   "{bin} {version}",
@@ -158,13 +158,14 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .help(&help_password_prompt)
                 .required(false)
                 .action(ArgAction::SetTrue)
-        ).arg(
-            Arg::new("enable-seccomp-profile")
-                .long("enable-seccomp-profile")
-                .help(&help_enable_seccomp_profile)
-                .required(false)
-                .action(ArgAction::SetTrue)
         );
+    // .arg(
+    //         Arg::new("enable-seccomp-profile")
+    //             .long("enable-seccomp-profile")
+    //             .help(&help_enable_seccomp_profile)
+    //             .required(false)
+    //             .action(ArgAction::SetTrue)
+    //     );
 
     let run_matches= app.get_matches();
 
@@ -294,22 +295,22 @@ fn main() -> Result<(), Box<dyn Error>> {
         None
     };
     
-    let seccomp_profile_enabled = if run_matches.get_flag("enable-seccomp-profile") {
-        true
-    } else {
-        if let Ok(env_seccomp_enablement) = env::var("ENTRUSTED_AUTOMATED_SECCOMP_ENABLEMENT") {
-            env_seccomp_enablement.to_lowercase() == "true" || env_seccomp_enablement.to_lowercase() == "yes"
-        } else {
-            app_config.seccomp_profile_enabled.unwrap_or(false)
-        }
-    };
+    // let seccomp_profile_enabled = if run_matches.get_flag("enable-seccomp-profile") {
+    //     true
+    // } else {
+    //     if let Ok(env_seccomp_enablement) = env::var("ENTRUSTED_AUTOMATED_SECCOMP_ENABLEMENT") {
+    //         env_seccomp_enablement.to_lowercase() == "true" || env_seccomp_enablement.to_lowercase() == "yes"
+    //     } else {
+    //         app_config.seccomp_profile_enabled.unwrap_or(false)
+    //     }
+    // };
 
     let (exec_handle, rx) = {
         let (tx, rx) = mpsc::channel::<common::AppEvent>();
 
         let exec_handle = thread::spawn({
             move || {
-                let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), image_quality, ocr_lang, opt_passwd, seccomp_profile_enabled);
+                let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), image_quality, ocr_lang, opt_passwd, false);
                 let eventer = Box::new(CliEventSender {
                     tx
                 });

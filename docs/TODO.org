@@ -8,7 +8,7 @@
   - Basic attacks testing?
     - [ ] Minimal Web penetration testing?
     - [ ] Minimal malware testing?
-  - Security profiles for the container image execution (seccomp only)
+  - [X] +Security profiles for the container image execution (COMMENTED OUT due to random crashes - sigsegv)+
     - [X] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile
     - [X] This needs to be explicit opt-in until it's deemed stable, if this fails without workarounds nothing will work...
       - [X] Enable by default in the Live CD via "magic environment variable" for now...
@@ -41,7 +41,7 @@
   - [X] PDF result visual quality parameter (LOW, MEDIUM, HIGH)
   - [X] Make PDF result visual quality parameter a checkbox in the Desktop and Web UI (UX consistency)    
 - [X] Builds and releases
-  - [X] Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (REJECTED for lack of flexibility, cross-builds multi-arch annoyances)
+  - [X] +Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (REJECTED for lack of flexibility, cross-builds multi-arch annoyances)+
   - [X] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)
   - [X] Bump the cargo edition to =2021= instead of =2018= in cargo manifests
 

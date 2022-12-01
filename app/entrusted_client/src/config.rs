@@ -38,7 +38,7 @@ impl Default for AppConfig {
             file_suffix: Some(DEFAULT_FILE_SUFFIX.to_string()),
             container_image_name: None,
             openwith_appname: None,
-            visual_quality: Some("low".to_string()),
+            visual_quality: Some("medium".to_string()),
             seccomp_profile_enabled: None
         }
     }

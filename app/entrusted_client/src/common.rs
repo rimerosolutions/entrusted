@@ -10,7 +10,7 @@ pub const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str = "ENTRUSTED_DOC_PASSWD";
 pub const LOG_FORMAT_JSON: &str = "json";
 
 pub const IMAGE_QUALITY_CHOICES: [&str; 3] = ["low", "medium", "high"];
-pub const IMAGE_QUALITY_CHOICE_DEFAULT_INDEX: usize = 0;
+pub const IMAGE_QUALITY_CHOICE_DEFAULT_INDEX: usize = 1;
 pub const DEFAULT_FILE_SUFFIX: &str  = "entrusted";
 
 #[macro_export]

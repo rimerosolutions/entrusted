@@ -3139,7 +3139,6 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
 
 #[cfg(target_os = "windows")]
 pub fn list_apps_for_pdfs() -> HashMap<String, String> {
-    use std::collections::HashSet;
     use winreg::enums::RegType;
     use winreg::enums::HKEY_CLASSES_ROOT;
     use winreg::RegKey;

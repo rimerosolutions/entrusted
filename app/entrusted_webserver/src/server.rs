@@ -78,7 +78,7 @@ pub async fn serve(
         .fallback(notfound)
         .layer(DefaultBodyLimit::disable())
         .layer(RequestBodyLimitLayer::new(
-            500 * 1024 * 1024, /* 500mb */
+            1000 * 1024 * 1024, /* 1gb, for now... */
         ))
         .layer(CorsLayer::permissive())
         .layer(Extension(state_ci_image))

@@ -18,6 +18,16 @@ podman rmi --force docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}-arm6
 podman rmi --force docker.io/uycyjnzgntrn/entrusted_container:latest
 podman rmi --force docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}
 
+podman rm --force docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}-amd64
+podman rm --force docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}-arm64
+podman rm --force docker.io/uycyjnzgntrn/entrusted_container:latest
+podman rm --force docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}
+
+podman manifest rm docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}-amd64
+podman manifest rm docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}-arm64
+podman manifest rm docker.io/uycyjnzgntrn/entrusted_container:latest
+podman manifest rm docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}
+
 buildah manifest create docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}
 
 cd "${PROJECTDIR}"

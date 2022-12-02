@@ -7,7 +7,7 @@ use std::error::Error;
 use tokio::io::AsyncBufReadExt;
 use tokio::io::BufReader;
 
-use axum::extract::{Multipart, Path};
+use axum::extract::{Multipart, Path, DefaultBodyLimit};
 use axum::http::{header, HeaderMap, HeaderValue, Uri};
 use axum::Extension;
 use axum::{
@@ -19,6 +19,7 @@ use axum::{
 };
 use once_cell::sync::Lazy;
 use tower_http::cors::CorsLayer;
+use tower_http::limit::RequestBodyLimitLayer;
 
 use std::collections::HashMap;
 use std::env;
@@ -75,6 +76,10 @@ pub async fn serve(
         .route("/api/v1/downloads/:request_id", get(downloads))
         .route("/api/v1/upload", post(upload))
         .fallback(notfound)
+        .layer(DefaultBodyLimit::disable())
+        .layer(RequestBodyLimitLayer::new(
+            500 * 1024 * 1024, /* 500mb */
+        ))
         .layer(CorsLayer::permissive())
         .layer(Extension(state_ci_image))
         .layer(Extension(state_bc))

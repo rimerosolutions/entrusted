@@ -79,20 +79,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     let help_file_suffix = trans.gettext("Default file suffix (entrusted)");
     let help_password_prompt = trans.gettext("Prompt for document password");
     let help_update_checks = trans.gettext("Check for updates");
-    // let help_enable_seccomp_profile = trans.gettext("Enable experimental seccomp security profile");
-    
-    let cmd_help_template = trans.gettext(&format!("{}\n{}\n{}\n\n{}\n\n{}\n{}", 
-                                                  "{bin} {version}",
-                                                  "{author}",
-                                                  "{about}",
-                                                  "Usage: {usage}",
-                                                  "Options:",
-                                                  "{options}"));
-    
+    let help_enable_seccomp_profile = trans.gettext("Enable experimental seccomp security profile");
+
+    let cmd_help_template = trans.gettext(&format!("{}\n{}\n{}\n\n{}\n\n{}\n{}",
+                                                   "{bin} {version}",
+                                                   "{author}",
+                                                   "{about}",
+                                                   "Usage: {usage}",
+                                                   "Options:",
+                                                   "{options}"));
+
     INSTANCE_DEFAULT_CONTAINER_IMAGE.set(default_container_image_name)?;
     INSTANCE_DEFAULT_FILE_SUFFIX.set(app_config.file_suffix.clone().unwrap())?;
     INSTANCE_DEFAULT_VISUAL_QUALITY.set(app_config.visual_quality.clone().unwrap_or_else(|| common::IMAGE_QUALITY_CHOICES[common::IMAGE_QUALITY_CHOICE_DEFAULT_INDEX].to_string()))?;
-        
+
     let app = Command::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
         .help_template(&cmd_help_template)
@@ -130,8 +130,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .long("log-format")
                 .help(&help_log_format)
                 .value_parser([
-                    PossibleValue::new(common::LOG_FORMAT_JSON), 
-                    PossibleValue::new(LOG_FORMAT_PLAIN)                
+                    PossibleValue::new(common::LOG_FORMAT_JSON),
+                    PossibleValue::new(LOG_FORMAT_PLAIN)
                 ])
                 .default_value(LOG_FORMAT_PLAIN)
                 .required(false)
@@ -145,11 +145,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             Arg::new("visual-quality")
                 .long("visual-quality")
                 .help(&help_visual_quality)
-                .required(false)                
+                .required(false)
                 .value_parser([
                     PossibleValue::new(common::IMAGE_QUALITY_CHOICES[0]),
                     PossibleValue::new(common::IMAGE_QUALITY_CHOICES[1]),
-                    PossibleValue::new(common::IMAGE_QUALITY_CHOICES[2]),                    
+                    PossibleValue::new(common::IMAGE_QUALITY_CHOICES[2]),
                 ])
                 .default_value(default_visual_quality_to_str())
         ).arg(
@@ -158,14 +158,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .help(&help_password_prompt)
                 .required(false)
                 .action(ArgAction::SetTrue)
+        ).arg(
+            Arg::new("enable-seccomp-profile")
+                .long("enable-seccomp-profile")
+                .help(&help_enable_seccomp_profile)
+                .required(false)
+                .action(ArgAction::SetTrue)
         );
-    // .arg(
-    //         Arg::new("enable-seccomp-profile")
-    //             .long("enable-seccomp-profile")
-    //             .help(&help_enable_seccomp_profile)
-    //             .required(false)
-    //             .action(ArgAction::SetTrue)
-    //     );
 
     let run_matches= app.get_matches();
 
@@ -228,7 +227,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 return Err(ocr_lang_err.into());
             }
         }
-        
+
         ocr_lang = Some(proposed_ocr_lang.to_string());
     }
 
@@ -271,8 +270,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     } else {
         LOG_FORMAT_PLAIN
     };
-        
-    let image_quality = if let Some(v) = &run_matches.get_one::<String>("visual-quality") {        
+
+    let image_quality = if let Some(v) = &run_matches.get_one::<String>("visual-quality") {
         v.to_string()
     } else {
         app_config.visual_quality.clone().unwrap_or_else(|| common::IMAGE_QUALITY_CHOICES[common::IMAGE_QUALITY_CHOICE_DEFAULT_INDEX].to_string())
@@ -294,23 +293,21 @@ fn main() -> Result<(), Box<dyn Error>> {
     }  else {
         None
     };
-    
-    // let seccomp_profile_enabled = if run_matches.get_flag("enable-seccomp-profile") {
-    //     true
-    // } else {
-    //     if let Ok(env_seccomp_enablement) = env::var("ENTRUSTED_AUTOMATED_SECCOMP_ENABLEMENT") {
-    //         env_seccomp_enablement.to_lowercase() == "true" || env_seccomp_enablement.to_lowercase() == "yes"
-    //     } else {
-    //         app_config.seccomp_profile_enabled.unwrap_or(false)
-    //     }
-    // };
+
+    let seccomp_profile_enabled = if run_matches.get_flag("enable-seccomp-profile") {
+        true
+    } else if let Ok(env_seccomp_enablement) = env::var("ENTRUSTED_AUTOMATED_SECCOMP_ENABLEMENT") {
+        env_seccomp_enablement.to_lowercase() == "true" || env_seccomp_enablement.to_lowercase() == "yes"
+    } else {
+        app_config.seccomp_profile_enabled.unwrap_or(false)
+    };
 
     let (exec_handle, rx) = {
         let (tx, rx) = mpsc::channel::<common::AppEvent>();
 
         let exec_handle = thread::spawn({
             move || {
-                let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), image_quality, ocr_lang, opt_passwd, false);
+                let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), image_quality, ocr_lang, opt_passwd, seccomp_profile_enabled);
                 let eventer = Box::new(CliEventSender {
                     tx
                 });

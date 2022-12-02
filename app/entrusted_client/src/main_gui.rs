@@ -729,12 +729,12 @@ impl FileListWidget {
 
                     accept_button.set_callback({
                         let mut win = win.clone();
-                        
+
                         let opt_output_file = opt_output_file.clone();
 
                         move |_| {
                             let output_filename = outputfile_input_rc.borrow().value();
-                            
+
                             if !output_filename.trim().is_empty() {
                                 opt_output_file.replace(Some(output_filename));
                             }
@@ -1490,7 +1490,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     } else {
         config::default_container_image_name()
     };
-    
+
     let ociimage_input_rc = Rc::new(RefCell::new(input::Input::default().with_size(440, 20)));
     ociimage_input_rc.borrow_mut().set_value(&ociimage_text);
 
@@ -1516,21 +1516,21 @@ fn main() -> Result<(), Box<dyn Error>> {
     ociimage_pack.end();
 
     // User settings - enable seccomp profile for container image
-    // let seccomp_pack = group::Pack::default()
-    //     .with_size(550, 40)
-    //     .below_of(&ocrlang_pack, WIDGET_GAP)
-    //     .with_type(group::PackType::Horizontal);
+    let seccomp_pack = group::Pack::default()
+        .with_size(550, 40)
+        .below_of(&ocrlang_pack, WIDGET_GAP)
+        .with_type(group::PackType::Horizontal);
 
-    // ociimage_pack.set_spacing(WIDGET_GAP);
-    // let mut seccomp_checkbutton = button::CheckButton::default()
-    //     .with_size(100, 20)
-    //     .with_pos(0, 0)
-    //     .with_align(enums::Align::Inside | enums::Align::Left);
-    // seccomp_checkbutton.set_label(&trans.gettext("Experimental additional container image runtime hardening"));
-    // seccomp_checkbutton.set_label_color(enums::Color::Red);
-    // seccomp_checkbutton.set_tooltip(&trans.gettext("Seccomp security profile is an opt-in for now. If it works consistently enable it , otherwise uncheck if you experience abrupt conversion failures."));
+    ociimage_pack.set_spacing(WIDGET_GAP);
+    let mut seccomp_checkbutton = button::CheckButton::default()
+        .with_size(100, 20)
+        .with_pos(0, 0)
+        .with_align(enums::Align::Inside | enums::Align::Left);
+    seccomp_checkbutton.set_label(&trans.gettext("Experimental additional container image runtime hardening"));
+    seccomp_checkbutton.set_label_color(enums::Color::Red);
+    seccomp_checkbutton.set_tooltip(&trans.gettext("Seccomp security profile is an opt-in for now. If it works consistently enable it , otherwise uncheck if you experience abrupt conversion failures."));
 
-    // seccomp_pack.end();
+    seccomp_pack.end();
 
     // User settings - save
     let savesettings_pack = group::Pack::default()
@@ -1974,10 +1974,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                             let _ = eventer.send(common::AppEvent::ConversionStartEvent(idx));
 
                             if container::convert(input_path,
-                                                               output_path.clone(),
-                                                               convert_options,
-                                                               eventer.clone_box(),
-                                                               trans_ref.clone()).is_ok() {
+                                                  output_path.clone(),
+                                                  convert_options,
+                                                  eventer.clone_box(),
+                                                  trans_ref.clone()).is_ok() {
                                 completed_count += 1;
                                 let _ = eventer.send(common::AppEvent::ConversionSuccessEvent(idx, task.viewer_app_option.clone(), output_path.clone(), task_count));
                             } else {
@@ -2011,8 +2011,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 }
             });
-    }
-    
+        }
+
     });
 
 
@@ -2333,6 +2333,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         let ociimage_input_rc_ref = ociimage_input_rc.clone();
         let mut ociimage_checkbutton_ref = ociimage_checkbutton.clone();
         let mut ociimage_pack_ref = ociimage_pack.clone();
+        
+        let mut seccomp_checkbutton_ref = seccomp_checkbutton.clone();
 
         let mut selection_pack_ref = selection_pack.clone();
         let mut select_all_frame_ref = selectall_frame.clone();
@@ -2500,7 +2502,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 );
 
                 let ocw = wid.w() - (WIDGET_GAP * 3) - ocrlang_checkbutton.w();
-                let och = wid.h() - (WIDGET_GAP * 9) - (30 * 7);
+                let och = wid.h() - (WIDGET_GAP * 10) - (30 * 8);
 
                 ociimage_checkbutton_ref.resize(
                     ocrlang_checkbutton_ref.x(),
@@ -2508,6 +2510,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                     ocrlang_checkbutton_ref.w(),
                     ociimage_checkbutton_ref.h(),
                 );
+                
+                seccomp_checkbutton_ref.resize(
+                    seccomp_checkbutton_ref.x(),
+                    seccomp_checkbutton_ref.y(),
+                    wid.w() - (WIDGET_GAP * 4),
+                    seccomp_checkbutton_ref.h());
 
                 openwith_checkbutton_ref.resize(
                     ocrlang_checkbutton_ref.x(),
@@ -2608,7 +2616,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 } else if ev.bits() == EVENT_ID_ALL_DESELECTED {
                     filelist_widget_ref.deselect_all();
                     true
-                } else { 
+                } else {
                     app::event_state().is_empty() && app::event_key() == enums::Key::Escape
                 }
             }
@@ -3259,13 +3267,13 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
                                                     app_name.push_str(&active_key_value);
                                                 }
                                         } else if let Some(basename_ostr) = std::path::Path::new(&app_url).file_stem() {
-                                                if let Some(basename) = &basename_ostr.to_str() {
-                                                    let implied_app_name = percent_decode(basename.as_bytes());
+                                            if let Some(basename) = &basename_ostr.to_str() {
+                                                let implied_app_name = percent_decode(basename.as_bytes());
 
-                                                    if let Ok(r_app_name_decoded)= implied_app_name.decode_utf8() {
-                                                        app_name.push_str(&r_app_name_decoded);
-                                                    }
+                                                if let Ok(r_app_name_decoded)= implied_app_name.decode_utf8() {
+                                                    app_name.push_str(&r_app_name_decoded);
                                                 }
+                                            }
                                         }
 
                                         if !app_name.is_empty() {

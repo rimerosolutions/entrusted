@@ -1857,6 +1857,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut overall_progress_frame_ref  = overall_progress_frame.clone();
         let mut cancel_tasks_button_ref = cancel_tasks_button.clone();
         let mut overall_progress_progressbar_ref  = overall_progress_progressbar.clone();
+        let seccomp_checkbutton_ref = seccomp_checkbutton.clone();
 
         move |b| {
             b.deactivate();
@@ -1909,6 +1910,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             if file_suffix.trim().is_empty() {
                 file_suffix = appconfig.file_suffix.to_owned().unwrap_or_else(|| common::DEFAULT_FILE_SUFFIX.to_string());
             }
+            
+            let seccomp_enabled = seccomp_checkbutton_ref.is_checked();
 
             let tasks: Vec<ConversionTask> = filelist_widget_ref.rows.borrow().iter().map(|row| {
                 row_to_task(&opt_viewer_app,
@@ -1916,7 +1919,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                             image_quality.clone(),
                             &opt_ocr_lang,
                             &file_suffix,
-                            false,
+                            seccomp_enabled,
                             row
                 )
             }).collect();

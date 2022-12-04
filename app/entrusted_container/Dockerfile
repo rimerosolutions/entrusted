@@ -32,7 +32,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt update && apt upgrade -y && DEBIAN_FRONTE
 COPY --from=builder /usr/local/bin/entrusted-container /usr/local/bin/entrusted-container
 
 RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.zip' -o -name '*.gz' -o -name '*.png' -o -name '*.xpm' -o -name '*.jar' -o -name '*.pyc' -o -name '*.pdf' -exec rm -rf {} \;" \
-    && useradd -ms /bin/dash entrusted && mkdir /safezone && chmod -R a+rw /safezone \
+    && useradd -ms /bin/dash entrusted \
     && rm /usr/bin/ambiguous_words \
     && rm /usr/bin/classifier_tester \
     && rm /usr/bin/cntraining \
@@ -84,3 +84,4 @@ ENV ENTRUSTED_TESSERACT_TESSDATA_DIR  /usr/share/tesseract-ocr/4.00/tessdata
 #
 # /safezone is where the wrapper eventually moves the sanitized files.
 # VOLUME /entrusted /tmp/input_file /safezone
+VOLUME /safezone

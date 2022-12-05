@@ -2,18 +2,10 @@
 
 * Milestone: Hardening and features maturity [20%]
 - [-] Security
-  - [ ] Basic attacks testing?
-    - [ ] Minimal Web penetration testing?
-    - [ ] Minimal malware testing?
-  - [-] Security profiles for the container image execution
-    - [ ] Review random crashes, apparently multi-threading related with =entrusted-gui=
-    - [X] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile
-    - [X] This needs to be explicit opt-in until it's deemed stable, if this fails without workarounds nothing will work...
-      - [X] Enable by default in the Live CD via "magic environment variable" for now...
-      - [X] Opt-in in the client (GUI or CLI)
   - [X] Virtual machine hardening for Live CD
     - [X] Minimal [[https://docs.arbitrary.ch/security/systemd.html][systemd]] sandboxing for the "Online Service (=entrusted-webserver=), just =PrivateTmp= for now
     - [X] [[https://madaidans-insecurities.github.io/guides/linux-hardening.html][sysctl]] settings, kernel boot parameters, [[https://github.com/GrapheneOS/hardened_malloc][hardened_malloc]]
+    - [X] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile (Live CD only, random conversion failures in Desktop GUI...)
   - [X] Run an publish vulnerability assessments for container images
   - [X] Evaluate more frequently updated container images for CVEs
     - [X] Debian takes a while to sometimes address issues but it's very stable (PREFERRED)
@@ -24,7 +16,7 @@
   - [X] Evaluate performance optimization opportunities
   - [X] Allow multiple language selection for searchable PDFs (OCR)
 - [-] Code maintenance and other practices
-  - [ ] Some level of testing? (scripts at least with exit code capture?)
+  - [ ] Happy path integration testing with [[https://github.com/cucumber-rs/cucumber][cucumber-rs]] (=entrusted_client=) 
   - [X] Review command-line flags default values after upgrading command-line arguments library
   - [X] Apply most of [[https://github.com/rust-lang/rust-clippy][clippy]] suggested code changes
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)

@@ -9,6 +9,7 @@ use std::process::{Command, Stdio};
 use std::io::{BufReader, BufRead, Read};
 use std::thread::JoinHandle;
 use std::thread;
+use uuid::Uuid;
 
 use entrusted_l10n as l10n;
 use crate::common;
@@ -112,43 +113,40 @@ fn exec_crt_command (cmd_desc: String, container_program: common::ContainerProgr
         }
     }
 
-    loop {
-        match cmd.try_wait() {
-            Ok(Some(exit_status)) => {
-                if exit_status.success() {
-                    return Ok(());
-                } else {
-                    if let Some(exit_code) = exit_status.code() {
-                        // Please see https://betterprogramming.pub/understanding-docker-container-exit-codes-5ee79a1d58f6
-                        if exit_code == 139 || exit_code == 137 {
-                            let mut explanation = trans.gettext("Container process terminated abruptly potentially due to memory usage. Are PDF pages too big? Try increasing the container engine memory allocation?");
+    match cmd.wait() {
+        Ok(exit_status) => {
+            if exit_status.success() {
+                Ok(())
+            } else {
+                if let Some(exit_code) = exit_status.code() {
+                    // https://www.containiq.com/post/exit-code-137
+                    if exit_code == 139 || exit_code == 137 {
+                        let mut explanation = trans.gettext("Container process terminated abruptly potentially due to memory usage. Are PDF pages too big? Try increasing the container engine memory allocation?");
 
-                            if exit_code == 139 {
-                                explanation = trans.gettext("Container process terminated abruptly potentially due to a memory access fault. Please report the issue at: https://github.com/rimerosolutions/entrusted/issues");
-                            }
+                        // See https://www.containiq.com/post/sigsegv-segmentation-fault-linux-containers-exit-code-139
+                        if exit_code == 139 {
+                            explanation = trans.gettext("Container process terminated abruptly potentially due to a memory access fault. Please report the issue at: https://github.com/rimerosolutions/entrusted/issues");
+                        }
 
-                            let lm = common::LogMessage {
-                                data: format!("{} {}", trans.gettext("Conversion failed!"), explanation),
-                                percent_complete: 100
-                            };
+                        let lm = common::LogMessage {
+                            data: format!("{} {}", trans.gettext("Conversion failed!"), explanation),
+                            percent_complete: 100
+                        };
 
-                            if let Ok(lm_string) = serde_json::to_string(&lm) {
-                                let _ = tx.send(common::AppEvent::ConversionProgressEvent(lm_string));
-                            }
+                        if let Ok(lm_string) = serde_json::to_string(&lm) {
+                            let _ = tx.send(common::AppEvent::ConversionProgressEvent(lm_string));
                         }
                     }
-
-                    return Err(trans.gettext("Command failed!").into());
                 }
-            },
-            Ok(None) => {
-                thread::yield_now();
-            },
-            Err(ex) => {
-                return Err(format!("{} {}", trans.gettext("Command failed!"), ex).into());
+
+                Err(trans.gettext("Command failed!").into())
             }
+        },
+        Err(ex) => {
+            Err(format!("{} {}", trans.gettext("Command failed!"), ex).into())
         }
     }
+
 }
 
 trait LogPrinter: Send + Sync {
@@ -230,6 +228,8 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
                     }
                 }
             }
+            
+            fs::remove_dir(dir)?;
         }
 
         Ok(())
@@ -321,8 +321,10 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
 
         // TODO dynamic naming for couple of folders overall
         // This is needed for parallel conversion and not overwritting files among other things
+        let request_id = Uuid::new_v4().to_string();
         let mut dz_tmp_safe:PathBuf = dz_tmp.clone();
         dz_tmp_safe.push("safe");
+        dz_tmp_safe.push(request_id);
         mkdirp(&dz_tmp_safe, trans.clone())?;
 
         // Mitigate volume permissions issues with Docker under Linux
@@ -440,6 +442,10 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             }
 
             err_msg = trans.gettext("Conversion failed!");
+        }
+        
+        if fs::metadata(&dz_tmp_safe).is_ok() {
+            let _ = cleanup_dir(&dz_tmp_safe); // ensure that we cleanup after ourselves....
         }
     } else {
         err_msg.push_str(&trans.gettext("No container runtime executable found!"));

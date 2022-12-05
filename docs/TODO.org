@@ -1,11 +1,12 @@
 #+TITLE: TODO
 
-* Milestone: Hardening and features maturity [60%]
-- [-] Security  
+* Milestone: Hardening and features maturity [20%]
+- [-] Security
   - [ ] Basic attacks testing?
     - [ ] Minimal Web penetration testing?
     - [ ] Minimal malware testing?
-  - [X] +Security profiles for the container image execution (COMMENTED OUT due to random crashes - sigsegv)+
+  - [-] Security profiles for the container image execution
+    - [ ] Review random crashes, apparently multi-threading related with =entrusted-gui=
     - [X] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile
     - [X] This needs to be explicit opt-in until it's deemed stable, if this fails without workarounds nothing will work...
       - [X] Enable by default in the Live CD via "magic environment variable" for now...
@@ -18,7 +19,8 @@
     - [X] Debian takes a while to sometimes address issues but it's very stable (PREFERRED)
     - [X] Alpine would require revisiting occasional segmentation faults (exit code =139=)
     - [X] Fedora takes a while to build (dnf is VERY slow) and trimming the image size is rather involved
-- [X] Improved conversions
+- [-] Improved conversions
+  - [ ] Review possible  multi-threading issues related with =entrusted-gui=
   - [X] Evaluate performance optimization opportunities
   - [X] Allow multiple language selection for searchable PDFs (OCR)
 - [-] Code maintenance and other practices
@@ -28,17 +30,17 @@
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)
   - [X] Smaller container image size
   - [X] Sign revision control commits and container images
+- [-] Builds and releases
+  - [ ] Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (RETRYING, figure out Live CD too...)
+  - [X] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)
+  - [X] Bump the cargo edition to =2021= instead of =2018= in cargo manifests
 - [X] User interface
   - [X] Few visual improvements in the Desktop and Web interfaces
   - [X] Ability to cancel pending conversion tasks
     - [X] Implementation for the Desktop graphical user interface
     - [X] Implementation for the Web interface
   - [X] PDF result visual quality parameter (LOW, MEDIUM, HIGH)
-  - [X] Make PDF result visual quality parameter a checkbox in the Desktop and Web UI (UX consistency)    
-- [X] Builds and releases
-  - [X] +Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (REJECTED for lack of flexibility, cross-builds multi-arch annoyances)+
-  - [X] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)
-  - [X] Bump the cargo edition to =2021= instead of =2018= in cargo manifests
+  - [X] Make PDF result visual quality parameter a checkbox in the Desktop and Web UI (UX consistency)
 
 * Milestone: Usability and features stabilization [100%]
 

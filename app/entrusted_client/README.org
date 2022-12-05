@@ -15,7 +15,9 @@ This module provides graphical and command-line interfaces for the document sani
 
 The user interface is built with the [[https://github.com/fltk-rs/fltk-rs][FLTK]] toolkit because it's lightweight and /relatively/ easy to use.
 
-[[./images/screenshot-gui.png]]
+[[./images/screenshot-gui-settings.png]]
+
+[[./images/screenshot-gui-convert.png]]
 
 ** Command-line client
 

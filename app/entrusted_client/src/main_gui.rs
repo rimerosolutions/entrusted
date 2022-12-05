@@ -1744,7 +1744,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut cancel_tasks_button = button::Button::default()
         .with_size(40, 40);
     cancel_tasks_button.set_color(FILELIST_ROW_COLOR_CANCELLED);
-    cancel_tasks_button.set_tooltip(&trans.gettext("Try cancelling remaining tasks as soon as possible"));
+    cancel_tasks_button.set_tooltip(&trans.gettext("Try cancelling remaining conversions as soon as possible"));
     cancel_tasks_button.hide();
 
     cancel_tasks_button.set_callback({

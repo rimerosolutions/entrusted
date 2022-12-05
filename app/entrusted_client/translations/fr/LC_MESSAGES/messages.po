@@ -30,8 +30,8 @@ msgstr "Le profil de sécurité Seccomp est un opt-in pour l'instant. S'il fonct
 msgid "The conversion was cancelled!"
 msgstr "La conversion a été annulée!"
 
-msgid "Try cancelling remaining tasks as soon as possible"
-msgstr "Essayer d'annuler les tâches restantes dès que possible"
+msgid "Try cancelling remaining conversions as soon as possible"
+msgstr "Essayer d'annuler les conversions restantes dès que possible"
 
 msgid "Custom PDF result visual quality"
 msgstr "Qualité visuelle du résultat PDF personnalisée"

@@ -30,7 +30,7 @@ msgstr ""
 msgid "The conversion was cancelled!"
 msgstr ""
 
-msgid "Try cancelling remaining tasks as soon as possible"
+msgid "Try cancelling remaining conversions as soon as possible"
 msgstr ""
 
 msgid "Custom PDF result visual quality"

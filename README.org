@@ -30,7 +30,7 @@ Key features include the following:
 
 Do you identify yourself in one of the situations below?
 - I think that my computer might have been infected few times while opening documents
-- I "acquire" lots of documents from file sharing applications such as Bittorrent
+- I "acquire" documents from file sharing applications or the [[https://en.wikipedia.org/wiki/Dark_web][Dark Web]]
 - I often need to open email attachments from unknown senders
 - I download files from "potentially non-trusted websites"
 

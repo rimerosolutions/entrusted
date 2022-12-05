@@ -12,7 +12,7 @@ Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_c
 
 [[./images/screenshot.gif]]
 
-[[https://www.youtube.com/watch?v=InEsPLyFsKQ][Youtube presentation]] about Entrusted.
+[[https://www.youtube.com/watch?v=InEsPLyFsKQ][Youtube presentation]] and [[https://github.com/rimerosolutions/entrusted/files/9892585/entrusted_document_sanitizer.pdf][PDF slides]] about Entrusted.
 
 ** Features
 
@@ -29,19 +29,19 @@ Key features include the following:
 ** Use-cases
 
 Do you identify yourself in one of the situations below?
-- I think that my computer might have been infected few times due to documents containing malware
+- I think that my computer might have been infected few times while opening documents
 - I "acquire" lots of documents from file sharing applications such as Bittorrent
 - I often need to open email attachments from unknown senders
-- I download lots of files from "potentially non-trusted websites", those sites look legit though
+- I download files from "potentially non-trusted websites"
 
 ** Supported files
 
 The following file types can be processed with =Entrusted=:
-- Images (=.jpg=, =.jpeg=, =.gif=, =.png=, =.tif=, =.tiff=)
-- Document Graphics (=.odg=)
 - Text Documents (=.rtf=, =.doc=, =.docx=, =.odt=)
-- Spreadsheets (=.xls=, =.xlsx=, =.ods=)
 - Presentations (=.ppt=, =.pptx=, =.odp=)
+- Spreadsheets (=.xls=, =.xlsx=, =.ods=)
+- Images (=.jpg=, =.jpeg=, =.gif=, =.png=, =.tif=, =.tiff=)
+- OpenDocument Drawing Document Format (=.odg=)
     
 * What is available?
 

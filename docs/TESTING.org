@@ -1,13 +1,16 @@
 #+TITLE: TESTING
 
-This document describes basic testing notes
-- This serves as general reference
-- This helps understand *how to test arm64 Linux binaries from a typical amd64 system*
-- This supports research towards Live CD availability for arm64  
+All the testing is manual at this time.
+
+Over time, it's been painful to test software releases due to the lack of an automated process.
+- Occasional regression bugs
+- Obvious minor issues missed
+  - Container solutions specific considerations
+  - Operating system specific considerations    
+- Missing French translations
+- Etc.  
 
 * Testing details
-
-All the testing is manual at this time.
 
 - *Test Environments*
   - CPU architectures
@@ -30,212 +33,19 @@ All the testing is manual at this time.
   - RAM: At least 8 GB of RAM
   - CPU: At least 2 cpus
 
-* Amd64 Testing
+*Notes*: We always need to test with =Fedora= under Linux as container behavior/configuration might differ and that will impact the conversion outcomes ([[https://www.redhat.com/en/topics/linux/what-is-selinux][SELinux]], etc.).
 
-- On Windows
-  - Install =Docker= and start it
-  - Convert few files
-- On Linux, install =Podman= and convert few files:
-  - Test with both Fedora and another distribution such as Debian
-  - Due to SELinux or other specifics the program might work fine on Debian (or other Distributions), but fail miserably under Fedora
-- On Mac OS, install Lima
-  - Run =brew install lima= and start it =limactl start=
-  - Convert few files
+* Testing approach
 
-* Arm64 Linux testing from amd64 hosts
+It is unrealistic at this time to discard manual testing. Generally speaking, there are always problems easier to spot with manual testing, especially as it pertains to visual interfaces.
 
-This describes the testing process from a Live CD of [[https://www.alpinelinux.org/][Alpine Linux]] (=aarch64/arm64= ISO image)
-- We setup a [[https://www.qemu.org/][QEMU]] virtual machine from an =amd64= computer
-- We don't perform a permanent installation
-- I'm *assuming that you're running a Unix/Linux environment*, in my case it's a =Mac OS= host machine
+** What can we automate?
 
-** Download the alpine ISO image
+We can start by focusing on the test dataset in the =test_data= folder.
 
-#+begin_src sh
-  curl -L -O https://dl-cdn.alpinelinux.org/alpine/v3.16/releases/aarch64/alpine-standard-3.16.2-aarch64.iso
-#+end_src
+** How do we automate?
 
-*** Generate required files
+Initially, it can be as simple as a Python script that executes the CLI program (=entrusted-cli=) and check for error exit codes.
+- On Unix-like systems, Python is often installed by default
+- On Windows, the developer would need Python installed (WSL or regular Python installation)
 
-Source: https://gist.github.com/oznu/ac9efae7c24fd1f37f1d933254587aa4
-
-#+begin_src sh
-  curl -L -O https://releases.linaro.org/components/kernel/uefi-linaro/latest/release/qemu64/QEMU_EFI.fd
-  dd if=/dev/zero of=flash0.img bs=1m count=64
-  dd if=QEMU_EFI.fd of=flash0.img conv=notrunc
-  dd if=/dev/zero of=flash1.img bs=1m count=64
-#+end_src
-
-*** Launch the Alpine system
-
-Create a script with the contents below called =qemu_test_arm64= and make it executable (=chmod +x qemu_test_arm64=).
-- The script below has been tested from a reasonably powerful Mac OS machine (64 GB of RAM and 10 CPUs).
-- Emulating =arm64= on =amd64= is *very slow*, thus why *we dare allocating  20 GB of RAM and 2 cpus* in the script
-
-#+begin_src sh
-  #!/usr/bin/env sh
-
-  qemu-system-aarch64 -m 20G -smp 2 -cpu cortex-a57 -M virt -nographic \
-    -device intel-hda -device hda-duplex -pflash flash0.img \
-    -pflash flash1.img \
-    -device virtio-scsi-pci,id=scsi0              \
-    -object rng-random,filename=/dev/urandom,id=rng0      \
-    -netdev user,id=user0 -device virtio-net-device,netdev=user0 \
-    -serial mon:stdio -nodefaults            \
-    -drive if=none,id=cd,file=$1 \
-    -device scsi-cd,drive=cd
-#+end_src
-
-Launch the system, this will take some time depending on your machine hardware specification.
-
-#+begin_src sh
-  ./qemu_test_arm64 alpine-standard-3.16.2-aarch64.iso
-#+end_src
-
-** Setup base system
-
-You can login with the user =root= (empty password) once the system boots.
-
-*** Enable networking
-
-Source: https://techoverflow.net/2021/05/03/how-to-check-enable-dhcp-in-alpine-linux-installer/
-
-Assuming that =eth0= is your main network interface showing in =ip a=, run the commands below for DHCP.
-
-#+begin_src sh
-  ifconfig eth0 up
-  udhcpc eth0
-#+end_src
-
-*** Update the date
-
-In the code below, change the date to your actual /host machine/ date.
-
-**** Setup timezone
-
-Run the =setup-timezone= command and enter =America/New_York=.
-
-**** Create networking file
-
-Create a file at =/etc/network/interfaces=.
-
-#+begin_src text
-  auto lo
-  iface lo inet loopback
-
-  auto eth0
-  iface eth0 inet dhcp
-     udhcpc_opts -O search
-#+end_src
-
-**** Restart ntpd
-
-Update the time by restarting the Network Time Protocol Daemon ([[https://en.wikipedia.org/wiki/Ntpd][NTPD]]).
-
-#+begin_src sh
-  service ntpd restart
-#+end_src
-
-*** Configure repositories
-
-We enable some remote repositories for installing additional software.
-
-#+begin_src sh
-  echo "http://dl-cdn.alpinelinux.org/alpine/v3.16/main" >> /etc/apk/repositories
-  echo "http://dl-cdn.alpinelinux.org/alpine/v3.16/community" >> /etc/apk/repositories
-  apk update
-#+end_src
-
-*** Install required packages
-
-Install =Podman= and other software.
-
-#+begin_src sh
-  apk add podman bash git ca-certificates curl
-  rc-service cgroups start
-  rc-service podman start
-  modprobe tun
-  echo tun >>/etc/modules
-  echo entrusted:100000:65536 >/etc/subuid
-  echo entrusted:100000:65536 >/etc/subgid
-#+end_src
-
-*** Create user
-
-Add a regular non-privileged user called =entrusted=.
-
-#+begin_src sh
-  adduser -h /home/entrusted -s /bin/ash -D entrusted
-#+end_src
-
-*** Switch to new user
-
-#+begin_src sh
-  su - entrusted
-#+end_src
-
-*** Fix anticipated runtime errors
-
-As a regular user =entrusted=
-
-#+begin_src sh
-  podman system migrate
-#+end_src
-
-* Test conversions
-
-** Clone the entrusted source code repository
-
-Clone the =entrusted= Git repository for sample test data.
-
-#+begin_src sh
-  git clone https://github.com/rimerosolutions/entrusted.git  
-#+end_src
-
-** Download a pre-built binaries
-
-Binaries should be obtained from a trusted source. In the example below, I'm transferring files from another virtual machine (ephemeral webserver running on port =8000=).
-
-The ephemeral server in question is just =python3 -m http.server=.
-
-#+begin_src sh
-  curl -L -O http://10.0.2.2:8000/entrusted-linux-aarch64-0.2.7.tar && tar xvf entrusted-linux-aarch64-0.2.7.tar
-#+end_src
-
-** Run entrusted-cli with test data
-
-*Note*: To the best of my knowledge, only the =CLI= can be tested while running the =QEMU= =arm64= image from an amd64 host!
-
-#+begin_src sh
-  ./entrusted-linux-aarch64-0.2.7/entrusted-cli --input-filename ~/entrusted/test_data/sample-doc.doc
-#+end_src
-
-** Check the execution results
-
-If all goes well, you should see messages similar to the log below.
-
-#+begin_src text
-  localhost:~$ ./entrusted-linux-aarch64-0.2.6/entrusted-cli --input-filename ~/entrusted/test_data/sample-doc.doc
-  Converting /home/entrusted/entrusted/test_data/sample-doc.doc
-  Running command: /usr/bin/podman inspect docker.io/uycyjnzgntrn/entrusted_container:0.2.7
-  Checking if container image exists
-  Running command: /usr/bin/podman run --rm --network none --cap-drop all --userns keep-id --security-opt no-new-privileges --security-opt seccomp=/tmp/seccomp-entrusted-profile-0.2.7.json -v /home/entrusted/entrusted/test_data/sample-doc.doc:/tmp/input_file:Z -v /tmp/entrusted/safe:/safezone:Z -e ENTRUSTED_LOG_FORMAT=json -e ENTRUSTED_LANGID=en -e ENTRUSTED_VISUAL_QUALITY=low docker.io/uycyjnzgntrn/entrusted_container:0.2.7 /usr/local/bin/entrusted-container
-  Starting document processing
-  Copying PDF input to /tmp/input_file_input.pdf
-  Extract PDF file into 1 PNG image
-  Extracting page 1 into a PNG image
-  Saving 1 PNG image to PDF
-  Saving PNG image 1 to PDF
-  Combining 1 PDF document
-  Collecting PDF pages
-  Updating bookmarks and page numbering
-  Processing PDF structure
-  Updating PDF dictionnary
-  Combining PDF objects
-  Compressing PDF
-  Saving PDF
-  Moving output files to their final destination
-  Conversion succeeded!
-  Elapsed time: 0 hours 0 minutes 2 seconds
-#+end_src
-  

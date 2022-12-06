@@ -21,10 +21,10 @@ msgstr ""
 msgid "Potentially sacrifice visual quality for processing time (quick preview first, etc.)"
 msgstr ""
 
-msgid "Experimental additional container image runtime hardening"
+msgid "Custom hardening for sandbox container image"
 msgstr ""
 
-msgid "Seccomp security profile is an opt-in for now. If it works consistently enable it , otherwise uncheck if you experience abrupt conversion failures."
+msgid "seccomp security profile is an opt-in for now. Please disable it if you experience random abrupt conversion failures."
 msgstr ""
 
 msgid "The conversion was cancelled!"
@@ -213,7 +213,7 @@ msgstr ""
 msgid "Browse for PDF viewer program"
 msgstr ""
 
-msgid "Custom container image"
+msgid "Custom sandbox container image"
 msgstr ""
 
 msgid "Expert option for sandbox solution"
@@ -279,7 +279,7 @@ msgstr ""
 msgid "Input filename"
 msgstr ""
 
-msgid "Optional custom Docker or Podman image name"
+msgid "Optional custom container image name"
 msgstr ""
 
 msgid "Log format (json or plain)"

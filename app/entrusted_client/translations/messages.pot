@@ -33,11 +33,11 @@ msgstr ""
 msgid "Potentially sacrifice visual quality for processing time (quick preview first, etc.)"
 msgstr ""
 
-msgid "Experimental additional container image runtime hardening"
-msgstr ""
+msgid "Custom hardening for sandbox container image"
+msgstr "Sécurité personnalisée pour l'image du conteneur sandbox"
 
-msgid "Seccomp security profile is an opt-in for now. If it works consistently enable it , otherwise uncheck if you experience abrupt conversion failures."
-msgstr ""
+msgid "seccomp security profile is an opt-in for now. Please disable it if you experience random abrupt conversion failures."
+msgstr "Le profil de sécurité Seccomp est un opt-in pour le moment. Veuillez le désactiver si vous rencontrez des échecs de conversion brusques et aléatoires."
 
 msgid "The conversion was cancelled!"
 msgstr ""
@@ -295,7 +295,7 @@ msgstr ""
 msgid "Input filename"
 msgstr ""
 
-msgid "Optional custom Docker or Podman image name"
+msgid "Optional custom container image name"
 msgstr ""
 
 msgid "Log format (json or plain)"

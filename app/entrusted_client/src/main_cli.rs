@@ -74,12 +74,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let help_ocr_lang = trans.gettext("Optional language for OCR (i.e. 'eng' for English)");
     let help_input_filename = trans.gettext("Input filename");
     let help_visual_quality = trans.gettext("PDF result visual quality");
-    let help_container_image_name = trans.gettext("Optional custom Docker or Podman image name");
+    let help_container_image_name = trans.gettext("Optional custom container image name");
     let help_log_format = trans.gettext("Log format (json or plain)");
     let help_file_suffix = trans.gettext("Default file suffix (entrusted)");
     let help_password_prompt = trans.gettext("Prompt for document password");
     let help_update_checks = trans.gettext("Check for updates");
-    // let help_enable_seccomp_profile = trans.gettext("Enable experimental seccomp security profile");
+    let help_enable_seccomp_profile = trans.gettext("Enable experimental seccomp security profile");
 
     let cmd_help_template = trans.gettext(&format!("{}\n{}\n{}\n\n{}\n\n{}\n{}",
                                                    "{bin} {version}",
@@ -158,14 +158,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .help(&help_password_prompt)
                 .required(false)
                 .action(ArgAction::SetTrue)
+        ).arg(
+            Arg::new("enable-seccomp-profile")
+                .long("enable-seccomp-profile")
+                .help(&help_enable_seccomp_profile)
+                .required(false)
+                .action(ArgAction::SetTrue)
         );
-    // .arg(
-    //         Arg::new("enable-seccomp-profile")
-    //             .long("enable-seccomp-profile")
-    //             .help(&help_enable_seccomp_profile)
-    //             .required(false)
-    //             .action(ArgAction::SetTrue)
-    //     );
 
     let run_matches= app.get_matches();
 
@@ -295,7 +294,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         None
     };
 
-    let seccomp_profile_enabled = if let Ok(env_seccomp_enablement) = env::var("ENTRUSTED_AUTOMATED_SECCOMP_ENABLEMENT") {
+    let seccomp_profile_enabled = if run_matches.get_flag("enable-seccomp-profile") {
+        true
+    } else if let Ok(env_seccomp_enablement) = env::var("ENTRUSTED_AUTOMATED_SECCOMP_ENABLEMENT") {
         env_seccomp_enablement.to_lowercase() == "true" || env_seccomp_enablement.to_lowercase() == "yes"
     } else {
         app_config.seccomp_profile_enabled.unwrap_or(false)

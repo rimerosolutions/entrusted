@@ -42,6 +42,7 @@ cp /files/etc/iptables/rules.v4 /etc/iptables/
 cp /files/etc/doas.conf /etc/ && chmod 400 /etc/doas.conf
 cp /files/etc/security/limits.conf /etc/security/
 cp /files/etc/systemd/system/entrusted-webserver.service /etc/systemd/system/
+cp -r /files/etc/systemd/coredump.conf.d /etc/systemd/
 
 echo "Creating entrusted user"
 useradd -ms /bin/bash entrusted
@@ -81,10 +82,13 @@ echo "apm power_off=1" >> /etc/modules
 
 # See https://madaidans-insecurities.github.io/guides/linux-hardening.html
 # See https://www.pluralsight.com/blog/it-ops/linux-hardening-secure-server-checklist
-echo "Hardening sysctl configuration"
+echo "Hardening kernel systems"
+
+echo "kernel.core_pattern=|/bin/false" >> /etc/sysctl.conf
+echo "vm.swappiness=1" >> /etc/sysctl.conf
+echo "fs.suid_dumpable=0" >> /etc/sysctl.conf
 
 echo "kernel.randomize_va_space=1" >> /etc/sysctl.conf
-echo "fs.suid_dumpable=0" >> /etc/sysctl.conf
 echo "kernel.kptr_restrict=2" >> /etc/sysctl.conf
 echo "kernel.dmesg_restrict=1" >> /etc/sysctl.conf
 echo "kernel.unprivileged_bpf_disabled=1" >> /etc/sysctl.conf
@@ -116,12 +120,17 @@ echo "fs.protected_hardlinks=1" >> /etc/sysctl.conf
 echo "fs.protected_fifos=2" >> /etc/sysctl.conf
 echo "fs.protected_regular=2" >> /etc/sysctl.conf
 
+
 echo "Hardening SSH configuration"
 
 echo "PermitEmptyPasswords no" >> /etc/ssh/sshd_config
 echo "PermitRootLogin no" >> /etc/ssh/sshd_config
 echo "Protocol 2" >> /etc/ssh/sshd_config
 echo "X11Forwarding no" >> /etc/ssh/sshd_config
+echo "ClientAliveInterval 300" >> /etc/ssh/sshd_config
+echo "ClientAliveCountMax 0" >> /etc/ssh/sshd_config
+
+echo "b08dfa6083e7567a1921a715000001fb" > /var/lib/dbus/machine-id
 
 echo "Trim filesystem"
 rm -rf /usr/share/man/* /usr/share/doc/* /usr/share/info/*

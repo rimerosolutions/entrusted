@@ -341,7 +341,6 @@
             cancelPendingTasksButtonElement.className = "button-cancelled";
             let overallProgressElement = document.getElementById("overallProgress");
             overallProgressElement.value = 0;
-            overallProgressElement.className = "succeeded";
             let conversionContainerElement = document.getElementById("conversionContainer");
             conversionContainerElement.className = "invisible";
             let overallProgressTableElement = document.getElementById("overallProgressTable");
@@ -432,7 +431,6 @@
           fileListTableElement.className = "invisible";
           let overallProgressElement = document.getElementById("overallProgress");
           overallProgressElement.value = 0;
-          overallProgressElement.className = "succeeded";
           let overallProgressLabelElement = document.getElementById("overallProgressLabel");
           overallProgressLabelElement.className = "succeeded";
           let overallProgressTableElement = document.getElementById("overallProgressTable");
@@ -746,7 +744,6 @@
 
         function onComplete(fileObjId, fileStatus, downloadLocation) {
           if (fileStatus.toLowerCase() == "failed") {
-            document.getElementById("overallProgress").className = "failed";
             document.getElementById("overallProgressLabel").className = "failed";
             newFailCount++;
           }
@@ -828,7 +825,6 @@
             conversionSummaryElement.innerText = conversionSummaryText;
             
             if (cancelPendingTasksRequested) {
-              overallProgressElement.className = "cancelled";
               let fileListTableBodyElement = document.getElementById("fileListTableBody");
               overallProgressLabelElement.className = "cancelled";
               
@@ -1317,6 +1313,10 @@
 
       .button-failed {
           background-color: red;
+      }
+
+      progress {
+        accent-color: yellow;
       }
 
       .inprogress {

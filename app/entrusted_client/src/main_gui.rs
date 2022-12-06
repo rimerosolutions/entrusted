@@ -1526,7 +1526,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_pos(0, 0)
         .with_align(enums::Align::Inside | enums::Align::Left);
     seccomp_checkbutton.set_label(&trans.gettext("Custom hardening for sandbox container image"));
-    seccomp_checkbutton.set_label_color(enums::Color::Red);
+    seccomp_checkbutton.set_label_color(enums::Color::from_rgb(102, 51, 0));
     seccomp_checkbutton.set_tooltip(&trans.gettext("seccomp security profile is an opt-in for now. Please disable it if you experience random abrupt conversion failures."));
     
     if let Some(true) = appconfig.seccomp_profile_enabled {

@@ -19,11 +19,11 @@ Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_c
 Key features include the following:
 - Files (PDF, Office documents and images) are processed inside a "sandbox"
 - The transformation of huge documents is frictionless
-- Files can be converted in batch
+- Files can be converted in batch (sequentially)
 - An optional Web interface is available and can act as an "online service"
 - The [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]] provides both enhanced security and configuration convenience
-- The application has multilingual support (English and French for now)
 - Password-protected files are supported (known Office document formats and PDF files)
+- The application has multilingual support (English and French for now)
 - On Mac OS, [[https://github.com/lima-vm/lima][Lima]] can be installed as an alternative to [[https://www.docker.com/products/docker-desktop/][Docker]] (/default Lima instance/ only)
 
 ** Use-cases
@@ -57,7 +57,7 @@ There are three user interfaces ([[./app/entrusted_client][Desktop and Command-L
 ** Downloads
 
 Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releases page]] for downloads (64-bit: [[https://en.wikipedia.org/wiki/X86-64][amd64/x86_64]] and [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]]).
-- If you prefer [[https://flatpak.org/][Flatpak]] on Linux, please check out the [[https://github.com/axtloss/flatpaks][axtloss flatpaks]] project page
+- If you prefer [[https://flatpak.org/][Flatpak]] on Linux, please check out the [[https://github.com/axtloss/flatpaks][axtloss flatpaks]] project page (might be dated).
 - =aarch64= (=arm64=) builds are not yet available for Windows or the Live CD
 
 |-----------+------------------------------------------+-----------------------------------------------|

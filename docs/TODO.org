@@ -1,6 +1,6 @@
 #+TITLE: TODO
 
-* Milestone: Hardening and features maturity [80%]
+* Milestone: Hardening and features maturity [60%]
 - [X] Security
   - [X] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for the conversion sandbox container
     - This is an opt-in for now
@@ -25,7 +25,8 @@
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)
   - [X] Smaller container image size
   - [X] Sign revision control commits and container images
-- [X] Builds and releases
+- [-] Builds and releases
+  - [ ] Retry creating a Live CD for =arm64= after many past failures
   - [X] +Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (REJECTED)+
     - Lack of runners for Debian Bullseye (Linux arm64)
     - Random 404 errors with pre-configured APT repositories of some runners

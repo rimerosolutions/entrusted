@@ -1,3 +1,14 @@
+entrusted (0.2.7) stable; urgency=medium
+
+  * Add custom seccomp security profile for container sandbox
+  * Add setting for controlling PDF result visual quality
+  * Allow multiple language selection when creating searchable PDF results
+  * Add button to cancel conversions that are not yet started
+  * Address few potential intermittent failures in batch conversions
+  * Upgrade software dependencies for quality and security reasons
+
+ -- Yves Zoundi <yves_zoundi@hotmail.com>  Tbd, Tbd Tbd 2023 09:38:25 -0400
+
 entrusted (0.2.6) stable; urgency=medium
 
   * Fix Docker permission denied errors at the end of conversions, under Linux

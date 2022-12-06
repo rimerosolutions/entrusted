@@ -37,7 +37,9 @@ Over time, it's been painful to test software releases due to the lack of an aut
 
 * Testing approach
 
-It is unrealistic at this time to discard manual testing. Generally speaking, there are always problems easier to spot with manual testing, especially as it pertains to visual interfaces.
+It is unrealistic at this time to discard manual testing.
+
+Generally speaking, there are always problems easier to spot with manual testing, especially as it pertains to visual interfaces.
 
 ** What can we automate?
 
@@ -45,7 +47,13 @@ We can start by focusing on the test dataset in the =test_data= folder.
 
 ** How do we automate?
 
-Initially, it can be as simple as a Python script that executes the CLI program (=entrusted-cli=) and check for error exit codes.
-- On Unix-like systems, Python is often installed by default
-- On Windows, the developer would need Python installed (WSL or regular Python installation)
+Initially, this can be a single scenario via [[https://github.com/cucumber-rs/cucumber][cucumber-rs]] (=entrusted-cli=)
+- We loop through all the test files in =test_data=, as described in a [[https://cucumber.io/docs/gherkin/reference][Gherkin]] feature file
+- For each file, we perform a conversion via the =entrusted-cli= program
+- We ensure that exit codes are OK
+- We cleanup any temporary files created
+
+Note:
+- This could have been all tested without Cucumber and may need to be revisited to justify the usage of Cucumber.
+- =cucumber-rs= does seem to pull quite a lot of dependencies...
 

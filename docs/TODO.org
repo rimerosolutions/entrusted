@@ -1,29 +1,35 @@
 #+TITLE: TODO
 
-* Milestone: Hardening and features maturity [20%]
-- [-] Security
+* Milestone: Hardening and features maturity [80%]
+- [X] Security
+  - [X] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for the conversion sandbox container
+    - This is an opt-in for now
+    - This is activated by default in the Live CD (not a user visible setting)      
   - [X] Virtual machine hardening for Live CD
     - [X] Minimal [[https://docs.arbitrary.ch/security/systemd.html][systemd]] sandboxing for the "Online Service (=entrusted-webserver=), just =PrivateTmp= for now
     - [X] [[https://madaidans-insecurities.github.io/guides/linux-hardening.html][sysctl]] settings, kernel boot parameters, [[https://github.com/GrapheneOS/hardened_malloc][hardened_malloc]]
-    - [X] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile (Live CD only, random conversion failures in Desktop GUI...)
   - [X] Run an publish vulnerability assessments for container images
   - [X] Evaluate more frequently updated container images for CVEs
     - [X] Debian takes a while to sometimes address issues but it's very stable (PREFERRED)
     - [X] Alpine would require revisiting occasional segmentation faults (exit code =139=)
     - [X] Fedora takes a while to build (dnf is VERY slow) and trimming the image size is rather involved
-- [-] Improved conversions
-  - [ ] Review possible  multi-threading issues related with =entrusted-gui=
+- [X] Improved conversions
+  - [X] Review possible  multi-threading issues related with =entrusted-gui=
   - [X] Evaluate performance optimization opportunities
   - [X] Allow multiple language selection for searchable PDFs (OCR)
 - [-] Code maintenance and other practices
+  - [ ] Review code changes and retest
   - [ ] Happy path integration testing with [[https://github.com/cucumber-rs/cucumber][cucumber-rs]] (=entrusted_client=) 
   - [X] Review command-line flags default values after upgrading command-line arguments library
   - [X] Apply most of [[https://github.com/rust-lang/rust-clippy][clippy]] suggested code changes
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)
   - [X] Smaller container image size
   - [X] Sign revision control commits and container images
-- [-] Builds and releases
-  - [ ] Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (RETRYING, figure out Live CD too...)
+- [X] Builds and releases
+  - [X] +Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (REJECTED)+
+    - Lack of runners for Debian Bullseye (Linux arm64)
+    - Random 404 errors with pre-configured APT repositories of some runners
+    - Other minor annoyances
   - [X] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)
   - [X] Bump the cargo edition to =2021= instead of =2018= in cargo manifests
 - [X] User interface

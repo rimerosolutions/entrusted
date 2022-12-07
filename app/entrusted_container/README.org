@@ -20,19 +20,19 @@ Because of a shared library, you /MUST/ build the container image from the =entr
 ** Podman
 
 #+begin_src sh
-  podman build -t docker.io/uycyjnzgntrn/entrusted_container:0.2.5 . -f entrusted_container/Dockerfile
+  podman build -t docker.io/uycyjnzgntrn/entrusted_container:0.2.7 . -f entrusted_container/Dockerfile
 #+end_src
 
 ** Docker
 
 #+begin_src sh
-  docker build -t docker.io/uycyjnzgntrn/entrusted_container:0.2.5 . -f entrusted_container/Dockerfile
+  docker build -t docker.io/uycyjnzgntrn/entrusted_container:0.2.7 . -f entrusted_container/Dockerfile
 #+end_src
 
 ** Lima
 
 #+begin_src sh
-  lima nerdctl build -t docker.io/uycyjnzgntrn/entrusted_container:0.2.5 . -f entrusted_container/Dockerfile
+  lima nerdctl build -t docker.io/uycyjnzgntrn/entrusted_container:0.2.7 . -f entrusted_container/Dockerfile
 #+end_src
 
 * How to publish to Docker Hub?
@@ -46,8 +46,7 @@ The commands below apply to =Podman=, the syntax might different a bit for =Dock
 
   podman login -u uycyjnzgntrn docker.io
 
-  podman manifest push --all docker.io/uycyjnzgntrn/entrusted_container:0.2.5 docker.io/uycyjnzgntrn/entrusted_container:0.2.5
-  podman manifest push --all docker.io/uycyjnzgntrn/entrusted_container:latest docker.io/uycyjnzgntrn/entrusted_container:latest
+  podman manifest push --all --format docker --sign-by GPG_KEY_ID_HERE  docker.io/uycyjnzgntrn/entrusted_container:0.2.7  docker.io/uycyjnzgntrn/entrusted_container:0.2.7
 
   podman logout docker.io
 #+end_src

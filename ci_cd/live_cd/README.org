@@ -9,7 +9,7 @@ The live CD is based on [[https://www.debian.org/][Debian]] GNU Linux and aims t
   
 ** Recommended settings
 
-You need at least =1G= of RAM for the Live CD to run correctly:
+*You need at least 1G of RAM* for the Live CD to run correctly:
 - There's a correlation between allocated memory and free disk space
 - At least ~700MB of free space need to be available for temporary storage between conversions ("conversion sandbox" creation)
 

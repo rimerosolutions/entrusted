@@ -52,6 +52,11 @@ dunce = "1.0.3"
 embed-resource = "1.7.2" # stuck with 1.7.2 instead of latest now due to conflicts for toml > 0.5.8
 polib = "0.1.0"
 
+[dev-dependencies]
+assert_cmd = "2.0"
+cucumber = "0.17"
+futures = "0.3"
+
 [[bin]]
 name = "entrusted-cli"
 path = "src/main_cli.rs"
@@ -60,3 +65,7 @@ path = "src/main_cli.rs"
 name = "entrusted-gui"
 path = "src/main_gui.rs"
 required-features = ["gui"]
+
+[[test]]
+name = "happy_path"
+harness = false  # allows Cucumber to print output instead of libtest

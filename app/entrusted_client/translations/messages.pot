@@ -30,6 +30,9 @@ msgstr ""
 #~ "MIME-Version: 1.0\n"
 #~ "Content-Type: text/plain; charset=UTF-8"
 
+msgid "Disable seccomp security profile"
+msgstr ""
+
 msgid "Potentially sacrifice visual quality for processing time (quick preview first, etc.)"
 msgstr ""
 

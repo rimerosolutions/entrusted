@@ -79,7 +79,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let help_file_suffix = trans.gettext("Default file suffix (entrusted)");
     let help_password_prompt = trans.gettext("Prompt for document password");
     let help_update_checks = trans.gettext("Check for updates");
-    let help_enable_seccomp_profile = trans.gettext("Enable experimental seccomp security profile");
+    let help_disable_seccomp_profile = trans.gettext("Disable seccomp security profile");
 
     let cmd_help_template = trans.gettext(&format!("{}\n{}\n{}\n\n{}\n\n{}\n{}",
                                                    "{bin} {version}",
@@ -159,9 +159,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .required(false)
                 .action(ArgAction::SetTrue)
         ).arg(
-            Arg::new("enable-seccomp-profile")
-                .long("enable-seccomp-profile")
-                .help(&help_enable_seccomp_profile)
+            Arg::new("disable-seccomp-profile")
+                .long("disable-seccomp-profile")
+                .help(&help_disable_seccomp_profile)
                 .required(false)
                 .action(ArgAction::SetTrue)
         );

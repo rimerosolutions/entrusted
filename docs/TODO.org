@@ -19,7 +19,7 @@
   - [X] Allow multiple language selection for searchable PDFs (OCR)
 - [-] Code maintenance and other practices
   - [ ] Review code changes and retest
-  - [ ] Happy path integration testing with [[https://github.com/cucumber-rs/cucumber][cucumber-rs]] (=entrusted_client=) 
+  - [X] Happy path integration testing with [[https://github.com/cucumber-rs/cucumber][cucumber-rs]] (=entrusted_client=) 
   - [X] Review command-line flags default values after upgrading command-line arguments library
   - [X] Apply most of [[https://github.com/rust-lang/rust-clippy][clippy]] suggested code changes
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)

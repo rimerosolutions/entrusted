@@ -133,6 +133,6 @@ echo "ClientAliveCountMax 0" >> /etc/ssh/sshd_config
 echo "b08dfa6083e7567a1921a715000001fb" > /var/lib/dbus/machine-id
 
 echo "Trim filesystem"
-rm -rf /usr/share/man/* /usr/share/doc/* /usr/share/info/*
+rm -rf /usr/share/man/* /usr/share/doc/* /usr/share/info/* /var/cache/apt/*
 
 exit

@@ -1515,26 +1515,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     ociimage_pack.end();
 
-    // User settings - enable seccomp profile for container image
-    let seccomp_pack = group::Pack::default()
-        .with_size(550, 40)
-        .below_of(&ocrlang_pack, WIDGET_GAP)
-        .with_type(group::PackType::Horizontal);
-
-    ociimage_pack.set_spacing(WIDGET_GAP);
-    let mut seccomp_checkbutton = button::CheckButton::default()
-        .with_size(100, 20)
-        .with_pos(0, 0)
-        .with_align(enums::Align::Inside | enums::Align::Left);
-    seccomp_checkbutton.set_label(&trans.gettext("Disable custom hardening for sandbox container image"));
-    seccomp_checkbutton.set_tooltip(&trans.gettext("Please don't disable it unless you experience random abrupt conversion failures."));
-    
-    if let Some(true) = appconfig.seccomp_profile_disabled {
-        seccomp_checkbutton.set_checked(true);
-    }
-
-    seccomp_pack.end();
-
     // User settings - save
     let savesettings_pack = group::Pack::default()
         .with_size(150, 30)
@@ -1559,7 +1539,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         let ociimage_input_rc_ref = ociimage_input_rc.clone();
         let ocr_languages_by_lang_ref = ocr_languages_by_lang.clone();
         let result_visual_quality_checkbutton_ref = result_visual_quality_checkbutton.clone();
-        let seccomp_checkbutton_ref = seccomp_checkbutton.clone();
         let wind_ref = wind.clone();
 
         move|_| {
@@ -1576,10 +1555,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             } else {
                 new_appconfig.visual_quality = None;
-            }
-            
-            if seccomp_checkbutton_ref.is_checked() {
-                new_appconfig.seccomp_profile_disabled = Some(true);
             }
 
             if ocrlang_checkbutton_ref.is_checked() {
@@ -1873,7 +1848,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut overall_progress_frame_ref  = overall_progress_frame.clone();
         let mut cancel_tasks_button_ref = cancel_tasks_button.clone();
         let mut overall_progress_progressbar_ref  = overall_progress_progressbar.clone();
-        let seccomp_checkbutton_ref = seccomp_checkbutton.clone();
 
         move |b| {
             b.deactivate();
@@ -1927,7 +1901,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                 file_suffix = appconfig.file_suffix.to_owned().unwrap_or_else(|| common::DEFAULT_FILE_SUFFIX.to_string());
             }
 
-            let seccomp_disabled = seccomp_checkbutton_ref.is_checked();
+            let seccomp_disabled = if let Ok(env_seccomp_enablement) = env::var("ENTRUSTED_AUTOMATED_SECCOMP_ENABLEMENT") {
+                env_seccomp_enablement.to_lowercase() == "false" || env_seccomp_enablement.to_lowercase() == "no"
+            } else {
+                false
+            };
 
             let tasks: Vec<ConversionTask> = filelist_widget_ref.rows.borrow().iter().map(|row| {
                 row_to_task(&opt_viewer_app,
@@ -2353,8 +2331,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut ociimage_checkbutton_ref = ociimage_checkbutton.clone();
         let mut ociimage_pack_ref = ociimage_pack.clone();
 
-        let mut seccomp_checkbutton_ref = seccomp_checkbutton.clone();
-
         let mut selection_pack_ref = selection_pack.clone();
         let mut select_all_frame_ref = selectall_frame.clone();
         let mut deselect_all_frame_ref = deselectall_frame.clone();
@@ -2521,7 +2497,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 );
 
                 let ocw = wid.w() - (WIDGET_GAP * 3) - ocrlang_checkbutton.w();
-                let och = wid.h() - (WIDGET_GAP * 10) - (30 * 8);
+                let och = wid.h() - (WIDGET_GAP * 9) - (30 * 7);
 
                 ociimage_checkbutton_ref.resize(
                     ocrlang_checkbutton_ref.x(),
@@ -2529,12 +2505,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                     ocrlang_checkbutton_ref.w(),
                     ociimage_checkbutton_ref.h(),
                 );
-
-                seccomp_checkbutton_ref.resize(
-                    seccomp_checkbutton_ref.x(),
-                    seccomp_checkbutton_ref.y(),
-                    wid.w() - (WIDGET_GAP * 4),
-                    seccomp_checkbutton_ref.h());
 
                 openwith_checkbutton_ref.resize(
                     ocrlang_checkbutton_ref.x(),

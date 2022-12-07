@@ -22,10 +22,10 @@ msgid "Potentially sacrifice visual quality for processing time (quick preview f
 msgstr "Sacrifiez potentiellement la qualité visuelle pour le temps de traitement (aperçu rapide en premier, etc.)"
 
 msgid "Custom hardening for sandbox container image"
-msgstr ""
+msgstr "Sécurité personnalisée pour l'image du conteneur sandbox"
 
-msgid "seccomp security profile is an opt-in for now. Please disable it if you experience random abrupt conversion failures."
-msgstr ""
+msgid "Please don't disable it unless you experience random abrupt conversion failures."
+msgstr "Veuillez ne pas le désactiver à moins que vous ne rencontriez des échecs de conversion brusques et aléatoires."
 
 msgid "The conversion was cancelled!"
 msgstr "La conversion a été annulée!"

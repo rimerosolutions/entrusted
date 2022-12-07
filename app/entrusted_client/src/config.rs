@@ -21,8 +21,8 @@ pub struct AppConfig {
     pub openwith_appname: Option<String>,
     #[serde(rename(serialize = "visual-quality", deserialize = "visual-quality"))]
     pub visual_quality: Option<String>,
-    #[serde(rename(serialize = "seccomp-profile-enabled", deserialize = "seccomp-profile-enabled"))]
-    pub seccomp_profile_enabled: Option<bool>,
+    #[serde(rename(serialize = "seccomp-profile-disabled", deserialize = "seccomp-profile-disabled"))]
+    pub seccomp_profile_disabled: Option<bool>,
 }
 
 pub fn default_container_image_name() -> String {
@@ -39,7 +39,7 @@ impl Default for AppConfig {
             container_image_name: None,
             openwith_appname: None,
             visual_quality: None,
-            seccomp_profile_enabled: None
+            seccomp_profile_disabled: None,
         }
     }
 }

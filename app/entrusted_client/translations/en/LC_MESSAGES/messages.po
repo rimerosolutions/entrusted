@@ -24,7 +24,7 @@ msgstr ""
 msgid "Custom hardening for sandbox container image"
 msgstr ""
 
-msgid "seccomp security profile is an opt-in for now. Please disable it if you experience random abrupt conversion failures."
+msgid "Please don't disable it unless you experience random abrupt conversion failures."
 msgstr ""
 
 msgid "The conversion was cancelled!"

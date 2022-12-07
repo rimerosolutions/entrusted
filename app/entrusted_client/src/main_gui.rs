@@ -1525,11 +1525,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_size(100, 20)
         .with_pos(0, 0)
         .with_align(enums::Align::Inside | enums::Align::Left);
-    seccomp_checkbutton.set_label(&trans.gettext("Custom hardening for sandbox container image"));
-    seccomp_checkbutton.set_label_color(enums::Color::from_rgb(102, 51, 0));
-    seccomp_checkbutton.set_tooltip(&trans.gettext("seccomp security profile is an opt-in for now. Please disable it if you experience random abrupt conversion failures."));
+    seccomp_checkbutton.set_label(&trans.gettext("Disable custom hardening for sandbox container image"));
+    seccomp_checkbutton.set_tooltip(&trans.gettext("Please don't disable it unless you experience random abrupt conversion failures."));
     
-    if let Some(true) = appconfig.seccomp_profile_enabled {
+    if let Some(true) = appconfig.seccomp_profile_disabled {
         seccomp_checkbutton.set_checked(true);
     }
 
@@ -1579,7 +1578,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
             
             if seccomp_checkbutton_ref.is_checked() {
-                new_appconfig.seccomp_profile_enabled = Some(true);
+                new_appconfig.seccomp_profile_disabled = Some(true);
             }
 
             if ocrlang_checkbutton_ref.is_checked() {
@@ -1927,7 +1926,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 file_suffix = appconfig.file_suffix.to_owned().unwrap_or_else(|| common::DEFAULT_FILE_SUFFIX.to_string());
             }
 
-            let seccomp_enabled = seccomp_checkbutton_ref.is_checked();
+            let seccomp_disabled = seccomp_checkbutton_ref.is_checked();
 
             let tasks: Vec<ConversionTask> = filelist_widget_ref.rows.borrow().iter().map(|row| {
                 row_to_task(&opt_viewer_app,
@@ -1935,7 +1934,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                             image_quality.clone(),
                             &opt_ocr_lang,
                             &file_suffix,
-                            seccomp_enabled,
+                            !seccomp_disabled,
                             row
                 )
             }).collect();

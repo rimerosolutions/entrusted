@@ -1,6 +1,6 @@
 #+TITLE: TODO
 
-* Milestone: Hardening and features maturity [60%]
+* Milestone: Hardening and features maturity [80%]
 - [X] Security
   - [X] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for the conversion sandbox container
     - This is an opt-in for now
@@ -25,8 +25,10 @@
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)
   - [X] Smaller container image size
   - [X] Sign revision control commits and container images
-- [-] Builds and releases
-  - [ ] Retry creating a Live CD for =arm64= after many past failures
+- [X] Builds and releases
+  - [X] +Retry creating a Live CD for =arm64= after many past failures+ (POSTPONED, future)+
+    - Too painful to understand what's wrong inside =chroot= (bugs or whatsoever)
+    - Impossible to know if the same errors would happen on real hardware vs. emulation ([[https://www.qemu.org/][QEMU]])      
   - [X] +Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (REJECTED)+
     - Lack of runners for Debian Bullseye (Linux arm64)
     - Random 404 errors with pre-configured APT repositories of some runners

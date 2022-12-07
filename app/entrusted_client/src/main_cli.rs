@@ -294,12 +294,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         None
     };
 
-    let seccomp_profile_enabled = if run_matches.get_flag("enable-seccomp-profile") {
+    let seccomp_profile_disabled = if run_matches.get_flag("disable-seccomp-profile") {
         true
     } else if let Ok(env_seccomp_enablement) = env::var("ENTRUSTED_AUTOMATED_SECCOMP_ENABLEMENT") {
-        env_seccomp_enablement.to_lowercase() == "true" || env_seccomp_enablement.to_lowercase() == "yes"
+        !(env_seccomp_enablement.to_lowercase() == "true" || env_seccomp_enablement.to_lowercase() == "yes")
     } else {
-        app_config.seccomp_profile_enabled.unwrap_or(false)
+        app_config.seccomp_profile_disabled.unwrap_or(false)
     };
 
     let (exec_handle, rx) = {
@@ -307,7 +307,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         let exec_handle = thread::spawn({
             move || {
-                let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), image_quality, ocr_lang, opt_passwd, seccomp_profile_enabled);
+                let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), image_quality, ocr_lang, opt_passwd, !seccomp_profile_disabled);
                 let eventer = Box::new(CliEventSender {
                     tx
                 });

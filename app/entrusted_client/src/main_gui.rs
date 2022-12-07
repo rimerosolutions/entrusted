@@ -341,13 +341,14 @@ fn show_dialog_help(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Tra
         .with_label(&trans.gettext(&label_container_solution))
         .with_align(enums::Align::Inside | enums::Align::Left);
 
-    let label_supported_docs = format!("Supported document types: \n- {}\n- {}\n- {}\n- {}\n- {}",
+    let label_supported_docs = format!("Supported document types: \n- {}\n- {}\n- {}\n- {}\n- {}\n- {}",
                                        "Images (.jpg, .jpeg, .gif, .png, .tif, .tiff)",
                                        "Document Graphics (.odg)",
                                        "Text Documents (.rtf, .doc, .docx, .odt)",
                                        "Spreadsheets (.xls, .xlsx, .ods)",
-                                       "Presentations (.ppt, .pptx, .odp)");
-
+                                       "Presentations (.ppt, .pptx, .odp)",
+                                       "PDF files (.pdf)"
+    );
 
     frame::Frame::default()
         .with_size(350, 130)

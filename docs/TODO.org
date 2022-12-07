@@ -1,10 +1,10 @@
 #+TITLE: TODO
 
-* Milestone: Hardening and features maturity [80%]
-- [X] Security
-  - [X] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for the conversion sandbox container
-    - This is an opt-in for now
-    - This is activated by default in the Live CD (not a user visible setting)      
+* Milestone: Hardening and features maturity [60%]
+- [-] Security
+  - [-] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for the conversion sandbox container
+    - [ ] This is an opt-in for now, need to just activate it and remove UI settings (if stable enough...)
+    - [X] This is activated by default in the Live CD (not a user visible setting)      
   - [X] Virtual machine hardening for Live CD
     - [X] Minimal [[https://docs.arbitrary.ch/security/systemd.html][systemd]] sandboxing for the "Online Service (=entrusted-webserver=), just =PrivateTmp= for now
     - [X] [[https://madaidans-insecurities.github.io/guides/linux-hardening.html][sysctl]] settings, kernel boot parameters, [[https://github.com/GrapheneOS/hardened_malloc][hardened_malloc]]
@@ -18,7 +18,7 @@
   - [X] Evaluate performance optimization opportunities
   - [X] Allow multiple language selection for searchable PDFs (OCR)
 - [-] Code maintenance and other practices
-  - [ ] Review code changes and retest
+  - [ ] Review code changes and re-test
   - [X] Happy path integration testing with [[https://github.com/cucumber-rs/cucumber][cucumber-rs]] (=entrusted_client=) 
   - [X] Review command-line flags default values after upgrading command-line arguments library
   - [X] Apply most of [[https://github.com/rust-lang/rust-clippy][clippy]] suggested code changes

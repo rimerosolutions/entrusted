@@ -25,6 +25,7 @@
     "l10n-window-help-supported-docs-line4": "Documents Texte (.rtf, .doc, .docx, .odt)",
     "l10n-window-help-supported-docs-line5": "Tableurs (.xls, .xlsx, .ods)",
     "l10n-window-help-supported-docs-line6": "Présentations (.ppt, .pptx, .odp)",
+    "l10n-window-help-supported-docs-line7": "Fichiers PDF (.pdf)",
     "l10n-window-help-more-info-line1": "Pour plus d'information, veuillez visiter:",
     "l10n-window-help-more-info-line2": "https://github.com/rimerosolutions/entrusted",
     "l10n-window-password-title": "Définir le mot de passe du document",

@@ -37,6 +37,7 @@ Do you identify yourself in one of the situations below?
 ** Supported files
 
 The following file types can be processed with =Entrusted=:
+- PDF files (=.pdf=)
 - Text Documents (=.rtf=, =.doc=, =.docx=, =.odt=)
 - Presentations (=.ppt=, =.pptx=, =.odp=)
 - Spreadsheets (=.xls=, =.xlsx=, =.ods=)

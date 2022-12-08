@@ -4,7 +4,7 @@ LABEL stage=entrusted_container_builder
 WORKDIR /home/rust/entrusted-container
 COPY . .
 
-RUN CARGO_PROFILE_RELEASE_LTO=true CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1 CARGO_PROFILE_RELEASE_OPT_LEVEL=3 CARGO_NET_GIT_FETCH_WITH_CLI=true PKG_CONFIG_ALLOW_CROSS=1 LO_INCLUDE_PATH=/usr/include/LibreOfficeKit cargo install --path entrusted_container --root /usr/local \
+RUN CARGO_NET_GIT_FETCH_WITH_CLI=true PKG_CONFIG_ALLOW_CROSS=1 LO_INCLUDE_PATH=/usr/include/LibreOfficeKit cargo install --path entrusted_container --root /usr/local \
     && cargo clean --manifest-path entrusted_container/Cargo.toml && strip --strip-unneeded /usr/local/bin/entrusted-container
 
 FROM docker.io/debian:bullseye-slim

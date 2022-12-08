@@ -40,3 +40,6 @@ polib = "0.1.0"
 [[bin]]
 name = "entrusted-webserver"
 path = "src/main.rs"
+
+[profile.release]
+opt-level = 3

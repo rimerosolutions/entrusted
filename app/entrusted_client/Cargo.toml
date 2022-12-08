@@ -69,3 +69,6 @@ required-features = ["gui"]
 [[test]]
 name = "happy_path"
 harness = false  # allows Cucumber to print output instead of libtest
+
+[profile.release]
+opt-level = 3

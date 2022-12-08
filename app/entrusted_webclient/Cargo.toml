@@ -33,3 +33,6 @@ polib = "0.1.0"
 [[bin]]
 name = "entrusted-webclient"
 path = "src/main.rs"
+
+[profile.release]
+opt-level = 3

@@ -72,3 +72,8 @@ harness = false  # allows Cucumber to print output instead of libtest
 
 [profile.release]
 opt-level = 3
+lto = true
+codegen-units = 1
+
+[profile.release.package."*"]
+opt-level = 3

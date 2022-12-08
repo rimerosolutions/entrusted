@@ -20,14 +20,14 @@ LABEL org.opencontainers.image.version="0.2.7"
 LABEL org.opencontainers.image.url="https://github.com/rimerosolutions/entrusted/tree/main/app/entrusted_container"
 LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrusted.git"
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get upgrade -y && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+RUN DEBIAN_FRONTEND=noninteractive apt update && apt upgrade -y && DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends -y \
     libleptonica-dev \
     libtesseract-dev \
     libreoffice-writer libreoffice-draw libreoffice-impress libreoffice-calc \
     libpoppler-dev \
     libcairo2-dev \
     tesseract-ocr-all \
-    fonts-dejavu libpoppler-glib-dev && apt-get clean
+    fonts-dejavu libpoppler-glib-dev && apt clean
 
 COPY --from=builder /usr/local/bin/entrusted-container /usr/local/bin/entrusted-container
 

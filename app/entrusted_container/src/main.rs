@@ -83,30 +83,30 @@ fn main() -> Result<(), Box<dyn Error>> {
     } else {
         None
     };
-    
+
     let image_quality = if let Ok(env_img_quality) = env::var(ENV_VAR_ENTRUSTED_VISUAL_QUALITY) {
         let img_quality = env_img_quality.to_lowercase();
         let img_quality_str = img_quality.as_str();
-        
+
         match img_quality_str {
             "low"    => IMAGE_SIZE_QUALITY_LOW,
             "medium" => IMAGE_SIZE_QUALITY_MEDIUM,
             "high"   => IMAGE_SIZE_QUALITY_HIGH,
-            _        => IMAGE_SIZE_QUALITY_LOW                
+            _        => IMAGE_SIZE_QUALITY_MEDIUM
         }
     } else {
-        IMAGE_SIZE_QUALITY_LOW
+        IMAGE_SIZE_QUALITY_MEDIUM
     };
 
     let logger: Box<dyn ConversionLogger> = if let Ok(dgz_logformat_value) = env::var(ENV_VAR_LOG_FORMAT) {
         match dgz_logformat_value.as_str() {
             "json" => {
-                Box::new(JsonConversionLogger) 
+                Box::new(JsonConversionLogger)
             },
-            _ => Box::new(PlainConversionLogger) 
+            _ => Box::new(PlainConversionLogger)
         }
     } else {
-        Box::new(PlainConversionLogger) 
+        Box::new(PlainConversionLogger)
     };
 
     let ret = || -> Result<(), Box<dyn Error>> {
@@ -152,7 +152,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             } else {
                 DEFAULT_DIR_TESSERACT_TESSDATA.to_string()
             };
-            
+
             let tess_settings = TessSettings {
                 lang: ocr_lang_text,
                 data_dir: &provided_tessdata_dir
@@ -331,7 +331,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &dyn ConversionLogger, _: &ProgressRange,
                                         password_was_set.store(true, Ordering::Release);
                                     } else if !failed_password_input.load(Ordering::Acquire) {
                                         failed_password_input.store(true, Ordering::Release);
-                                        let _ = office.unset_document_password(input_uri.clone());                                        
+                                        let _ = office.unset_document_password(input_uri.clone());
                                     }
                                 }
                             }) {
@@ -814,13 +814,11 @@ fn pdf_combine_pdfs(logger: &dyn ConversionLogger, progress_range: &ProgressRang
     if let Err(ex) = document.save(output_path) {
         return Err(l10n.gettext_fmt("Could not save PDF file to {0}. {1}.", vec![&output_path.display().to_string(), &ex.to_string()]).into());
     }
-    
+
     if std::fs::metadata(output_path).is_err() {
         return Err(l10n.gettext_fmt("Could not save PDF file to {0}.", vec![&output_path.display().to_string()]).into());
     }
 
-    drop(document);
-    
     Ok(())
 }
 
@@ -847,9 +845,10 @@ fn imgs_to_pdf(logger: &dyn ConversionLogger, progress_range: &ProgressRange, pa
 
 fn img_to_pdf(src_format: image::ImageFormat, src_path: &Path, dest_path: &Path) -> Result<(), Box<dyn Error>> {
     let f = fs::File::open(src_path)?;
+    let file_len = f.metadata()?.len() as usize;
     let reader = BufReader::new(f);
     let img = image::load(reader, src_format)?;
-    let mut buffer: Vec<u8> = Vec::new();
+    let mut buffer: Vec<u8> = Vec::with_capacity(file_len);
     let buffer_cursor = &mut Cursor::new(&mut buffer);
 
     img.write_to(buffer_cursor, image::ImageOutputFormat::Png)?;

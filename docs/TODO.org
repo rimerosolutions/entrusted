@@ -1,12 +1,12 @@
 #+TITLE: TODO
 
-* Milestone: Hardening and features maturity [60%]
-- [-] Security
-  - [-] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for the conversion sandbox container
-    - [ ] This is an opt-in for now, need to just activate it and remove UI settings (if stable enough...)
-    - [X] This is activated by default in the Live CD (not a user visible setting)      
+* Milestone: Hardening and features maturity [80%]
+- [X] Security
+  - [X] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for the conversion sandbox container (enabled by default)
+    - It is possible to disable it via an environment variable (this used to be an explicit opt-in during the feature implementation)
+    - This was achievable via tracing tools ([[https://github.com/containers/oci-seccomp-bpf-hook.git][oci-seccomp-bpf-hook]]), brute-force ([[https://github.com/yveszoundi/seccompian][seccompian]]) and manual tweaks (edge cases)
   - [X] Virtual machine hardening for Live CD
-    - [X] Minimal [[https://docs.arbitrary.ch/security/systemd.html][systemd]] sandboxing for the "Online Service (=entrusted-webserver=), just =PrivateTmp= for now
+    - [X] Minimal [[https://docs.arbitrary.ch/security/systemd.html][systemd]] sandboxing for the "Online Service (=entrusted-webserver=)
     - [X] [[https://madaidans-insecurities.github.io/guides/linux-hardening.html][sysctl]] settings, kernel boot parameters, [[https://github.com/GrapheneOS/hardened_malloc][hardened_malloc]]
   - [X] Run an publish vulnerability assessments for container images
   - [X] Evaluate more frequently updated container images for CVEs
@@ -26,13 +26,14 @@
   - [X] Smaller container image size
   - [X] Sign revision control commits and container images
 - [X] Builds and releases
-  - [X] +Retry creating a Live CD for =arm64= after many past failures+ (POSTPONED, future)+
+  - [X] +Retry creating a Live CD for =arm64= after many past failures (POSTPONED, future)+
     - Too painful to understand what's wrong inside =chroot= (bugs or whatsoever)
-    - Impossible to know if the same errors would happen on real hardware vs. emulation ([[https://www.qemu.org/][QEMU]])      
+    - Impossible to know if the same errors would happen on real hardware vs. emulation ([[https://www.qemu.org/][QEMU]])
   - [X] +Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (REJECTED)+
-    - Lack of runners for Debian Bullseye (Linux arm64)
-    - Random 404 errors with pre-configured APT repositories of some runners
-    - Other minor annoyances
+    - Lack of control around runners and their availability without further work (Linux arm64, targetting specific Linux versions)
+    - Random 404 errors with pre-configured APT repositories (Azure ubuntu repositories, etc.)
+    - Other minor annoyances that are likely solvable with a bit of research
+    - Lack of investigation for the Live CD creation in =chroot=
   - [X] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)
   - [X] Bump the cargo edition to =2021= instead of =2018= in cargo manifests
 - [X] User interface

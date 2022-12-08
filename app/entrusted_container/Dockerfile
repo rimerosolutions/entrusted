@@ -4,7 +4,7 @@ LABEL stage=entrusted_container_builder
 WORKDIR /home/rust/entrusted-container
 COPY . .
 
-RUN PKG_CONFIG_ALLOW_CROSS=1 LO_INCLUDE_PATH=/usr/include/LibreOfficeKit cargo install --path entrusted_container --root /usr/local \
+RUN CARGO_NET_GIT_FETCH_WITH_CLI=true PKG_CONFIG_ALLOW_CROSS=1 LO_INCLUDE_PATH=/usr/include/LibreOfficeKit cargo install --path entrusted_container --root /usr/local \
     && cargo clean --manifest-path entrusted_container/Cargo.toml && strip --strip-unneeded /usr/local/bin/entrusted-container
 
 FROM docker.io/debian:bullseye-slim
@@ -20,14 +20,14 @@ LABEL org.opencontainers.image.version="0.2.7"
 LABEL org.opencontainers.image.url="https://github.com/rimerosolutions/entrusted/tree/main/app/entrusted_container"
 LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrusted.git"
 
-RUN DEBIAN_FRONTEND=noninteractive apt update && apt upgrade -y && DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends -y \
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get upgrade -y && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
     libleptonica-dev \
     libtesseract-dev \
     libreoffice-writer libreoffice-draw libreoffice-impress libreoffice-calc \
     libpoppler-dev \
     libcairo2-dev \
     tesseract-ocr-all \
-    fonts-dejavu libpoppler-glib-dev && apt clean
+    fonts-dejavu libpoppler-glib-dev && apt-get clean
 
 COPY --from=builder /usr/local/bin/entrusted-container /usr/local/bin/entrusted-container
 

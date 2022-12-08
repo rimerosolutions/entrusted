@@ -34,11 +34,3 @@ polib = "0.1.0"
 name = "entrusted-webclient"
 path = "src/main.rs"
 
-[profile.release]
-opt-level = 3
-lto = true
-codegen-units = 1
-
-[profile.release.package."*"]
-opt-level = 3
-

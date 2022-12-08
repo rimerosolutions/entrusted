@@ -32,7 +32,6 @@ pub fn spawn_cmd(
     cmd_args: Vec<String>,
     env_map: HashMap<String, String>,
 ) -> std::io::Result<Child> {
-    use std::os::windows::process::CommandExt;
     Command::new(cmd)
         .envs(env_map)
         .args(cmd_args)

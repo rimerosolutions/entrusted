@@ -22,6 +22,7 @@ cfb = "0.7.3"
 zip = { version = "0.6.3", default-features = false, features = ["deflate"] }
 serde = { version = "1.0.147", features = ["derive"] }
 serde_json = "1.0.89"
+mimalloc = "0.1.32"
 libreoffice-rs = { git = "https://github.com/undeflife/libreoffice-rs", branch = "master" }
 entrusted_l10n = { path = "../entrusted_l10n" }
 
@@ -31,11 +32,3 @@ polib = "0.1.0"
 [[bin]]
 name = "entrusted-container"
 path = "src/main.rs"
-
-[profile.release]
-opt-level = 3
-lto = true
-codegen-units = 1
-
-[profile.release.package."*"]
-opt-level = 3

@@ -13,13 +13,10 @@ use std::time::Instant;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use libreoffice_rs::{Office, LibreOfficeKitOptionalFeatures, urls};
-use mimalloc::MiMalloc;
+
 use entrusted_l10n as l10n;
 
 mod mimetypes;
-
-#[global_allocator]
-static GLOBAL: MiMalloc = MiMalloc;
 
 const DEFAULT_DIR_TESSERACT_TESSDATA: &str  = "/usr/share/tesseract-ocr/4.00/tessdata";
 const DEFAULT_DIR_LIBREOFFICE_PROGRAM: &str = "/usr/lib/libreoffice/program";

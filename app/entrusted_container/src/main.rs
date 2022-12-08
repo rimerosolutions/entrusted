@@ -848,10 +848,9 @@ fn imgs_to_pdf(logger: &dyn ConversionLogger, progress_range: &ProgressRange, pa
 
 fn img_to_pdf(src_format: image::ImageFormat, src_path: &Path, dest_path: &Path) -> Result<(), Box<dyn Error>> {
     let f = fs::File::open(src_path)?;
-    let file_len = f.metadata()?.len() as usize;
     let reader = BufReader::new(f);
     let img = image::load(reader, src_format)?;
-    let mut buffer: Vec<u8> = Vec::with_capacity(file_len);
+    let mut buffer: Vec<u8> = Vec::new();
     let buffer_cursor = &mut Cursor::new(&mut buffer);
 
     img.write_to(buffer_cursor, image::ImageOutputFormat::Png)?;

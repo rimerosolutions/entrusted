@@ -2,8 +2,8 @@
 
 * Milestone: Hardening and features maturity [80%]
 - [X] Security
-  - [X] [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for the conversion sandbox container (enabled by default)
-    - It is possible to disable it via an environment variable (this used to be an explicit opt-in during the feature implementation)
+  - [X] Limit the attack surface via a custom [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for the container image (enabled by default)
+    - It is possible to disable it via an environment variable (failsafe if an unexpected bug makes the program unusable)
     - This was achievable via tracing tools ([[https://github.com/containers/oci-seccomp-bpf-hook.git][oci-seccomp-bpf-hook]]), brute-force ([[https://github.com/yveszoundi/seccompian][seccompian]]) and manual tweaks (edge cases)
   - [X] Virtual machine hardening for Live CD
     - [X] Minimal [[https://docs.arbitrary.ch/security/systemd.html][systemd]] sandboxing for the "Online Service (=entrusted-webserver=)
@@ -11,7 +11,10 @@
   - [X] Run an publish vulnerability assessments for container images
   - [X] Evaluate more frequently updated container images for CVEs
     - [X] Debian takes a while to sometimes address issues but it's very stable (PREFERRED)
-    - [X] Alpine would require revisiting occasional segmentation faults (exit code =139=)
+    - [X] Alpine is the best "safe by default" option, with few compromises (REASONABLE)
+      - CVEs are addressed very quickly, in fact close to none detected by [[https://trivy.dev/][Trivy]]
+      - It seems to require more system calls with =musl=, impacting benefits of fine-grained =seccomp= profiles
+      - It is easier on computer resources, but noticeably slower on "medium size" documents (i.e. 100+ PDF pages)      
     - [X] Fedora takes a while to build (dnf is VERY slow) and trimming the image size is rather involved
 - [X] Improved conversions
   - [X] Review possible  multi-threading issues related with =entrusted-gui=

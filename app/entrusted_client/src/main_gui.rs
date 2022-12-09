@@ -2044,7 +2044,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     option_env!("CARGO_PKG_DESCRIPTION").unwrap_or("Unknown"),
                     &trans_ref.gettext("Version"),
                     option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"),
-                    &trans_ref.gettext_fmt("Copyright {0} {1}", vec!["2021-2022", "Rimero Solutions Inc."])
+                    &trans_ref.gettext_fmt("Copyright {0} {1}", vec!["2022-2023", "Rimero Solutions Inc."])
                 );
 
                 let mut logo_frame = frame::Frame::default()

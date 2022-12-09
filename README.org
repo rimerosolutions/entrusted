@@ -12,13 +12,13 @@ Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_c
 
 [[./images/screenshot.gif]]
 
-[[https://www.youtube.com/watch?v=InEsPLyFsKQ][Youtube presentation]] and [[https://github.com/rimerosolutions/entrusted/files/9892585/entrusted_document_sanitizer.pdf][PDF slides]] about Entrusted.
+[[https://www.youtube.com/watch?v=InEsPLyFsKQ][Youtube presentation]] and [[https://github.com/rimerosolutions/entrusted/files/9892585/entrusted_document_sanitizer.pdf][PDF slides]] about =Entrusted=.
 
 ** Features
 
 Key features include the following:
 - Files (PDF, Office documents and images) are processed inside a "sandbox"
-- The transformation of huge documents is frictionless
+- The sanitization of huge documents is frictionless
 - Files can be converted in batch (sequentially)
 - An optional Web interface is available and can act as an "online service"
 - The [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]] provides both enhanced security and configuration convenience

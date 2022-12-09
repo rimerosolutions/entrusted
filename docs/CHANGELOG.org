@@ -2,7 +2,7 @@
 
 * entrusted-0.2.7 (UNRELEASED - Early 2023?)
 
-The next release is focused on security concerns, but there are also few user visible features.
+The next release is focused on security concerns, but there are also few user visible features. This is a moderate security stance that makes reasonable compromises pertaining to usability, user convenience, speed and required computing resources.
 
 - security: Implement custom [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for "sandbox container execution"
   - This restricts what the application can do inside the container solution

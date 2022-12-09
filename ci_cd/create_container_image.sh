@@ -20,7 +20,7 @@ podman manifest rm docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}
 
 cd "${PROJECTDIR}"
 
-podman build --log-level info --jobs 2 --squash-all --format docker  --platform linux/arm64/v8 --platform linux/amd64 --manifest docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION} -f entrusted_container/Dockerfile .
+podman build --log-level info --squash-all --format docker  --platform linux/arm64/v8 --platform linux/amd64 --manifest docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION} -f entrusted_container/Dockerfile .
 
 retVal=$?
 if [ $retVal -ne 0 ]; then

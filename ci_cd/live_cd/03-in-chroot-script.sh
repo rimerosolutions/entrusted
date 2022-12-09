@@ -21,8 +21,6 @@ apt update && \
     slirp4netns \
     fuse-overlayfs \
     ca-certificates \
-    curl \
-    wget \
     locales \
     network-manager \
     net-tools \

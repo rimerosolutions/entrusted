@@ -29,7 +29,7 @@
   - [X] Smaller container image size
   - [X] Sign revision control commits and container images
 - [X] Builds and releases
-  - [X] +Retry creating a Live CD for =arm64= after many past failures (POSTPONED, future)+
+  - [X] +Retry creating a Live CD for arm64 after many past failures (POSTPONED, future)+
     - Too painful to understand what's wrong inside =chroot= (bugs or whatsoever)
     - Impossible to know if the same errors would happen on real hardware vs. emulation ([[https://www.qemu.org/][QEMU]])
   - [X] +Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (REJECTED)+

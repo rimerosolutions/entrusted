@@ -42,6 +42,9 @@ const FILELIST_ROW_COLOR_SUCCEEDED: enums::Color  = enums::Color::DarkGreen;
 const FILELIST_ROW_COLOR_FAILED: enums::Color     = enums::Color::Red;
 const FILELIST_ROW_COLOR_CANCELLED: enums::Color  = enums::Color::from_rgb(153, 0, 0);
 
+const TAB_COLOR_PUSHED_FOREGROUND: enums::Color = enums::Color::White;
+const TAB_COLOR_PUSHED_BACKGROUND: enums::Color = enums::Color::from_rgb(90, 90, 90);
+
 const EVENT_ID_SELECTION_CHANGED: i32 = 50;
 const EVENT_ID_ALL_SELECTED: i32      = 51;
 const EVENT_ID_ALL_DESELECTED: i32    = 52;
@@ -1084,22 +1087,31 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     wind.make_resizable(true);
+    let default_wincolor = wind.color();
 
     let mut top_group = group::Pack::default()
         .with_pos(20, 20)
         .with_size(680, 25)
         .with_type(group::PackType::Horizontal)
         .with_align(enums::Align::Inside | enums::Align::Right);
-
     top_group.set_spacing(WIDGET_GAP);
+    
 
+    let tabs =  group::Pack::default()
+        .with_size(240, 25)
+        .with_type(group::PackType::Horizontal)
+        .with_align(enums::Align::Inside | enums::Align::Left);
     let mut tabsettings_button = button::Button::default()
         .with_size(120, 20)
         .with_label(&trans.gettext("Settings"));
+    tabsettings_button.set_label_color(enums::Color::Black);
 
     let mut tabconvert_button = button::Button::default()
         .with_size(120, 20)
         .with_label(&trans.gettext("Convert"));
+    tabconvert_button.set_color(TAB_COLOR_PUSHED_BACKGROUND);
+    tabconvert_button.set_label_color(TAB_COLOR_PUSHED_FOREGROUND);        
+    tabs.end();
 
     let mut helpinfo_pack = group::Pack::default()
         .with_size(400, 20)
@@ -1108,7 +1120,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     helpinfo_pack.set_spacing(WIDGET_GAP/5);
 
     let mut spacer_frame = frame::Frame::default()
-        .with_size(360 - (WIDGET_GAP * 2), 20);
+        .with_size(360 - (WIDGET_GAP * 1), 20);
 
     let mut updatechecks_button = button::Button::default()
         .with_size(20, 20);
@@ -2089,6 +2101,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         move |b| {
             if !settings_pack_rc_ref.borrow().visible() {
+                b.set_color(TAB_COLOR_PUSHED_BACKGROUND);
+                b.set_label_color(TAB_COLOR_PUSHED_FOREGROUND);        
+                tabconvert_button_ref.set_color(default_wincolor);
+                tabconvert_button_ref.set_label_color(enums::Color::Black);
+                
                 tabconvert_button_ref.set_frame(enums::FrameType::UpBox);
                 b.set_frame(enums::FrameType::DownBox);
                 convert_pack_rc_ref.borrow_mut().hide();
@@ -2108,7 +2125,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         move |b| {
             if !convert_pack_rc_ref.borrow().visible() {
-                tabsettings_button_ref.set_frame(enums::FrameType::UpBox);
+                b.set_color(TAB_COLOR_PUSHED_BACKGROUND);
+                b.set_label_color(TAB_COLOR_PUSHED_FOREGROUND);
+                tabsettings_button_ref.set_color(default_wincolor);
+                tabsettings_button_ref.set_label_color(enums::Color::Black);
+
                 b.set_frame(enums::FrameType::DownBox);
                 settings_pack_rc_ref.borrow_mut().hide();
                 convert_pack_rc_ref.borrow_mut().show();
@@ -2372,11 +2393,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                     30,
                 );
 
-                let tabs_width = tabconvert_button.w();
+                let tabs_width = tabconvert_button_ref.w();
                 tabsettings_button_ref.resize(WIDGET_GAP, top_group_ref.y(), tabs_width, 30);
                 tabconvert_button_ref.resize(tabsettings_button_ref.x() + WIDGET_GAP, top_group_ref.y(), tabs_width, 30);
 
-                helpinfo_pack_ref.resize(tabconvert_button.x() + WIDGET_GAP, top_group_ref.y(), wid.w() - (WIDGET_GAP * 4) - (tabs_width * 2), 30);
+                helpinfo_pack_ref.resize(tabconvert_button_ref.x() + WIDGET_GAP, top_group_ref.y(), wid.w() - (WIDGET_GAP * 3) - (tabs_width * 2), 30);
                 spacer_frame.resize(helpinfo_pack_ref.x(), helpinfo_pack_ref.y(), helpinfo_pack_ref.w() - (WIDGET_GAP/4 * 2) - (30 * 2), 30);
                 helpinfo_button_ref.resize(spacer_frame.x() + spacer_frame.w() + WIDGET_GAP/4, spacer_frame.y(), 30, 30);
                 updatechecks_button_ref.resize(helpinfo_button_ref.x() + WIDGET_GAP/4, spacer_frame.y(), 30, 30);
@@ -2629,7 +2650,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     wind.end();
     wind.show();
     wind.resize(wind.x(), wind.y(), wind.w(), wind.h());
-
+    
+    let _ = tabconvert_button.take_focus();
+    
     if autoconvert {
         app::add_timeout3(0.2, {
             let mut convert_button = convert_button.clone();

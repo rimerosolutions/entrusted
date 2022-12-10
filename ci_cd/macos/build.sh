@@ -68,6 +68,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
     APPBUNDLE=${ARTIFACTSDIR}/${APPNAME}.app
     APPDMGDIR=${ARTIFACTSDIR}/dmg
     APPBUNDLECONTENTS=${APPBUNDLE}/Contents
+    APPBUNDLETMP=${APPBUNDLE}/tmp
     APPBUNDLEEXE=${APPBUNDLECONTENTS}/MacOS
     APPBUNDLERESOURCES=${APPBUNDLECONTENTS}/Resources
     APPBUNDLEICON=${APPBUNDLECONTENTS}/Resources
@@ -79,22 +80,28 @@ for CPU_ARCH in $CPU_ARCHS ; do
     mkdir -p ${APPBUNDLE}/Contents
     mkdir -p ${APPBUNDLE}/Contents/MacOS
     mkdir -p ${APPBUNDLE}/Contents/Resources
+    mkdir -p ${APPBUNDLETMP}    
 
-    convert -scale 16x16   ${SCRIPTDIR}/macos/${APPNAME}.png ${SCRIPTDIR}/macos/${APPNAME}_16_16.png
-    convert -scale 32x32   ${SCRIPTDIR}/macos/${APPNAME}.png ${SCRIPTDIR}/macos/${APPNAME}_32_32.png
-    convert -scale 128x128 ${SCRIPTDIR}/macos/${APPNAME}.png ${SCRIPTDIR}/macos/${APPNAME}_128_128.png
-    convert -scale 256x256 ${SCRIPTDIR}/macos/${APPNAME}.png ${SCRIPTDIR}/macos/${APPNAME}_256_256.png
-    convert -scale 512x512 ${SCRIPTDIR}/macos/${APPNAME}.png ${SCRIPTDIR}/macos/${APPNAME}_512_512.png
+    convert -scale 16x16     ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_16_16.png
+    convert -scale 32x32     ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_16x16@2x.png
+    convert -scale 32x32     ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_32_32.png
+    convert -scale 64x64     ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_32x32@2x.png
+    convert -scale 128x128   ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_128_128.png
+    convert -scale 256x256   ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_128x128@2x.png
+    convert -scale 256x256   ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_256_256.png
+    convert -scale 512x512   ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_256x256@2x.png
+    convert -scale 512x512   ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_512_512.png
+    convert -scale 1024x1024 ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_512x512@2x.png
 
     cp ${SCRIPTDIR}/macos/Info.plist ${APPBUNDLECONTENTS}/
     cp ${SCRIPTDIR}/macos/PkgInfo ${APPBUNDLECONTENTS}/
-    png2icns ${APPBUNDLEICON}/${APPNAME}.icns ${SCRIPTDIR}/macos/${APPNAME}_16_16.png ${SCRIPTDIR}/macos/${APPNAME}_32_32.png ${SCRIPTDIR}/macos/${APPNAME}_128_128.png ${SCRIPTDIR}/macos/${APPNAME}_256_256.png ${SCRIPTDIR}/macos/${APPNAME}_512_512.png
+    png2icns ${APPBUNDLEICON}/${APPNAME}.icns ${APPBUNDLETMP}/${APPNAME}_16_16.png ${APPBUNDLETMP}/${APPNAME}_16_16@2x.png \
+             ${APPBUNDLETMP}/${APPNAME}_32_32.png ${APPBUNDLETMP}/${APPNAME}_32_32@2x.png \
+             ${APPBUNDLETMP}/${APPNAME}_128_128.png ${APPBUNDLETMP}/${APPNAME}_128_128@2x.png \
+             ${APPBUNDLETMP}/${APPNAME}_256_256.png${APPBUNDLETMP}/${APPNAME}_256_256@2x.png \
+             ${APPBUNDLETMP}/${APPNAME}_512_512.png ${APPBUNDLETMP}/${APPNAME}_512_512@2x.png
 
-    rm ${SCRIPTDIR}/macos/${APPNAME}_16_16.png
-    rm ${SCRIPTDIR}/macos/${APPNAME}_32_32.png 
-    rm ${SCRIPTDIR}/macos/${APPNAME}_128_128.png 
-    rm ${SCRIPTDIR}/macos/${APPNAME}_256_256.png 
-    rm ${SCRIPTDIR}/macos/${APPNAME}_512_512.png
+    rm -rf ${APPBUNDLETMP}
 
     cp ${PROJECTDIR}/entrusted_client/target/${RUST_TARGET}/release/entrusted-cli ${APPBUNDLEEXE}/
     mv ${ARTIFACTSDIR}/entrusted-gui ${APPBUNDLEEXE}/

@@ -2038,7 +2038,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             let trans_ref = trans_ref.clone();
 
             move || {
-                let logo_image_bytes = include_bytes!("../../images/Entrusted.png");
                 let dialog_width = 350;
                 let dialog_height = 200;
                 let dialog_xpos = current_wind.x() + (current_wind.w() / 2) - (dialog_width / 2);
@@ -2063,7 +2062,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     .with_size(200, 50)
                     .with_pos(dialog_width/2 - 100, WIDGET_GAP);
 
-                if let Ok(img) = image::PngImage::from_data(logo_image_bytes) {
+                if let Ok(img) = image::PngImage::from_data(ICON_FRAME) {
                     let mut img = img;
                     img.scale(50, 50, true, true);
                     logo_frame.set_image(Some(img));

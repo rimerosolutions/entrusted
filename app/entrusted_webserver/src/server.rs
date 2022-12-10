@@ -47,6 +47,7 @@ use crate::config;
 use crate::model;
 use crate::uil10n;
 
+const FAVICON_ICO: &[u8] = include_bytes!("../../images/Entrusted_icon.ico");
 const SPA_INDEX_HTML: &[u8] = include_bytes!("../web-assets/index.html");
 
 type NotificationByIdLazyMutex = Lazy<Mutex<HashMap<String, Arc<Mutex<Vec<model::Notification>>>>>>;
@@ -71,6 +72,7 @@ pub async fn serve(
 
     let app = Router::new()
         .route("/", get(index))
+        .route("/favicon.ico", get(favicon))
         .route("/api/v1/uitranslations", get(uitranslations))
         .route("/api/v1/events/:request_id", get(events))
         .route("/api/v1/downloads/:request_id", get(downloads))
@@ -100,6 +102,10 @@ pub async fn serve(
             Err(trans.gettext("Cannot resolve server address").into())
         }
     }
+}
+
+async fn favicon<'a>() -> impl IntoResponse {
+    (StatusCode::OK, FAVICON_ICO)
 }
 
 async fn index<'a>() -> Html<&'a [u8]> {

@@ -511,6 +511,7 @@
                 let progressElement = document.createElement("progress");
                 progressElement.id = "progress-" + fileObj.id;
                 progressElement.value = 0;
+                progressElement.style.width = "80%";
                 progressElement.max = 100;
                 rowColumnElement.appendChild(progressElement);
               } else {

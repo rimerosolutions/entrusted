@@ -1120,7 +1120,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     helpinfo_pack.set_spacing(WIDGET_GAP/5);
 
     let mut spacer_frame = frame::Frame::default()
-        .with_size(360 - (WIDGET_GAP * 1), 20);
+        .with_size(360 - WIDGET_GAP, 20);
 
     let mut updatechecks_button = button::Button::default()
         .with_size(20, 20);

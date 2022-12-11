@@ -32,7 +32,7 @@ buildah manifest create docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}
 
 cd "${PROJECTDIR}"
 
-buildah bud --squash-all --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}-amd64 -f entrusted_container/Dockerfile .
+buildah bud --squash --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}-amd64 -f entrusted_container/Dockerfile .
 retVal=$?
 if [ $retVal -ne 0 ]; then
     echo "Failure to create entrusted_container container image for amd64"
@@ -41,7 +41,7 @@ fi
 buildah manifest add docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION} docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}-amd64
 
 
-buildah bud --squash-all --platform=linux/arm64 --format docker -t docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}-arm64 -f entrusted_container/Dockerfile .
+buildah bud --squash --platform=linux/arm64 --format docker -t docker.io/uycyjnzgntrn/entrusted_container:${APPVERSION}-arm64 -f entrusted_container/Dockerfile .
 retVal=$?
 if [ $retVal -ne 0 ]; then
     echo "Failure to create entrusted_container container image for arm64"

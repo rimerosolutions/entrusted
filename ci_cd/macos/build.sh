@@ -83,23 +83,18 @@ for CPU_ARCH in $CPU_ARCHS ; do
     mkdir -p ${APPBUNDLETMP}    
 
     convert -scale 16x16     ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_16_16.png
-    convert -scale 32x32     ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_16x16@2x.png
     convert -scale 32x32     ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_32_32.png
-    convert -scale 64x64     ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_32x32@2x.png
     convert -scale 128x128   ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_128_128.png
-    convert -scale 256x256   ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_128x128@2x.png
     convert -scale 256x256   ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_256_256.png
-    convert -scale 512x512   ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_256x256@2x.png
     convert -scale 512x512   ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_512_512.png
-    convert -scale 1024x1024 ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_512x512@2x.png
 
     cp ${SCRIPTDIR}/macos/Info.plist ${APPBUNDLECONTENTS}/
     cp ${SCRIPTDIR}/macos/PkgInfo ${APPBUNDLECONTENTS}/
-    png2icns ${APPBUNDLEICON}/${APPNAME}.icns ${APPBUNDLETMP}/${APPNAME}_16_16.png ${APPBUNDLETMP}/${APPNAME}_16_16@2x.png \
-             ${APPBUNDLETMP}/${APPNAME}_32_32.png ${APPBUNDLETMP}/${APPNAME}_32_32@2x.png \
-             ${APPBUNDLETMP}/${APPNAME}_128_128.png ${APPBUNDLETMP}/${APPNAME}_128_128@2x.png \
-             ${APPBUNDLETMP}/${APPNAME}_256_256.png${APPBUNDLETMP}/${APPNAME}_256_256@2x.png \
-             ${APPBUNDLETMP}/${APPNAME}_512_512.png ${APPBUNDLETMP}/${APPNAME}_512_512@2x.png
+    png2icns ${APPBUNDLEICON}/${APPNAME}.icns ${APPBUNDLETMP}/${APPNAME}_16_16.png  \
+             ${APPBUNDLETMP}/${APPNAME}_32_32.png \
+             ${APPBUNDLETMP}/${APPNAME}_128_128.png  \
+             ${APPBUNDLETMP}/${APPNAME}_256_256.png  \
+             ${APPBUNDLETMP}/${APPNAME}_512_512.png
 
     rm -rf ${APPBUNDLETMP}
 

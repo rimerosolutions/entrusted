@@ -29,7 +29,7 @@ cp -f ${SCRIPTDIR}/packaging/redhat_spec ${RPMBUILD_SOURCE}/entrusted.spec
 cp -f ${LINUX_ARTIFACTSDIR}/entrusted-cli ${RPMBUILD_SOURCE}/usr/bin/
 cp -f ${LINUX_ARTIFACTSDIR}/entrusted-gui ${RPMBUILD_SOURCE}/usr/bin/entrusted-gui
 cp -f ${SCRIPTDIR}/xdg/*.desktop ${RPMBUILD_SOURCE}/usr/share/applications/
-cp -f ${IMAGES_PROJECTDIR}/Entrusted.png ${RPMBUILD_SOURCE}/usr/share/icons/entrusted-gui.png
+cp -f ${IMAGES_PROJECTDIR}/Entrusted_icon.png ${RPMBUILD_SOURCE}/usr/share/icons/entrusted-gui.png
 cp -f ${SCRIPTDIR}/doc/copyright ${RPMBUILD_SOURCE}/usr/share/doc/${APPNAME}/
 cp -f ${SCRIPTDIR}/doc/changelog ${RPMBUILD_SOURCE}/usr/share/doc/${APPNAME}/changelog
 

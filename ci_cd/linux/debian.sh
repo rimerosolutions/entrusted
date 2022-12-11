@@ -24,7 +24,7 @@ cp -f ${SCRIPTDIR}/packaging/debian_spec ${BUILDTOPDIR}/${BUILDFOLDERNAME}/DEBIA
 cp -f ${LINUX_ARTIFACTSDIR}/entrusted-cli ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/bin/
 cp -f ${LINUX_ARTIFACTSDIR}/entrusted-gui ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/bin/entrusted-gui
 cp -f ${SCRIPTDIR}/xdg/*.desktop ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/applications/
-cp -f ${IMAGES_PROJECTDIR}/Entrusted.png ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/icons/entrusted-gui.png
+cp -f ${IMAGES_PROJECTDIR}/Entrusted_icon.png ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/icons/entrusted-gui.png
 cp -f ${SCRIPTDIR}/doc/copyright ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/doc/${APPNAME}/
 cp -f ${SCRIPTDIR}/doc/changelog ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/doc/${APPNAME}/changelog
 

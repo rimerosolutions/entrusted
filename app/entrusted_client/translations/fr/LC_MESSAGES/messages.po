@@ -90,6 +90,9 @@ msgstr "La version {0} est sortie!"
 msgid "Please get the new version!"
 msgstr "Veuillez obtenir la nouvelle version!"
 
+msgid "All files failed to process"
+msgstr "Tous les fichiers ont échoué au traitement"
+
 msgid "One file failed to process"
 msgid_plural "Multiple files failed to process"
 msgstr[0] "Tous les fichiers on été traités avec succès"

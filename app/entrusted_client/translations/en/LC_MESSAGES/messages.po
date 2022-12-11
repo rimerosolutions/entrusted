@@ -84,6 +84,9 @@ msgstr ""
 msgid "Please get the new version!"
 msgstr ""
 
+msgid "All files failed to process"
+msgstr ""
+
 msgid "One file failed to process"
 msgid_plural "Multiple files failed to process"
 msgstr[0] "All files processed successfully"

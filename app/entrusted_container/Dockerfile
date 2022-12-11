@@ -52,7 +52,7 @@ RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.zip' -o -name '*.gz' 
     && rm -rf /usr/share/perl* /usr/bin/perl* /usr/lib/x86_64-linux-gnu/perl* \
     && rm -rf /usr/lib/python* /usr/bin/python* /usr/share/python* \
     && rm -rf /usr/sbin/*add* /usr/sbin/*del* \
-    && rm -rf /usr/include/* /usr/share/icons/* /usr/share/applications/* /usr/share/pixmaps/* \
+    && rm -rf /usr/include /usr/share/icons/* /usr/share/applications/* /usr/share/pixmaps/* \
     && rm -rf /usr/games /var/cache/apt /var/lib/apt/lists /usr/sbin/dpkg* /usr/lib/dpkg* /var/lib/dpkg \
     && rm -rf /usr/bin/apt* /usr/lib/apt/* /usr/bin/dpkg* /usr/bin/debconf* \
     && rm -rf /usr/share/doc /usr/share/java /usr/share/man /usr/share/info  /var/log \

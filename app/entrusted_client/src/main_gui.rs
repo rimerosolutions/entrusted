@@ -2732,7 +2732,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                     let summary_message = if completed_count != total_count {
                         trans_ref.gettext("The conversion was cancelled!")
                     } else {
-                        trans_ref.ngettext("One file failed to process", "Multiple files failed to process", fail_count as u64)
+                        if fail_count != total_count {
+                            trans_ref.ngettext("One file failed to process", "Multiple files failed to process", fail_count as u64)                        
+                        } else {
+                            trans_ref.gettext("All files failed to process")
+                        }
                     };
 
                     let messages_frame_color = if completed_count != total_count {

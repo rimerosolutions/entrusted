@@ -10,7 +10,7 @@
 
 Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]], you *MUST* install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior launching the program.
 
-[[./images/screenshot.gif]]
+[[./images/screenshot.png]]
 
 [[https://www.youtube.com/watch?v=InEsPLyFsKQ][Youtube presentation]] and [[https://github.com/rimerosolutions/entrusted/files/9892585/entrusted_document_sanitizer.pdf][PDF slides]] about =Entrusted=.
 

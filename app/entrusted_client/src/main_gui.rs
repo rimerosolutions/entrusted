@@ -1094,8 +1094,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_size(680, 25)
         .with_type(group::PackType::Horizontal)
         .with_align(enums::Align::Inside | enums::Align::Right);
-    top_group.set_spacing(WIDGET_GAP);
-    
+    top_group.set_spacing(WIDGET_GAP);    
 
     let tabs =  group::Pack::default()
         .with_size(240, 25)
@@ -2088,6 +2087,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     convert_pack_rc.borrow_mut().end();
     tabconvert_button.set_frame(enums::FrameType::DownBox);
+    tabsettings_button.set_frame(enums::FrameType::UpBox);
     settings_pack_rc.borrow_mut().hide();
 
     tabsettings_button.set_callback({
@@ -2102,11 +2102,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             if !settings_pack_rc_ref.borrow().visible() {
                 b.set_color(TAB_COLOR_PUSHED_BACKGROUND);
                 b.set_label_color(TAB_COLOR_PUSHED_FOREGROUND);        
-                tabconvert_button_ref.set_color(default_wincolor);
-                tabconvert_button_ref.set_label_color(enums::Color::Black);
-                
-                tabconvert_button_ref.set_frame(enums::FrameType::UpBox);
                 b.set_frame(enums::FrameType::DownBox);
+
+                tabconvert_button_ref.set_color(default_wincolor);
+                tabconvert_button_ref.set_label_color(enums::Color::Black);                
+                tabconvert_button_ref.set_frame(enums::FrameType::UpBox);
+
                 convert_pack_rc_ref.borrow_mut().hide();
                 settings_pack_rc_ref.borrow_mut().show();
                 savesettings_button_ref.redraw();
@@ -2125,11 +2126,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         move |b| {
             if !convert_pack_rc_ref.borrow().visible() {
                 b.set_color(TAB_COLOR_PUSHED_BACKGROUND);
-                b.set_label_color(TAB_COLOR_PUSHED_FOREGROUND);
+                b.set_label_color(TAB_COLOR_PUSHED_FOREGROUND);        
+                b.set_frame(enums::FrameType::DownBox);
+
                 tabsettings_button_ref.set_color(default_wincolor);
                 tabsettings_button_ref.set_label_color(enums::Color::Black);
+                tabsettings_button_ref.set_frame(enums::FrameType::UpBox);
 
-                b.set_frame(enums::FrameType::DownBox);
                 settings_pack_rc_ref.borrow_mut().hide();
                 convert_pack_rc_ref.borrow_mut().show();
                 wind_ref.redraw();

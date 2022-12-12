@@ -1,6 +1,6 @@
 #+TITLE: TODO
 
-* Milestone: Hardening and features maturity [80%]
+* Milestone: Hardening and features maturity [60%]
 - [X] Security
   - [X] Limit the attack surface via a custom [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for the container image (enabled by default)
     - It is possible to disable it via an environment variable (failsafe if an unexpected bug makes the program unusable)
@@ -20,22 +20,21 @@
   - [X] Review possible  multi-threading issues related with =entrusted-gui=
   - [X] Evaluate performance optimization opportunities
   - [X] Allow multiple language selection for searchable PDFs (OCR)
-- [-] Code maintenance and other practices
-  - [ ] Review code changes and re-test
+- [X] Code maintenance and other practices
   - [X] Happy path integration testing with [[https://github.com/cucumber-rs/cucumber][cucumber-rs]] (=entrusted_client=) 
   - [X] Review command-line flags default values after upgrading command-line arguments library
   - [X] Apply most of [[https://github.com/rust-lang/rust-clippy][clippy]] suggested code changes
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)
   - [X] Smaller container image size
   - [X] Sign revision control commits and container images
-- [X] Builds and releases
-  - [X] +Retry creating a Live CD for arm64 after many past failures (POSTPONED, future)+
-    - Too painful to understand what's wrong inside =chroot= (bugs or whatsoever)
-    - Impossible to know if the same errors would happen on real hardware vs. emulation ([[https://www.qemu.org/][QEMU]])
+- [-] Builds and releases
+  - [ ] Experimental Live CD for =arm64/aarch64=
+    - This should leverage the existing pipeline for =amd64/x86_x64=, based on [[https://www.debian.org/][Debian GNU Linux]] (1 GB of RAM min to run)
+    - Alternatively, it is "easy" with [[https://www.alpinelinux.org/][Alpine Linux]], but it requires more RAM (3 GB min to run) due to [[https://wiki.alpinelinux.org/wiki/How_to_make_a_custom_ISO_image_with_mkimage][overlays]] unpacking at boot time
+    - There are still issues with Podman in chroot while emulating other CPU architectures via [[https://www.qemu.org/][QEMU]] ([[https://github.com/containers/podman/issues/8903][podman #8903]]): 
   - [X] +Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (REJECTED)+
-    - Lack of control around runners and their availability without further work (Linux arm64, targetting specific Linux versions)
+    - Lack of control around runners and their availability without further work (Linux =arm64=, specific/fixed distro versions)
     - Random 404 errors with pre-configured APT repositories (Azure ubuntu repositories, etc.)
-    - Other minor annoyances that are likely solvable with a bit of research
     - Lack of investigation for the Live CD creation in =chroot=
   - [X] Ensure that all executables are stripped in the ci/cd pipeline (=strip= command)
   - [X] Bump the cargo edition to =2021= instead of =2018= in cargo manifests

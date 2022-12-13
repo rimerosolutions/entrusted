@@ -2,14 +2,14 @@
 
 * entrusted-0.2.7 or entrusted 0.3.0 (UNRELEASED - Early 2023?)
 
-The next release is focused on security concerns, but there are also few user visible features. This is a moderate security stance that makes reasonable compromises pertaining to usability, user convenience, speed and required computing resources.
+The next release is focused primarily on security concerns, while making reasonable compromises pertaining to usability, user convenience, speed and required computing resources. There are also few user-visible features.
 
 - security: Implement custom [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for "sandbox container execution"
   - This restricts what the application can do inside the container solution
   - This enabled by default in the desktop, command-line and Web interfaces
-- security: Implement basic harderning for the Live CD ([[https://madaidans-insecurities.github.io/guides/linux-hardening.html][kernel settings]], [[https://github.com/GrapheneOS/hardened_malloc/][hardened_malloc]], [[https://motorscript.com/security-hardening-ssh-linux-server/][SSH]], etc.)
+- security: Implement basic hardening for the Live CD ([[https://madaidans-insecurities.github.io/guides/linux-hardening.html][kernel settings]], [[https://github.com/GrapheneOS/hardened_malloc/][hardened_malloc]], [[https://motorscript.com/security-hardening-ssh-linux-server/][SSH]], etc.)
 - bugfix: Address more scenarios that could result into known intermittent conversion failures
-- feature: Experimental Live CD availability for [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]] (2.8 GB of RAM minimum required)
+- feature: Experimental Live CD availability for [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]]
 - feature: Ability to cancel conversions that are not yet started
 - feature: Ability to select PDF result visual quality (=low=, =medium=, =high=)
   - The default value is set to =medium= (same behavior as in =0.2.6=)

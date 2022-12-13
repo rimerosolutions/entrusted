@@ -8,8 +8,7 @@ PREVIOUSDIR="$(echo $PWD)"
 SCRIPTDIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${SCRIPTDIR}/../../app)"
 APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' ${PROJECTDIR}/entrusted_client/Cargo.toml)
-#CPU_ARCHS="amd64 aarch64"
-CPU_ARCHS="amd64"
+CPU_ARCHS="amd64 aarch64"
 ENTRUSTED_VERSION="${APPVERSION}"
 
 if [ -n "$1" ]; then

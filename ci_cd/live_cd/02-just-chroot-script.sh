@@ -5,11 +5,13 @@ DEBIAN_ARCH=$1
 ROOT_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
 
 sudo cp -rf "${ROOT_SCRIPTS_DIR}"/chroot_files $HOME/LIVE_BOOT-${DEBIAN_ARCH}/chroot/files
-sudo cp -rf "${ROOT_SCRIPTS_DIR}"/03-in-chroot-script.sh $HOME/LIVE_BOOT-${DEBIAN_ARCH}/chroot/files/
+sudo cp -rf "${ROOT_SCRIPTS_DIR}"/03-in-chroot-script*.sh $HOME/LIVE_BOOT-${DEBIAN_ARCH}/chroot/files/
 sudo cp -rf "${ROOT_SCRIPTS_DIR}"/04-user-chroot-script.sh $HOME/LIVE_BOOT-${DEBIAN_ARCH}/chroot/files/
 
 sudo cp /tmp/live-libhardened_malloc.so $HOME/LIVE_BOOT-${DEBIAN_ARCH}/chroot/files/libhardened_malloc.so
-sudo mv /tmp/live-entrusted-container.tar $HOME/LIVE_BOOT-${DEBIAN_ARCH}/chroot/files/entrusted-container.tar
+
+"${ROOT_SCRIPTS_DIR}"/02-just-chroot-script-arch-${DEBIAN_ARCH}.sh ${DEBIAN_ARCH}
+
 sudo mv /tmp/live-entrusted-cli $HOME/LIVE_BOOT-${DEBIAN_ARCH}/chroot/files/entrusted-cli
 sudo mv /tmp/live-entrusted-webserver $HOME/LIVE_BOOT-${DEBIAN_ARCH}/chroot/files/entrusted-webserver
 

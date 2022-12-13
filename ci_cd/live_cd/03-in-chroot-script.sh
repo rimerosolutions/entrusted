@@ -47,7 +47,7 @@ useradd -ms /bin/bash entrusted
 usermod -G sudo entrusted
 
 echo "Creating entrusted user files and pulling container image"
-runuser -l entrusted -c "/files/04-user-chroot-script.sh ${ENTRUSTED_VERSION}"
+/files/03-in-chroot-script-arch-${ENTRUSTED_ARCH}.sh ${ENTRUSTED_VERSION}
 
 echo "Copying entrusted binaries"
 mv /files/entrusted-webserver /files/entrusted-cli /usr/local/bin
@@ -89,13 +89,16 @@ echo "fs.suid_dumpable=0" >> /etc/sysctl.conf
 echo "kernel.randomize_va_space=1" >> /etc/sysctl.conf
 echo "kernel.kptr_restrict=2" >> /etc/sysctl.conf
 echo "kernel.dmesg_restrict=1" >> /etc/sysctl.conf
+echo "kernel.printk=3 3 3 3" >> /etc/sysctl.conf
 echo "kernel.unprivileged_bpf_disabled=1" >> /etc/sysctl.conf
 echo "net.core.bpf_jit_harden=2" >> /etc/sysctl.conf
 echo "kernel.kexec_load_disabled=1" >> /etc/sysctl.conf
 echo "vm.unprivileged_userfaultfd=0" >> /etc/sysctl.conf
 echo "kernel.sysrq=4" >> /etc/sysctl.conf
-echo "net.ipv4.tcp_syncookies=1" >> /etc/sysctl.conf
+echo "dev.tty.ldisc_autoload=0" >> /etc/sysctl.conf
+echo "kernel.perf_event_paranoid=2" >> /etc/sysctl.conf
 
+echo "net.ipv4.tcp_syncookies=1" >> /etc/sysctl.conf
 echo "net.ipv4.tcp_rfc1337=1" >> /etc/sysctl.conf
 echo "net.ipv4.conf.all.rp_filter=1" >> /etc/sysctl.conf
 echo "net.ipv4.conf.default.rp_filter=1" >> /etc/sysctl.conf

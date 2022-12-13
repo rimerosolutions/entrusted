@@ -18,7 +18,7 @@ cd /
 sudo -u "${CONTAINER_USER}" bash -c "mkdir -p /home/${CONTAINER_USER}/.config/containers/"
 sudo cp "${THIS_SCRIPTS_DIR}"/arm_files/podman_storage.conf /home/"${CONTAINER_USER}"/.config/containers/storage.conf
 sudo chown entrusted:entrusted /home/"${CONTAINER_USER}"/.config/containers/storage.conf
-sudo -u "${CONTAINER_USER}" bash -c "podman pull --platform linux/${DEBIAN_ARCH}  docker.io/uycyjnzgntrn/entrusted_container:${ENTRUSTED_VERSION}"
+sudo -u "${CONTAINER_USER}" bash -c "podman pull --platform linux/arm64  docker.io/uycyjnzgntrn/entrusted_container:${ENTRUSTED_VERSION}"
 
 sudo -u "${CONTAINER_USER}" bash -c "mkdir -p /tmp/entrusted-armpackaging"
 sudo -u "${CONTAINER_USER}" bash -c "cp -r /home/${CONTAINER_USER}/.local/share/containers /tmp/entrusted-armpackaging/"

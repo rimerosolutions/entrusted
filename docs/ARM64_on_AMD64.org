@@ -21,33 +21,43 @@ Let's get the latest version of Alpine Linux that we're aware of.
 
 ** Generate required files
 
-Source: https://gist.github.com/oznu/ac9efae7c24fd1f37f1d933254587aa4
+Source: https://unix.stackexchange.com/questions/682733/cannot-boot-aarch64-alpine-linux-on-mac-os-using-qemu-6-2-0
 
 #+begin_src sh
-  curl -L -O https://releases.linaro.org/components/kernel/uefi-linaro/latest/release/qemu64/QEMU_EFI.fd
-  dd if=/dev/zero of=flash0.img bs=1m count=64
-  dd if=QEMU_EFI.fd of=flash0.img conv=notrunc
-  dd if=/dev/zero of=flash1.img bs=1m count=64
+  qemu-img create -f qcow2 varstore.img 64M
+
+  curl -L -O http://snapshots.linaro.org/components/kernel/leg-virt-tianocore-edk2-upstream/latest/QEMU-AARCH64/RELEASE_GCC5/QEMU_EFI.img.gz
+
+  gunzip QEMU_EFI.img.gz
+
 #+end_src
 
 ** Launch the Alpine system
 
 Create a script with the contents below called =qemu_test_arm64= and make it executable (=chmod +x qemu_test_arm64=).
 - The script below has been tested from a reasonably powerful Mac OS machine (64 GB of RAM and 10 CPUs).
-- Emulating =arm64= on =amd64= is *very slow*, thus why *we dare allocating  20 GB of RAM and 2 cpus* in the script
+- Emulating =arm64= on =amd64= is *very slow*
 
 #+begin_src sh
   #!/usr/bin/env sh
 
-  qemu-system-aarch64 -m 20G -smp 2 -cpu cortex-a57 -M virt -nographic \
-    -device intel-hda -device hda-duplex -pflash flash0.img \
-    -pflash flash1.img \
-    -device virtio-scsi-pci,id=scsi0              \
-    -object rng-random,filename=/dev/urandom,id=rng0      \
-    -netdev user,id=user0 -device virtio-net-device,netdev=user0 \
-    -serial mon:stdio -nodefaults            \
-    -drive if=none,id=cd,file=$1 \
-    -device scsi-cd,drive=cd
+  qemu-system-aarch64 \
+      -m 2G \
+      -smp 2 \
+      -cpu cortex-a57 \
+      -M virt -nographic \
+      -drive if=pflash,format=raw,file=QEMU_EFI.img \
+      -drive if=pflash,file=varstore.img  \
+      -device intel-hda \
+      -device hda-duplex  \
+      -device virtio-scsi-pci,id=scsi0 \
+      -object rng-random,filename=/dev/urandom,id=rng0 \
+      -netdev user,id=user0 \
+      -device virtio-net-device,netdev=user0 \
+      -serial mon:stdio \
+      -nodefaults \
+      -drive if=none,id=cd,file=$1 \
+      -device scsi-cd,drive=cd
 #+end_src
 
 Launch the system, this will take some time depending on your machine hardware specification.

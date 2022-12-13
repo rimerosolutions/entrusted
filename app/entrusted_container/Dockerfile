@@ -4,6 +4,7 @@ LABEL stage=entrusted_container_builder
 WORKDIR /home/rust/entrusted-container
 COPY . .
 
+# Build the main binary
 RUN CARGO_NET_RETRY=10 CARGO_NET_GIT_FETCH_WITH_CLI=true PKG_CONFIG_ALLOW_CROSS=1 LO_INCLUDE_PATH=/usr/include/LibreOfficeKit cargo install --path entrusted_container --root /usr/local \
     && cargo clean --manifest-path entrusted_container/Cargo.toml && strip --strip-unneeded /usr/local/bin/entrusted-container
 
@@ -20,6 +21,7 @@ LABEL org.opencontainers.image.version="0.2.7"
 LABEL org.opencontainers.image.url="https://github.com/rimerosolutions/entrusted/tree/main/app/entrusted_container"
 LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrusted.git"
 
+# Minimal runtime dependencies
 RUN DEBIAN_FRONTEND=noninteractive apt update && apt upgrade -y && DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends -y \
     libleptonica-dev \
     libtesseract-dev \
@@ -29,8 +31,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt update && apt upgrade -y && DEBIAN_FRONTE
     tesseract-ocr-all \
     fonts-dejavu libpoppler-glib-dev && apt clean
 
+# Copy the main binary from the build container
 COPY --from=builder /usr/local/bin/entrusted-container /usr/local/bin/entrusted-container
 
+# Remove what we do not care about
 RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.zip' -o -name '*.gz' -o -name '*.png' -o -name '*.xpm' -o -name '*.jar' -o -name '*.pyc' -o -name '*.pdf' -exec rm -rf {} \;" \
     && useradd -ms /bin/dash entrusted \
     && rm /usr/bin/ambiguous_words \
@@ -76,12 +80,8 @@ ENV ENTRUSTED_LIBREOFFICE_PROGRAM_DIR /usr/lib/libreoffice/program
 ENV ENTRUSTED_TESSERACT_TESSDATA_DIR  /usr/share/tesseract-ocr/4.00/tessdata
 
 # We're not declaring all volumes explicity. input_file might get interpreted as a directory for squashed images somehow
-# Need to revisit the above claim in the future, based on old observations
-# /tmp/input_file is where the first convert expects the input file to be, and
-# /tmp where it will write the pixel files
-#
-# /entrusted is where the second script expects files to be put by the first one
+# Need to revisit the above claim in the future, based on old observations /tmp/input_file is not explicit....
+# /tmp/input_file is where the first convert expects the input file to be, and /tmp where it will write the pixel files
 #
 # /safezone is where the wrapper eventually moves the sanitized files.
-# VOLUME /entrusted /tmp/input_file /safezone
 VOLUME /safezone

@@ -8,7 +8,7 @@ CONTAINER_USER=$2
 
 echo "It is assumed that you published the entrusted container image to Docker Hub already..."
 test -d /tmp/entrusted-armpackaging &&  sudo rm -rf /tmp/entrusted-armpackaging
-sudo killall -u entrusted
+sudo killall -u "${CONTAINER_USER}"
 sudo userdel -r "${CONTAINER_USER}"
 sudo useradd -ms /bin/bash "${CONTAINER_USER}"
 sudo adduser "${CONTAINER_USER}" sudo
@@ -17,7 +17,7 @@ cd /
 
 sudo -u "${CONTAINER_USER}" bash -c "mkdir -p /home/${CONTAINER_USER}/.config/containers/"
 sudo cp "${THIS_SCRIPTS_DIR}"/arm_files/podman_storage.conf /home/"${CONTAINER_USER}"/.config/containers/storage.conf
-sudo chown entrusted:entrusted /home/"${CONTAINER_USER}"/.config/containers/storage.conf
+sudo chown "${CONTAINER_USER}":"${CONTAINER_USER}" /home/"${CONTAINER_USER}"/.config/containers/storage.conf
 sudo -u "${CONTAINER_USER}" bash -c "podman pull --platform linux/arm64  docker.io/uycyjnzgntrn/entrusted_container:${ENTRUSTED_VERSION}"
 
 sudo -u "${CONTAINER_USER}" bash -c "mkdir -p /tmp/entrusted-armpackaging"

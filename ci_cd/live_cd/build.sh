@@ -15,9 +15,6 @@ if [ -n "$1" ]; then
     ENTRUSTED_VERSION=$1
 fi
 
-echo "TODO Cannot yet generate a Live ISO image for arm64, sorry!"
-echo "TODO can also not load the arm64 image from chroot for some reason at this time"
-
 for CPU_ARCH in $CPU_ARCHS ; do
     LINUX_ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-linux-${CPU_ARCH}-${ENTRUSTED_VERSION}"
     DEBIAN_ARCH="amd64"

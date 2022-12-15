@@ -1,13 +1,16 @@
-entrusted (0.2.7) stable; urgency=medium
+entrusted (0.3.0) stable; urgency=medium
 
-  * Add custom seccomp security profile for container sandbox
+  * Address more scenarios that could result into intermittent conversion failures
+  * Introduce fine-grained seccomp security profile for container sandbox
   * Add setting for controlling PDF result visual quality
   * Allow multiple language selection when creating searchable PDF results
-  * Add button to cancel conversions that are not yet started
+  * Provide the ability to cancel conversions that are not yet started
+  * Change logo artwork along with minor visual improvements
   * Address few potential intermittent failures in batch conversions
   * Upgrade software dependencies for quality and security reasons
+  * Explicitly restrict file upload size to 500 MB in the Web server
 
- -- Yves Zoundi <yves_zoundi@hotmail.com>  Tbd, Tbd Tbd 2023 09:38:25 -0400
+ -- Yves Zoundi <yves_zoundi@hotmail.com>  Sat, 17 Dec 2022 09:38:25 -0400
 
 entrusted (0.2.6) stable; urgency=medium
 

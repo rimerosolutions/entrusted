@@ -1,6 +1,6 @@
 [package]
 name = "entrusted-container"
-version = "0.2.7"
+version = "0.3.0"
 edition = "2021"
 description = "entrusted container" 
 keywords = ["entrusted", "container"]

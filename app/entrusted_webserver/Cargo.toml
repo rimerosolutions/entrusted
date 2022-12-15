@@ -1,6 +1,6 @@
 [package]
 name = "entrusted-webserver"
-version = "0.2.7"
+version = "0.3.0"
 edition = "2021"
 description = "Entrusted online service" 
 keywords = ["entrusted", "remoting", "http"]

@@ -26,10 +26,10 @@
   - [X] Apply most of [[https://github.com/rust-lang/rust-clippy][clippy]] suggested code changes (linting)
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)
   - [X] Smaller container image size
-  - [X] Sign revision control commits and container images
+  - [X] Sign revision control commits
 - [X] Builds and releases
   - [X] Experimental Live CD for =arm64/aarch64= (tested via [[https://www.qemu.org/][QEMU]] emulation)
-  - [X] +Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (REJECTED)+
+  - [X] +Revisit migration from local shell scripts to [[https://docs.github.com/en/actions][GitHub actions]] (NEXT ITERATION)+
     - Lack of control around runners and their availability without further work (Linux =arm64=, specific/fixed distro versions)
     - Random 404 errors with pre-configured APT repositories (Azure ubuntu repositories, etc.)
     - Lack of investigation for the Live CD creation in =chroot=

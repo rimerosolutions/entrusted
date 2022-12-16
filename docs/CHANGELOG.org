@@ -1,6 +1,6 @@
 #+TITLE: CHANGELOG
 
-* entrusted 0.3.0 (UNRELEASED)
+* entrusted 0.3.0
 
 The next release is focused primarily on security concerns, while making reasonable compromises pertaining to usability, user convenience, speed and required computing resources. There are also few user-visible features.
 

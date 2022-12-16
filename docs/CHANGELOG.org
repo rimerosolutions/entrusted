@@ -2,19 +2,19 @@
 
 * entrusted 0.3.0
 
-The next release is focused primarily on security concerns, while making reasonable compromises pertaining to usability, user convenience, speed and required computing resources. There are also few user-visible features.
+This next release is focused primarily on security concerns, while making reasonable compromises pertaining to usability, user convenience and performance. There are also few user-visible features, on top of the availability of the Live CD for [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]].
 
 - Security
   - Implement custom [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for "sandbox container execution"
     - This restricts what the application can do inside the container solution
-    - This enabled by default in the desktop, command-line and Web interfaces
-  - Implement minimal security hardening options for the Live CD ([[https://madaidans-insecurities.github.io/guides/linux-hardening.html][kernel settings]], [[https://github.com/GrapheneOS/hardened_malloc/][hardened_malloc]], [[https://motorscript.com/security-hardening-ssh-linux-server/][SSH]], etc.)
+    - This is enabled in the desktop, command-line and Web interfaces
+  - Implement security hardening options for the Live CD ([[https://madaidans-insecurities.github.io/guides/linux-hardening.html][kernel settings]], [[https://github.com/GrapheneOS/hardened_malloc/][hardened_malloc]], [[https://motorscript.com/security-hardening-ssh-linux-server/][SSH]], etc.)
 - Bug fixes
   - Address more scenarios that could result into known intermittent conversion failures
 - Features:
   - Experimental Live CD availability for [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]]
   - Option to cancel conversions that are not yet started
-  - Ability to select PDF result visual quality (=low=, =medium=, =high=)
+  - Ability to select the PDF result visual quality (=low=, =medium=, =high=)
     - The default value is set to =medium= (same behavior as in =0.2.6=)
     - This can act as a "quick preview" mechanism with "low" settings, followed by a re-conversion
     - Higher visual quality settings impact memory usage, processing time and resulting file size

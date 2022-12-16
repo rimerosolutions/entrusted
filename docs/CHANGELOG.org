@@ -4,21 +4,26 @@
 
 The next release is focused primarily on security concerns, while making reasonable compromises pertaining to usability, user convenience, speed and required computing resources. There are also few user-visible features.
 
-- security: Implement custom [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for "sandbox container execution"
-  - This restricts what the application can do inside the container solution
-  - This enabled by default in the desktop, command-line and Web interfaces
-- security: Implement minimal security hardening options for the Live CD ([[https://madaidans-insecurities.github.io/guides/linux-hardening.html][kernel settings]], [[https://github.com/GrapheneOS/hardened_malloc/][hardened_malloc]], [[https://motorscript.com/security-hardening-ssh-linux-server/][SSH]], etc.)
-- bugfix: Address more scenarios that could result into known intermittent conversion failures
-- feature: Experimental Live CD availability for [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]]
-- feature: Ability to cancel conversions that are not yet started
-- feature: Ability to select PDF result visual quality (=low=, =medium=, =high=)
-  - The default value is set to =medium= (same behavior as in =0.2.6=)
-  - This can act as a "quick preview" mechanism with "low" settings, followed by a re-conversion
-  - Higher visual quality settings impact memory usage, processing time and resulting file size
-- enhancement: Set file upload limit to 500 MB for the Web interface (previously relying on unknown defaults...)
-- enhancement: Allow multiple language selection when creating searchable PDF results ([[https://wiki.beparanoid.de/wiki/Optical_character_recognition?lang=en][OCR]])
-- enhancement: Improve few visual aspects in the Desktop and Web interfaces
-- maintenance: Upgrade software dependencies and cleanup code
+- Security
+  - Implement custom [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for "sandbox container execution"
+    - This restricts what the application can do inside the container solution
+    - This enabled by default in the desktop, command-line and Web interfaces
+  - Implement minimal security hardening options for the Live CD ([[https://madaidans-insecurities.github.io/guides/linux-hardening.html][kernel settings]], [[https://github.com/GrapheneOS/hardened_malloc/][hardened_malloc]], [[https://motorscript.com/security-hardening-ssh-linux-server/][SSH]], etc.)
+- Bug fixes
+  - Address more scenarios that could result into known intermittent conversion failures
+- Features:
+  - Experimental Live CD availability for [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]]
+  - Option to cancel conversions that are not yet started
+  - Ability to select PDF result visual quality (=low=, =medium=, =high=)
+    - The default value is set to =medium= (same behavior as in =0.2.6=)
+    - This can act as a "quick preview" mechanism with "low" settings, followed by a re-conversion
+    - Higher visual quality settings impact memory usage, processing time and resulting file size
+- Enhancements
+  - Allow multiple language selection when creating searchable PDF results ([[https://wiki.beparanoid.de/wiki/Optical_character_recognition?lang=en][OCR]])
+  - Set file upload limit to 500 MB for the Web interface (previously relying on unknown defaults...)
+  - Improve few visual aspects of the Desktop and Web interfaces
+- Maintenance
+  - Upgrade software dependencies and cleanup code
 
 * entrusted-0.2.6
 

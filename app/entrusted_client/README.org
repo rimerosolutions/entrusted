@@ -107,11 +107,6 @@ The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to
   # The requested visual quality of the PDF result influences processing time and result size
   # This is one of 'low', 'medium' or 'high' with a default of 'medium'  
   visual-quality = "medium"
-
-  # Custom seccomp security profile for container image hardening
-  # This restricts what the application can do during conversions inside the container solution
-  # Leave this to enabled by default, unless you experience random conversion failures
-  seccomp-profile-disabled = false
 #+end_src
 
 *** Overview
@@ -124,7 +119,6 @@ The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to
 | =container-image-name=     | A custom container image for conversions (advanced option)        |
 | =preview-result-appname=   | The PDF viewer as identified by the GUI to open converted files   |
 | =visual-quality=           | The result visual quality (file size, processing time, visuals)   |
-| =seccomp_profile_disabled= | Custom [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for container image hardening     |
 |----------------------------+-------------------------------------------------------------------|
 
 In CLI mode (=entrusted-cli=), the =preview-result-appname= parameter is ignored. It's only intended for Desktop usage ("Save current settings as defaults" in the GUI client).

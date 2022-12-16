@@ -347,10 +347,10 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
                 fs::copy(&input_path, &tmp_input_path)?;
                 tmp_input_loc.push_str(&tmp_input_path.display().to_string());
 
-                format!("{}:/tmp/input_file:ro", tmp_input_loc)
+                format!("{}:/tmp/input_file:Z", tmp_input_loc)
             },
             None => {
-                format!("{}:/tmp/input_file:ro", input_path.display())
+                format!("{}:/tmp/input_file:Z", input_path.display())
             }
         };
 

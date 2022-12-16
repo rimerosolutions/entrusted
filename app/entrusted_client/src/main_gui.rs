@@ -417,8 +417,8 @@ fn filelist_column_widths(w: i32) -> (i32, i32, i32, i32, i32, i32) {
     let active_w = w - width_password - width_output_file - (WIDGET_GAP * 5);
 
     let width_checkbox    = (active_w as f64 * 0.35)  as i32;
-    let width_progressbar = (active_w as f64 * 0.20) as i32;
-    let width_status      = (active_w as f64 * 0.20) as i32;
+    let width_progressbar = (active_w as f64 * 0.20)  as i32;
+    let width_status      = (active_w as f64 * 0.20)  as i32;
     let width_logs        = (active_w as f64 * 0.25)  as i32;
 
     (width_output_file, width_password, width_checkbox, width_progressbar, width_status, width_logs)

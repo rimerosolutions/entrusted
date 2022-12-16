@@ -31,7 +31,7 @@ Key features include the following:
 Do you identify yourself in one of the situations below?
 - I suspect that my computer might have been infected few times after opening documents
 - I "acquire" documents from file sharing applications or the [[https://en.wikipedia.org/wiki/Dark_web][Dark Web]]
-- I often need to open email attachments from unknown senders
+- I often need to open email attachments from unfamiliar senders
 - I download files from "potentially non-trusted websites"
 
 ** Supported files

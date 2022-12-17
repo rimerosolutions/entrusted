@@ -1,29 +1,41 @@
 #+TITLE: TODO
 
-* Milestone: Migration of CI/CD pipeline to Github Actions [0%]
+* Milestone: From local CI/CD pipelines to GitHub Actions [0%]
 
-- [ ] CI/CD pipeline
-  - [ ] Generate container images (squashed)
+- [ ] GitHub actions tasks (some of it was already tested/tried)
+  - [ ] Refactor existing shell scripts to work with GitHub actions and also locally
+    - Ability to sustain GitHub outages (those do happen)
+    - Flexibility in it's decided to move few things out of GitHub (code and/or CI/CD)
+  - [ ] Generate and push container images 
   - [ ] Generate Live CD (aarch64 and amd64)
   - [ ] Generate main binaries
     - [ ] Binaries for Windows (amd64)
     - [ ] Binaries for Linux (amd64 and aarch64)
       - [ ] Ensure that aarch64 files are stripped
-      - [ ] Try building from amd64 for slower compile times
+      - [ ] Try building from amd64 for faster compile times...
     - [ ] Binaries for Mac OS (amd64 and aarch64)
-  - See if there's a need to sync with Axtloss for Flatpak version on Linux
+- [ ] See if there's a need to sync with Axtloss for updating Linux Flatpaks
+  - It is preferrable to leave distro packaging to distro maintainers going forward
+  - It also avoids having to keep up with many distros and setup repositories, etc.
 - [ ] Testing
   - [ ] See how to make it easier to test prior releases
   - [ ] Add few encrypted files to existing test data
 - [ ] Security
   - [ ] Enable apparmor on the Live CD
 - [ ] User interface
+  - [ ] Implement manually a custom "layout" for widgets
+    - We want to fully control widget positions and the "layout"
+    - This will reduce components used and might be better (speed, OS resources)
+    - This sadly also requires more code and more attention to details...
   - [ ] Desktop interface improvements
-    - [ ] Make logs button a link in the Desktop UI
-    - [ ] Add an "Open" link next to the "Logs" link in the Desktop UI
-  - Evaluate opportunities to simplify the UI without adding too many screens
+    - [ ] Make "Logs" button an "hyperlink" in the Desktop UI
+    - [ ] Add an "Open" "hyperlink" next to the "Logs" link in the Desktop UI
+  - [ ] Evaluate opportunities to simplify the UI without adding too many screens
+  - [ ] Evaluate level of flexibility for adding other container solutions
+    - It is not that difficult to support Rancher Desktop and much more
+    - There would need to be more "user settings" (default container solutions and "custom")
 - [ ] Other topics
-  - Revisit gVisor performance
+  - [ ] Revisit gVisor performance
     - This was horribly slow (early or mid-2022 tests)
     - This was never tested with custom seccomp profiles
     - This could be enabled conditionally in the Live CD (Live CD specific user option)
@@ -34,7 +46,7 @@
       - The container image size was tougher to trim than Debian      
     - [ ] Check if it's worth creating a highly tailored CD creation process
       - Existing "kits" produced smaller ISO images than Debian (~600 MB vs ~800 MB)
-      - Overlays need to be uncompressed at boot time with existing approaches...
+      - Overlays need to be uncompressed at boot time (slow boot, free disk space, etc.)
 
 * Milestone: Hardening and features maturity [100%]
 - [X] Security

@@ -1,5 +1,41 @@
 #+TITLE: TODO
 
+* Milestone: Migration of CI/CD pipeline to Github Actions [0%]
+
+- [ ] CI/CD pipeline
+  - [ ] Generate container images (squashed)
+  - [ ] Generate Live CD (aarch64 and amd64)
+  - [ ] Generate main binaries
+    - [ ] Binaries for Windows (amd64)
+    - [ ] Binaries for Linux (amd64 and aarch64)
+      - [ ] Ensure that aarch64 files are stripped
+      - [ ] Try building from amd64 for slower compile times
+    - [ ] Binaries for Mac OS (amd64 and aarch64)
+  - See if there's a need to sync with Axtloss for Flatpak version on Linux
+- [ ] Testing
+  - [ ] See how to make it easier to test prior releases
+  - [ ] Add few encrypted files to existing test data
+- [ ] Security
+  - [ ] Enable apparmor on the Live CD
+- [ ] User interface
+  - [ ] Desktop interface improvements
+    - [ ] Make logs button a link in the Desktop UI
+    - [ ] Add an "Open" link next to the "Logs" link in the Desktop UI
+  - Evaluate opportunities to simplify the UI without adding too many screens
+- [ ] Other topics
+  - Revisit gVisor performance
+    - This was horribly slow (early or mid-2022 tests)
+    - This was never tested with custom seccomp profiles
+    - This could be enabled conditionally in the Live CD (Live CD specific user option)
+  - [ ] Revisit Alpine Linux
+    - [ ] Review Alpine as container solution like few releases ago
+      - This would likely require regenerating the seccomp profile
+      - This was slower than Debian during conversions
+      - The container image size was tougher to trim than Debian      
+    - [ ] Check if it's worth creating a highly tailored CD creation process
+      - Existing "kits" produced smaller ISO images than Debian (~600 MB vs ~800 MB)
+      - Overlays need to be uncompressed at boot time with existing approaches...
+
 * Milestone: Hardening and features maturity [100%]
 - [X] Security
   - [X] Limit the attack surface via a custom [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for the container image (enabled by default)

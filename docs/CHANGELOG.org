@@ -2,7 +2,7 @@
 
 * entrusted 0.3.0
 
-This next release is focused primarily on security concerns, while making reasonable compromises pertaining to usability, user convenience and performance. There are also few user-visible features, on top of the availability of the Live CD for [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]].
+This release is focused primarily on security concerns, while making reasonable compromises pertaining to usability, user convenience and performance. There are also few user-visible features, on top of the availability of the Live CD for [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]].
 
 - Security
   - Implement custom [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for "sandbox container execution"

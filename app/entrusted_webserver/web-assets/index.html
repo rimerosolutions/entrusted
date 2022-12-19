@@ -14,6 +14,21 @@
     <meta name="description" content="Entrusted Web Application"/>
     <title>Entrusted 0.3.0</title>
     <script>
+      function openTab(evt, tabName) {
+        let tabcontent = document.getElementsByClassName("tabContent");
+        for (let i = 0; i < tabcontent.length; i++) {
+          tabcontent[i].style.display = "none";
+        }
+
+        let tablinks = document.getElementsByClassName("tabLinks");
+        for (let i = 0; i < tablinks.length; i++) {
+          tablinks[i].classList.remove("active");
+        }
+
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.classList.add("active");
+      }
+
       let fileList = new Array();
       let logByFileId = new Map();
       let isConverting = false;
@@ -292,7 +307,7 @@
 
         return ret;
       }
-      
+
       function cancelPendingTasks(event) {
         cancelPendingTasksRequested = true;
         let source = event.target;
@@ -409,7 +424,7 @@
             while (fileList.length != 0) {
               fileList.pop();
             }
-            
+
             let conversionSummaryElement = document.getElementById("conversionSummary");
             conversionSummaryElement.innerText = "";
             conversionSummaryElement.removeAttribute("class");
@@ -420,7 +435,7 @@
       }
 
       function resetFileListTable() {
-        if (fileList.length == 0) {          
+        if (fileList.length == 0) {
           logByFileId.clear();
           let fileListTableBodyElement = document.getElementById("fileListTableBody");
 
@@ -723,7 +738,7 @@
         let formData = new FormData();
         formData.append("file", file);
         formData.append("docpasswd", fileObj.passwd);
-        
+
         if (visualQuality != null) {
           formData.append("visualquality", visualQuality);
         }
@@ -734,15 +749,15 @@
         if (ocrSettings["ocrlang"] != null && ocrSettings["ocrlang"] != undefined) {
           formData.append("ocrlang", ocrSettings["ocrlang"]);
         }
-                            
+
         let progressElement = document.getElementById("progress-" + fileObjId);
         let processingStatusElement = document.getElementById("processing-status-" + fileObjId);
         let progressMessageElement = document.getElementById("progress-message-" + fileObjId);
         let conversionSummaryElement = document.getElementById("conversionSummary");
         let overallProgressTableElement = document.getElementById("overallProgressTable");
         let overallProgressElement = document.getElementById("overallProgress");
-        let overallProgressLabelElement = document.getElementById("overallProgressLabel");              
-          
+        let overallProgressLabelElement = document.getElementById("overallProgressLabel");
+
         logByFileId.set(fileObjId, new Array());
 
         function onComplete(fileObjId, fileStatus, downloadLocation) {
@@ -826,11 +841,11 @@
 
             conversionSummaryElement.className = conversionSummaryClassName;
             conversionSummaryElement.innerText = conversionSummaryText;
-            
+
             if (cancelPendingTasksRequested) {
               let fileListTableBodyElement = document.getElementById("fileListTableBody");
               overallProgressLabelElement.className = "cancelled";
-              
+
               for (let i = idx + 1; i < fileListTableBodyElement.children.length; i++) {
                 let rowElement = fileListTableBodyElement.children[i];
                 let statusElement = rowElement.children[3];
@@ -842,7 +857,7 @@
             while (fileList.length != 0) {
               fileList.pop();
             }
-            
+
             cancelPendingTasksRequested = false;
           }
         }
@@ -938,7 +953,7 @@
         let uploadUrl = uploadForm.action;
 
         let ocrSettings = {};
-        
+
         if (!imgQualityCheckboxElement.checked) {
           imgQuality = null;
         }
@@ -947,11 +962,11 @@
           let ocrLangValues = [];
 
           for (let i = 0; i < ocrLangSelect.selectedOptions.length; i++) {
-              ocrLangValues.push(ocrLangSelect.selectedOptions[i].value);                                                  
+            ocrLangValues.push(ocrLangSelect.selectedOptions[i].value);
           }
-                                                  
+
           if (ocrLangValues.length != 0) {
-              ocrSettings.ocrlang = ocrLangValues.join("+");
+            ocrSettings.ocrlang = ocrLangValues.join("+");
           }
         }
 
@@ -969,7 +984,7 @@
         }
 
         if (fileCount > 1) {
-           overallProgressTable.className = "visible";
+          overallProgressTable.className = "visible";
         }
 
         submitOneFile(0, 0, fileObj, imageQuality, ocrSettings, uploadUrl);
@@ -1113,209 +1128,210 @@
     </script>
     <style>
       .modal {
-          display: none; /* Hidden by default */
-          position: fixed; /* Stay in place */
-          z-index: 1; /* Sit on top */
-          padding-top: 5%; /* Location of the box */
-          left: 0;
-          top: 0;
-          width: 100%; /* Full width */
-          height: 100%; /* Full height */
-          overflow: auto; /* Enable scroll if needed */
-          background-color: rgb(0,0,0); /* Fallback color */
-          background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 5%; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
       }
 
       /* Modal Content */
       .modal-content {
-          background-color: #fefefe;
-          text-align:center;
-          margin: auto;
-          padding: 5%;
-          border: 1px solid #888;
-          width: 80%;
-          height: 70%;
-          overflow:auto;
+        background-color: #fefefe;
+        text-align:center;
+        margin: auto;
+        padding: 5%;
+        border: 1px solid #888;
+        width: 80%;
+        height: 70%;
+        overflow:auto;
       }
 
       .modal-content li {
-          text-align:left;
+        text-align:left;
       }
 
       /* The Close Button */
       .close {
-          color: #aaaaaa;
-          float: right;
-          font-size: 2em;
-          font-weight: bold;
+        color: #aaaaaa;
+        float: right;
+        font-size: 2em;
+        font-weight: bold;
       }
 
       .leftAligned {
-          text-align: left;
+        text-align: left;
       }
 
       .close:hover,
       .close:focus {
-          color: #000;
-          text-decoration: none;
-          cursor: pointer;
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
       }
 
       .row:after {
-          float:left;
-          text-align: left;
-          content: "";
-          display: table;
-          clear: both;
+        float:left;
+        text-align: left;
+        content: "";
+        display: table;
+        clear: both;
       }
 
       .column {
-          display: table;
-          float: left;
-          text-align: left;
+        display: table;
+        float: left;
+        text-align: left;
       }
 
       body {
-          background-color: #C8C8C8;
+        background-color: #C8C8C8;
       }
 
       hr {
-          width: 50%;
+        width: 50%;
       }
 
       progress {
-          width:100%;
-          accent-color: yellow;
+        width:100%;
+        accent-color: yellow;
       }
 
       .filePasswordColumn {
-          width: 2%;
+        vertical-align:top;
+        width: 2%;
       }
 
       .fileNameColumn {
-          width: 30%;
+        width: 30%;
       }
 
       .progressStatusColumn {
-          width: 10%;
+        width: 10%;
       }
 
       .processingStatusColumn {
-          width: 10%;
+        width: 10%;
       }
 
       .progressMessageColumn {
-          width: 48%;
+        width: 48%;
       }
 
       #dropFileZone {
-          color: white;
-          border: #999 2px solid;
-          border-radius: 1em;
-          height: 1%;
-          font-size: 1em;
+        color: white;
+        border: #999 2px solid;
+        border-radius: 1em;
+        height: 1%;
+        font-size: 1em;
       }
 
       .dropFileZoneEnabled {
-          background: red;
+        background: red;
       }
 
       .dropFileZoneDisabled {
-          background: #ffcccc;
+        background: #ffcccc;
       }
 
       #dragUploadFile {
-          width: 50%;
-          margin: 0 auto;
+        width: 50%;
+        margin: 0 auto;
       }
 
       #dragUploadFile p {
-          text-align: center;
+        text-align: center;
       }
 
       #dragUploadFile #fileButton {
-          display: none;
+        display: none;
       }
 
       thead {
-          vertical-align: top;
-          border: 1px solid black;
+        vertical-align: top;
+        border: 1px solid black;
       }
 
       thead tr {
-          text-align: left;
-          border: 1px solid black;
+        text-align: left;
+        border: 1px solid black;
       }
 
       .title-text {
-          text-align: center;
-          color: maroon;
+        text-align: center;
+        color: maroon;
       }
 
       .deleteFileIcon {
       }
 
       .passwordNotSet {
-          border: 1px solid yellow;
+        border: 1px solid yellow;
       }
 
       .passwordSet {
-          border: 2px solid #8B0000;
+        border: 2px solid #8B0000;
       }
 
       .passwordFileIcon {
-          background-size: cover;
-          width: 20px;
-          height: 20px;
-          background-position: center center;
-          background-repeat: no-repeat;
-          background-image: url("data:image/png;base64,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");
+        background-size: cover;
+        width: 20px;
+        height: 20px;
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-image: url("data:image/png;base64,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");
       }
 
       #fileListTable {
-          margin-top: 1%;
-          overflow: auto;
-          width: 100%;
+        margin-top: 1%;
+        overflow: auto;
+        width: 100%;
       }
 
       .visitedLink {
-          text-decoration: line-through;
+        text-decoration: line-through;
       }
 
       .succeeded {
-          accent-color: green;
-          color: green;
+        accent-color: green;
+        color: green;
       }
-      
+
       .cancelled {
-          accent-color: #990000;
-          color: #990000;
+        accent-color: #990000;
+        color: #990000;
       }
 
       .pending {
-          color: magenta;
-          accent-color: magenta;
+        color: magenta;
+        accent-color: magenta;
       }
 
       .failed {
-          color: red;
-          accent-color: red;
+        color: red;
+        accent-color: red;
       }
 
       .button-succeeded {
-          background-color: green;
+        background-color: green;
       }
-      
+
       .button-cancelled {
-          background-color: #990000;
+        background-color: #990000;
       }
 
       .button-pending {
-          background-color: magenta;
+        background-color: magenta;
       }
 
       .button-failed {
-          background-color: red;
+        background-color: red;
       }
 
       progress {
@@ -1323,63 +1339,63 @@
       }
 
       .inprogress {
-          color: #999900;
-          accent-color: #999900;
+        color: #999900;
+        accent-color: #999900;
       }
 
       .invisible {
-          display: none;
+        display: none;
       }
 
       .visible {
-          display: visible;
+        display: visible;
       }
 
       fieldset {
-          border: 1px solid black;
+        border: 1px solid black;
       }
 
       .helpContainer {
-          width: 100%;
-          text-align: right;
+        width: 100%;
+        text-align: right;
       }
 
       .help {
-          position:absolute;
-          right: 1%;
-          top: 2%;
-          color: white;
-          width: 2em;
-          background: blue;
-          text-align: center;
+        position:absolute;
+        right: 1%;
+        top: 2%;
+        color: white;
+        width: 2em;
+        background: blue;
+        text-align: center;
       }
 
       legend {
-          padding: 10px;
-          background: #6A6A6A;
-          color: white;
+        padding: 10px;
+        background: #6A6A6A;
+        color: white;
       }
 
       #eventList {
-          overflow: auto;
-          margin: 0;
-          padding: 10px 1px 1px 1px;
-          background: yellow;
-          border: 5px solid #977c27;
-          font-family: monospace;
+        overflow: auto;
+        margin: 0;
+        padding: 10px 1px 1px 1px;
+        background: yellow;
+        border: 5px solid #977c27;
+        font-family: monospace;
       }
 
       #eventList li {
-          list-style-type: none;
-          text-align: left;
-          margin: 0;
-          padding: 0;
+        list-style-type: none;
+        text-align: left;
+        margin: 0;
+        padding: 0;
       }
 
       .actionButton:disabled {
-          background: #dbdbdb;
+        background: #dbdbdb;
       }
-      
+
       #cancelPendingTasksButton {
         height: 1em;
         width: 1em;
@@ -1391,18 +1407,55 @@
       }
 
       .actionButton {
-          border: none;
-          margin-left: 1%;
-          padding: 15px 32px;
-          text-align: center;
-          text-decoration: none;
-          background: white;
-          display: inline-block;
-          font-size: 16px;
+        border: none;
+        margin-left: 1%;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        background: white;
+        display: inline-block;
+        font-size: 16px;
       }
-      
+
       td.vertical-align-center > * {
         vertical-align: middle;
+      }
+
+      .tab {
+        overflow: hidden;
+        // background-color: #f1f1f1;
+      }
+
+      /* Style the buttons inside the tab */
+      .tab button {
+        background-color: inherit;
+        float: left;
+        border: 1px solid #aaa;
+        color: black;
+        outline: none;
+        cursor: pointer;
+        padding: 0.5em 0.5em;
+        transition: 0.3s;
+        font-size: 1em;
+      }
+
+      /* Change background color of buttons on hover */
+      .tab button:hover {
+        background-color: #ddd;
+      }
+
+      /* Create an active/current tablink class */
+      .tab button.active {
+        background-color: rgb(90, 90, 90);
+        color: white;
+      }
+
+      /* Style the tab content */
+      .tabcontent {
+        display: none;
+        padding: 6px 12px;
+        border: 1px solid #ccc;
+        border-top: none;
       }
     </style>
   </head>
@@ -1410,38 +1463,42 @@
     <noscript>Your browser does not support JavaScript!</noscript>
     <div id="modalWindow" class="modal">
       <div class="modal-content" id="modalContent">
-        <span class="close" id="modalClose">&times;</span>
+        <span class="close" id="modalClose">&#215;</span>
       </div>
     </div>
     <h3 class="title-text" data-l10n="l10n-app-name">Entrusted Web</h3>
     <div>
       <div class="helpContainer" onclick="showHelpDialog(event)"><span class="help" data-l10n-title="l10n-window-help-title">?</span></div>
+      <div class="tab">
+        <button class="tabLinks" onclick="openTab(event, 'tabSettings')">Settings</button>
+        <button class="tabLinks active" onclick="openTab(event, 'tabConvert')">Convert</button>
+      </div>
       <form id="uploadForm" action="./api/v1/upload" method="post" enctype="multipart/form-data" onsubmit="preventDefaults(event)">
-        <fieldset>
-          <legend data-l10n="l10n-settings">Settings</legend>
+        <div id="tabSettings" class="tabContent" style="display:none">
+          <br/>
           <table style="width:100%">
             <tbody>
               <tr style="width:100%">
                 <td style="width:45%">
-                  <input type="checkbox" id="imgQualityCheckbox" name="imgQualityCheckbox" onchange="toggleImgQualityCheckbox(this)">
+                  <input type="checkbox" id="imgQualityCheckbox" name="imgQualityCheckbox" onchange="toggleImgQualityCheckbox(this)"/>
                   <label for="imgQualityCheckbox"  data-l10n="l10n-imgquality-label" data-l10n-title="l10n-imgquality-title">Custom PDF result visual quality</label>
                 </td>
                 <td>
-                  <select id="imgQualitySelect" name="imgQualitySelect" data-l10n="l10n-imgquality-option" disabled>
+                  <select id="imgQualitySelect" name="imgQualitySelect" data-l10n="l10n-imgquality-option" disabled="disabled">
                     <option value="low">low</option>
-                    <option value="medium" selected>medium</option>
+                    <option value="medium" selected="true">medium</option>
                     <option value="high">high</option>
                   </select>
                 </td>
               </tr>
               <tr style="width:100%">
                 <td style="width:15%">
-                  <input type="checkbox" id="ocrCheckbox" name="ocrCheckbox" onchange="toggleOcrCheckbox(this)">
+                  <input type="checkbox" id="ocrCheckbox" name="ocrCheckbox" onchange="toggleOcrCheckbox(this)"/>
                   <label for="ocrCheckbox" data-l10n="l10n-searchable-pdf-label" data-l10n-title="l10n-searchable-pdf-title">Enable full-text search?</label>
                   <label for="ocrLangSelect" data-l10n="l10n-ocrlang-select-label">Yes, with language:</label>
                 </td>
-                <td class="vertical-align-center">                  
-                  <select id="ocrLangSelect" name="ocrLangSelect" data-l10n="l10n-ocrlang-option" size="3" disabled multiple>
+                <td class="vertical-align-center">
+                  <select id="ocrLangSelect" name="ocrLangSelect" data-l10n="l10n-ocrlang-option" size="3" disabled="disabled" multiple="true">
                     <option value="ar">Afrikaans</option>
                     <option value="sqi">Albanian</option>
                     <option value="amh">Amharic</option>
@@ -1478,7 +1535,7 @@
                     <option value="div">Divehi</option>
                     <option value="nld">Dutch</option>
                     <option value="dzo">Dzongkha</option>
-                    <option value="eng" selected>English</option>
+                    <option value="eng" selected="yes">English</option>
                     <option value="enm">English, Middle (1100-1500)</option>
                     <option value="epo">Esperanto</option>
                     <option value="est">Estonian</option>
@@ -1604,68 +1661,71 @@
                     <option value="yor">Yoruba</option>
                   </select>
                 </td>
+              </tr>
             </tbody>
           </table>
-        </fieldset>
-        <br/>
-        <div id="dropFileZone" class="dropFileZoneEnabled" ondrop="uploadFile(event)" ondragover="return false" onclick="fileExplorer(event)">
-          <div id="dragUploadFile">
-            <p data-l10n="l10n-drop-files-line1">Drop 'potentially suspicious' file(s) here</p>
-            <p data-l10n="l10n-drop-files-line2">or</p>
-            <p data-l10n="l10n-drop-files-line3">Click here to select file(s)</p>
-            <input type="file" name="fileButton" id="fileButton" onChange="fileSelectionChanged(event)" multiple>
+        </div>
+        <div id="tabConvert" class="tabContent" style="display:block">
+          <br/>
+          <div id="dropFileZone" class="dropFileZoneEnabled" ondrop="uploadFile(event)" ondragover="return false" onclick="fileExplorer(event)">
+            <div id="dragUploadFile">
+              <p data-l10n="l10n-drop-files-line1">Drop 'potentially suspicious' file(s) here</p>
+              <p data-l10n="l10n-drop-files-line2">or</p>
+              <p data-l10n="l10n-drop-files-line3">Click here to select file(s)</p>
+              <input type="file" name="fileButton" id="fileButton" onChange="fileSelectionChanged(event)" multiple = "true"/>
+            </div>
+          </div>
+          <br/>
+          <div id="conversionContainer" class="invisible">
+            <hr/>
+            <table width="100%">
+              <tbody>
+                <tr>
+                  <td width="15%">
+                    <p><a href="#" onclick="selectAll()" data-l10n="l10n-select-all">Select all</a></p>
+                    <p><a href="#" onclick="deselectAll()" data-l10n="l10n-deselect-all">Deselect all</a></p>
+                  </td>
+                  <td width="35%">
+                    <button id="deleteButton" class="actionButton" onclick="deleteSelection()" data-l10n="l10n-remove-selected-text" disabled="disabled">Delete selection</button>
+                  </td>
+                  <td width="35%">
+                    <button onclick="submitForm(this)" id="submitButton" class="actionButton"  data-l10n="l10n-convert-documents" disabled="disabled">Convert document(s)!</button>
+                  </td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+            <table style="width:100%;min-height:1.5em">
+              <tbody  id="overallProgressTable" class="invisible">
+                <tr>
+                  <td width="15%" class="vertical-align-center">
+                    <span data-l10n="l10n-overall-progress" class="succeeded" id="overallProgressLabel">Overall progress</span>
+                  </td>
+                  <td width="5%" class="vertical-align-center">
+                    <button id = "cancelPendingTasksButton" name = "cancelPendingTasksButton" onclick="cancelPendingTasks(event)" class="button-succeeded" data-l10n-title="l10n-cancel-pending-tasks-button-title"></button>
+                  </td>
+                  <td width="80%"  class="vertical-align-center">
+                    <progress id="overallProgress" value="0" max="100"></progress>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <table id="fileListTable">
+              <thead>
+                <tr>
+                  <th class="filePasswordColumn"></th>
+                  <th class="fileNameColumn"><span data-l10n="l10n-filelist-column-filename-text">File name</span>&#160;<span id="fileNameCount"></span></th>
+                  <th class="progressStatusColumn" data-l10n="l10n-filelist-column-progress-text">Progress(%)</th>
+                  <th class="processingStatusColumn" data-l10n="l10n-filelist-column-status-text">Status</th>
+                  <th class="progressMessageColumn" data-l10n="l10n-filelist-column-message-text">Messages</th>
+                </tr>
+              </thead>
+              <tbody id="fileListTableBody"></tbody>
+            </table>
+            <p id="conversionSummary"></p>
           </div>
         </div>
       </form>
     </div>
-    <br/>
-    <div id="conversionContainer" class="invisible">
-      <hr/>
-      <table width="100%">
-        <tbody>
-          <tr>
-            <td width="15%">
-              <p><a href="#" onclick="selectAll()" data-l10n="l10n-select-all">Select all</a></p>
-              <p><a href="#" onclick="deselectAll()" data-l10n="l10n-deselect-all">Deselect all</a></p>
-            </td>
-            <td width="35%">
-              <button id="deleteButton" class="actionButton" onclick="deleteSelection()" data-l10n="l10n-remove-selected-text" disabled>Delete selection</button>
-            </td>
-            <td width="35%">
-              <button onclick="submitForm(this)" id="submitButton" class="actionButton"  data-l10n="l10n-convert-documents" disabled>Convert document(s)!</button>
-            </td>
-            <td></td>
-          </tr>
-        </tbody>
-      </table>
-      <table width="100%" id="overallProgressTable" class="invisible">
-        <tbody>
-          <tr>
-            <td width="15%" class="vertical-align-center">
-              <span data-l10n="l10n-overall-progress" class="succeeded" id="overallProgressLabel">Overall progress</span>
-            </td>
-            <td width="5%" class="vertical-align-center">
-              <button id = "cancelPendingTasksButton" name = "cancelPendingTasksButton" onclick="cancelPendingTasks(event)" class="button-succeeded" data-l10n-title="l10n-cancel-pending-tasks-button-title"></button>
-            </td>
-            <td width="80%"  class="vertical-align-center">
-              <progress id="overallProgress" value="0" max="100"></progress>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <table id="fileListTable">
-        <thead>
-          <tr>
-            <th class="filePasswordColumn"></th>
-            <th class="fileNameColumn"><span data-l10n="l10n-filelist-column-filename-text">File name</span>&nbsp;<span id="fileNameCount"></th>
-            <th class="progressStatusColumn" data-l10n="l10n-filelist-column-progress-text">Progress(%)</th>
-            <th class="processingStatusColumn" data-l10n="l10n-filelist-column-status-text">Status</th>
-            <th class="progressMessageColumn" data-l10n="l10n-filelist-column-message-text">Messages</th>
-          </tr>
-        </thead>
-        <tbody id="fileListTableBody"></tbody>
-      </table>
-    </div>
-    <p id="conversionSummary"></p>
   </body>
 </html>

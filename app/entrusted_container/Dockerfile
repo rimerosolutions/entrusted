@@ -69,7 +69,7 @@ RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.zip' -o -name '*.gz' 
     && rm -rf /usr/lib/libreoffice/basic/Tutorials /usr/lib/libreoffice/share/basic/Tutorials /usr/lib/libreoffice/basic/ImportWizard \
     && rm -rf /usr/lib/libreoffice/program/classes/*.jar /usr/lib/libreoffice/program/wizards \
     && rm -rf /usr/local/games /usrlocal/include /usr/local/etc /usr/local/lib /usr/local/man /usr/local/share /usr/local/sbin /usr/local/src \
-    && rm -rf /usr/bin/libreoffice /usr/bin/lp_solve /usr/bin/lowriter /usr/bin/loweb /usr/bin/loimpress \
+    && rm -rf /usr/bin/libreoffice /usr/bin/lp_solve /usr/bin/lowriter /usr/bin/loweb /usr/bin/loimpress /usr/bin/localc \
     && rm -rf /usr/bin/py* /usr/bin/pod2* /usr/bin/loffice /usr/bin/lofromtemplate \
     && rm -rf /usr/lib/libreoffice/share/basic/FormWizard /usr/lib/libreoffice/share/basic/Template
 

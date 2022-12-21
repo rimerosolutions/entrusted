@@ -3,15 +3,15 @@ set -x
 
 ENTRUSTED_VERSION=$(cat /etc/entrusted_release | head -1)
 ENTRUSTED_ARCH=$(cat /etc/entrusted_arch | head -1)
+ENTRUSTED_USERNAME=$(cat /files/entrusted_username | head -1)
+ENTRUSTED_USERID=$(cat /files/entrusted_userid | head -1)
 
 echo "Setting up hostname"
 echo "entrusted-livecd" > /etc/hostname
 
 echo "Installing default packages"
-export DEBIAN_FRONTEND=noninteractive
-
-apt update && \
-    apt install -y --no-install-recommends \
+DEBIAN_FRONTEND=noninteractive apt update && \
+    DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
     linux-image-${ENTRUSTED_ARCH} \
     auditd \
     iptables-persistent \
@@ -42,12 +42,18 @@ cp /files/etc/security/limits.conf /etc/security/
 cp /files/etc/systemd/system/entrusted-webserver.service /etc/systemd/system/
 cp -r /files/etc/systemd/coredump.conf.d /etc/systemd/
 
-echo "Creating entrusted user"
-useradd -ms /bin/bash entrusted
-usermod -G sudo entrusted
+echo "Creating ${ENTRUSTED_USERNAME} user"
+useradd -m -s /bin/bash -u ${ENTRUSTED_USERID} ${ENTRUSTED_USERNAME}
+adduser ${ENTRUSTED_USERNAME} sudo
 
 echo "Creating entrusted user files and pulling container image"
-/files/03-in-chroot-script-arch-${ENTRUSTED_ARCH}.sh ${ENTRUSTED_VERSION}
+runuser -l ${ENTRUSTED_USERNAME} -c "mkdir -p /home/${ENTRUSTED_USERNAME}/.local/share"
+mv /files/entrusted-packaging/containers /home/${ENTRUSTED_USERNAME}/.local/share/
+chown -R ${ENTRUSTED_USERNAME}:${ENTRUSTED_USERNAME} /home/${ENTRUSTED_USERNAME}/.local/share
+
+find /home/${ENTRUSTED_USERNAME}/.local/share/containers -type d -name "${ENTRUSTED_USERNAME}" -exec chmod -R a+rw {} \;
+find /home/${ENTRUSTED_USERNAME}/.local/share/containers -type d -name "safezone"              -exec chmod -R a+rw {} \;
+find /home/${ENTRUSTED_USERNAME}/.local/share/containers -type d -name "tmp"                   -exec chmod -R a+rw {} \;
 
 echo "Copying entrusted binaries"
 mv /files/entrusted-webserver /files/entrusted-cli /usr/local/bin
@@ -63,9 +69,13 @@ cp /files/etc/motd /etc/motd
 cp /files/etc/issue /etc/issue
 cp /files/usr/share/containers/containers.conf /usr/share/containers/containers.conf
 
+echo "Updating linger to allows users who aren't logged in to run long-running services."
+echo "This also allows the automatic creation of /run/user/NUMERIC_USER_ID as tmpdir for podman"
+loginctl enable-linger ${ENTRUSTED_USERNAME}
+
 echo "Updating passwords"
-echo 'root:root' | /usr/sbin/chpasswd
-echo 'entrusted:entrusted' | /usr/sbin/chpasswd
+echo "root:root" | /usr/sbin/chpasswd
+echo "${ENTRUSTED_USERNAME}:${ENTRUSTED_USERNAME}" | /usr/sbin/chpasswd
 
 echo "Enabling default services"
 systemctl enable ssh
@@ -121,7 +131,6 @@ echo "fs.protected_hardlinks=1" >> /etc/sysctl.conf
 echo "fs.protected_fifos=2" >> /etc/sysctl.conf
 echo "fs.protected_regular=2" >> /etc/sysctl.conf
 
-
 echo "Hardening SSH configuration"
 
 echo "PermitEmptyPasswords no" >> /etc/ssh/sshd_config
@@ -134,6 +143,9 @@ echo "ClientAliveCountMax 0" >> /etc/ssh/sshd_config
 echo "b08dfa6083e7567a1921a715000001fb" > /var/lib/dbus/machine-id
 
 echo "Trim filesystem"
-rm -rf /usr/share/man/* /usr/share/doc/* /usr/share/info/* /var/cache/apt/*
+rm -rf /usr/share/man/* /usr/share/doc/* /usr/share/info/* /var/cache/apt/* /var/log/*
+
+echo "Ensure that we don't have weird permission issues with tmp"
+rm -rf /tmp/* && chmod -R a+rw /tmp
 
 exit

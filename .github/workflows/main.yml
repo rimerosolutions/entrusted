@@ -67,7 +67,7 @@ jobs:
     - name: Build
       shell: bash
       run: |
-        brew install imagemagick
+        brew install libicns imagemagick
         
         APPVERSION=$(grep "^version" app/entrusted_client/Cargo.toml | cut -d'=' -f2 | xargs)
         echo "entrusted_version=$APPVERSION" >> $GITHUB_ENV
@@ -95,14 +95,14 @@ jobs:
 
         mkdir -p ./artifacts/appbundle/Entrusted.app/Contents/MacOS
         mkdir -p ./artifacts/appbundle/Entrusted.app/Contents/Resources
-        cp ci_cd/macos/macos/Info.plist ci_cd/macos/macos/PkgInfo ./artifacts/appbundle/
+        cp ci_cd/macos/macos/Info.plist ci_cd/macos/macos/PkgInfo ./artifacts/appbundle/Entrusted.app/Contents/
         cp ci_cd/macos/macos/Entrusted ./artifacts/appbundle/Entrusted.app/Contents/MacOS
         cp artifacts/entrusted-macos-amd64-${APPVERSION}/entrusted-cli ./artifacts/appbundle/Entrusted.app/Contents/MacOS
         mv artifacts/entrusted-macos-amd64-${APPVERSION}/entrusted-gui ./artifacts/appbundle/Entrusted.app/Contents/MacOS
         APPBUNDLECOMPANY="Rimero Solutions Inc"
         APPBUNDLEVERSION=${APPVERSION}
-        perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ./artifacts/appbundle/Info.plist
-        perl -pi -e "s/_APPVERSION_/${APPBUNDLEVERSION}/g"   ./artifacts/appbundle/Info.plist
+        perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ./artifacts/appbundle/Entrusted.app/Contents/Info.plist
+        perl -pi -e "s/_APPVERSION_/${APPBUNDLEVERSION}/g"   ./artifacts/appbundle/Entrusted.app/Contents/Info.plist
         cp app/images/Entrusted_icon.png ./artifacts/tmp/
         mkdir ./artifacts/tmp/Entrusted.iconset
         
@@ -111,8 +111,10 @@ jobs:
         convert -scale 32x32     ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_32x32.png
         convert -scale 128x128   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_128x128.png
         convert -scale 256x256   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_256x256.png
-        convert -scale 512x512   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_512x512.png        
-        iconutil -c icns  -o ./artifacts/appbundle/Entrusted.app/Contents/Resources/Entrusted.icns ./artifacts/tmp/Entrusted.iconset
+        convert -scale 512x512   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_512x512.png                
+        
+        png2icns ./artifacts/appbundle/Entrusted.app/Contents/Resources/Entrusted.icns  ./artifacts/tmp/Entrusted.iconset/icon_16x16.png ./artifacts/tmp/Entrusted.iconset/icon_32x32.png ./artifacts/tmp/Entrusted.iconset/icon_128x128.png ./artifacts/tmp/Entrusted.iconset/icon_256x256.png ./artifacts/tmp/Entrusted.iconset/icon_512x512.png
+        
         cp -r ./artifacts/appbundle/Entrusted.app ./artifacts/entrusted-macos-amd64-${APPVERSION}/
 
         cp -r ./artifacts/appbundle/Entrusted.app ./artifacts/dmg/
@@ -145,7 +147,7 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          brew install imagemagick
+          brew install libicns imagemagick
           
           APPVERSION=$(grep "^version" app/entrusted_client/Cargo.toml | cut -d'=' -f2 | xargs)
           echo "entrusted_version=$APPVERSION" >> $GITHUB_ENV
@@ -173,14 +175,14 @@ jobs:
 
           mkdir -p ./artifacts/appbundle/Entrusted.app/Contents/MacOS
           mkdir -p ./artifacts/appbundle/Entrusted.app/Contents/Resources
-          cp ci_cd/macos/macos/Info.plist ci_cd/macos/macos/PkgInfo ./artifacts/appbundle/
+          cp ci_cd/macos/macos/Info.plist ci_cd/macos/macos/PkgInfo ./artifacts/appbundle/Entrusted.app/Contents/
           cp ci_cd/macos/macos/Entrusted ./artifacts/appbundle/Entrusted.app/Contents/MacOS
           cp artifacts/entrusted-macos-aarch64-${APPVERSION}/entrusted-cli ./artifacts/appbundle/Entrusted.app/Contents/MacOS
           mv artifacts/entrusted-macos-aarch64-${APPVERSION}/entrusted-gui ./artifacts/appbundle/Entrusted.app/Contents/MacOS
           APPBUNDLECOMPANY="Rimero Solutions Inc"
           APPBUNDLEVERSION=${APPVERSION}
-          perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ./artifacts/appbundle/Info.plist
-          perl -pi -e "s/_APPVERSION_/${APPBUNDLEVERSION}/g"   ./artifacts/appbundle/Info.plist
+          perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ./artifacts/appbundle/Entrusted.app/Contents/Info.plist
+          perl -pi -e "s/_APPVERSION_/${APPBUNDLEVERSION}/g"   ./artifacts/appbundle/Entrusted.app/Contents/Info.plist
           cp app/images/Entrusted_icon.png ./artifacts/tmp/
           mkdir ./artifacts/tmp/Entrusted.iconset
           
@@ -189,8 +191,10 @@ jobs:
           convert -scale 32x32     ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_32x32.png
           convert -scale 128x128   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_128x128.png
           convert -scale 256x256   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_256x256.png
-          convert -scale 512x512   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_512x512.png
-          iconutil -c icns  -o ./artifacts/appbundle/Entrusted.app/Contents/Resources/Entrusted.icns ./artifacts/tmp/Entrusted.iconset
+          convert -scale 512x512   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_512x512.png                
+        
+          png2icns ./artifacts/appbundle/Entrusted.app/Contents/Resources/Entrusted.icns  ./artifacts/tmp/Entrusted.iconset/icon_16x16.png ./artifacts/tmp/Entrusted.iconset/icon_32x32.png ./artifacts/tmp/Entrusted.iconset/icon_128x128.png ./artifacts/tmp/Entrusted.iconset/icon_256x256.png ./artifacts/tmp/Entrusted.iconset/icon_512x512.png
+        
           cp -r ./artifacts/appbundle/Entrusted.app ./artifacts/entrusted-macos-aarch64-${APPVERSION}/
 
           cp -r ./artifacts/appbundle/Entrusted.app ./artifacts/dmg/

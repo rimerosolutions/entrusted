@@ -1,0 +1,35 @@
+name: cvescan
+run-name: Container image scan
+
+on: 
+  workflow_dispatch:
+    inputs:
+      imageTag:
+        description: 'entrusted_container image tag'
+        required: true
+        default: '0.3.0'
+        type: 'string'
+
+env:
+  IMAGE_REGISTRY: docker.io
+  IMAGE_REPOSITORY: entrusted_container
+  
+jobs:
+  cve_scan:
+    name: TRIVY SCAN
+    runs-on: ubuntu-latest
+    steps:
+    - name: Prepare environment
+      shell: bash
+      run: |
+        sudo apt install -y qemu-user-static
+    - name: Scan image with Trivy
+      shell: bash
+      run: |
+        mkdir -p logs
+        podman run docker.io/aquasec/trivy image ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_REPOSITORY }}:${{ inputs.imageTag }} > ./logs/${{ env.IMAGE_REPOSITORY }}_${{ inputs.imageTag }}.$(date +'%Y%m%d').log
+    - name: Upload logs
+      uses: actions/upload-artifact@v3
+      with:
+        name: trivy-logs
+        path: ${{ github.workspace }}/logs

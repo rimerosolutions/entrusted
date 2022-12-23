@@ -1,0 +1,43 @@
+name: container
+run-name: Build container sandbox
+
+on: workflow_dispatch
+
+env:
+  IMAGE_REGISTRY: docker.io
+  
+jobs:
+  entrusted_container:
+    name: CONTAINER MULTI-ARCH
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Prepare environment
+      shell: bash
+      run: |
+        APPVERSION=$(grep "^version" app/entrusted_client/Cargo.toml | cut -d'=' -f2 | xargs)
+        echo "entrusted_version=$APPVERSION" >> $GITHUB_ENV
+        sudo apt install -y qemu-user-static
+    - name: Build image
+      uses: redhat-actions/buildah-build@v2
+      with:
+        archs: amd64, arm64
+        image: ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/entrusted_container
+        tags: ${{ env.entrusted_version }}
+        oci: false
+        context: app
+        containerfiles: |
+          app/entrusted_container/Dockerfile
+        extra-args: |
+          --squash
+    - name: Publish image
+      uses: redhat-actions/push-to-registry@v2
+      with:
+        image: entrusted_container
+        tags: ${{ env.entrusted_version }}
+        registry: ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        extra-args: |
+          --format docker
+

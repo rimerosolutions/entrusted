@@ -12,7 +12,7 @@
     <meta name="author" content="Rimero Solutions Inc."/>
     <meta name="application-name" content="entrusted-web"/>
     <meta name="description" content="Entrusted Web Application"/>
-    <title>Entrusted 0.3.0</title>
+    <title>Entrusted 0.3.1</title>
     <script>
       function openTab(evt, tabName) {
         let tabcontent = document.getElementsByClassName("tabContent");
@@ -1484,9 +1484,9 @@
                   <label for="imgQualityCheckbox"  data-l10n="l10n-imgquality-label" data-l10n-title="l10n-imgquality-title">Custom PDF result visual quality</label>
                 </td>
                 <td>
-                  <select id="imgQualitySelect" name="imgQualitySelect" data-l10n="l10n-imgquality-option" disabled="disabled">
+                  <select id="imgQualitySelect" name="imgQualitySelect" data-l10n="l10n-imgquality-option" disabled>
                     <option value="low">low</option>
-                    <option value="medium" selected="true">medium</option>
+                    <option value="medium" selected>medium</option>
                     <option value="high">high</option>
                   </select>
                 </td>
@@ -1498,7 +1498,7 @@
                   <label for="ocrLangSelect" data-l10n="l10n-ocrlang-select-label">Yes, with language:</label>
                 </td>
                 <td class="vertical-align-center">
-                  <select id="ocrLangSelect" name="ocrLangSelect" data-l10n="l10n-ocrlang-option" size="3" disabled="disabled" multiple="true">
+                  <select id="ocrLangSelect" name="ocrLangSelect" data-l10n="l10n-ocrlang-option" size="3" disabled multiple>
                     <option value="ar">Afrikaans</option>
                     <option value="sqi">Albanian</option>
                     <option value="amh">Amharic</option>
@@ -1535,7 +1535,7 @@
                     <option value="div">Divehi</option>
                     <option value="nld">Dutch</option>
                     <option value="dzo">Dzongkha</option>
-                    <option value="eng" selected="yes">English</option>
+                    <option value="eng" selected>English</option>
                     <option value="enm">English, Middle (1100-1500)</option>
                     <option value="epo">Esperanto</option>
                     <option value="est">Estonian</option>
@@ -1672,7 +1672,7 @@
               <p data-l10n="l10n-drop-files-line1">Drop 'potentially suspicious' file(s) here</p>
               <p data-l10n="l10n-drop-files-line2">or</p>
               <p data-l10n="l10n-drop-files-line3">Click here to select file(s)</p>
-              <input type="file" name="fileButton" id="fileButton" onChange="fileSelectionChanged(event)" multiple = "true"/>
+              <input type="file" name="fileButton" id="fileButton" onChange="fileSelectionChanged(event)" multiple/>
             </div>
           </div>
           <br/>
@@ -1686,10 +1686,10 @@
                     <p><a href="#" onclick="deselectAll()" data-l10n="l10n-deselect-all">Deselect all</a></p>
                   </td>
                   <td width="35%">
-                    <button id="deleteButton" class="actionButton" onclick="deleteSelection()" data-l10n="l10n-remove-selected-text" disabled="disabled">Delete selection</button>
+                    <button id="deleteButton" class="actionButton" onclick="deleteSelection()" data-l10n="l10n-remove-selected-text" disabled>Delete selection</button>
                   </td>
                   <td width="35%">
-                    <button onclick="submitForm(this)" id="submitButton" class="actionButton"  data-l10n="l10n-convert-documents" disabled="disabled">Convert document(s)!</button>
+                    <button onclick="submitForm(this)" id="submitButton" class="actionButton"  data-l10n="l10n-convert-documents" disabled>Convert document(s)!</button>
                   </td>
                   <td></td>
                 </tr>

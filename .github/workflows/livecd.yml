@@ -1,0 +1,136 @@
+name: livecd
+run-name: Build Live CD
+
+on: workflow_dispatch
+  
+jobs:
+  livecd_amd64:
+    name: AMD64 LIVE CD
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install software dependencies
+      shell: bash
+      run: |
+        sudo apt update && sudo apt install -y debootstrap squashfs-tools dosfstools xorriso xz-utils isolinux fakeroot wget syslinux-efi grub-pc-bin grub-efi-amd64-bin systemd-container bzip2 gzip mtools podman qemu-user-static
+    - uses: actions/checkout@v3
+    - name: Prepare environment
+      shell: bash
+      run: |
+        ENTRUSTED_CPU_ARCH=amd64
+        ENTRUSTED_CONTAINER_ARCH=amd64
+        ENTRUSTED_TMPDIR=/tmp/entrusted-buildir
+        ENTRUSTED_VERSION=$(grep "^version" ${{ github.workspace }}/app/entrusted_client/Cargo.toml | cut -d"=" -f2 | xargs)
+        ENTRUSTED_LINUX_ARTIFACTS_DIR="${ENTRUSTED_TMPDIR}/artifacts/entrusted-linux-${ENTRUSTED_CPU_ARCH}-${ENTRUSTED_VERSION}"
+        ENTRUSTED_LIVECD_ISO_DIR="${ENTRUSTED_TMPDIR}/artifacts/iso"
+        ENTRUSTED_LIVECD_ISO_TMPDIR="${ENTRUSTED_TMPDIR}/artifacts/tmp"
+        ENTRUSTED_LIVECD_BOOT_DIR="${ENTRUSTED_TMPDIR}/artifacts/boot"
+        ENTRUSTED_LIVECD_SCRIPTS_DIR="${{ github.workspace }}"/ci_cd/live_cd
+        ENTRUSTED_LIVECD_USER_NAME="entrusted"
+        ENTRUSTED_LIVECD_USER_ID="1024"
+        
+        echo "entrusted_cpu_arch=$ENTRUSTED_CPU_ARCH"                       >> $GITHUB_ENV
+        echo "entrusted_container_arch=$ENTRUSTED_CONTAINER_ARCH"           >> $GITHUB_ENV
+        echo "entrusted_version=$ENTRUSTED_VERSION"                         >> $GITHUB_ENV
+        echo "entrusted_tmpdir=$ENTRUSTED_TMPDIR"                           >> $GITHUB_ENV
+        echo "entrusted_linux_artifacts_dir=$ENTRUSTED_LINUX_ARTIFACTS_DIR" >> $GITHUB_ENV
+        echo "entrusted_live_iso_dir=$ENTRUSTED_LIVECD_ISO_DIR"             >> $GITHUB_ENV
+        echo "entrusted_live_boot_tmpdir=$ENTRUSTED_LIVECD_ISO_TMPDIR"      >> $GITHUB_ENV
+        echo "entrusted_live_boot_dir=$ENTRUSTED_LIVECD_BOOT_DIR"           >> $GITHUB_ENV
+        echo "entrusted_scripts_dir=$ENTRUSTED_LIVECD_SCRIPTS_DIR"          >> $GITHUB_ENV 
+        echo "entrusted_livecd_user_name=$ENTRUSTED_LIVECD_USER_NAME"       >> $GITHUB_ENV 
+        echo "entrusted_livecd_user_id=$ENTRUSTED_LIVECD_USER_ID"           >> $GITHUB_ENV 
+        
+        cat $GITHUB_ENV
+    - name: Prepare Linux artifacts 
+      shell: bash
+      run: |        
+        mkdir -p "${{ env.entrusted_tmpdir }}" 
+        mkdir -p "${{ env.entrusted_linux_artifacts_dir }}" 
+        mkdir -p "${{ env.entrusted_live_iso_dir }}" 
+        mkdir -p "${{ env.entrusted_live_boot_tmpdir }}" 
+        mkdir -p "${{ env.entrusted_live_boot_dir }}" 
+        
+        sudo chmod -R a+rw "${{ env.entrusted_tmpdir }}" 
+        sudo chmod -R a+rw "${{ env.entrusted_linux_artifacts_dir }}" 
+        sudo chmod -R a+rw "${{ env.entrusted_live_iso_dir }}" 
+        sudo chmod -R a+rw "${{ env.entrusted_live_boot_tmpdir }}" 
+        sudo chmod -R a+rw "${{ env.entrusted_live_boot_dir }}" 
+        
+        podman run --platform linux/${{ env.entrusted_cpu_arch }} -v "$(pwd)":/src -v "${{ env.entrusted_linux_artifacts_dir }}":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c "CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /src/app/entrusted_webserver/Cargo.toml && cp /src/app/entrusted_webserver/target/x86_64-unknown-linux-musl/release/entrusted-webserver /artifacts/ && rm -rf /src/app/entrusted_webserver/target && CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /src/app/entrusted_client/Cargo.toml && cp /src/app/entrusted_client/target/x86_64-unknown-linux-musl/release/entrusted-cli /artifacts/ && rm -rf /src/app/entrusted_client/target && strip /artifacts/entrusted-cli && strip /artifacts/entrusted-webserver" 
+    - name: Build live CD
+      shell: bash
+      run: |
+        "${{ env.entrusted_scripts_dir }}"/01-pre-chroot.sh  "${{ env.entrusted_version }}" "${{ env.entrusted_cpu_arch }}" "${{ env.entrusted_container_arch }}" "${{ env.entrusted_linux_artifacts_dir }}" "${{ env.entrusted_live_boot_dir }}" "${{ env.entrusted_live_boot_tmpdir }}" "${{ env.entrusted_livecd_user_name }}" "${{ env.entrusted_livecd_user_id }}" 
+        "${{ env.entrusted_scripts_dir }}"/02-just-chroot.sh "${{ env.entrusted_live_boot_dir }}" "${{ env.entrusted_live_boot_tmpdir }}" "${{ env.entrusted_version }}" "${{ env.entrusted_cpu_arch }}" "${{ env.entrusted_livecd_user_name }}" "${{ env.entrusted_livecd_user_id }}" 
+        "${{ env.entrusted_scripts_dir }}"/04-post-chroot.sh "${{ env.entrusted_cpu_arch }}" "${{ env.entrusted_live_boot_dir }}" "${{ env.entrusted_live_iso_dir }}" 
+    - name: Upload portable installation
+      uses: actions/upload-artifact@v3
+      with:
+        name: entrusted-livecd-${{ env.entrusted_cpu_arch }}-iso
+        path: ${{ env.entrusted_live_iso_dir }}
+  livecd_aarch64:
+    name: AARCH64 LIVE CD
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install software dependencies
+      shell: bash
+      run: |
+        sudo apt update && sudo apt install -y debootstrap squashfs-tools dosfstools xorriso xz-utils isolinux fakeroot wget syslinux-efi grub-pc-bin grub-efi-amd64-bin systemd-container bzip2 gzip mtools podman qemu-user-static
+    - uses: actions/checkout@v3
+    - name: Prepare environment
+      shell: bash
+      run: |
+        ENTRUSTED_CPU_ARCH=arm64
+        ENTRUSTED_CONTAINER_ARCH=arm64
+        ENTRUSTED_TMPDIR=/tmp/entrusted-buildir
+        ENTRUSTED_VERSION=$(grep "^version" ${{ github.workspace }}/app/entrusted_client/Cargo.toml | cut -d"=" -f2 | xargs)
+        ENTRUSTED_LINUX_ARTIFACTS_DIR="${ENTRUSTED_TMPDIR}/artifacts/entrusted-linux-${ENTRUSTED_CPU_ARCH}-${ENTRUSTED_VERSION}"
+        ENTRUSTED_LIVECD_ISO_DIR="${ENTRUSTED_TMPDIR}/artifacts/iso"
+        ENTRUSTED_LIVECD_ISO_TMPDIR="${ENTRUSTED_TMPDIR}/artifacts/tmp"
+        ENTRUSTED_LIVECD_BOOT_DIR="${ENTRUSTED_TMPDIR}/artifacts/boot"
+        ENTRUSTED_LIVECD_SCRIPTS_DIR="${{ github.workspace }}"/ci_cd/live_cd
+        ENTRUSTED_LIVECD_USER_NAME="entrusted"
+        ENTRUSTED_LIVECD_USER_ID="1024"
+        
+        echo "entrusted_cpu_arch=$ENTRUSTED_CPU_ARCH"                       >> $GITHUB_ENV
+        echo "entrusted_container_arch=$ENTRUSTED_CONTAINER_ARCH"           >> $GITHUB_ENV
+        echo "entrusted_version=$ENTRUSTED_VERSION"                         >> $GITHUB_ENV
+        echo "entrusted_tmpdir=$ENTRUSTED_TMPDIR"                           >> $GITHUB_ENV
+        echo "entrusted_linux_artifacts_dir=$ENTRUSTED_LINUX_ARTIFACTS_DIR" >> $GITHUB_ENV
+        echo "entrusted_live_iso_dir=$ENTRUSTED_LIVECD_ISO_DIR"             >> $GITHUB_ENV
+        echo "entrusted_live_boot_tmpdir=$ENTRUSTED_LIVECD_ISO_TMPDIR"      >> $GITHUB_ENV
+        echo "entrusted_live_boot_dir=$ENTRUSTED_LIVECD_BOOT_DIR"           >> $GITHUB_ENV
+        echo "entrusted_scripts_dir=$ENTRUSTED_LIVECD_SCRIPTS_DIR"          >> $GITHUB_ENV 
+        echo "entrusted_livecd_user_name=$ENTRUSTED_LIVECD_USER_NAME"       >> $GITHUB_ENV 
+        echo "entrusted_livecd_user_id=$ENTRUSTED_LIVECD_USER_ID"           >> $GITHUB_ENV 
+        
+        cat $GITHUB_ENV
+    - name: Prepare Linux artifacts 
+      shell: bash
+      run: |        
+        mkdir -p "${{ env.entrusted_tmpdir }}" 
+        mkdir -p "${{ env.entrusted_linux_artifacts_dir }}" 
+        mkdir -p "${{ env.entrusted_live_iso_dir }}" 
+        mkdir -p "${{ env.entrusted_live_boot_tmpdir }}" 
+        mkdir -p "${{ env.entrusted_live_boot_dir }}" 
+        
+        sudo chmod -R a+rw "${{ env.entrusted_tmpdir }}" 
+        sudo chmod -R a+rw "${{ env.entrusted_linux_artifacts_dir }}" 
+        sudo chmod -R a+rw "${{ env.entrusted_live_iso_dir }}" 
+        sudo chmod -R a+rw "${{ env.entrusted_live_boot_tmpdir }}" 
+        sudo chmod -R a+rw "${{ env.entrusted_live_boot_dir }}" 
+        
+        podman run --platform linux/${{ env.entrusted_cpu_arch }} -v "$(pwd)":/src -v "${{ env.entrusted_linux_artifacts_dir }}":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c "ln -sf /usr/bin/gcc /usr/bin/aarch64-linux-musl-gcc && ln -sf /usr/bin/ar /usr/bin/aarch64-linux-musl-ar; CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 CC_AARCH64_UNKNOWN_LINUX_MUSL=musl-gcc CXX_AARCH64_UNKNOWN_LINUX_MUSL=musl-g++ AR_AARCH64_UNKNOWN_LINUX_MUSL=ar CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc RUSTFLAGS='-C link-arg=-lgcc -C target-feature=+crt-static' cargo build --release --target aarch64-unknown-linux-musl --manifest-path /src/app/entrusted_webserver/Cargo.toml && cp /src/app/entrusted_webserver/target/aarch64-unknown-linux-musl/release/entrusted-webserver /artifacts/ && rm -rf /src/app/entrusted_webserver/target && CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 CC_AARCH64_UNKNOWN_LINUX_MUSL=musl-gcc CXX_AARCH64_UNKNOWN_LINUX_MUSL=musl-g++ AR_AARCH64_UNKNOWN_LINUX_MUSL=ar CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc RUSTFLAGS='-C link-arg=-lgcc -C target-feature=+crt-static' cargo build --release --target aarch64-unknown-linux-musl --manifest-path /src/app/entrusted_client/Cargo.toml && cp /src/app/entrusted_client/target/aarch64-unknown-linux-musl/release/entrusted-cli /artifacts/ && rm -rf /src/app/entrusted_client/target && strip /artifacts/entrusted-cli && strip /artifacts/entrusted-webserver" 
+    - name: Build live CD
+      shell: bash
+      run: |
+        "${{ env.entrusted_scripts_dir }}"/01-pre-chroot.sh  "${{ env.entrusted_version }}" "${{ env.entrusted_cpu_arch }}" "${{ env.entrusted_container_arch }}" "${{ env.entrusted_linux_artifacts_dir }}" "${{ env.entrusted_live_boot_dir }}" "${{ env.entrusted_live_boot_tmpdir }}" "${{ env.entrusted_livecd_user_name }}" "${{ env.entrusted_livecd_user_id }}" 
+        "${{ env.entrusted_scripts_dir }}"/02-just-chroot.sh "${{ env.entrusted_live_boot_dir }}" "${{ env.entrusted_live_boot_tmpdir }}" "${{ env.entrusted_version }}" "${{ env.entrusted_cpu_arch }}" "${{ env.entrusted_livecd_user_name }}" "${{ env.entrusted_livecd_user_id }}" 
+        "${{ env.entrusted_scripts_dir }}"/04-post-chroot.sh "${{ env.entrusted_cpu_arch }}" "${{ env.entrusted_live_boot_dir }}" "${{ env.entrusted_live_iso_dir }}" 
+    - name: Upload portable installation
+      uses: actions/upload-artifact@v3
+      with:
+        name: entrusted-livecd-${{ env.entrusted_cpu_arch }}-iso
+        path: ${{ env.entrusted_live_iso_dir }}
+
+        

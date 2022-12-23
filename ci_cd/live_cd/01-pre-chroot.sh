@@ -46,7 +46,7 @@ sudo adduser "${CONTAINER_USER}" sudo || true
 sudo adduser "${CONTAINER_USER}" systemd-journal || true
 sudo adduser "${CONTAINER_USER}" adm || true
 sudo adduser "${CONTAINER_USER}" docker || true
-sudo loginctl enable-linger ${CONTAINER_USER}
+
 
 cd /
 
@@ -71,18 +71,19 @@ if [ $retVal -ne 0 ]; then
   exit 1
 fi
 
+sudo loginctl enable-linger ${CONTAINER_USER_ID}
+sudo mkdir -p /run/user/${CONTAINER_USER_ID} && sudo chown -R ${CONTAINER_USER} /run/user/${CONTAINER_USER_ID}
 cd / && sudo runuser -l "${CONTAINER_USER}" -c "podman run docker-archive:${LIVE_BOOT_TMP_DIR}/image.tar ls / && podman images" && cd -
 
 sudo rm ${LIVE_BOOT_TMP_DIR}/image.tar
 
-sudo rm -rf ${PROJECTDIR}
+#sudo rm -rf ${PROJECTDIR}
 
 cd /
 
 sudo cp -r ${CONTAINER_USER_HOMEDIR}/.local/share/containers ${LIVE_BOOT_TMP_DIR}/entrusted-packaging
 
 cd -
-
 
 test -d "${LIVE_BOOT_TMP_DIR}"/hardened_malloc-${DEBIAN_ARCH} && rm -rf "${LIVE_BOOT_TMP_DIR}"/hardened_malloc-${DEBIAN_ARCH}
 mkdir -p "${LIVE_BOOT_TMP_DIR}"/hardened_malloc-${DEBIAN_ARCH}

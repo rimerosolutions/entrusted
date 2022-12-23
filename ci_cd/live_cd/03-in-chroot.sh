@@ -39,15 +39,18 @@ echo "Setting up system files"
 cp /files/etc/iptables/rules.v4 /etc/iptables/
 cp /files/etc/doas.conf /etc/ && chmod 400 /etc/doas.conf
 cp /files/etc/security/limits.conf /etc/security/
-cp /files/etc/systemd/system/entrusted-webserver.service /etc/systemd/system/
+cp /files/etc/pam.d/system-auth /files/etc/pam.d/systemd-user /etc/pam.d/
+cp /files/etc/systemd/system/*.service /etc/systemd/system/
 cp -r /files/etc/systemd/coredump.conf.d /etc/systemd/
 
 echo "Creating ${ENTRUSTED_USERNAME} user"
 useradd -m -s /bin/bash -u ${ENTRUSTED_USERID} ${ENTRUSTED_USERNAME}
 adduser ${ENTRUSTED_USERNAME} sudo
 
+
 echo "Creating entrusted user files and pulling container image"
 runuser -l ${ENTRUSTED_USERNAME} -c "mkdir -p /home/${ENTRUSTED_USERNAME}/.local/share"
+runuser -l ${ENTRUSTED_USERNAME} -c "cat /files/home/entrusted/.bashrc_append >> /home/${ENTRUSTED_USERNAME}/.bashrc"
 mv /files/entrusted-packaging/containers /home/${ENTRUSTED_USERNAME}/.local/share/
 chown -R ${ENTRUSTED_USERNAME}:${ENTRUSTED_USERNAME} /home/${ENTRUSTED_USERNAME}/.local/share
 
@@ -71,7 +74,9 @@ cp /files/usr/share/containers/containers.conf /usr/share/containers/containers.
 
 echo "Updating linger to allows users who aren't logged in to run long-running services."
 echo "This also allows the automatic creation of /run/user/NUMERIC_USER_ID as tmpdir for podman"
-loginctl enable-linger ${ENTRUSTED_USERNAME}
+loginctl enable-linger $(id -u $ENTRUSTED_USERNAME)
+mkdir -p /run/user/$(id -u $ENTRUSTED_USERNAME)
+chown -R ${ENTRUSTED_USERNAME}:${ENTRUSTED_USERNAME} /run/user/$(id -u ${ENTRUSTED_USERNAME})
 
 echo "Updating passwords"
 echo "root:root" | /usr/sbin/chpasswd
@@ -83,6 +88,7 @@ systemctl enable NetworkManager
 systemctl enable netfilter-persistent
 systemctl enable systemd-networkd
 systemctl enable entrusted-webserver
+systemctl enable entrusted-systemd
 
 rm -rf /files
 
@@ -143,9 +149,11 @@ echo "ClientAliveCountMax 0" >> /etc/ssh/sshd_config
 echo "b08dfa6083e7567a1921a715000001fb" > /var/lib/dbus/machine-id
 
 echo "Trim filesystem"
-rm -rf /usr/share/man/* /usr/share/doc/* /usr/share/info/* /var/cache/apt/* /var/log/*
+rm -rf /usr/share/man/* /usr/share/doc/* /usr/share/info/* /var/cache/apt/* /var/log/* /tmp/*
+rm -rf /run/user/*
+mkdir -p /var/log/entrusted-webserver /var/log/audit
 
 echo "Ensure that we don't have weird permission issues with tmp"
-rm -rf /tmp/* && chmod -R a+rw /tmp
+chmod -R a+rw /tmp
 
 exit

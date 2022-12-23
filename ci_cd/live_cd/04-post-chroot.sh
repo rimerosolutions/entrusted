@@ -19,7 +19,7 @@ fi
 
 echo "Deleting previous artifacts ISO and squashfs files"
 ENTRUSTED_VERSION=$(cat "${LIVE_BOOT_DIR}"/chroot/etc/entrusted_release | head -1)
-test -d "${LIVE_ISO_DIR}" && mkdir -p "${LIVE_ISO_DIR}"
+test -d "${LIVE_ISO_DIR}" || mkdir -p "${LIVE_ISO_DIR}"
 test -f "${LIVE_BOOT_DIR}"/staging/live/filesystem.squashfs && sudo rm "${LIVE_BOOT_DIR}"/staging/live/filesystem.squashfs
 
 echo "Creating filesystem"

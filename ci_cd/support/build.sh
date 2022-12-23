@@ -8,7 +8,7 @@ RUST_CI_VERSION="1.64.0"
 cd ${ROOT_SCRIPTDIR}
 
 # # Windows for amd64
-podman build -t docker.io/uycyjnzgntrn/rust-windows:${RUST_CI_VERSION} -f Dockerfile.windows.amd64 .
+buildah bud --squash --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/rust-windows:${RUST_CI_VERSION} -f Dockerfile.windows.amd64 .
 
 retVal=$?
 if [ $retVal -ne 0 ]; then
@@ -17,7 +17,7 @@ if [ $retVal -ne 0 ]; then
 fi
 
 # # Mac OS
-podman build -t docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION} -f Dockerfile.macos.amd64 .
+buildah bud --squash --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION} -f Dockerfile.macos.amd64 .
 
 retVal=$?
 if [ $retVal -ne 0 ]; then

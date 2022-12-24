@@ -7,44 +7,48 @@
     - Ability to sustain GitHub outages (those do happen)
     - Flexibility in it's decided to move few things out of GitHub (code and/or CI/CD)
   - [X] Scan for vulnerabilities via a GitHub Actions instead of manual efforts
-  - [X] Generate and push container images 
+  - [X] Generate and push container images
   - [X] Generate Live CD (aarch64 and amd64)
   - [X] Generate main binaries
     - [X] Binaries for Windows (amd64)
     - [X] Binaries for Linux (amd64 and aarch64)
     - [X] Binaries for Mac OS (amd64 and aarch64)
-- [ ] See if there's a need to sync with [[https://github.com/axtloss/flatpaks][Axtloss]] for updating the Linux Flatpak (also enquire for arm64)
+- [ ] Sync with [[https://github.com/axtloss/flatpaks][Axtloss]] for updating the Linux Flatpak (also enquire for =arm64=)
 - [ ] Testing
   - [ ] See how to make it easier to test prior releases
   - [ ] Add few encrypted files to existing test data
-- [ ] Security
-  - [ ] Research how to support additional known security options for the container sandbox execution
-  - [ ] Research enabling apparmor on the Live CD
-    - Research profile generation    
-    - POC tasks required to make it happen
-  - [ ] Research enabling gVisor on the Live CD
-    - Re-assess performance
-    - Re-assesss tasks required to make it happen
+- [-] Security
+  - [ ] Research how to support additional "known security options" for the container execution
+  - [ ] Research enabling [[https://www.apparmor.net/][apparmor]] on the Live CD
+    - [ ] Research profile generation
+    - [ ] Fast POC to determine required changes and effort
+  - [X] Research enabling [[https://gvisor.dev/][gVisor]] on the Live CD
+    - [X] Re-assess performance
+    - [X] Re-assesss tasks required to make it happen
 - [ ] Conversions
-  - [ ] Evaluate level of flexibility for adding other container solutions
+  - [ ] Evaluate level of flexibility for supporting more container solutions
 - [-] User interface
   - [ ] Evaluate opportunities to simplify the UI without adding too many screens
   - [ ] Desktop interface improvements
     - [ ] Add an "Open" "hyperlink" next to the "Logs" link in the Desktop UI
   - [-] Web interface improvements
     - [X] Add tabs in the Web UI, like in the Desktop UI
-    - [ ] Display progress information at the bottom of the page, like in the Desktop UI    
+    - [ ] Display progress information at the bottom of the page, like in the Desktop UI
 - [ ] Other topics
-  - [ ] Revisit Alpine Linux
+  - [ ] Live CD software
+    - [ ] Investigate [[https://github.com/containerd/nerdctl][nerdctl]] as a lightweight alternative to [[https://github.com/containers/podman][podman]]
+    - [ ] Investigate [[https://github.com/mkj/dropbear][dropbear]] as a ligthweight alternative to [[https://www.openssh.com/][openssh]]
+  - [ ] Revisit [[https://www.alpinelinux.org/][Alpine Linux]]
     - [ ] Review Alpine as container solution like few releases ago
       - This would likely require regenerating the seccomp profile
       - This was slower than Debian during conversions
-      - The container image size was tougher to trim than Debian      
+      - The container image size was tougher to trim than Debian
     - [ ] Check if it's worth creating a highly tailored CD creation process
       - Existing "kits" produced smaller ISO images than Debian (~600 MB vs ~800 MB)
       - Overlays need to be uncompressed at boot time (slow boot, free disk space, etc.)
 
 * Milestone: Hardening and features maturity [100%]
+
 - [X] Security
   - [X] Limit the attack surface via a custom [[https://docs.docker.com/engine/security/seccomp/][seccomp]] security profile for the container image (enabled by default)
     - It is possible to disable it via an environment variable (failsafe if an unexpected bug makes the program unusable)
@@ -58,14 +62,14 @@
     - [X] Alpine is the best "safe by default" option, with few compromises (REASONABLE)
       - CVEs are addressed very quickly, in fact close to none detected by [[https://trivy.dev/][Trivy]]
       - It seems to require more system calls with =musl=, impacting benefits of fine-grained =seccomp= profiles
-      - It is easier on computer resources, but noticeably slower on "medium size" documents (i.e. 100+ PDF pages)      
+      - It is easier on computer resources, but noticeably slower on "medium size" documents (i.e. 100+ PDF pages)
     - [X] Fedora takes a while to build (dnf is VERY slow) and trimming the image size is rather involved
 - [X] Improved conversions
   - [X] Review possible  multi-threading issues related with =entrusted-gui=
   - [X] Evaluate performance optimization opportunities
   - [X] Allow multiple language selection for searchable PDFs (OCR)
 - [X] Code maintenance and other practices
-  - [X] Happy path integration testing with [[https://github.com/cucumber-rs/cucumber][cucumber-rs]] (=entrusted_client=) 
+  - [X] Happy path integration testing with [[https://github.com/cucumber-rs/cucumber][cucumber-rs]] (=entrusted_client=)
   - [X] Review command-line flags default values after upgrading command-line arguments library
   - [X] Apply most of [[https://github.com/rust-lang/rust-clippy][clippy]] suggested code changes (linting)
   - [X] Streamline locale handling (=en-CA= detection vs. =en_CA= catalog translation)

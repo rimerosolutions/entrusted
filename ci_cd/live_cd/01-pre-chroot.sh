@@ -87,7 +87,7 @@ cd -
 
 test -d "${LIVE_BOOT_TMP_DIR}"/hardened_malloc-${DEBIAN_ARCH} && rm -rf "${LIVE_BOOT_TMP_DIR}"/hardened_malloc-${DEBIAN_ARCH}
 mkdir -p "${LIVE_BOOT_TMP_DIR}"/hardened_malloc-${DEBIAN_ARCH}
-podman run --platform linux/${DEBIAN_ARCH} --rm -v "${LIVE_BOOT_TMP_DIR}/hardened_malloc-${DEBIAN_ARCH}":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c "mkdir -p /src && cd /src && git clone https://github.com/GrapheneOS/hardened_malloc.git && cd hardened_malloc && make N_ARENA=1 CONFIG_EXTENDED_SIZE_CLASSES=false && cp /src/hardened_malloc/out/libhardened_malloc.so /artifacts/"
+podman run --platform linux/${DEBIAN_ARCH} --rm -v "${LIVE_BOOT_TMP_DIR}/hardened_malloc-${DEBIAN_ARCH}":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c "mkdir -p /src && cd /src && git clone https://github.com/GrapheneOS/hardened_malloc.git && cd hardened_malloc && make N_ARENA=1 CONFIG_NATIVE=false CONFIG_EXTENDED_SIZE_CLASSES=false && cp /src/hardened_malloc/out/libhardened_malloc.so /artifacts/"
 sudo cp "${LIVE_BOOT_TMP_DIR}/hardened_malloc-${DEBIAN_ARCH}"/libhardened_malloc.so "${LIVE_BOOT_TMP_DIR}"/live-libhardened_malloc.so
 sudo rm -rf "${LIVE_BOOT_TMP_DIR}/hardened_malloc-${DEBIAN_ARCH}"
 

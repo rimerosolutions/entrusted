@@ -3,7 +3,7 @@ Description=Entrusted Web Server
 After=systemd-user-sessions.service
 
 [Service]
-#Environment=LD_PRELOAD=/usr/lib/libhardened_malloc.so
+Environment=LD_PRELOAD=/usr/lib/libhardened_malloc.so
 Environment=ENTRUSTED_AUTOMATED_SECCOMP_ENABLEMENT=true
 Type=simple
 User=entrusted

@@ -37,6 +37,9 @@ sudo apt update && sudo apt install -y \
     mtools
 
 for CPU_ARCH in $CPU_ARCHS ; do
+    sudo killall -u "${CONTAINER_USER_NAME}" || true
+    sudo userdel -r "${CONTAINER_USER_NAME}" || true
+    
     MY_TMPDIR="${TMPDIR}"
     test -d "${MY_TMPDIR}" || MY_TMPDIR="/tmp"
     ENTRUSTED_ROOT_TMPDIR="${MY_TMPDIR}/entrusted-tmpbuild"
@@ -93,4 +96,6 @@ for CPU_ARCH in $CPU_ARCHS ; do
     fi
     
     sudo rm -rf "${ENTRUSTED_ROOT_TMPDIR}"
+    sudo killall -u "${CONTAINER_USER_NAME}" || true
+    sudo userdel -r "${CONTAINER_USER_NAME}" || true
 done

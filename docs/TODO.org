@@ -1,44 +1,40 @@
 #+TITLE: TODO
 
-* Milestone: From local CI/CD pipelines to GitHub Actions [0%]
+* Milestone: From local CI/CD pipelines to GitHub Actions [14%]
 
-- [ ] GitHub actions tasks (some of it was already tested/tried)
-  - [ ] Refactor existing shell scripts to work with GitHub actions and also locally
+- [X] GitHub actions tasks (some of it was already tested/tried)
+  - [X] Refactor existing shell scripts to work with GitHub actions and also locally
     - Ability to sustain GitHub outages (those do happen)
     - Flexibility in it's decided to move few things out of GitHub (code and/or CI/CD)
-  - [ ] Generate and push container images 
-  - [ ] Generate Live CD (aarch64 and amd64)
-  - [ ] Generate main binaries
-    - [ ] Binaries for Windows (amd64)
-    - [ ] Binaries for Linux (amd64 and aarch64)
-      - [ ] Ensure that aarch64 files are stripped
-      - [ ] Try building from amd64 for faster compile times...
-    - [ ] Binaries for Mac OS (amd64 and aarch64)
-- [ ] See if there's a need to sync with Axtloss for updating Linux Flatpaks
-  - It is preferrable to leave distro packaging to distro maintainers going forward
-  - It also avoids having to keep up with many distros and setup repositories, etc.
+  - [X] Scan for vulnerabilities via a GitHub Actions instead of manual efforts
+  - [X] Generate and push container images 
+  - [X] Generate Live CD (aarch64 and amd64)
+  - [X] Generate main binaries
+    - [X] Binaries for Windows (amd64)
+    - [X] Binaries for Linux (amd64 and aarch64)
+    - [X] Binaries for Mac OS (amd64 and aarch64)
+- [ ] See if there's a need to sync with [[https://github.com/axtloss/flatpaks][Axtloss]] for updating the Linux Flatpak (also enquire for arm64)
 - [ ] Testing
   - [ ] See how to make it easier to test prior releases
   - [ ] Add few encrypted files to existing test data
 - [ ] Security
-  - [ ] Enable apparmor on the Live CD
-- [ ] User interface
-  - [ ] Implement manually a custom "layout" for widgets
-    - We want to fully control widget positions and the "layout"
-    - This will reduce components used and might be better (speed, OS resources)
-    - This sadly also requires more code and more attention to details...
-  - [ ] Desktop interface improvements
-    - [ ] Make "Logs" button an "hyperlink" in the Desktop UI
-    - [ ] Add an "Open" "hyperlink" next to the "Logs" link in the Desktop UI
-  - [ ] Evaluate opportunities to simplify the UI without adding too many screens
+  - [ ] Research how to support additional known security options for the container sandbox execution
+  - [ ] Research enabling apparmor on the Live CD
+    - Research profile generation    
+    - POC tasks required to make it happen
+  - [ ] Research enabling gVisor on the Live CD
+    - Re-assess performance
+    - Re-assesss tasks required to make it happen
+- [ ] Conversions
   - [ ] Evaluate level of flexibility for adding other container solutions
-    - It is not that difficult to support Rancher Desktop and much more
-    - There would need to be more "user settings" (default container solutions and "custom")
+- [-] User interface
+  - [ ] Evaluate opportunities to simplify the UI without adding too many screens
+  - [ ] Desktop interface improvements
+    - [ ] Add an "Open" "hyperlink" next to the "Logs" link in the Desktop UI
+  - [-] Web interface improvements
+    - [X] Add tabs in the Web UI, like in the Desktop UI
+    - [ ] Display progress information at the bottom of the page, like in the Desktop UI    
 - [ ] Other topics
-  - [ ] Revisit gVisor performance
-    - This was horribly slow (early or mid-2022 tests)
-    - This was never tested with custom seccomp profiles
-    - This could be enabled conditionally in the Live CD (Live CD specific user option)
   - [ ] Revisit Alpine Linux
     - [ ] Review Alpine as container solution like few releases ago
       - This would likely require regenerating the seccomp profile

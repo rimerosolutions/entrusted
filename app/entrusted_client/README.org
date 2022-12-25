@@ -98,12 +98,6 @@ The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to
   # This is meant mostly for advanced usage (self-hosting, development, etc.)
   # container-image-name= docker.io/MY_USERNAME_HERE/entrusted_container:1.2.3
 
-  # Only if the conversion is successful each document will be opened automatically
-  # "Acrobat Reader" is the name of the PDF viewer "as identified" in the GUI client
-  # That name isn't just random: the name, spacing and case ALL matter...
-  # Only configure this manually if you know what you're doing
-  # preview-result-appname="Acrobat Reader"
-
   # The requested visual quality of the PDF result influences processing time and result size
   # This is one of 'low', 'medium' or 'high' with a default of 'medium'  
   visual-quality = "medium"
@@ -117,8 +111,6 @@ The configuration format is [[https://toml.io/en/][TOML]], it's a bit similar to
 | =ocr-lang=                 | The [[https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html][tesseract OCR langcode]] if OCR is desired (slower conversions) |
 | =file-suffix=              | Custom file suffix for converted files (defaults to =entrusted=)  |
 | =container-image-name=     | A custom container image for conversions (advanced option)        |
-| =preview-result-appname=   | The PDF viewer as identified by the GUI to open converted files   |
 | =visual-quality=           | The result visual quality (file size, processing time, visuals)   |
 |----------------------------+-------------------------------------------------------------------|
 
-In CLI mode (=entrusted-cli=), the =preview-result-appname= parameter is ignored. It's only intended for Desktop usage ("Save current settings as defaults" in the GUI client).

@@ -44,7 +44,7 @@ pub enum AppEvent {
     FileOpenEvent(String), // file_path
     ConversionProgressEvent(String), // message in JSON format
     ConversionStartEvent(usize), // tasks_index
-    ConversionSuccessEvent(usize, Option<String>, PathBuf, usize), // tasks_index, app_viewer, result_path, tasks_count
+    ConversionSuccessEvent(usize, usize), // tasks_index, tasks_count
     ConversionFailureEvent(usize, usize), // tasks_index, tasks_count
     ConversionFinishedAckEvent,
     AllConversionEnded(usize, usize, usize) // tasks_completed, tasks_failed, tasks_count

@@ -18,6 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "Cannot find default application for content type: {0}"
+msgstr "Impossible de trouver l'application par défaut pour le type de contenu: {0}"
+
+msgid "Couldn't open PDF file in default application! {0}."
+msgstr "Impossible d'ouvrir le fichier PDF dans l'application par défaut! {0}."
+
+msgid "Open"
+msgstr "Ouvrir"
+
 msgid "Potentially sacrifice visual quality for processing time (quick preview first, etc.)"
 msgstr "Sacrifiez potentiellement la qualité visuelle pour le temps de traitement (aperçu rapide en premier, etc.)"
 
@@ -80,9 +89,6 @@ msgstr "Progrès d'ensemble"
 
 msgid "Could not find 'open' command in 'PATH' environment variable!"
 msgstr "Impossible de trouver la commande 'open' dans la variable d'environement 'PATH'!"
-
-msgid "Cannot find Web Browser"
-msgstr "Impossible de trouver le navigateur Web"
 
 msgid "Version {0} is out!"
 msgstr "La version {0} est sortie!"

@@ -17,12 +17,12 @@ then
     CPU_ARCH="aarch64"
 fi
 
-echo "Deleting previous artifacts ISO and squashfs files"
+echo ">>> Deleting previous artifacts ISO and squashfs files"
 ENTRUSTED_VERSION=$(cat "${LIVE_BOOT_DIR}"/chroot/etc/entrusted_release | head -1)
 test -d "${LIVE_ISO_DIR}" || mkdir -p "${LIVE_ISO_DIR}"
 test -f "${LIVE_BOOT_DIR}"/staging/live/filesystem.squashfs && sudo rm "${LIVE_BOOT_DIR}"/staging/live/filesystem.squashfs
 
-echo "Creating filesystem"
+echo ">>> Creating squashfs filesystem"
 mkdir -p "${LIVE_BOOT_DIR}"/staging/EFI/boot/
 mkdir -p "${LIVE_BOOT_DIR}"/staging/boot/grub/${EFI_ARCH}-efi                          
 mkdir -p "${LIVE_BOOT_DIR}"/staging/isolinux
@@ -31,7 +31,7 @@ mkdir -p "${LIVE_BOOT_DIR}"/tmp
 
 sudo mksquashfs "${LIVE_BOOT_DIR}"/chroot "${LIVE_BOOT_DIR}"/staging/live/filesystem.squashfs -e boot
 
-echo "Preparing boot files"
+echo ">>> Preparing boot files"
 cp "${LIVE_BOOT_DIR}"/chroot/boot/vmlinuz-* "${LIVE_BOOT_DIR}"/staging/live/vmlinuz
 cp "${LIVE_BOOT_DIR}"/chroot/boot/initrd.img-* "${LIVE_BOOT_DIR}"/staging/live/initrd
 
@@ -48,5 +48,5 @@ cp -r "${LIVE_BOOT_DIR}"/chroot/usr/lib/grub/${EFI_ARCH}-efi/* "${LIVE_BOOT_DIR}
 grub-mkstandalone --format=${EFI_ARCH}-efi  --directory="${LIVE_BOOT_DIR}"/chroot/usr/lib/grub/${EFI_ARCH}-efi --output="${LIVE_BOOT_DIR}"/tmp/boot${BOOT_EFI_ARCH}.efi --locales= --fonts= boot/grub/grub.cfg="${LIVE_BOOT_DIR}"/tmp/grub-standalone.cfg
 (cd "${LIVE_BOOT_DIR}"/staging/EFI/boot && dd if=/dev/zero of=efiboot.img bs=1M count=20 && /sbin/mkfs.vfat efiboot.img && mmd -i efiboot.img efi efi/boot && mcopy -vi efiboot.img "${LIVE_BOOT_DIR}"/tmp/boot${BOOT_EFI_ARCH}.efi ::efi/boot/)
 
-echo "Creating Live CD ISO image"
+echo ">>> Creating Live CD ISO image"
 xorriso -as mkisofs -iso-level 3 -o "${LIVE_ISO_DIR}"/entrusted-livecd-${CPU_ARCH}-${ENTRUSTED_VERSION}.iso -full-iso9660-filenames -volid DEBIAN_CUSTOM -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin  -eltorito-boot isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 -boot-info-table --eltorito-catalog isolinux/isolinux.cat -eltorito-alt-boot -e /EFI/boot/efiboot.img -no-emul-boot -isohybrid-gpt-basdat --append_partition 2 0xef "${LIVE_BOOT_DIR}"/staging/EFI/boot/efiboot.img "${LIVE_BOOT_DIR}"/staging

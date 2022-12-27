@@ -38,23 +38,19 @@ test -d "${LIVE_BOOT_TMP_DIR}"/entrusted-packaging &&  sudo rm -rf "${LIVE_BOOT_
 sudo mkdir -p "${LIVE_BOOT_TMP_DIR}"/entrusted-packaging && sudo chmod -R a+rw "${LIVE_BOOT_TMP_DIR}"/entrusted-packaging
 
 CONTAINER_USER_HOMEDIR="/home/${CONTAINER_USER}"
-sudo killall -u "${CONTAINER_USER}" || true
-sudo userdel -r "${CONTAINER_USER}" || true
 sudo mkdir -p "${LIVE_BOOT_TMP_DIR}/home" && sudo chmod -R a+rw "${LIVE_BOOT_TMP_DIR}/home"
 sudo useradd -m -s /bin/bash -d "${CONTAINER_USER_HOMEDIR}" -u ${CONTAINER_USER_ID} "${CONTAINER_USER}"
+sudo test -d "${CONTAINER_USER_HOMEDIR}" || (sudo mkdir -p "${CONTAINER_USER_HOMEDIR}" && sudo chown -R "${CONTAINER_USER}" "${CONTAINER_USER_HOMEDIR}")
 sudo adduser "${CONTAINER_USER}" sudo || true
 sudo adduser "${CONTAINER_USER}" systemd-journal || true
 sudo adduser "${CONTAINER_USER}" adm || true
 sudo adduser "${CONTAINER_USER}" docker || true
-
 
 cd /
 
 sudo runuser -l "${CONTAINER_USER}" -c "mkdir -p ${CONTAINER_USER_HOMEDIR}/.config/containers"
 
 cd -
-
-mkdir -p ~/.config/containers
 
 echo "Workspace: ${PROJECTDIR}"
 echo "container arch: linux/${DEBIAN_ARCH}"
@@ -64,7 +60,6 @@ cd "${PROJECTDIR}" && podman build --jobs 2 --squash-all --force-rm --platform "
 
 podman save -m -o ${LIVE_BOOT_TMP_DIR}/image.tar docker.io/uycyjnzgntrn/entrusted_container:${ENTRUSTED_VERSION}
 
-
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Unable to export container image to tar archive!"
@@ -73,11 +68,9 @@ fi
 
 sudo loginctl enable-linger ${CONTAINER_USER_ID}
 sudo mkdir -p /run/user/${CONTAINER_USER_ID} && sudo chown -R ${CONTAINER_USER} /run/user/${CONTAINER_USER_ID}
-cd / && sudo runuser -l "${CONTAINER_USER}" -c "podman run docker-archive:${LIVE_BOOT_TMP_DIR}/image.tar ls / && podman images" && cd -
+cd / && sudo runuser -l "${CONTAINER_USER}" -c "XDG_RUNTIME_DIR=/run/user/${CONTAINER_USER_ID} podman run docker-archive:${LIVE_BOOT_TMP_DIR}/image.tar ls / && podman images" && cd -
 
 sudo rm ${LIVE_BOOT_TMP_DIR}/image.tar
-
-#sudo rm -rf ${PROJECTDIR}
 
 cd /
 

@@ -6,10 +6,10 @@ ENTRUSTED_ARCH=$(cat /etc/entrusted_arch | head -1)
 ENTRUSTED_USERNAME=$(cat /files/entrusted_username | head -1)
 ENTRUSTED_USERID=$(cat /files/entrusted_userid | head -1)
 
-echo "Setting up hostname"
+echo ">>> Setting up hostname"
 echo "entrusted-livecd" > /etc/hostname
 
-echo "Installing default packages"
+echo ">>> Installing default packages"
 DEBIAN_FRONTEND=noninteractive apt update && \
     DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
     linux-image-${ENTRUSTED_ARCH} \
@@ -25,30 +25,26 @@ DEBIAN_FRONTEND=noninteractive apt update && \
     network-manager \
     net-tools \
     mg \
-    openssh-sftp-server \
-    openssh-server \
+    openssh-sftp-server openssh-server \
     podman \
     live-boot \
     syslinux-efi \
     grub-efi-${ENTRUSTED_ARCH}-bin \
-    systemd-sysv
+    systemd-sysv && apt clean
 
-apt clean
-
-echo "Setting up system files"
+echo ">>> Setting up system files"
 cp /files/etc/iptables/rules.v4 /etc/iptables/
 cp /files/etc/doas.conf /etc/ && chmod 400 /etc/doas.conf
 cp /files/etc/security/limits.conf /etc/security/
-cp /files/etc/pam.d/system-auth /files/etc/pam.d/systemd-user /etc/pam.d/
 cp /files/etc/systemd/system/*.service /etc/systemd/system/
 cp -r /files/etc/systemd/coredump.conf.d /etc/systemd/
 
-echo "Creating ${ENTRUSTED_USERNAME} user"
+echo ">>> Creating ${ENTRUSTED_USERNAME} user"
 useradd -m -s /bin/bash -u ${ENTRUSTED_USERID} ${ENTRUSTED_USERNAME}
 adduser ${ENTRUSTED_USERNAME} sudo
 
 
-echo "Creating entrusted user files and pulling container image"
+echo ">>> Creating entrusted user files and pulling container image"
 runuser -l ${ENTRUSTED_USERNAME} -c "mkdir -p /home/${ENTRUSTED_USERNAME}/.local/share"
 runuser -l ${ENTRUSTED_USERNAME} -c "cat /files/home/entrusted/.bashrc_append >> /home/${ENTRUSTED_USERNAME}/.bashrc"
 mv /files/entrusted-packaging/containers /home/${ENTRUSTED_USERNAME}/.local/share/
@@ -58,7 +54,7 @@ find /home/${ENTRUSTED_USERNAME}/.local/share/containers -type d -name "${ENTRUS
 find /home/${ENTRUSTED_USERNAME}/.local/share/containers -type d -name "safezone"              -exec chmod -R a+rw {} \;
 find /home/${ENTRUSTED_USERNAME}/.local/share/containers -type d -name "tmp"                   -exec chmod -R a+rw {} \;
 
-echo "Copying entrusted binaries"
+echo ">>> Copying entrusted binaries"
 mv /files/entrusted-webserver /files/entrusted-cli /usr/local/bin
 cp /files/usr/local/bin/entrusted-fw-enable /usr/local/bin/entrusted-fw-enable
 cp /files/usr/local/bin/entrusted-fw-disable /usr/local/bin/entrusted-fw-disable
@@ -67,22 +63,22 @@ chmod +x /usr/local/bin/entrusted-*
 cp /files/libhardened_malloc.so /usr/lib/
 mkdir -p /var/log/entrusted-webserver
 
-echo "Updating default screen messages"
+echo ">>> Updating default screen messages"
 cp /files/etc/motd /etc/motd
 cp /files/etc/issue /etc/issue
 cp /files/usr/share/containers/containers.conf /usr/share/containers/containers.conf
 
-echo "Updating linger to allows users who aren't logged in to run long-running services."
+echo ">>> Updating linger to allows users who aren't logged in to run long-running services."
 echo "This also allows the automatic creation of /run/user/NUMERIC_USER_ID as tmpdir for podman"
 loginctl enable-linger $(id -u $ENTRUSTED_USERNAME)
 mkdir -p /run/user/$(id -u $ENTRUSTED_USERNAME)
 chown -R ${ENTRUSTED_USERNAME}:${ENTRUSTED_USERNAME} /run/user/$(id -u ${ENTRUSTED_USERNAME})
 
-echo "Updating passwords"
+echo ">>> Updating passwords"
 echo "root:root" | /usr/sbin/chpasswd
 echo "${ENTRUSTED_USERNAME}:${ENTRUSTED_USERNAME}" | /usr/sbin/chpasswd
 
-echo "Enabling default services"
+echo ">>> Enabling default services"
 systemctl enable ssh
 systemctl enable NetworkManager
 systemctl enable netfilter-persistent
@@ -90,13 +86,11 @@ systemctl enable systemd-networkd
 systemctl enable entrusted-webserver
 systemctl enable entrusted-systemd
 
-rm -rf /files
-
 echo "apm power_off=1" >> /etc/modules
 
 # See https://madaidans-insecurities.github.io/guides/linux-hardening.html
 # See https://www.pluralsight.com/blog/it-ops/linux-hardening-secure-server-checklist
-echo "Hardening kernel systems"
+echo ">>> Hardening kernel"
 
 echo "kernel.core_pattern=|/bin/false" >> /etc/sysctl.conf
 echo "vm.swappiness=1" >> /etc/sysctl.conf
@@ -137,8 +131,10 @@ echo "fs.protected_hardlinks=1" >> /etc/sysctl.conf
 echo "fs.protected_fifos=2" >> /etc/sysctl.conf
 echo "fs.protected_regular=2" >> /etc/sysctl.conf
 
-echo "Hardening SSH configuration"
+echo ">>> Updating machine-id"
+echo "b08dfa6083e7567a1921a715000001fb" > /var/lib/dbus/machine-id
 
+echo ">>> Hardening SSH configuration"
 echo "PermitEmptyPasswords no" >> /etc/ssh/sshd_config
 echo "PermitRootLogin no" >> /etc/ssh/sshd_config
 echo "Protocol 2" >> /etc/ssh/sshd_config
@@ -146,14 +142,12 @@ echo "X11Forwarding no" >> /etc/ssh/sshd_config
 echo "ClientAliveInterval 300" >> /etc/ssh/sshd_config
 echo "ClientAliveCountMax 0" >> /etc/ssh/sshd_config
 
-echo "b08dfa6083e7567a1921a715000001fb" > /var/lib/dbus/machine-id
-
-echo "Trim filesystem"
+echo ">>> Trim filesystem"
 rm -rf /usr/share/man/* /usr/share/doc/* /usr/share/info/* /var/cache/apt/* /var/log/* /tmp/*
 rm -rf /run/user/*
 mkdir -p /var/log/entrusted-webserver /var/log/audit
 
-echo "Ensure that we don't have weird permission issues with tmp"
-chmod -R a+rw /tmp
+echo ">>> Cleanup chroot files"
+rm -rf /files
 
 exit

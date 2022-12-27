@@ -7,15 +7,11 @@ echo "This is not working at this time..."
 PREVIOUSDIR="$(echo $PWD)"
 SCRIPTDIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${SCRIPTDIR}/../../app)"
-APPVERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' ${PROJECTDIR}/entrusted_client/Cargo.toml)
+APPVERSION=$(grep "^version" ${PROJECTDIR}/entrusted_client/Cargo.toml  | cut -d"=" -f2 | xargs)
 CPU_ARCHS="amd64 aarch64"
 ENTRUSTED_VERSION="${APPVERSION}"
 CONTAINER_USER_NAME="entrusted"
 CONTAINER_USER_ID="1024"
-
-if [ -n "$1" ]; then
-    ENTRUSTED_VERSION=$1
-fi
 
 echo "Install required packages"
 sudo apt update && sudo apt install -y \
@@ -39,6 +35,8 @@ sudo apt update && sudo apt install -y \
 for CPU_ARCH in $CPU_ARCHS ; do
     sudo killall -u "${CONTAINER_USER_NAME}" || true
     sudo userdel -r "${CONTAINER_USER_NAME}" || true
+    sudo test -d "/home/${CONTAINER_USER_NAME}" && sudo rm -rf "/home/${CONTAINER_USER_NAME}"
+    sudo test -d "/run/user/${CONTAINER_USER_ID}" && sudo rm -rf "/run/user/${CONTAINER_USER_ID}"
     
     MY_TMPDIR="${TMPDIR}"
     test -d "${MY_TMPDIR}" || MY_TMPDIR="/tmp"
@@ -52,6 +50,8 @@ for CPU_ARCH in $CPU_ARCHS ; do
     RUST_PREAMBLE="RUSTFLAGS='-C target-feature=+crt-static'"
     test -d "${ENTRUSTED_ROOT_TMPDIR}" && sudo rm -rf "${ENTRUSTED_ROOT_TMPDIR}"
     mkdir -p "${ENTRUSTED_ROOT_TMPDIR}" "${LIVE_BOOT_TMP_DIR}" "${LIVE_ISO_DIR}" "${LIVE_BOOT_DIR}" "${LINUX_ARTIFACTSDIR}"
+    
+    test -f "${LIVE_ISO_DIR}"/entrusted-livecd-${CPU_ARCH}-${ENTRUSTED_VERSION}.iso && rm "${LIVE_ISO_DIR}"/entrusted-livecd-${CPU_ARCH}-${ENTRUSTED_VERSION}.iso
 
     if [ ${CPU_ARCH} != "amd64" ]
     then
@@ -97,5 +97,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
     
     sudo rm -rf "${ENTRUSTED_ROOT_TMPDIR}"
     sudo killall -u "${CONTAINER_USER_NAME}" || true
-    sudo userdel -r "${CONTAINER_USER_NAME}" || true
+    sudo userdel -r "${CONTAINER_USER_NAME}" || true    
+    sudo test -d "/home/${CONTAINER_USER_NAME}" && sudo rm -rf "/home/${CONTAINER_USER_NAME}"
+    sudo test -d "/run/user/${CONTAINER_USER_ID}" && sudo rm -rf "/run/user/${CONTAINER_USER_ID}"
 done

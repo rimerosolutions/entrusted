@@ -99,7 +99,7 @@ msgstr "Traitement de la structure PDF"
 msgid "No page found while combinding PDF pages!"
 msgstr "Aucune page trouvée lors de la fusion de pages PDF!"
 
-msgid "Updating PDF dictionnary"
+msgid "Updating PDF dictionary"
 msgstr "Mise à jour du dictionnaire PDF"
 
 msgid "Root catalog was not found!"

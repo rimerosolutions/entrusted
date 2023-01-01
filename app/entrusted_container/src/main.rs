@@ -724,7 +724,7 @@ fn pdf_combine_pdfs(logger: &dyn ConversionLogger, progress_range: &ProgressRang
     // step 4/7 Iter over all "Page" and collect with the parent "Pages" created before
     step_num += 1;
     progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
-    logger.log(progress_value, l10n.gettext("Updating PDF dictionnary"));
+    logger.log(progress_value, l10n.gettext("Updating PDF dictionary"));
 
     for (object_id, object) in documents_pages.iter() {
         if let Ok(dictionary) = object.as_dict() {

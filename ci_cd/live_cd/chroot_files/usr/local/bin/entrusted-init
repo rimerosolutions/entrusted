@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+loginctl enable-linger entrusted
+runuser -l entrusted -c "systemctl --user start dbus"

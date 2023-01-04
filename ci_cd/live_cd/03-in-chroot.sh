@@ -9,28 +9,44 @@ ENTRUSTED_USERID=$(cat /files/entrusted_userid | head -1)
 echo ">>> Setting up hostname"
 echo "entrusted-livecd" > /etc/hostname
 
+echo ">>> Updating apt retries to 10"
+echo 'Acquire::Retries "10";' > /etc/apt/apt.conf.d/80-retries
+
+# # echo ">>> Installing custom kernel"
+# DEBIAN_FRONTEND=noninteractive apt update
+# dpkg -i /files/minikernel/*.deb
+# # tar kxf /files/minikernel/kernel.tar -C /
+# # find /lib/modules -name "*.gz" -exec gzip -d {} \;
+# DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends initramfs-tools
+# cd /boot && initrdsuffix=$(ls vmlinuz-* | awk -F"vmlinuz-" '{print $2}') && cd -
+# cd /boot && mkinitramfs -o initrd.img-${initrdsuffix} ${initrdsuffix} && cd -
+
 echo ">>> Installing default packages"
-DEBIAN_FRONTEND=noninteractive apt update && \
-    DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
-    linux-image-${ENTRUSTED_ARCH} \
+DEBIAN_FRONTEND=noninteractive apt update \
+    && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
     auditd \
     iptables-persistent \
     doas \
     uidmap \
     dbus-user-session \
-    slirp4netns \
     fuse-overlayfs \
     ca-certificates \
     locales \
     network-manager \
     net-tools \
     mg \
-    openssh-sftp-server openssh-server \
-    podman \
+    dropbear \
+    crun \
     live-boot \
     syslinux-efi \
+    linux-image-${ENTRUSTED_ARCH} \
     grub-efi-${ENTRUSTED_ARCH}-bin \
-    systemd-sysv && apt clean
+    systemd-sysv \
+    && apt clean
+
+echo ">>> Installing podman-static"
+tar zxvf /files/podman/podman*.tar.gz --strip-components 1 --exclude="README.md" --exclude="fuse-overlayfs" --exclude="fusermount3" -C /
+rm /usr/local/bin/runc
 
 echo ">>> Setting up system files"
 cp /files/etc/iptables/rules.v4 /etc/iptables/
@@ -43,10 +59,11 @@ echo ">>> Creating ${ENTRUSTED_USERNAME} user"
 useradd -m -s /bin/bash -u ${ENTRUSTED_USERID} ${ENTRUSTED_USERNAME}
 adduser ${ENTRUSTED_USERNAME} sudo
 
-
 echo ">>> Creating entrusted user files and pulling container image"
-runuser -l ${ENTRUSTED_USERNAME} -c "mkdir -p /home/${ENTRUSTED_USERNAME}/.local/share"
-runuser -l ${ENTRUSTED_USERNAME} -c "cat /files/home/entrusted/.bashrc_append >> /home/${ENTRUSTED_USERNAME}/.bashrc"
+runuser -l ${ENTRUSTED_USERNAME} -c "mkdir -p /home/${ENTRUSTED_USERNAME}/.config/containers /home/${ENTRUSTED_USERNAME}/.local/share"
+runuser -l ${ENTRUSTED_USERNAME} -c "cat /files/home/entrusted/.bash_profile >> /home/${ENTRUSTED_USERNAME}/.bashrc"
+runuser -l ${ENTRUSTED_USERNAME} -c "cat /files/home/entrusted/.bash_profile >> /home/${ENTRUSTED_USERNAME}/.bash_profile"
+runuser -l ${ENTRUSTED_USERNAME} -c "cat /files/home/entrusted/.config/containers/containers.conf >> /home/${ENTRUSTED_USERNAME}/.config/containers/containers.conf"
 mv /files/entrusted-packaging/containers /home/${ENTRUSTED_USERNAME}/.local/share/
 chown -R ${ENTRUSTED_USERNAME}:${ENTRUSTED_USERNAME} /home/${ENTRUSTED_USERNAME}/.local/share
 
@@ -56,21 +73,23 @@ find /home/${ENTRUSTED_USERNAME}/.local/share/containers -type d -name "tmp"    
 
 echo ">>> Copying entrusted binaries"
 mv /files/entrusted-webserver /files/entrusted-cli /usr/local/bin
-cp /files/usr/local/bin/entrusted-fw-enable /usr/local/bin/entrusted-fw-enable
-cp /files/usr/local/bin/entrusted-fw-disable /usr/local/bin/entrusted-fw-disable
+cp /files/usr/local/bin/entrusted-* /usr/local/bin/
 chmod +x /usr/local/bin/entrusted-*
-
 cp /files/libhardened_malloc.so /usr/lib/
 mkdir -p /var/log/entrusted-webserver
+
+echo ">>> Copying gvisor binaries"
+cp -r /files/gvisor/* /usr/local/bin/
+cp /files/usr/local/bin/runsc-podman /usr/local/bin/
+chmod +x /usr/local/bin/*
 
 echo ">>> Updating default screen messages"
 cp /files/etc/motd /etc/motd
 cp /files/etc/issue /etc/issue
-cp /files/usr/share/containers/containers.conf /usr/share/containers/containers.conf
 
 echo ">>> Updating linger to allows users who aren't logged in to run long-running services."
 echo "This also allows the automatic creation of /run/user/NUMERIC_USER_ID as tmpdir for podman"
-loginctl enable-linger $(id -u $ENTRUSTED_USERNAME)
+loginctl enable-linger $ENTRUSTED_USERNAME
 mkdir -p /run/user/$(id -u $ENTRUSTED_USERNAME)
 chown -R ${ENTRUSTED_USERNAME}:${ENTRUSTED_USERNAME} /run/user/$(id -u ${ENTRUSTED_USERNAME})
 
@@ -79,12 +98,12 @@ echo "root:root" | /usr/sbin/chpasswd
 echo "${ENTRUSTED_USERNAME}:${ENTRUSTED_USERNAME}" | /usr/sbin/chpasswd
 
 echo ">>> Enabling default services"
-systemctl enable ssh
+systemctl enable dropbear
 systemctl enable NetworkManager
 systemctl enable netfilter-persistent
 systemctl enable systemd-networkd
+systemctl enable entrusted-init
 systemctl enable entrusted-webserver
-systemctl enable entrusted-systemd
 
 echo "apm power_off=1" >> /etc/modules
 
@@ -134,18 +153,21 @@ echo "fs.protected_regular=2" >> /etc/sysctl.conf
 echo ">>> Updating machine-id"
 echo "b08dfa6083e7567a1921a715000001fb" > /var/lib/dbus/machine-id
 
-echo ">>> Hardening SSH configuration"
-echo "PermitEmptyPasswords no" >> /etc/ssh/sshd_config
-echo "PermitRootLogin no" >> /etc/ssh/sshd_config
-echo "Protocol 2" >> /etc/ssh/sshd_config
-echo "X11Forwarding no" >> /etc/ssh/sshd_config
-echo "ClientAliveInterval 300" >> /etc/ssh/sshd_config
-echo "ClientAliveCountMax 0" >> /etc/ssh/sshd_config
+echo ">>> Disabling SSH root login"
+perl -pi -e 's/^DROPBEAR_EXTRA_ARGS.*/DROPBEAR_EXTRA_ARGS="-w -g"/' /etc/default/dropbear
 
 echo ">>> Trim filesystem"
-rm -rf /usr/share/man/* /usr/share/doc/* /usr/share/info/* /var/cache/apt/* /var/log/* /tmp/*
+mkdir -p /tmp/locales && cp -rf /usr/share/locale/locale.alias /usr/share/locale/en_CA /tmp/locales
+rm -rf /usr/share/locale/* && mv /tmp/locales/* /usr/share/locale/
+rm -rf /usr/share/common-licences
+rm -rf /usr/share/man
+rm -rf /usr/share/pixmaps
+rm -rf /usr/share/doc*
+rm -rf /usr/share/info
+rm -rf /var/cache/apt/*
+rm -rf /tmp/*
 rm -rf /run/user/*
-mkdir -p /var/log/entrusted-webserver /var/log/audit
+rm -rf /var/log/* && mkdir -p /var/log/entrusted-webserver /var/log/audit
 
 echo ">>> Cleanup chroot files"
 rm -rf /files

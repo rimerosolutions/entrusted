@@ -1,0 +1,2 @@
+#!/bin/bash
+runsc --ignore-cgroups --network none --TESTONLY-unsafe-nonroot "$@"

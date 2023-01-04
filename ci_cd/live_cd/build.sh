@@ -46,6 +46,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
     LINUX_ARTIFACTSDIR="${ENTRUSTED_ROOT_TMPDIR}/entrusted-livecd/linux_artifacts-${CPU_ARCH}-${ENTRUSTED_VERSION}"
     LIVE_ISO_DIR="${PROJECTDIR}/../artifacts"
     DEBIAN_ARCH="amd64"
+    UNAME_ARCH="x86_64"
     RUST_MUSL_TARGET="x86_64-unknown-linux-musl"
     RUST_PREAMBLE="RUSTFLAGS='-C target-feature=+crt-static'"
     test -d "${ENTRUSTED_ROOT_TMPDIR}" && sudo rm -rf "${ENTRUSTED_ROOT_TMPDIR}"
@@ -56,6 +57,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
     if [ ${CPU_ARCH} != "amd64" ]
     then
         DEBIAN_ARCH="arm64"
+        UNAME_ARCH="aarch64"
         RUST_MUSL_TARGET="aarch64-unknown-linux-musl"
         RUST_PREAMBLE="CC_AARCH64_UNKNOWN_LINUX_MUSL=musl-gcc CXX_AARCH64_UNKNOWN_LINUX_MUSL=musl-g++ AR_AARCH64_UNKNOWN_LINUX_MUSL=ar CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc RUSTFLAGS='-C link-arg=-lgcc -C target-feature=+crt-static'"
     fi        
@@ -74,7 +76,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
     ROOT_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
     chmod +x "${ROOT_SCRIPTS_DIR}"/*.sh
 
-    "${ROOT_SCRIPTS_DIR}"/01-pre-chroot.sh "${ENTRUSTED_VERSION}" "${DEBIAN_ARCH}" "${DEBIAN_ARCH}" "${LINUX_ARTIFACTSDIR}" "${LIVE_BOOT_DIR}" "${LIVE_BOOT_TMP_DIR}" "${CONTAINER_USER_NAME}" "${CONTAINER_USER_ID}"
+    "${ROOT_SCRIPTS_DIR}"/01-pre-chroot.sh "${ENTRUSTED_VERSION}" "${UNAME_ARCH}" "${DEBIAN_ARCH}" "${DEBIAN_ARCH}" "${LINUX_ARTIFACTSDIR}" "${LIVE_BOOT_DIR}" "${LIVE_BOOT_TMP_DIR}" "${CONTAINER_USER_NAME}" "${CONTAINER_USER_ID}"
     retVal=$?
     if [ $retVal -ne 0 ]; then
         echo "Failed to prepare build for ${CPU_ARCH}"

@@ -1,10 +1,10 @@
 #+TITLE: entrusted/ci_cd
-
- Except for the the live CD, release artifacts are produced from a containerized environment ([[https://podman.io/][Podman]]).
-
+ 
 * Overview
 
-The current build server is a virtual machine running [[https://ubuntu.com/][Ubuntu Linux]].
+It is possible to produce all release artifacts using GitHub Actions or locally.
+
+The local build server is a virtual machine running [[https://ubuntu.com/][Ubuntu Linux]].
 
   [[./images/cicd.png]]
 
@@ -37,19 +37,3 @@ There's no support yet for creating arm64 Windows binaries. The installer is bui
 For the "app bundle", there might be better ways to run external programs (i.e. instead of wrapping programs with a shell script)
 - https://developer.apple.com/documentation/xcode/embedding-a-helper-tool-in-a-sandboxed-app
 - https://stackoverflow.com/questions/27505022/open-another-mac-app
-
-  
-* Future Work
-
- =GitHub actions=, =TravisCI= or other similar solutions are ideal.
-
-Pros:
- - It is generally good to leverage free hosted solutions
- - It will help with build times ahead of releases
- - It will save local disk space and computing resources
-
-Cons:
- - It might impact releases flexibility (i.e. arm64 support)
- - It will require learning (or re-learning) infrastructure specific ecosystem (pipelines, tools, constraints, etc.)
-
-Pull requests are welcome for any improvements!

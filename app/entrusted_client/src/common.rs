@@ -136,6 +136,12 @@ pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
         ContainerProgramStub::Nerdctl("nerdctl", vec![], vec!["--security-opt", "no-new-privileges"], None),
     ];
 
+    let gvisor_enabled = if let Ok(env_gvisor_enablement) = std::env::var("ENTRUSTED_AUTOMATED_GVISOR_ENABLEMENT") {
+        env_gvisor_enablement.to_lowercase() == "true" || env_gvisor_enablement.to_lowercase() == "yes"
+    } else {
+        false
+    };
+    
     for item in container_program_stubs {
         match item {
             ContainerProgramStub::Docker(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) |
@@ -145,7 +151,14 @@ pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
                 if let Some(path_container_exe) = executable_find(cmd) {
                     let suggested_tmp_dir = tmp_dir_opt.as_ref().map(PathBuf::from);
 
-                    return Some(ContainerProgram::new(path_container_exe, sub_cmd_args.clone(), cmd_args.clone(), suggested_tmp_dir));
+                    let new_args = if !gvisor_enabled {
+                        cmd_args.clone()
+                    } else {
+                        // 5mb seems enough for temporary file storage required by the LibreOffice user settings creation process...
+                        vec!["--security-opt", "no-new-privileges", "--tmpfs", "/loffice:size=5m", "--env", "XDG_CONFIG_HOME=/loffice"]
+                    };
+                    
+                    return Some(ContainerProgram::new(path_container_exe, sub_cmd_args.clone(), new_args, suggested_tmp_dir));
                 }
             }
         }

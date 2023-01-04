@@ -326,7 +326,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             let _ = unsafe { libc::chmod (path_safe, 0o777) };
         }
 
-        let safedir_volume = format!("{}:/safezone:Z", dz_tmp_safe.display());
+        let safedir_volume = format!("{}:/entrusted:Z", dz_tmp_safe.display());
 
         // TODO make Lima handling more explicit but less annoying, abstractions?
         // Need to ensure that we use /tmp/lima for Lima as other folders are not mounted by default...

@@ -2,9 +2,9 @@
  
 * Overview
 
-It is possible to produce all release artifacts using GitHub Actions or locally.
+It is possible to produce all release artifacts using [[https://github.com/features/actions][GitHub Actions]] or locally.
 
-The local build server is a virtual machine running [[https://ubuntu.com/][Ubuntu Linux]].
+The local build server is a virtual machine running [[https://ubuntu.com/][Ubuntu Linux]] (See also the end of this page).
 
   [[./images/cicd.png]]
 
@@ -14,9 +14,9 @@ While it could be preferrable on Linux to have several native distro packages, i
 - On Linux, if you prefer [[https://flatpak.org/][Flatpak]] packages, please check out the [[https://github.com/axtloss/flatpaks][axtloss flatpaks]] project page
 - On Windows, binaries are not signed
 - On Mac OS, similarly to Windows, binaries are not signed
-- =arm64= builds are considered *highly experimental*:
-  - Executables are created inside amd64 virtual machines (=QEMU VM= + =Podman=), not on real hardware
-  - Community help is desired to confirm that "it works" (lack of arm laptop for testing)
+- =arm64= builds are considered *experimental* to an extent:
+  - Executables are created by cross-compiling with emulation (=QEMU VM= + =Podman=), not on real =arm64= hardware
+  - Community help is desired to confirm that "it works" (lack of "real" arm machine for testing)
 
 * Targeted Operating Systems
 
@@ -37,3 +37,52 @@ There's no support yet for creating arm64 Windows binaries. The installer is bui
 For the "app bundle", there might be better ways to run external programs (i.e. instead of wrapping programs with a shell script)
 - https://developer.apple.com/documentation/xcode/embedding-a-helper-tool-in-a-sandboxed-app
 - https://stackoverflow.com/questions/27505022/open-another-mac-app
+
+* Setting Up a Machine for Release Builds
+
+Below are the dependencies needed *for an Ubuntu Linux* machine.
+
+In practice, with minor adjustments (dependency names), the required software packages should be applicable for any Debian-based distribution (with *systemd*).
+
+#+begin_src sh
+  sudo apt update && sudo apt install -y libjpeg8 \
+      squashfs-tools \
+      xorg-dev \
+      musl-dev \
+      musl-tools \
+      musl \
+      wget \
+      cmake \
+      git \
+      fakeroot \
+      xz-utils \
+      wget \
+      systemd-container \
+      bzip2 \
+      gzip mtools \
+      libpango1.0-dev \
+      libxft-dev  \
+      libx11-dev \
+      libxcb-render0-dev \
+      libxcb-shape0-dev \
+      libxcb-xfixes0-dev \
+      libxcb1-dev \
+      libxcursor-dev \
+      gcc \
+      g++ \
+      git \
+      libpango1.0-dev \
+      libcairo2-dev \
+      cpio \
+      rpm2cpio \
+      build-essential rpm pandoc \
+      fuse \
+      patchelf \
+      desktop-file-utils \
+      squashfuse \
+      icnsutils \
+      qemu-user-static \
+      podman \
+      imagemagick \
+      && sudo apt clean
+#+end_src

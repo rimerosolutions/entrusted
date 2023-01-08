@@ -8,7 +8,8 @@ PREVIOUSDIR="$(echo $PWD)"
 SCRIPTDIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${SCRIPTDIR}/../../app)"
 APPVERSION=$(grep "^version" ${PROJECTDIR}/entrusted_client/Cargo.toml  | cut -d"=" -f2 | xargs)
-CPU_ARCHS="amd64 aarch64"
+# CPU_ARCHS="amd64"
+CPU_ARCHS="aarch64"
 ENTRUSTED_VERSION="${APPVERSION}"
 CONTAINER_USER_NAME="entrusted"
 CONTAINER_USER_ID="1024"
@@ -19,17 +20,15 @@ sudo apt update && sudo apt install -y \
     squashfs-tools \
     dosfstools \
     xorriso \
-    mg xz-utils \
+    xz-utils \
     isolinux \
     fakeroot \
     sudo \
     bash \
     wget \
-    syslinux-efi \
-    grub-pc-bin \
-    grub-efi-amd64-bin \
     systemd-container \
-    bzip2 gzip \
+    bzip2 \
+    gzip \
     mtools
 
 for CPU_ARCH in $CPU_ARCHS ; do
@@ -71,30 +70,25 @@ for CPU_ARCH in $CPU_ARCHS ; do
     test -d ${PROJECTDIR}/entrusted_webclient/target && rm -rf ${PROJECTDIR}/entrusted_webclient/target
     test -d ${PROJECTDIR}/entrusted_webserver/target && rm -rf ${PROJECTDIR}/entrusted_webserver/target    
     
-    podman run --platform linux/${DEBIAN_ARCH} -v "${PROJECTDIR}/..":/src -v "${LINUX_ARTIFACTSDIR}":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c "CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 ${RUST_PREAMBLE} cargo build --release --target ${RUST_MUSL_TARGET} --manifest-path /src/app/entrusted_webserver/Cargo.toml && cp /src/app/entrusted_webserver/target/${RUST_MUSL_TARGET}/release/entrusted-webserver /artifacts/ && rm -rf /src/app/entrusted_webserver/target && CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 ${RUST_PREAMBLE} cargo build --release --target ${RUST_MUSL_TARGET} --manifest-path /src/app/entrusted_client/Cargo.toml && cp /src/app/entrusted_client/target/${RUST_MUSL_TARGET}/release/entrusted-cli /artifacts/ && rm -rf /src/app/entrusted_client/target && strip /artifacts/entrusted-cli && strip /artifacts/entrusted-webserver"
+    podman run --log-driver=none --platform linux/${DEBIAN_ARCH} -v "${PROJECTDIR}/..":/src -v "${LINUX_ARTIFACTSDIR}":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c "CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 ${RUST_PREAMBLE} cargo build --release --target ${RUST_MUSL_TARGET} --manifest-path /src/app/entrusted_webserver/Cargo.toml && cp /src/app/entrusted_webserver/target/${RUST_MUSL_TARGET}/release/entrusted-webserver /artifacts/ && rm -rf /src/app/entrusted_webserver/target && CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 ${RUST_PREAMBLE} cargo build --release --target ${RUST_MUSL_TARGET} --manifest-path /src/app/entrusted_client/Cargo.toml && cp /src/app/entrusted_client/target/${RUST_MUSL_TARGET}/release/entrusted-cli /artifacts/ && rm -rf /src/app/entrusted_client/target && strip /artifacts/entrusted-cli && strip /artifacts/entrusted-webserver"
+    retVal=$?
+    if [ "$retVal" != "0" ]; then
+        echo "Could not build entrusted-cli and entrusted-webserver" && exit 1
+    fi
 
     ROOT_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
     chmod +x "${ROOT_SCRIPTS_DIR}"/*.sh
 
     "${ROOT_SCRIPTS_DIR}"/01-pre-chroot.sh "${ENTRUSTED_VERSION}" "${UNAME_ARCH}" "${DEBIAN_ARCH}" "${DEBIAN_ARCH}" "${LINUX_ARTIFACTSDIR}" "${LIVE_BOOT_DIR}" "${LIVE_BOOT_TMP_DIR}" "${CONTAINER_USER_NAME}" "${CONTAINER_USER_ID}"
     retVal=$?
-    if [ $retVal -ne 0 ]; then
-        echo "Failed to prepare build for ${CPU_ARCH}"
-        exit 1
+    if [ "$retVal" != "0" ]; then
+        echo "Failed to prepare build for ${CPU_ARCH}" && exit 1
     fi
 
-    "${ROOT_SCRIPTS_DIR}"/02-just-chroot.sh "${LIVE_BOOT_DIR}" "${LIVE_BOOT_TMP_DIR}" "${ENTRUSTED_VERSION}" "${DEBIAN_ARCH}" "${CONTAINER_USER_NAME}" "${CONTAINER_USER_ID}"
+    "${ROOT_SCRIPTS_DIR}"/03-post-chroot.sh "${DEBIAN_ARCH}" "${LIVE_BOOT_DIR}" "${LIVE_BOOT_TMP_DIR}" "${LIVE_ISO_DIR}"
     retVal=$?
-    if [ $retVal -ne 0 ]; then
-        echo "Failed to setup filesystem for ${CPU_ARCH}"
-        exit 1
-    fi
-
-    "${ROOT_SCRIPTS_DIR}"/04-post-chroot.sh "${DEBIAN_ARCH}" "${LIVE_BOOT_DIR}" "${LIVE_ISO_DIR}"
-    retVal=$?
-    if [ $retVal -ne 0 ]; then
-        echo "Failed to create ISO image for ${CPU_ARCH}"
-        exit 1
+    if [ "$retVal" != "0" ]; then
+        echo "Failed to create ISO image for ${CPU_ARCH}" && exit 1
     fi
     
     sudo rm -rf "${ENTRUSTED_ROOT_TMPDIR}"

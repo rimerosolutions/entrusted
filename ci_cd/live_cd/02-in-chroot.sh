@@ -150,40 +150,25 @@ echo "b08dfa6083e7567a1921a715000001fb" > /var/lib/dbus/machine-id
 echo ">>> Disabling SSH root login"
 perl -pi -e 's/^DROPBEAR_EXTRA_ARGS.*/DROPBEAR_EXTRA_ARGS="-w -g"/' /etc/default/dropbear
 
-# See https://github.com/juju4/ansible-harden-systemd
-# See https://github.com/krathalan/systemd-sandboxing
-echo ">>> Harden few systemd services"
-cp /files/lib/systemd/system/*.service /lib/systemd/system/
-chown root:root /lib/systemd/system/NetworkManager.service
-chown root:root /lib/systemd/system/auditd.service
-chown root:root /lib/systemd/system/dbus.service
-chown root:root /lib/systemd/system/rc-local.service
-chown root:root /lib/systemd/system/wpa_supplicant.service
-chmod 0644 /lib/systemd/system/NetworkManager.service
-chmod 0644 /lib/systemd/system/auditd.service
-chmod 0644 /lib/systemd/system/dbus.service
-chmod 0644 /lib/systemd/system/rc-local.service
-chmod 0644 /lib/systemd/system/wpa_supplicant.service
-
 # See https://github.com/konstruktoid/hardening
-echo ">>> Adjust login.defs"
-perl -pi -e 's/^UMASK.*/UMASK 077/' /etc/login.defs
-perl -pi -e 's/^.*LOG_OK_LOGINS.*/LOG_OK_LOGINS yes/' /etc/login.defs
+# echo ">>> Adjust login.defs"
+# perl -pi -e 's/^UMASK.*/UMASK 077/' /etc/login.defs
+# perl -pi -e 's/^.*LOG_OK_LOGINS.*/LOG_OK_LOGINS yes/' /etc/login.defs
 
-echo ">>> Apply default umask in master profile"
-echo "umask 077" >> /etc/profile
+# echo ">>> Apply default umask in master profile"
+# echo "umask 077" >> /etc/profile
 
 echo ">>> Apply seccomp rules to package manager"
 echo 'APT::Sandbox::Seccomp "1";' | tee /etc/apt/apt.conf.d/99seccomp
 
 echo ">>> Delete few default users"
-userdel -r games 
-userdel -r gnats 
-userdel -r irc 
-userdel -r list 
-userdel -r news 
-userdel -r sync 
-userdel -r uucp
+userdel -r games || true
+userdel -r gnats || true 
+userdel -r irc   || true 
+userdel -r list  || true 
+userdel -r news  || true 
+userdel -r sync  || true 
+userdel -r uucp  || true
 
 echo ">>> Trim filesystem"
 mkdir -p /tmp/locales && cp -rf /usr/share/locale/locale.alias /usr/share/locale/en_CA /tmp/locales

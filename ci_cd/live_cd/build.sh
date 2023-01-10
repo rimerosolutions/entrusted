@@ -1,9 +1,6 @@
 #!/usr/bin/env sh
 set -x
 
-# TODO boot issues check EFI related code and compare with entrusted-0.2.4
-echo "This is not working at this time..."
-
 PREVIOUSDIR="$(echo $PWD)"
 SCRIPTDIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${SCRIPTDIR}/../../app)"
@@ -21,6 +18,7 @@ sudo apt update && sudo apt install -y \
     xorriso \
     xz-utils \
     isolinux \
+    syslinux-efi \
     fakeroot \
     sudo \
     bash \
@@ -78,7 +76,15 @@ for CPU_ARCH in $CPU_ARCHS ; do
     ROOT_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
     chmod +x "${ROOT_SCRIPTS_DIR}"/*.sh
 
-    "${ROOT_SCRIPTS_DIR}"/01-pre-chroot.sh "${ENTRUSTED_VERSION}" "${UNAME_ARCH}" "${DEBIAN_ARCH}" "${DEBIAN_ARCH}" "${LINUX_ARTIFACTSDIR}" "${LIVE_BOOT_DIR}" "${LIVE_BOOT_TMP_DIR}" "${CONTAINER_USER_NAME}" "${CONTAINER_USER_ID}"
+    "${ROOT_SCRIPTS_DIR}"/01-pre-chroot.sh "${ENTRUSTED_VERSION}" \
+                         "${UNAME_ARCH}" \
+                         "${DEBIAN_ARCH}" \
+                         "${DEBIAN_ARCH}" \
+                         "${LINUX_ARTIFACTSDIR}" \
+                         "${LIVE_BOOT_DIR}" \
+                         "${LIVE_BOOT_TMP_DIR}" \
+                         "${CONTAINER_USER_NAME}" \
+                         "${CONTAINER_USER_ID}"
     retVal=$?
     if [ "$retVal" != "0" ]; then
         echo "Failed to prepare build for ${CPU_ARCH}" && exit 1

@@ -15,11 +15,8 @@ PODMAN_VERSION="4.3.1"
 THIS_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${THIS_SCRIPTS_DIR}/../../app)"
 
-echo "Cleanup previous build"
+echo ">>> Creating LIVE_BOOT folder"
 test -d "${LIVE_BOOT_DIR}" && sudo rm -rf "${LIVE_BOOT_DIR}"
-
-echo "Creating LIVE_BOOT folder"
-
 mkdir -p "${LIVE_BOOT_DIR}"
 sudo chmod -R a+rw "${LIVE_BOOT_DIR}"
 
@@ -31,30 +28,27 @@ sudo debootstrap \
     "${LIVE_BOOT_DIR}"/chroot \
     https://mirror.csclub.uwaterloo.ca/debian/
 
+echo ">>> Copying entrusted-cli and entrusted-webserver to temporary storage"
 cp "${LINUX_ARTIFACTSDIR}"/entrusted-cli "${LIVE_BOOT_TMP_DIR}"/live-entrusted-cli
 cp "${LINUX_ARTIFACTSDIR}"/entrusted-webserver "${LIVE_BOOT_TMP_DIR}"/live-entrusted-webserver
 
-# Podman hangs often with emulated arm64 builds, thus the --log-driver=none flag as attempt to mitigate
-# See https://github.com/containers/podman/issues/13779
+echo ">>> Downloading intel and amd microcodes"
+test -d "${LIVE_BOOT_TMP_DIR}"/microcode && rm -rf "${LIVE_BOOT_TMP_DIR}"/microcode
+mkdir -p "${LIVE_BOOT_TMP_DIR}"/microcode
+cd "${LIVE_BOOT_TMP_DIR}"/microcode && wget https://mirror.csclub.uwaterloo.ca/archlinux/iso/latest/arch/boot/intel-ucode.img && cd -
+cd "${LIVE_BOOT_TMP_DIR}"/microcode && wget https://mirror.csclub.uwaterloo.ca/archlinux/iso/latest/arch/boot/amd-ucode.img   && cd -
 
 echo ">>> Building custom kernel"
 test -d "${LIVE_BOOT_TMP_DIR}"/minikernel && rm -rf "${LIVE_BOOT_TMP_DIR}"/minikernel
 mkdir -p "${LIVE_BOOT_TMP_DIR}"/minikernel
 cp ${THIS_SCRIPTS_DIR}/chroot_files/usr/src/linux/config "${LIVE_BOOT_TMP_DIR}"/minikernel/
 cp ${THIS_SCRIPTS_DIR}/chroot_files/usr/src/linux/sources.list "${LIVE_BOOT_TMP_DIR}"/minikernel/
-podman run --platform linux/${DEBIAN_ARCH} --log-driver=none  -v "${LIVE_BOOT_TMP_DIR}/minikernel":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c 'cat /artifacts/sources.list >> /etc/apt/sources.list && apt update && apt install -y linux-source-6.0 && apt install -y build-essential bc kmod cpio flex libncurses5-dev libelf-dev libssl-dev dwarves bison rsync && cd /usr/src && tar axf linux-source-*.tar.xz && rm linux-source*.tar.xz && cd linux-source-* && cp /artifacts/config .config && nice make -j`nproc` bindeb-pkg &&  cp ../*.deb /artifacts/' || (sleep 10 && podman run --platform linux/${DEBIAN_ARCH} --log-driver=none  -v "${LIVE_BOOT_TMP_DIR}/minikernel":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c 'cat /artifacts/sources.list >> /etc/apt/sources.list && apt update && apt install -y linux-source-6.0 && apt install -y build-essential bc kmod cpio flex libncurses5-dev libelf-dev libssl-dev dwarves bison rsync && cd /usr/src && tar axf linux-source-*.tar.xz && rm linux-source*.tar.xz && cd linux-source-* && cp /artifacts/config .config && nice make -j`nproc` bindeb-pkg &&  cp ../*.deb /artifacts/')
+podman run --platform linux/${DEBIAN_ARCH} --log-driver=none  -v "${LIVE_BOOT_TMP_DIR}/minikernel":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c 'cat /artifacts/sources.list >> /etc/apt/sources.list && apt update && apt install -y xz-utils build-essential bc kmod cpio flex libncurses5-dev libelf-dev libssl-dev dwarves bison ccache rsync wget && mkdir -p /usr/src/kernel && cd /usr/src/kernel && wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.4.tar.xz && tar axf linux-*.tar.xz && rm linux-*.tar.xz && cd linux-* && cp /artifacts/config .config  && ./scripts/config --disable SYSTEM_TRUSTED_KEYS && ./scripts/config --disable SYSTEM_REVOCATION_KEYS && ./scripts/config --disable DEBUG_INFO && ./scripts/config --enable DEBUG_INFO_NONE && nice make CC="ccache gcc" -j`nproc` bindeb-pkg &&  cp ../*.deb /artifacts/' || (sleep 10 && podman run --platform linux/${DEBIAN_ARCH} --log-driver=none  -v "${LIVE_BOOT_TMP_DIR}/minikernel":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c 'cat /artifacts/sources.list >> /etc/apt/sources.list && apt update && apt install -y xz-utils build-essential bc kmod cpio flex libncurses5-dev libelf-dev libssl-dev dwarves bison ccache rsync wget && mkdir -p /usr/src/kernel && cd /usr/src/kernel && wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.4.tar.xz && tar axf linux-*.tar.xz && rm linux-*.tar.xz && cd linux-* && cp /artifacts/config .config  && ./scripts/config --disable SYSTEM_TRUSTED_KEYS && ./scripts/config --disable SYSTEM_REVOCATION_KEYS && ./scripts/config --disable DEBUG_INFO && ./scripts/config --enable DEBUG_INFO_NONE && nice make CC="ccache gcc" -j`nproc` bindeb-pkg &&  cp ../*.deb /artifacts/')
 retVal=$?
 if [ "$retVal" != "0" ]; then
 	echo "Could not build kernel!" && exit 1
 fi
 ls "${LIVE_BOOT_TMP_DIR}"/minikernel/*.deb || exit 1
-
-echo ">>> Building limine bootloader for amd64"
-podman run --platform linux/amd64  --log-driver=none  -v "${LIVE_BOOT_TMP_DIR}":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c "mkdir -p /src && cd /src && git clone https://github.com/limine-bootloader/limine.git --branch=v4.x-branch-binary --depth=1 && cd limine && make && cp -r ../limine /artifacts/limine" || (sleep 10 && podman run --platform linux/amd64 --log-driver=none  -v "${LIVE_BOOT_TMP_DIR}":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c "mkdir -p /src && cd /src && git clone https://github.com/limine-bootloader/limine.git --branch=v4.x-branch-binary --depth=1 && cd limine && make && cp -r ../limine /artifacts/limine")
-retVal=$?
-if [ "$retVal" != "0" ]; then
-	echo "Could not build limine!" && exit 1
-fi
 
 echo ">>> Building hardened_malloc"
 podman run --platform linux/${DEBIAN_ARCH} --log-driver=none  -v "${LIVE_BOOT_TMP_DIR}":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c "mkdir -p /src && cd /src && git clone https://github.com/GrapheneOS/hardened_malloc.git && cd hardened_malloc && make N_ARENA=1 CONFIG_NATIVE=false CONFIG_EXTENDED_SIZE_CLASSES=false && cp /src/hardened_malloc/out/libhardened_malloc.so /artifacts/live-libhardened_malloc.so" || (sleep 10 && podman run --platform linux/${DEBIAN_ARCH} --log-driver=none -v "${LIVE_BOOT_TMP_DIR}":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c "mkdir -p /src && cd /src && git clone https://github.com/GrapheneOS/hardened_malloc.git && cd hardened_malloc && make N_ARENA=1 CONFIG_NATIVE=false CONFIG_EXTENDED_SIZE_CLASSES=false && cp /src/hardened_malloc/out/libhardened_malloc.so /artifacts/live-libhardened_malloc.so")
@@ -132,8 +126,8 @@ sudo mv "${LIVE_BOOT_TMP_DIR}/live-entrusted-webserver" "${LIVE_BOOT_DIR}/chroot
 
 sudo chmod +x "${LIVE_BOOT_DIR}"/chroot/files/*.sh
 
-echo "${ENTRUSTED_USER_NAME}" > "${LIVE_BOOT_TMP_DIR}"/entrusted_username
-echo "${ENTRUSTED_USER_ID}" > "${LIVE_BOOT_TMP_DIR}"/entrusted_userid
+echo "${CONTAINER_USER_NAME}" > "${LIVE_BOOT_TMP_DIR}"/entrusted_username
+echo "${CONTAINER_USER_ID}" > "${LIVE_BOOT_TMP_DIR}"/entrusted_userid
 sudo mv "${LIVE_BOOT_TMP_DIR}"/entrusted_userid "${LIVE_BOOT_DIR}"/chroot/files/entrusted_userid
 sudo mv "${LIVE_BOOT_TMP_DIR}"/entrusted_username "${LIVE_BOOT_DIR}"/chroot/files/entrusted_username
 

@@ -5,7 +5,9 @@ PREVIOUSDIR="$(echo $PWD)"
 SCRIPTDIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${SCRIPTDIR}/../../app)"
 APPVERSION=$(grep "^version" ${PROJECTDIR}/entrusted_client/Cargo.toml  | cut -d"=" -f2 | xargs)
-CPU_ARCHS="amd64 aarch64"
+#CPU_ARCHS="amd64 aarch64"
+# CPU_ARCHS="aarch64"
+CPU_ARCHS="amd64"
 ENTRUSTED_VERSION="${APPVERSION}"
 CONTAINER_USER_NAME="entrusted"
 CONTAINER_USER_ID="1024"
@@ -16,9 +18,8 @@ sudo apt update && sudo apt install -y \
     squashfs-tools \
     dosfstools \
     xorriso \
-    xz-utils \
-    isolinux \
-    syslinux-efi \
+    grub-efi-amd64-bin \
+    grub-pc-bin \
     fakeroot \
     sudo \
     bash \
@@ -90,15 +91,15 @@ for CPU_ARCH in $CPU_ARCHS ; do
         echo "Failed to prepare build for ${CPU_ARCH}" && exit 1
     fi
 
-    "${ROOT_SCRIPTS_DIR}"/03-post-chroot.sh "${DEBIAN_ARCH}" "${LIVE_BOOT_DIR}" "${LIVE_BOOT_TMP_DIR}" "${LIVE_ISO_DIR}"
+    "${ROOT_SCRIPTS_DIR}"/03-post-chroot.sh "${DEBIAN_ARCH}" "${LIVE_BOOT_DIR}" "${LIVE_ISO_DIR}"
     retVal=$?
     if [ "$retVal" != "0" ]; then
         echo "Failed to create ISO image for ${CPU_ARCH}" && exit 1
     fi
     
-    sudo rm -rf "${ENTRUSTED_ROOT_TMPDIR}"
+    sudo rm -rf "${ENTRUSTED_ROOT_TMPDIR}"   || true
     sudo killall -u "${CONTAINER_USER_NAME}" || true
     sudo userdel -r "${CONTAINER_USER_NAME}" || true    
-    sudo test -d "/home/${CONTAINER_USER_NAME}" && sudo rm -rf "/home/${CONTAINER_USER_NAME}"
+    sudo test -d "/home/${CONTAINER_USER_NAME}"   && sudo rm -rf "/home/${CONTAINER_USER_NAME}"
     sudo test -d "/run/user/${CONTAINER_USER_ID}" && sudo rm -rf "/run/user/${CONTAINER_USER_ID}"
 done

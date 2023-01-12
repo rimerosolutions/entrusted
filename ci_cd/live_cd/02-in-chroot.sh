@@ -15,7 +15,9 @@ echo 'Acquire::Retries "10";' > /etc/apt/apt.conf.d/80-retries
 echo ">>> Installing custom kernel"
 DEBIAN_FRONTEND=noninteractive apt update
 dpkg -i /files/minikernel/linux-image*.deb
-DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends initramfs-tools
+DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends initramfs-tools zstd
+perl -pi -e 's/^COMPRESS=.*/COMPRESS=zstd/' /etc/initramfs-tools/initramfs.conf
+echo "COMPRESSLEVEL=19" >> /etc/initramfs-tools/initramfs.conf
 cd /boot && initrdsuffix=$(ls vmlinuz-* | awk -F"vmlinuz-" '{print $2}') && cd -
 cd /boot && mkinitramfs -o initrd.img-${initrdsuffix} ${initrdsuffix} && cd -
 

@@ -32,12 +32,6 @@ echo ">>> Copying entrusted-cli and entrusted-webserver to temporary storage"
 cp "${LINUX_ARTIFACTSDIR}"/entrusted-cli "${LIVE_BOOT_TMP_DIR}"/live-entrusted-cli
 cp "${LINUX_ARTIFACTSDIR}"/entrusted-webserver "${LIVE_BOOT_TMP_DIR}"/live-entrusted-webserver
 
-echo ">>> Downloading intel and amd microcodes"
-test -d "${LIVE_BOOT_TMP_DIR}"/microcode && rm -rf "${LIVE_BOOT_TMP_DIR}"/microcode
-mkdir -p "${LIVE_BOOT_TMP_DIR}"/microcode
-cd "${LIVE_BOOT_TMP_DIR}"/microcode && wget https://mirror.csclub.uwaterloo.ca/archlinux/iso/latest/arch/boot/intel-ucode.img && cd -
-cd "${LIVE_BOOT_TMP_DIR}"/microcode && wget https://mirror.csclub.uwaterloo.ca/archlinux/iso/latest/arch/boot/amd-ucode.img   && cd -
-
 echo ">>> Building custom kernel"
 test -d "${LIVE_BOOT_TMP_DIR}"/minikernel && rm -rf "${LIVE_BOOT_TMP_DIR}"/minikernel
 mkdir -p "${LIVE_BOOT_TMP_DIR}"/minikernel

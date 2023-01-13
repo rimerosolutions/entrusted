@@ -101,8 +101,6 @@ systemctl enable systemd-networkd
 systemctl enable entrusted-init
 systemctl enable entrusted-webserver
 
-echo "apm power_off=1" >> /etc/modules
-
 # See https://madaidans-insecurities.github.io/guides/linux-hardening.html
 # See https://www.pluralsight.com/blog/it-ops/linux-hardening-secure-server-checklist
 echo ">>> Hardening kernel"
@@ -152,25 +150,8 @@ echo "b08dfa6083e7567a1921a715000001fb" > /var/lib/dbus/machine-id
 echo ">>> Disabling SSH root login"
 perl -pi -e 's/^DROPBEAR_EXTRA_ARGS.*/DROPBEAR_EXTRA_ARGS="-w -g"/' /etc/default/dropbear
 
-# See https://github.com/konstruktoid/hardening
-# echo ">>> Adjust login.defs"
-# perl -pi -e 's/^UMASK.*/UMASK 077/' /etc/login.defs
-# perl -pi -e 's/^.*LOG_OK_LOGINS.*/LOG_OK_LOGINS yes/' /etc/login.defs
-
-# echo ">>> Apply default umask in master profile"
-# echo "umask 077" >> /etc/profile
-
 echo ">>> Apply seccomp rules to package manager"
 echo 'APT::Sandbox::Seccomp "1";' | tee /etc/apt/apt.conf.d/99seccomp
-
-echo ">>> Delete few default users"
-userdel -r games || true
-userdel -r gnats || true 
-userdel -r irc   || true 
-userdel -r list  || true 
-userdel -r news  || true 
-userdel -r sync  || true 
-userdel -r uucp  || true
 
 echo ">>> Trim filesystem"
 mkdir -p /tmp/locales && cp -rf /usr/share/locale/locale.alias /usr/share/locale/en_CA /tmp/locales

@@ -59,13 +59,10 @@ else
 fi
 
 echo ">>> Creating FAT16 UEFI boot disk image"
-(
-   cd "${LIVE_BOOT_DIR}"/staging/isolinux && \
-   dd if=/dev/zero of=efiboot.img bs=1M count=10 && \
-   sudo mkfs.vfat efiboot.img && \
-   LC_CTYPE=C mmd -i efiboot.img EFI EFI/BOOT && \
-   LC_CTYPE=C mcopy -i efiboot.img ./BOOT${BOOT_EFI_ARCH_UPPER}.efi ::EFI/BOOT/
-)
+dd if=/dev/zero of=${LIVE_BOOT_DIR}/staging/efiboot.img bs=1M count=10 && \
+    sudo mkfs.vfat ${LIVE_BOOT_DIR}/staging/efiboot.img && \
+    LC_CTYPE=C mmd -i ${LIVE_BOOT_DIR}/staging/efiboot.img EFI EFI/BOOT && \
+    LC_CTYPE=C mcopy -i ${LIVE_BOOT_DIR}/staging/efiboot.img "${LIVE_BOOT_DIR}"/staging/isolinux/BOOT${BOOT_EFI_ARCH_UPPER}.efi ::EFI/BOOT/
 
 echo ">>> Creating Grub BIOS image"
 grub-mkstandalone \
@@ -81,8 +78,25 @@ echo ">>> Combine bootable Grub cdboot.img"
 cat /usr/lib/grub/i386-pc/cdboot.img ${LIVE_BOOT_DIR}/staging/isolinux/core.img > ${LIVE_BOOT_DIR}/staging/isolinux/bios.img
 
 echo ">>> Creating Live CD ISO image"
-(
-   cd "${LIVE_BOOT_DIR}"/staging && xorriso -as mkisofs -iso-level 3 -volid "ENTRUSTED_LIVE" -full-iso9660-filenames -J -J -joliet-long -output "${LIVE_ISO_DIR}/entrusted-livecd-${CPU_ARCH}-${ENTRUSTED_VERSION}.iso" --grub2-mbr /usr/lib/grub/i386-pc/boot_hybrid.img -partition_offset 16 --mbr-force-bootable -append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b isolinux/efiboot.img -appended_part_as_gpt -iso_mbr_part_type a2a0d0ebe5b9334487c068b6b72699c7 -eltorito-boot isolinux/bios.img -no-emul-boot -boot-load-size 4 -boot-info-table --eltorito-catalog isolinux/boot.cat --grub2-boot-info -eltorito-alt-boot -e '--interval:appended_partition_2:::' -no-emul-boot "${LIVE_BOOT_DIR}/staging"
-)
+xorriso -as mkisofs \
+        -iso-level 3 \
+        -volid "ENTRUSTED_LIVE" \
+        -full-iso9660-filenames \
+        -J -J -joliet-long \
+        -output "${LIVE_ISO_DIR}/entrusted-livecd-${CPU_ARCH}-${ENTRUSTED_VERSION}.iso" \
+        --grub2-mbr /usr/lib/grub/i386-pc/boot_hybrid.img \
+        -partition_offset 16 \
+        --mbr-force-bootable \
+        -append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b ${LIVE_BOOT_DIR}/staging/efiboot.img \
+        -appended_part_as_gpt \-iso_mbr_part_type a2a0d0ebe5b9334487c068b6b72699c7 \
+        -eltorito-boot isolinux/bios.img \
+        -no-emul-boot \
+        -boot-load-size 4 \
+        -boot-info-table \
+        --eltorito-catalog isolinux/boot.cat \
+        --grub2-boot-info \
+        -eltorito-alt-boot \
+        -e '--interval:appended_partition_2:::' \
+        -no-emul-boot "${LIVE_BOOT_DIR}/staging"
 
 cd $PREVIOUSDIR

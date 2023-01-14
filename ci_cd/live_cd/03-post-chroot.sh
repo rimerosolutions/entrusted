@@ -28,7 +28,13 @@ test -d "${LIVE_ISO_DIR}" || mkdir -p "${LIVE_ISO_DIR}"
 echo ">>> Creating Live CD squashfs filesystem"
 test -f "${LIVE_BOOT_DIR}"/staging/live/filesystem.squashfs && sudo rm "${LIVE_BOOT_DIR}"/staging/live/filesystem.squashfs
 mkdir -p "${LIVE_BOOT_DIR}"/staging/live
-sudo mksquashfs "${LIVE_BOOT_DIR}"/chroot "${LIVE_BOOT_DIR}"/staging/live/filesystem.squashfs -e boot -b 1M -Xdict-size 1M -no-recovery -comp zstd -Xcompression-level 19
+sudo mksquashfs "${LIVE_BOOT_DIR}"/chroot "${LIVE_BOOT_DIR}"/staging/live/filesystem.squashfs \
+     -e boot \
+     -b 1M \
+     -Xdict-size 1M \
+     -no-recovery \
+     -comp zstd \
+     -Xcompression-level 19
 
 echo ">>> Copying Live CD kernel, initrd"
 mkdir -p "${LIVE_BOOT_DIR}"/staging/isolinux

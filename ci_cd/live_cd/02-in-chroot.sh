@@ -33,7 +33,7 @@ DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
     locales \
     network-manager \
     net-tools \
-    mg \
+    nano \
     dropbear \
     crun \
     live-boot \
@@ -104,6 +104,8 @@ systemctl enable entrusted-webserver
 # See https://madaidans-insecurities.github.io/guides/linux-hardening.html
 # See https://www.pluralsight.com/blog/it-ops/linux-hardening-secure-server-checklist
 echo ">>> Hardening kernel"
+
+echo "kernel.unprivileged_userns_clone=1" >> /etc/sysctl.conf
 
 echo "kernel.core_pattern=|/bin/false" >> /etc/sysctl.conf
 echo "vm.swappiness=1" >> /etc/sysctl.conf

@@ -5,8 +5,8 @@
 ** Overview
 
 =Entrusted= is a document sanitizer tool that converts "/potentially suspicious files/" into /safe PDFs/:
-- This is achieved by processing documents inside a "lightweight sandbox" ([[https://www.ibm.com/cloud/learn/containerization][containerization]])
-- PDF documents, common image formats and Office documents ([[https://www.office.com/][MS Office]] or [[https://www.libreoffice.org/discover/what-is-opendocument/][OpenDocument]]) are supported
+- This is achieved by removing active content inside a "lightweight sandbox" ([[https://www.ibm.com/cloud/learn/containerization][containerization]])
+- Please note that this tool doesn't provide absolute security guarantees
 
 Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]], you *MUST* install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior launching the program.
 
@@ -17,7 +17,7 @@ Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_c
 ** Features
 
 Key features include the following:
-- Files (PDF, Office documents and images) are processed inside a "sandbox"
+- Files are processed inside a "sandbox" (disabled internet connectivity)
 - The sanitization of huge documents is frictionless
 - Files can be converted in batch (sequentially)
 - An optional Web interface is available and can act as an "online service"

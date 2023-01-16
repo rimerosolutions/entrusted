@@ -2,7 +2,7 @@
 
 * Overview
 
-The live CD is based on [[https://www.debian.org/][Debian]] GNU Linux and aims to provide a relatively painless installation of =entrusted=.
+The live CD is based on [[https://www.debian.org/][Debian GNU/Linux]] and aims to provide a convenient way to run =Entrusted=.
 - It's not always that easy for many to install [[https://docs.docker.com/get-docker/][Docker]] or [[https://podman.io/getting-started/installation][Podman]] (Operating System or User specific issues)
 - You may not want to run Docker or Podman directly on your main machine
 - A live system running in a virtual machine might be more convenient overall
@@ -19,8 +19,8 @@ By default, the live CD allocates =75%= of the assigned RAM as free disk space.
 
 ** User journey
 
-- Download the live CD iso image from the [[https://github.com/rimerosolutions/entrusted/releases][GitHub releases page]]
-- Boot the live CD iso from the virtualization solution of your choice ([[https://www.qemu.org/][QEMU]], [[https://www.virtualbox.org/wiki/Downloads][VirtualBox]], [[https://www.vmware.com/products/workstation-player.html][VmWare]], etc.)
+- Download the live CD ISO image from the [[https://github.com/rimerosolutions/entrusted/releases][GitHub releases page]]
+- Boot the live CD ISO from the virtualization solution of your choice ([[https://www.qemu.org/][QEMU]], [[https://www.virtualbox.org/wiki/Downloads][VirtualBox]], [[https://www.vmware.com/products/workstation-player.html][VmWare]], etc.)
 - Convert your documents via the =entrusted= online service (Web Interface): =http://ip_of_vm:13000=
   
 ** Build steps
@@ -28,9 +28,9 @@ By default, the live CD allocates =75%= of the assigned RAM as free disk space.
 The steps below have been tested on [[https://www.debian.org/][Debian]] 11 (/bullseye/) and [[https://ubuntu.com/][Ubuntu]] 22.04 (/jammy/).
 - Clone the =entrusted= git repository from GitHub
 - Run the =build.sh= script in this directory: =chmod +x build.sh && ./build.sh=
-- The resulting ISO image will be available at =$HOME/LIVE_BOOT/entrusted-livecd-amd64-<version>.iso=
+- The resulting ISO image will be available at =$ROOT_PROJECT_FOLDER/artifacts=
 
-  The Live CD ISO image size is roughly 800 MB.
+  The Live CD ISO image size is roughly =800 MB=.
   
 * General Information
 
@@ -42,8 +42,8 @@ There are 2 users in the system:
   
 ** Services
 
-On top of default regular processes, the following runs on boot ([[https://www.freedesktop.org/wiki/Software/systemd/][systemd]]):
-- SSH is running on the default =22= port.
+On top of default regular processes, the following key services run on boot ([[https://www.freedesktop.org/wiki/Software/systemd/][systemd]]):
+- SSH is running on the default =22= port
 - The =entrusted-webserver= service is running on port =13000=
 - Custom firewall rules (=iptables=) restrict network access to SSH and the =entrusted-webserver=
   - The command =entrusted-fw-disable= allows all network traffic

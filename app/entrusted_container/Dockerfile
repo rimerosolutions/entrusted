@@ -53,10 +53,11 @@ RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.zip' -o -name '*.gz' 
     && rm /usr/bin/text2image \
     && rm /usr/bin/unicharset_extractor \
     && rm /usr/bin/wordlist2dawg \
+    && rm -rf /usr/share/common-licenses /usr/share/doc-base \
     && rm -rf /usr/share/perl* /usr/bin/perl* /usr/lib/x86_64-linux-gnu/perl* \
     && rm -rf /usr/lib/python* /usr/bin/python* /usr/share/python* \
     && rm -rf /usr/sbin/*add* /usr/sbin/*del* \
-    && rm -rf /usr/include /usr/share/icons/* /usr/share/applications/* /usr/share/pixmaps/* \
+    && rm -rf /usr/include /usr/share/icons /usr/share/applications /usr/share/pixmaps \
     && rm -rf /usr/games /var/cache/apt /var/lib/apt/lists /usr/sbin/dpkg* /usr/lib/dpkg* /var/lib/dpkg \
     && rm -rf /usr/bin/apt* /usr/lib/apt/* /usr/bin/dpkg* /usr/bin/debconf* \
     && rm -rf /usr/share/doc /usr/share/java /usr/share/man /usr/share/info  /var/log \
@@ -81,7 +82,8 @@ ENV ENTRUSTED_TESSERACT_TESSDATA_DIR  /usr/share/tesseract-ocr/4.00/tessdata
 
 # We're not declaring all volumes explicity. input_file might get interpreted as a directory for squashed images somehow
 # Need to revisit the above claim in the future, based on old observations /tmp/input_file is not explicit....
+#
 # /tmp/input_file is where the first convert expects the input file to be, and /tmp where it will write the pixel files
 #
-# /safezone is where the wrapper eventually moves the sanitized files.
+# /entrusted is where the wrapper eventually moves the sanitized files.
 VOLUME /entrusted

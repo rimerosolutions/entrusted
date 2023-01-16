@@ -12,18 +12,17 @@ echo "entrusted-livecd" > /etc/hostname
 echo ">>> Updating apt retries to 10"
 echo 'Acquire::Retries "10";' > /etc/apt/apt.conf.d/80-retries
 
-# # echo ">>> Installing custom kernel"
-# DEBIAN_FRONTEND=noninteractive apt update
-# dpkg -i /files/minikernel/*.deb
-# # tar kxf /files/minikernel/kernel.tar -C /
-# # find /lib/modules -name "*.gz" -exec gzip -d {} \;
-# DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends initramfs-tools
+echo ">>> Installing custom kernel"
+DEBIAN_FRONTEND=noninteractive apt update
+# dpkg -i /files/minikernel/linux-image*.deb
+DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends initramfs-tools zstd
+perl -pi -e 's/^COMPRESS=.*/COMPRESS=zstd/' /etc/initramfs-tools/initramfs.conf
+echo "COMPRESSLEVEL=19" >> /etc/initramfs-tools/initramfs.conf
 # cd /boot && initrdsuffix=$(ls vmlinuz-* | awk -F"vmlinuz-" '{print $2}') && cd -
 # cd /boot && mkinitramfs -o initrd.img-${initrdsuffix} ${initrdsuffix} && cd -
 
 echo ">>> Installing default packages"
-DEBIAN_FRONTEND=noninteractive apt update \
-    && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
+DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
     auditd \
     iptables-persistent \
     doas \
@@ -34,13 +33,11 @@ DEBIAN_FRONTEND=noninteractive apt update \
     locales \
     network-manager \
     net-tools \
-    mg \
+    nano \
     dropbear \
     crun \
-    live-boot \
-    syslinux-efi \
     linux-image-${ENTRUSTED_ARCH} \
-    grub-efi-${ENTRUSTED_ARCH}-bin \
+    live-boot \
     systemd-sysv \
     && apt clean
 
@@ -105,11 +102,11 @@ systemctl enable systemd-networkd
 systemctl enable entrusted-init
 systemctl enable entrusted-webserver
 
-echo "apm power_off=1" >> /etc/modules
-
 # See https://madaidans-insecurities.github.io/guides/linux-hardening.html
 # See https://www.pluralsight.com/blog/it-ops/linux-hardening-secure-server-checklist
 echo ">>> Hardening kernel"
+
+echo "kernel.unprivileged_userns_clone=1" >> /etc/sysctl.conf
 
 echo "kernel.core_pattern=|/bin/false" >> /etc/sysctl.conf
 echo "vm.swappiness=1" >> /etc/sysctl.conf
@@ -155,6 +152,9 @@ echo "b08dfa6083e7567a1921a715000001fb" > /var/lib/dbus/machine-id
 
 echo ">>> Disabling SSH root login"
 perl -pi -e 's/^DROPBEAR_EXTRA_ARGS.*/DROPBEAR_EXTRA_ARGS="-w -g"/' /etc/default/dropbear
+
+echo ">>> Apply seccomp rules to package manager"
+echo 'APT::Sandbox::Seccomp "1";' | tee /etc/apt/apt.conf.d/99seccomp
 
 echo ">>> Trim filesystem"
 mkdir -p /tmp/locales && cp -rf /usr/share/locale/locale.alias /usr/share/locale/en_CA /tmp/locales

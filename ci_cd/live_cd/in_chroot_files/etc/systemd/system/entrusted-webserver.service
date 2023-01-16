@@ -12,7 +12,6 @@ ExecStart=bash -l -c "/usr/local/bin/entrusted-webserver --host 0.0.0.0 --port 1
 StandardOutput=file:/var/log/entrusted-webserver/stdout.log
 StandardError=file:/var/log/entrusted-webserver/stderr.log
 Restart=always
-PrivateIPC=true
 Capabilities=CAP_IPC_LOCK CAP_NET_BIND_SERVICE CAP_NET_RAW CAP_SETGID CAP_SETUID CAP_DAC_OVERRIDE CAP_AUDIT_WRITE
 
 [Install]

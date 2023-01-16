@@ -1,5 +1,31 @@
 #+TITLE: CHANGELOG
 
+* entrusted 0.3.1 (UNRELEASED)
+
+The main objective was to start generating all releases artifacts via the GitHub infrastructure going forward.
+
+- Builds and releases
+  - Integrate local shell scripts with [[https://github.com/features/actions][GitHub Actions]] workflows
+    - Generate of all release artifacts from GitHub (on demand)
+    - Publish the "container sandbox" image to [[https://hub.docker.com/][Docker Hub]] (on demand)
+    - Scan for container vulnerability in the "container sandbox" image (on demand)
+    - Run minimal functional tests (automatically for the development branch)
+  - Sync with [[https://github.com/axtloss/flatpaks][axtloss]] for updated =Flatpak= builds on Linux
+- Security (Live CD)
+  - Implement [[https://gvisor.dev/][gVisor]] as container security platform
+  - Harden few services
+  - Delete few default system users
+- Enhancements
+  - Web User Interface: Add tabs to mimic more closely the Desktop version
+  - Desktop User Interface: Add hyperlinks for opening directly PDF results
+- Maintenance
+  - Trim the Live CD image size by roughly 15% (=~800 MB= to =~670 MB=)
+    - Boot manager: Replace [[https://www.gnu.org/software/grub/][Grub]] and [[https://wiki.syslinux.org/wiki/index.php?title=SYSLINUX][SysLinux]] with [[https://limine-bootloader.org/][Limine]]
+    - SSH server: Replace [[https://www.openssh.com/][OpenSSH]] with [[https://matt.ucc.asn.au/dropbear/dropbear.html][DropBear]]
+    - Container solution: Replace the default [[https://packages.debian.org/search?keywords=podman&searchon=names&exact=1&suite=stable&section=all][Debian Podman]] version with [[https://github.com/mgoltzsche/podman-static][podman-static]]
+    - Linux kernel: Compile custom kernel (=6.0=) for removing unessential modules
+  - Address potential conversion failures on the Live CD (disable [[https://github.com/GrapheneOS/hardened_malloc][Hardened malloc]] CPU optimizations)
+
 * entrusted 0.3.0
 
 This release is focused primarily on security concerns, while making reasonable compromises pertaining to usability, user convenience and performance. There are also few user-visible features, on top of the availability of the Live CD for [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]].

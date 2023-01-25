@@ -25,6 +25,7 @@ sudo apt update && sudo apt install -y \
     systemd-container \
     bzip2 \
     gzip \
+    unzip \
     mtools
 
 for CPU_ARCH in $CPU_ARCHS ; do

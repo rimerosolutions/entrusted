@@ -11,7 +11,8 @@ LIVE_BOOT_TMP_DIR=$7
 CONTAINER_USER_NAME=$8
 CONTAINER_USER_ID=$9
 
-PODMAN_VERSION="4.3.1"
+VERSION_PODMAN_STATIC="4.3.1"
+VERSION_KERNEL_DEBLIVE_SMALLSERVER="6.1.8"
 THIS_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${THIS_SCRIPTS_DIR}/../../app)"
 
@@ -21,27 +22,22 @@ mkdir -p "${LIVE_BOOT_DIR}"
 sudo chmod -R a+rw "${LIVE_BOOT_DIR}"
 
 echo ">>> Boostraping Debian installation"
-sudo debootstrap \
-    --arch=${DEBIAN_ARCH} \
-    --variant=minbase \
-    bullseye \
-    "${LIVE_BOOT_DIR}"/chroot \
-    https://mirror.csclub.uwaterloo.ca/debian/
+sudo debootstrap --arch=${DEBIAN_ARCH} --variant=minbase bullseye "${LIVE_BOOT_DIR}"/chroot https://mirror.csclub.uwaterloo.ca/debian/ || (sleep 10 && sudo debootstrap --arch=${DEBIAN_ARCH} --variant=minbase bullseye "${LIVE_BOOT_DIR}"/chroot https://mirror.csclub.uwaterloo.ca/debian/)
+retVal=$?
+if [ "$retVal" != "0" ]; then
+	echo "Could not bootstrap Debian installation!" && exit 1
+fi
 
 echo ">>> Copying entrusted-cli and entrusted-webserver to temporary storage"
 cp "${LINUX_ARTIFACTSDIR}"/entrusted-cli "${LIVE_BOOT_TMP_DIR}"/live-entrusted-cli
 cp "${LINUX_ARTIFACTSDIR}"/entrusted-webserver "${LIVE_BOOT_TMP_DIR}"/live-entrusted-webserver
 
-# echo ">>> Building custom kernel"
-# test -d "${LIVE_BOOT_TMP_DIR}"/minikernel && rm -rf "${LIVE_BOOT_TMP_DIR}"/minikernel
-# mkdir -p "${LIVE_BOOT_TMP_DIR}"/minikernel
-# cp ${THIS_SCRIPTS_DIR}/in_chroot_files/usr/src/linux/config "${LIVE_BOOT_TMP_DIR}"/minikernel/
-# podman run --platform linux/${DEBIAN_ARCH} --log-driver=none  -v "${LIVE_BOOT_TMP_DIR}/minikernel":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c 'apt update && apt install -y xz-utils build-essential bc kmod cpio flex libncurses5-dev libelf-dev libssl-dev dwarves bison ccache rsync wget && mkdir -p /usr/src/kernel && cd /usr/src/kernel && wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.6.tar.xz && tar axf linux-*.tar.xz && rm linux-*.tar.xz && cd linux-* && cp /artifacts/config .config  && ./scripts/config --disable SYSTEM_TRUSTED_KEYS && ./scripts/config --disable SYSTEM_REVOCATION_KEYS && ./scripts/config --disable DEBUG_INFO && ./scripts/config --enable DEBUG_INFO_NONE && nice make CC="ccache gcc" -j`nproc` bindeb-pkg &&  cp ../*.deb /artifacts/' || (sleep 10 && podman run --platform linux/${DEBIAN_ARCH} --log-driver=none  -v "${LIVE_BOOT_TMP_DIR}/minikernel":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c 'apt update && apt install -y xz-utils build-essential bc kmod cpio flex libncurses5-dev libelf-dev libssl-dev dwarves bison ccache rsync wget && mkdir -p /usr/src/kernel && cd /usr/src/kernel && wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.6.tar.xz && tar axf linux-*.tar.xz && rm linux-*.tar.xz && cd linux-* && cp /artifacts/config .config  && ./scripts/config --disable SYSTEM_TRUSTED_KEYS && ./scripts/config --disable SYSTEM_REVOCATION_KEYS && ./scripts/config --disable DEBUG_INFO && ./scripts/config --enable DEBUG_INFO_NONE && nice make CC="ccache gcc" -j`nproc` bindeb-pkg &&  cp ../*.deb /artifacts/')
-# retVal=$?
-# if [ "$retVal" != "0" ]; then
-# 	echo "Could not build kernel!" && exit 1
-# fi
-# ls "${LIVE_BOOT_TMP_DIR}"/minikernel/*.deb || exit 1
+echo ">>> Building custom kernel"
+test -d "${LIVE_BOOT_TMP_DIR}"/minikernel && rm -rf "${LIVE_BOOT_TMP_DIR}"/minikernel
+mkdir -p "${LIVE_BOOT_TMP_DIR}"/minikernel
+cd "${LIVE_BOOT_TMP_DIR}"/minikernel/ && wget "https://github.com/yveszoundi/kernel-deblive-smallserver/releases/download/${VERSION_KERNEL_DEBLIVE_SMALLSERVER}/kernel-deblive-smallserver-${VERSION_KERNEL_DEBLIVE_SMALLSERVER}-${DEBIAN_ARCH}.zip" && cd -
+cd "${LIVE_BOOT_TMP_DIR}"/minikernel/ && unzip "kernel-deblive-smallserver-${VERSION_KERNEL_DEBLIVE_SMALLSERVER}-${DEBIAN_ARCH}.zip" && cd -
+ls "${LIVE_BOOT_TMP_DIR}"/minikernel/*.deb || (echo "Could not fetch custom kernel packages" && exit 1)
 
 echo ">>> Building hardened_malloc"
 podman run --platform linux/${DEBIAN_ARCH} --log-driver=none  -v "${LIVE_BOOT_TMP_DIR}":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c "mkdir -p /src && cd /src && git clone https://github.com/GrapheneOS/hardened_malloc.git && cd hardened_malloc && make N_ARENA=1 CONFIG_NATIVE=false CONFIG_EXTENDED_SIZE_CLASSES=false && cp /src/hardened_malloc/out/libhardened_malloc.so /artifacts/live-libhardened_malloc.so" || (sleep 10 && podman run --platform linux/${DEBIAN_ARCH} --log-driver=none -v "${LIVE_BOOT_TMP_DIR}":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c "mkdir -p /src && cd /src && git clone https://github.com/GrapheneOS/hardened_malloc.git && cd hardened_malloc && make N_ARENA=1 CONFIG_NATIVE=false CONFIG_EXTENDED_SIZE_CLASSES=false && cp /src/hardened_malloc/out/libhardened_malloc.so /artifacts/live-libhardened_malloc.so")
@@ -64,7 +60,7 @@ fi
 echo ">>> Downloading podman-static"
 test -d "${LIVE_BOOT_TMP_DIR}"/podman && rm -rf "${LIVE_BOOT_TMP_DIR}"/podman
 mkdir -p "${LIVE_BOOT_TMP_DIR}"/podman
-cd "${LIVE_BOOT_TMP_DIR}"/podman && wget https://github.com/mgoltzsche/podman-static/releases/download/v${PODMAN_VERSION}/podman-linux-${DEBIAN_ARCH}.tar.gz && cd -
+cd "${LIVE_BOOT_TMP_DIR}"/podman && wget https://github.com/mgoltzsche/podman-static/releases/download/v${VERSION_PODMAN_STATIC}/podman-linux-${DEBIAN_ARCH}.tar.gz && cd -
 
 CONTAINER_USER_HOMEDIR="/home/${CONTAINER_USER_NAME}"
 sudo mkdir -p "${LIVE_BOOT_TMP_DIR}/home" && sudo chmod -R a+rw "${LIVE_BOOT_TMP_DIR}/home"
@@ -115,7 +111,7 @@ sudo cp -r "${LIVE_BOOT_TMP_DIR}/gvisor" "${LIVE_BOOT_DIR}/chroot/files/gvisor"
 sudo mv "${LIVE_BOOT_TMP_DIR}/entrusted-packaging" "${LIVE_BOOT_DIR}/chroot/files/entrusted-packaging"
 sudo mv "${LIVE_BOOT_TMP_DIR}/live-entrusted-cli" "${LIVE_BOOT_DIR}/chroot/files/entrusted-cli"
 sudo mv "${LIVE_BOOT_TMP_DIR}/live-entrusted-webserver" "${LIVE_BOOT_DIR}/chroot/files/entrusted-webserver"
-# sudo cp -r "${LIVE_BOOT_TMP_DIR}/minikernel" "${LIVE_BOOT_DIR}/chroot/files/minikernel"
+sudo cp -r "${LIVE_BOOT_TMP_DIR}/minikernel" "${LIVE_BOOT_DIR}/chroot/files/minikernel"
 
 sudo chmod +x "${LIVE_BOOT_DIR}"/chroot/files/*.sh
 

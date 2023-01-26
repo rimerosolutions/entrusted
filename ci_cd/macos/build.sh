@@ -8,12 +8,12 @@ APPVERSION=$(grep "^version" ${PROJECTDIR}/entrusted_client/Cargo.toml  | cut -d
 CPU_ARCHS="amd64 aarch64"
 
 for CPU_ARCH in $CPU_ARCHS ; do
-    ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-macos-${CPU_ARCH}-${APPVERSION}"
+    ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-${APPVERSION}-macos-${CPU_ARCH}"
     rm -rf ${ARTIFACTSDIR}
 done
 
 for CPU_ARCH in $CPU_ARCHS ; do
-    ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-macos-${CPU_ARCH}-${APPVERSION}"
+    ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-${APPVERSION}-macos-${CPU_ARCH}"
     RUST_TARGET="x86_64-apple-darwin"
     BUILD_PREAMBLE="true"
     ADDITIONAL_PARAMS=""
@@ -103,13 +103,13 @@ for CPU_ARCH in $CPU_ARCHS ; do
 
     cp -r ${APPBUNDLE} ${APPDMGDIR}/
     ln -s /Applications ${APPDMGDIR}/
-    podman run --rm -v "${ARTIFACTSDIR}":/files docker.io/sporsh/create-dmg "Entrusted" /files/dmg/ /files/entrusted-macos-${CPU_ARCH}-${APPVERSION}.dmg
+    podman run --rm -v "${ARTIFACTSDIR}":/files docker.io/sporsh/create-dmg "Entrusted" /files/dmg/ /files/entrusted-${APPVERSION}-macos-${CPU_ARCH}.dmg
     rm -rf ${APPDMGDIR}
     mv ${ARTIFACTSDIR}/*.dmg ${ARTIFACTSDIR}/../
 
     cp ${SCRIPTDIR}/release_README.txt ${ARTIFACTSDIR}/README.txt
 
-    cd ${ARTIFACTSDIR}/.. && zip -r entrusted-macos-${CPU_ARCH}-${APPVERSION}.zip entrusted-macos-${CPU_ARCH}-${APPVERSION}
+    cd ${ARTIFACTSDIR}/.. && zip -r entrusted-${APPVERSION}-macos-${CPU_ARCH}.zip entrusted-${APPVERSION}-macos-${CPU_ARCH}
 done
 
 cd ${SCRIPTDIR}

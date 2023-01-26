@@ -10,7 +10,7 @@ echo ">>> Setting up hostname"
 echo "entrusted-livecd" > /etc/hostname
 
 echo ">>> Updating apt retries to 10"
-echo 'Acquire::Retries "10";' > /etc/apt/apt.conf.d/80-retries
+echo 'Acquire::Retries "10"; Acquire::GzipIndexes "true"; Acquire::CompressionTypes::Order:: "gz"; ' > /etc/apt/apt.conf.d/80-custom
 
 echo ">>> Installing custom kernel"
 DEBIAN_FRONTEND=noninteractive apt update
@@ -160,6 +160,7 @@ mkdir -p /tmp/locales && cp -rf /usr/share/locale/locale.alias /usr/share/locale
 rm -rf /usr/share/locale/* && mv /tmp/locales/* /usr/share/locale/
 rm -rf /usr/share/common-licences \
    /usr/share/man \
+   /usr/share/lintian \
    /usr/share/pixmaps \
    /usr/share/doc* \
    /usr/share/info \

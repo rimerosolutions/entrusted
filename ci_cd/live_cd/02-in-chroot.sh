@@ -33,7 +33,7 @@ DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
     locales \
     network-manager \
     net-tools \
-    nano \
+    mg \
     dropbear \
     crun \
     live-boot \
@@ -158,15 +158,17 @@ echo 'APT::Sandbox::Seccomp "1";' | tee /etc/apt/apt.conf.d/99seccomp
 echo ">>> Trim filesystem"
 mkdir -p /tmp/locales && cp -rf /usr/share/locale/locale.alias /usr/share/locale/en_CA /tmp/locales
 rm -rf /usr/share/locale/* && mv /tmp/locales/* /usr/share/locale/
-rm -rf /usr/share/common-licences
-rm -rf /usr/share/man
-rm -rf /usr/share/pixmaps
-rm -rf /usr/share/doc*
-rm -rf /usr/share/info
-rm -rf /var/cache/apt/*
-rm -rf /tmp/*
-rm -rf /run/user/*
-rm -rf /var/log/* && mkdir -p /var/log/entrusted-webserver /var/log/audit
+rm -rf /usr/share/common-licences \
+   /usr/share/man \
+   /usr/share/pixmaps \
+   /usr/share/doc* \
+   /usr/share/info \
+   /var/cache/apt/* \
+   /tmp/* \
+   /run/user/* \
+   /var/log/* 
+
+mkdir -p /var/log/entrusted-webserver /var/log/audit
 
 echo ">>> Cleanup chroot files"
 rm -rf /files

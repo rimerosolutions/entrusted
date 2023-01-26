@@ -113,7 +113,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let raw_input_path   = Path::new("/tmp/input_file");
         let output_file_path = Path::new("/tmp/safe-output-compressed.pdf");
         let output_dir_path  = Path::new("/tmp/");
-        let safe_dir_path    = Path::new("/entrusted/safe-output-compressed.pdf");
+        let safe_dir_path    = Path::new("/safezone/safe-output-compressed.pdf");
 
         // step 1 (0%-20%)
         let mut progress_range = ProgressRange::new(0, 20);

@@ -85,5 +85,5 @@ ENV ENTRUSTED_TESSERACT_TESSDATA_DIR  /usr/share/tesseract-ocr/4.00/tessdata
 #
 # /tmp/input_file is where the first convert expects the input file to be, and /tmp where it will write the pixel files
 #
-# /entrusted is where the wrapper eventually moves the sanitized files.
-VOLUME /entrusted
+# /safezone is where the wrapper eventually moves the sanitized files.
+VOLUME /safezone

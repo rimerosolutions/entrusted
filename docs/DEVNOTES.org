@@ -1,0 +1,19 @@
+#+TITLE: DEVNOTES
+
+* Container images dev testing
+
+In order to discard any environment related issues, it's best to use unique container image names to test new changes.
+- Your container solution might attempt to pull latest changes from Docker Hub instead of relying on your newly built image
+- You might experience so permission denied error messages that are difficult to assess ([[https://github.com/rimerosolutions/entrusted/issues/44][issue 44]])
+  
+* Application dependencies
+
+  Keeping dependencies minimal can help with both maintenance, build times, security issues and other concerns.
+  
+* Application packaging
+
+While there are DEB and RPM packages available for convenience, it's best to let package maintainers deal with that
+- Conventions for a given Linux distribution are continuously evolving
+- It's difficult to satisfy everybody: why isn't there a package for "insert distro of the day here"
+
+The same applies to Mac OS ([[https://brew.sh/][homebrew]], [[https://www.macports.org/][macports]], [[https://pkgsrc.joyent.com/install-on-macos/][pkgsrc]], etc.) and Windows ([[https://chocolatey.org/][chocolatey]], [[https://github.com/microsoft/winget-cli][winget]], etc.).

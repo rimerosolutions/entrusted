@@ -46,7 +46,7 @@ Create a script with the contents below called =qemu_test_arm64= and make it exe
       -smp 2 \
       -cpu cortex-a57 \
       -M virt -nographic \
-      -drive if=pflash,format=raw,file=QEMU_EFI.img \
+      -drive if=pflash,format=raw,file=QEMU_EFI.img,readonly=on \
       -drive if=pflash,file=varstore.img  \
       -device intel-hda \
       -device hda-duplex  \
@@ -193,7 +193,7 @@ The ephemeral server in question is just =python3 -m http.server=.
 If all goes well, you should see messages similar to the log below.
 
 #+begin_src text
-  localhost:~$ ./entrusted-linux-aarch64-0.2.6/entrusted-cli --input-filename ~/entrusted/test_data/sample-doc.doc
+  localhost:~$ ./entrusted-linux-aarch64-0.2.7/entrusted-cli --input-filename ~/entrusted/test_data/sample-doc.doc
   Converting /home/entrusted/entrusted/test_data/sample-doc.doc
   Running command: /usr/bin/podman inspect docker.io/uycyjnzgntrn/entrusted_container:0.2.7
   Checking if container image exists
@@ -208,7 +208,7 @@ If all goes well, you should see messages similar to the log below.
   Collecting PDF pages
   Updating bookmarks and page numbering
   Processing PDF structure
-  Updating PDF dictionnary
+  Updating PDF dictionary
   Combining PDF objects
   Compressing PDF
   Saving PDF

@@ -37,9 +37,9 @@ for CPU_ARCH in $CPU_ARCHS ; do
     MY_TMPDIR="${TMPDIR}"
     test -d "${MY_TMPDIR}" || MY_TMPDIR="/tmp"
     ENTRUSTED_ROOT_TMPDIR="${MY_TMPDIR}/entrusted-tmpbuild"
-    LIVE_BOOT_DIR="${ENTRUSTED_ROOT_TMPDIR}/entrusted-livecd/live_boot_dir-${CPU_ARCH}-${ENTRUSTED_VERSION}"
-    LIVE_BOOT_TMP_DIR="${ENTRUSTED_ROOT_TMPDIR}/entrusted-livecd/live_boot_tmpdir-${CPU_ARCH}-${ENTRUSTED_VERSION}"
-    LINUX_ARTIFACTSDIR="${ENTRUSTED_ROOT_TMPDIR}/entrusted-livecd/linux_artifacts-${CPU_ARCH}-${ENTRUSTED_VERSION}"
+    LIVE_BOOT_DIR="${ENTRUSTED_ROOT_TMPDIR}/entrusted-livecd/live_boot_dir-${ENTRUSTED_VERSION}-${CPU_ARCH}"
+    LIVE_BOOT_TMP_DIR="${ENTRUSTED_ROOT_TMPDIR}/entrusted-livecd/live_boot_tmpdir-${ENTRUSTED_VERSION}-${CPU_ARCH}"
+    LINUX_ARTIFACTSDIR="${ENTRUSTED_ROOT_TMPDIR}/entrusted-livecd/linux_artifacts-${ENTRUSTED_VERSION}-${CPU_ARCH}"
     LIVE_ISO_DIR="${PROJECTDIR}/../artifacts"
     DEBIAN_ARCH="amd64"
     UNAME_ARCH="x86_64"
@@ -48,7 +48,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
     test -d "${ENTRUSTED_ROOT_TMPDIR}" && sudo rm -rf "${ENTRUSTED_ROOT_TMPDIR}"
     mkdir -p "${ENTRUSTED_ROOT_TMPDIR}" "${LIVE_BOOT_TMP_DIR}" "${LIVE_ISO_DIR}" "${LIVE_BOOT_DIR}" "${LINUX_ARTIFACTSDIR}"
     
-    test -f "${LIVE_ISO_DIR}"/entrusted-livecd-${CPU_ARCH}-${ENTRUSTED_VERSION}.iso && rm "${LIVE_ISO_DIR}"/entrusted-livecd-${CPU_ARCH}-${ENTRUSTED_VERSION}.iso
+    test -f "${LIVE_ISO_DIR}"/entrusted-${ENTRUSTED_VERSION}-livecd-${CPU_ARCH}.iso && rm "${LIVE_ISO_DIR}"/entrusted-${ENTRUSTED_VERSION}-livecd-${CPU_ARCH}.iso
 
     if [ ${CPU_ARCH} != "amd64" ]
     then

@@ -5,7 +5,7 @@ PREVIOUSDIR="$(echo $PWD)"
 SCRIPTDIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${SCRIPTDIR}/../../app)"
 APPVERSION=$(grep "^version" ${PROJECTDIR}/entrusted_client/Cargo.toml  | cut -d"=" -f2 | xargs)
-ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-windows-amd64-${APPVERSION}"
+ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-${APPVERSION}-windows-amd64"
 
 mkdir -p ${ARTIFACTSDIR}
 
@@ -45,9 +45,9 @@ if [ $retVal -ne 0 ]; then
 fi
 
 rm ${ARTIFACTSDIR}/installer.nsi
-mv ${ARTIFACTSDIR}/entrusted-windows-amd64-${APPVERSION}.exe ${ARTIFACTSDIR}/../
+mv ${ARTIFACTSDIR}/entrusted-${APPVERSION}-windows-amd64.exe ${ARTIFACTSDIR}/../
 
 cp ${SCRIPTDIR}/release_README.txt ${ARTIFACTSDIR}/README.txt
-cd ${ARTIFACTSDIR}/.. && zip -r entrusted-windows-amd64-${APPVERSION}.zip entrusted-windows-amd64-${APPVERSION}
+cd ${ARTIFACTSDIR}/.. && zip -r entrusted-${APPVERSION}-windows-amd64.zip entrusted-${APPVERSION}-windows-amd64
 
 cd ${SCRIPTDIR}

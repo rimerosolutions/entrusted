@@ -89,7 +89,7 @@ xorriso -as mkisofs \
         -volid "ENTRUSTED_LIVE" \
         -full-iso9660-filenames \
         -J -J -joliet-long \
-        -output "${LIVE_ISO_DIR}/entrusted-livecd-${CPU_ARCH}-${ENTRUSTED_VERSION}.iso" \
+        -output "${LIVE_ISO_DIR}/entrusted-${ENTRUSTED_VERSION}-livecd-${CPU_ARCH}.iso" \
         --grub2-mbr /usr/lib/grub/i386-pc/boot_hybrid.img \
         -partition_offset 16 \
         --mbr-force-bootable \

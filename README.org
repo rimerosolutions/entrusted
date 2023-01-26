@@ -64,23 +64,23 @@ Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releas
 |-----------+------------------------------------------+-----------------------------------------------|
 | "System"  | Artifact                                 | Description                                   |
 |-----------+------------------------------------------+-----------------------------------------------|
-| =Linux=   | =entrusted-linux-amd64-<version>.deb=    | Desktop and CLI clients (Debian-Like distros) |
-|           | =entrusted-linux-amd64-<version>.rpm=    | Desktop and CLI clients (Redhat-Like distros) |
-|           | =entrusted-linux-amd64-<version>.tar=    | Archive with all programs                     |
-|           | =entrusted-linux-aarch64-<version>.deb=  | Desktop and CLI clients (Debian-Like distros) |
-|           | =entrusted-linux-aarch64-<version>.rpm=  | Desktop and CLI clients (Redhat-Like distros) |
-|           | =entrusted-linux-aarch64-<version>.tar=  | Archive with all programs                     |
+| =Linux=   | =entrusted-<version>-linux-amd64.deb=    | Desktop and CLI clients (Debian-Like distros) |
+|           | =entrusted-<version>-linux-amd64.rpm=    | Desktop and CLI clients (Redhat-Like distros) |
+|           | =entrusted-<version>-linux-amd64.tar=    | Archive with all programs                     |
+|           | =entrusted-<version>-linux-aarch64.deb=  | Desktop and CLI clients (Debian-Like distros) |
+|           | =entrusted-<version>-linux-aarch64.rpm=  | Desktop and CLI clients (Redhat-Like distros) |
+|           | =entrusted-<version>-linux-aarch64.tar=  | Archive with all programs                     |
 |-----------+------------------------------------------+-----------------------------------------------|
-| =Mac OS=  | =entrusted-macos-amd64-<version>.dmg=    | Installer with the Desktop and CLI clients    |
-|           | =entrusted-macos-amd64-<version>.zip=    | Archive with all programs                     |
-|           | =entrusted-macos-aarch64-<version>.dmg=  | Installer with the Desktop and CLI clients    |
-|           | =entrusted-macos-aarch64-<version>.zip=  | Archive with all programs                     |
+| =Mac OS=  | =entrusted-<version>-macos-amd64.dmg=    | Installer with the Desktop and CLI clients    |
+|           | =entrusted-<version>-macos-amd64.zip=    | Archive with all programs                     |
+|           | =entrusted-<version>-macos-aarch64.dmg=  | Installer with the Desktop and CLI clients    |
+|           | =entrusted-<version>-macos-aarch64.zip=  | Archive with all programs                     |
 |-----------+------------------------------------------+-----------------------------------------------|
-| =Windows= | =entrusted-windows-amd64-<version>.exe=  | Installer with the Desktop and CLI clients    |
-|           | =entrusted-windows-amd64-<version>.zip=  | Archive with all programs                     |
+| =Windows= | =entrusted-<version>-windows-amd64.exe=  | Installer with the Desktop and CLI clients    |
+|           | =entrusted-<version>-windows-amd64.zip=  | Archive with all programs                     |
 |-----------+------------------------------------------+-----------------------------------------------|
-| =Live CD= | =entrusted-livecd-amd64-<version>.iso=   | Web interface Live CD for virtual machines    |
-|           | =entrusted-livecd-aarch64-<version>.iso= | Web interface Live CD for virtual machines    |
+| =Live CD= | =entrusted-<version>-livecd-amd64.iso=   | Web interface Live CD for virtual machines    |
+|           | =entrusted-<version>-livecd-aarch64.iso= | Web interface Live CD for virtual machines    |
 |-----------+------------------------------------------+-----------------------------------------------|
 
 * What is required?

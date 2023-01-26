@@ -20,7 +20,7 @@ jobs:
         ENTRUSTED_CONTAINER_ARCH=amd64
         ENTRUSTED_TMPDIR=/tmp/entrusted-buildir
         ENTRUSTED_VERSION=$(grep "^version" ${{ github.workspace }}/app/entrusted_client/Cargo.toml | cut -d"=" -f2 | xargs)
-        ENTRUSTED_LINUX_ARTIFACTS_DIR="${ENTRUSTED_TMPDIR}/artifacts/entrusted-linux-${ENTRUSTED_CPU_ARCH}-${ENTRUSTED_VERSION}"
+        ENTRUSTED_LINUX_ARTIFACTS_DIR="${ENTRUSTED_TMPDIR}/artifacts/entrusted-${ENTRUSTED_VERSION}-linux-${ENTRUSTED_CPU_ARCH}"
         ENTRUSTED_LIVECD_ISO_DIR="${ENTRUSTED_TMPDIR}/artifacts/iso"
         ENTRUSTED_LIVECD_ISO_TMPDIR="${ENTRUSTED_TMPDIR}/artifacts/tmp"
         ENTRUSTED_LIVECD_BOOT_DIR="${ENTRUSTED_TMPDIR}/artifacts/boot"
@@ -83,7 +83,7 @@ jobs:
         ENTRUSTED_CONTAINER_ARCH=arm64
         ENTRUSTED_TMPDIR=/tmp/entrusted-buildir
         ENTRUSTED_VERSION=$(grep "^version" ${{ github.workspace }}/app/entrusted_client/Cargo.toml | cut -d"=" -f2 | xargs)
-        ENTRUSTED_LINUX_ARTIFACTS_DIR="${ENTRUSTED_TMPDIR}/artifacts/entrusted-linux-${ENTRUSTED_CPU_ARCH}-${ENTRUSTED_VERSION}"
+        ENTRUSTED_LINUX_ARTIFACTS_DIR="${ENTRUSTED_TMPDIR}/artifacts/entrusted-${ENTRUSTED_VERSION}-linux-${ENTRUSTED_CPU_ARCH}"
         ENTRUSTED_LIVECD_ISO_DIR="${ENTRUSTED_TMPDIR}/artifacts/iso"
         ENTRUSTED_LIVECD_ISO_TMPDIR="${ENTRUSTED_TMPDIR}/artifacts/tmp"
         ENTRUSTED_LIVECD_BOOT_DIR="${ENTRUSTED_TMPDIR}/artifacts/boot"

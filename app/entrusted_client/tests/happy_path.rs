@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use cucumber::{gherkin::Step, given, then, when, World};
-use assert_cmd::prelude::*; // Add methods on commands
-use std::process::Command; // Run programs
+use assert_cmd::prelude::*;
+use std::process::Command;
 use std::env::temp_dir;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -34,9 +34,11 @@ async fn files_are_converted(files_to_convert: &mut FilesToConvert) {
         let test_file = test_folder.join(file_to_convert.filename.clone());
         let test_file_name = test_file.file_name().unwrap().to_str().unwrap();
         let output_file = output_folder.join(test_file_name.clone());
+
         assert!(test_file.exists(), "Cannot find test file at {}", test_file.display());
 
         let mut cmd = Command::cargo_bin("entrusted-cli").unwrap();
+
         cmd.arg("--input-filename");
         cmd.arg(test_file.display().to_string());
         cmd.arg("--output-filename");
@@ -57,8 +59,12 @@ async fn conversion_successful(files_to_convert: &mut FilesToConvert) {
     }
 
     let p = files_to_convert.output_folder.as_ref().unwrap();
-    if fs::remove_dir(p).is_err() {
-        eprintln!("Could not delete temporary test folder: {}", p.display());
+    if p.exists() {
+        if fs::remove_dir(p).is_err() {
+            eprintln!("Could not delete temporary test folder: {}", p.display());
+        }
+    } else {
+        eprintln!("The output file was not created for {}!", p.display());
     }
 
     for file_to_convert in files_to_convert.files.values_mut() {

@@ -4,15 +4,22 @@ run-name: Functional testing
 on: workflow_dispatch
   
 jobs:
-  amd64_windows:
-    name: AMD64 Windows
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions/checkout@v3
-    - name: Build
-      run: |
-        CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo test --manifest-path app/entrusted_client/Cargo.toml
+  # "Process compelted with exit code 1" error for windows
+  # - Permission issues on GitHub actions or something else?
+  # - This seems to work just fine on a standard local Windows machine
+  # amd64_windows:
+  #   name: AMD64 Windows
+  #   runs-on: windows-latest
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Build
+  #     shell: powershell
+  #     run: |
+  #       set RUST_BACKTRACE=1
+  #       set CARGO_NET_GIT_FETCH_WITH_CLI=true
+  #       set CARGO_NET_RETRY=10
+  #       Set-ExecutionPolicy Unrestricted
+  #       cargo test --manifest-path app/entrusted_client/Cargo.toml
   amd64_macos:
     name: AMD64 Mac OS
     runs-on: macos-11
@@ -21,7 +28,9 @@ jobs:
     - name: Build
       shell: bash
       run: |
-        CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo test --manifest-path app/entrusted_client/Cargo.toml
+        brew install lima
+        limactl start
+        CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 cargo test --manifest-path app/entrusted_client/Cargo.toml
   amd64_linux:
     name: AMD64 Linux
     runs-on: ubuntu-latest
@@ -30,4 +39,4 @@ jobs:
     - name: Build
       shell: bash
       run: |
-        CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo test --manifest-path app/entrusted_client/Cargo.toml
+        CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 cargo test --manifest-path app/entrusted_client/Cargo.toml

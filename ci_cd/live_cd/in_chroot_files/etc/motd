@@ -11,7 +11,7 @@ permitted by applicable law.
  
 This is a live CD of Entrusted with a Web interface
 - 'doas' is installed instead of 'sudo', the general usage is similar 
-- 'nano' (minimal text editor) is installed instead of 'vim'
+- 'mg' (minimal text editor) is installed instead of 'vim' or 'nano'
 - Standard service management: systemctl <action> entrusted-webserver
 - By default entrusted-webserver binds to ALL interfaces on port 13000 
 - By default internet connectivity is forbidden 

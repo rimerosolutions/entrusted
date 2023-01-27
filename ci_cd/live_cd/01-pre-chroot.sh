@@ -71,10 +71,6 @@ sudo adduser "${CONTAINER_USER_NAME}" systemd-journal || true
 sudo adduser "${CONTAINER_USER_NAME}" adm || true
 sudo adduser "${CONTAINER_USER_NAME}" docker || true
 
-cd /
-
-cd -
-
 echo "Workspace: ${PROJECTDIR}"
 echo "Container arch: linux/${DEBIAN_ARCH}"
 echo "Image tag: docker.io/uycyjnzgntrn/entrusted_container:${ENTRUSTED_VERSION}"

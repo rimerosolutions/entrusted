@@ -34,7 +34,7 @@ sudo mksquashfs "${LIVE_BOOT_DIR}"/chroot "${LIVE_BOOT_DIR}"/staging/live/filesy
      -Xdict-size 1M \
      -no-recovery \
      -comp zstd \
-     -Xcompression-level 19
+     -Xcompression-level 22
 
 echo ">>> Copying Live CD kernel, initrd"
 mkdir -p "${LIVE_BOOT_DIR}"/staging/isolinux

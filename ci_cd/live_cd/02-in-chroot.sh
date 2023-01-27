@@ -152,6 +152,9 @@ echo "b08dfa6083e7567a1921a715000001fb" > /var/lib/dbus/machine-id
 echo ">>> Disabling SSH root login"
 perl -pi -e 's/^DROPBEAR_EXTRA_ARGS.*/DROPBEAR_EXTRA_ARGS="-w -g"/' /etc/default/dropbear
 
+echo ">>> Enable few kernel modules"
+echo "zram" >> /etc/modules
+
 echo ">>> Apply seccomp rules to package manager"
 echo 'APT::Sandbox::Seccomp "1";' | tee /etc/apt/apt.conf.d/99seccomp
 

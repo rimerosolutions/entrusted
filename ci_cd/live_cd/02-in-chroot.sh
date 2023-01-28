@@ -10,14 +10,14 @@ echo ">>> Setting up hostname"
 echo "entrusted-livecd" > /etc/hostname
 
 echo ">>> Updating apt retries to 10"
-echo 'Acquire::Retries "10";' > /etc/apt/apt.conf.d/80-retries
+echo 'Acquire::Retries "10"; Acquire::GzipIndexes "true"; Acquire::CompressionTypes::Order:: "gz"; ' > /etc/apt/apt.conf.d/80-custom
 
 echo ">>> Installing custom kernel"
 DEBIAN_FRONTEND=noninteractive apt update
 dpkg -i /files/minikernel/linux-image*.deb
 DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends initramfs-tools zstd
 perl -pi -e 's/^COMPRESS=.*/COMPRESS=zstd/' /etc/initramfs-tools/initramfs.conf
-echo "COMPRESSLEVEL=19" >> /etc/initramfs-tools/initramfs.conf
+echo "COMPRESSLEVEL=22" >> /etc/initramfs-tools/initramfs.conf
 cd /boot && initrdsuffix=$(ls vmlinuz-* | awk -F"vmlinuz-" '{print $2}') && cd -
 cd /boot && mkinitramfs -o initrd.img-${initrdsuffix} ${initrdsuffix} && cd -
 
@@ -33,7 +33,7 @@ DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
     locales \
     network-manager \
     net-tools \
-    nano \
+    mg \
     dropbear \
     crun \
     live-boot \
@@ -161,15 +161,18 @@ echo 'APT::Sandbox::Seccomp "1";' | tee /etc/apt/apt.conf.d/99seccomp
 echo ">>> Trim filesystem"
 mkdir -p /tmp/locales && cp -rf /usr/share/locale/locale.alias /usr/share/locale/en_CA /tmp/locales
 rm -rf /usr/share/locale/* && mv /tmp/locales/* /usr/share/locale/
-rm -rf /usr/share/common-licences
-rm -rf /usr/share/man
-rm -rf /usr/share/pixmaps
-rm -rf /usr/share/doc*
-rm -rf /usr/share/info
-rm -rf /var/cache/apt/*
-rm -rf /tmp/*
-rm -rf /run/user/*
-rm -rf /var/log/* && mkdir -p /var/log/entrusted-webserver /var/log/audit
+rm -rf /usr/share/common-licences \
+   /usr/share/man \
+   /usr/share/lintian \
+   /usr/share/pixmaps \
+   /usr/share/doc* \
+   /usr/share/info \
+   /var/cache/apt/* \
+   /tmp/* \
+   /run/user/* \
+   /var/log/* 
+
+mkdir -p /var/log/entrusted-webserver /var/log/audit
 
 echo ">>> Cleanup chroot files"
 rm -rf /files

@@ -167,7 +167,10 @@ rm -rf /usr/share/common-licences \
    /usr/share/pixmaps \
    /usr/share/doc* \
    /usr/share/info \
+   /var/lib/apt/lists/* \
    /var/cache/apt/* \
+   /var/cache/debconf/* \
+   /var/tmp/* \
    /tmp/* \
    /run/user/* \
    /var/log/* 

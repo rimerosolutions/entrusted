@@ -10,10 +10,7 @@ echo ">>> Setting up hostname"
 echo "entrusted-livecd" > /etc/hostname
 
 echo ">>> Applying apt configurations"
-echo 'APT::Sandbox::Seccomp "1";' >> /etc/apt/apt.conf.d/80custom
-echo 'Acquire::Retries "10";' >> /etc/apt/apt.conf.d/80custom
-echo 'Acquire::GzipIndexes "true";' >> /etc/apt/apt.conf.d/80custom
-echo 'Acquire::CompressionTypes::Order:: "gz";' >> /etc/apt/apt.conf.d/80custom
+cp /files/etc/apt/apt.conf.d/80custom /etc/apt/apt.conf.d/
 
 echo ">>> Installing custom kernel"
 DEBIAN_FRONTEND=noninteractive apt update
@@ -38,16 +35,14 @@ DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
     mg \
     dropbear \
     uidmap \
-    podman \
-    slirp4netns \
     crun \
     live-boot \
     systemd-sysv \
     && apt clean
 
-# echo ">>> Installing podman-static"
-# tar zxvf /files/podman/podman*.tar.gz --strip-components 1 --exclude="README.md" --exclude="fuse-overlayfs" --exclude="fusermount3" -C /
-# rm /usr/local/bin/runc
+echo ">>> Installing podman-static"
+tar zxvf /files/podman/podman*.tar.gz --strip-components 1 --exclude="README.md" --exclude="fuse-overlayfs" --exclude="fusermount3" -C /
+rm /usr/local/bin/runc
 
 echo ">>> Setting up system files"
 cp /files/etc/iptables/rules.v4 /etc/iptables/

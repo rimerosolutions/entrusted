@@ -1,0 +1,4 @@
+echo 'APT::Sandbox::Seccomp "1";'
+echo 'Acquire::Retries "10";'
+echo 'Acquire::GzipIndexes "true";'
+echo 'Acquire::CompressionTypes::Order:: "gz";'

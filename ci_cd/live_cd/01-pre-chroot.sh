@@ -57,10 +57,10 @@ if [ "$retVal" != "0" ]; then
 	echo "Could not download gvisor!" && exit 1
 fi
 
-# echo ">>> Downloading podman-static"
-# test -d "${LIVE_BOOT_TMP_DIR}"/podman && rm -rf "${LIVE_BOOT_TMP_DIR}"/podman
-# mkdir -p "${LIVE_BOOT_TMP_DIR}"/podman
-# cd "${LIVE_BOOT_TMP_DIR}"/podman && wget https://github.com/mgoltzsche/podman-static/releases/download/v${VERSION_PODMAN_STATIC}/podman-linux-${DEBIAN_ARCH}.tar.gz && cd -
+echo ">>> Downloading podman-static"
+test -d "${LIVE_BOOT_TMP_DIR}"/podman && rm -rf "${LIVE_BOOT_TMP_DIR}"/podman
+mkdir -p "${LIVE_BOOT_TMP_DIR}"/podman
+cd "${LIVE_BOOT_TMP_DIR}"/podman && wget https://github.com/mgoltzsche/podman-static/releases/download/v${VERSION_PODMAN_STATIC}/podman-linux-${DEBIAN_ARCH}.tar.gz && cd -
 
 CONTAINER_USER_HOMEDIR="/home/${CONTAINER_USER_NAME}"
 sudo mkdir -p "${LIVE_BOOT_TMP_DIR}/home" && sudo chmod -R a+rw "${LIVE_BOOT_TMP_DIR}/home"
@@ -107,7 +107,7 @@ sudo mv "${LIVE_BOOT_TMP_DIR}/entrusted-packaging" "${LIVE_BOOT_DIR}/chroot/file
 sudo mv "${LIVE_BOOT_TMP_DIR}/live-entrusted-cli" "${LIVE_BOOT_DIR}/chroot/files/entrusted-cli"
 sudo mv "${LIVE_BOOT_TMP_DIR}/live-entrusted-webserver" "${LIVE_BOOT_DIR}/chroot/files/entrusted-webserver"
 sudo cp -r "${LIVE_BOOT_TMP_DIR}/minikernel" "${LIVE_BOOT_DIR}/chroot/files/minikernel"
-# sudo cp -r "${LIVE_BOOT_TMP_DIR}/podman" "${LIVE_BOOT_DIR}/chroot/files/podman"
+sudo cp -r "${LIVE_BOOT_TMP_DIR}/podman" "${LIVE_BOOT_DIR}/chroot/files/podman"
 
 sudo chmod +x "${LIVE_BOOT_DIR}"/chroot/files/*.sh
 

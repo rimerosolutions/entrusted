@@ -272,9 +272,7 @@ impl <'a> SanitizerRt for ContainerizedSanitizerRt<'a>  {
         convert_args.append(&mut vec![
             convert_options.container_image_name.to_owned()
         ]);
-
-        ////@TODO input file
-        ////@TODO output file
+        
         convert_args.append(&mut vec![
             common::CONTAINER_IMAGE_EXE.to_string()
         ]);

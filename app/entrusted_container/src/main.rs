@@ -84,14 +84,6 @@ struct ExecCtx {
     logger: Box<dyn ConversionLogger>,
 }
 
- 
-impl std::fmt::Display for ExecCtx {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "ExecCtx: (doc_uuid={}, root_tmp_dir={}, input_path={}, output_path={}, visual_quality={}, ocr_lang={:?}, doc_passwd={:?})",
-               self.doc_uuid, self.root_tmp_dir.display(), self.input_path.display(), self.output_path.display(), self.visual_quality, self.ocr_lang, self.doc_passwd)
-    }
-}
-
 fn main() -> Result<(), Box<dyn Error>> {
     let timer = Instant::now();
 
@@ -244,8 +236,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
-    println!("Ctx: {}", ctx);
-    
     let document_password = ctx.doc_passwd;
     let image_quality = match ctx.visual_quality.as_str() {
         "low"    => IMAGE_SIZE_QUALITY_LOW,

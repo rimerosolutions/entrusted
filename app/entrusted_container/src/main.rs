@@ -115,30 +115,30 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let app = Command::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
-        .help_template(&cmd_help_template)
+        .help_template(cmd_help_template)
         .author(option_env!("CARGO_PKG_AUTHORS").unwrap_or("Unknown"))
         .about(option_env!("CARGO_PKG_DESCRIPTION").unwrap_or("Unknown"))
         .arg(
             Arg::new("input-filename")
                 .long("input-filename")
-                .help(&help_input_filename)
+                .help(help_input_filename)
                 .required(false)
                 .default_value("/tmp/input_file")
         ).arg(
             Arg::new("output-filename")
                 .long("output-filename")
-                .help(&help_output_filename)
+                .help(help_output_filename)
                 .required(false)
                 .default_value("/safezone/safe-output-compressed.pdf")
         ).arg(
             Arg::new("ocr-lang")
                 .long("ocr-lang")
-                .help(&help_ocr_lang)
+                .help(help_ocr_lang)
                 .required(false)
         ).arg(
             Arg::new("log-format")
                 .long("log-format")
-                .help(&help_log_format)
+                .help(help_log_format)
                 .value_parser([
                     PossibleValue::new(LOG_FORMAT_JSON),
                     PossibleValue::new(LOG_FORMAT_PLAIN)
@@ -148,7 +148,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         ).arg(
             Arg::new("visual-quality")
                 .long("visual-quality")
-                .help(&help_visual_quality)
+                .help(help_visual_quality)
                 .value_parser([
                     PossibleValue::new(IMAGE_QUALITY_CHOICES[0]),
                     PossibleValue::new(IMAGE_QUALITY_CHOICES[1]),
@@ -172,11 +172,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         PathBuf::from("/safezone/safe-output-compressed.pdf")
     };
 
-    let ocr_lang = if let Some(v) = run_matches.get_one::<String>("ocr-lang") {
-        Some(v.clone())
-    } else {
-        None
-    };
+    let ocr_lang = run_matches.get_one::<String>("ocr-lang").cloned();
 
     let visual_quality = if let Some(v) = run_matches.get_one::<String>("visual-quality") {
         v.clone()
@@ -261,7 +257,7 @@ fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
     let raw_input_path   = ctx.input_path;
     let output_file_path = root_tmp_dir.join(format!("{}.pdf", doc_uuid));
     let output_dir_path  = root_tmp_dir.clone();
-    let safe_dir_path    = PathBuf::from(ctx.output_path);
+    let safe_dir_path    = ctx.output_path;
 
     if let Err(ex) = fs::create_dir_all(&root_tmp_dir) {
         return Err(l10n.gettext_fmt("Cannot temporary folder: {0}! Error: {1}", vec![&root_tmp_dir.display().to_string(), &ex.to_string()]).into());
@@ -317,11 +313,11 @@ fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
 
     // step 4 (90%-98%)
     progress_range.update(90, 98);
-    pdf_combine_pdfs(&*logger, &progress_range, page_count, output_dir_path.clone(), output_file_path.clone(), l10n.clone())?;
+    pdf_combine_pdfs(&*logger, &progress_range, page_count, output_dir_path, output_file_path.clone(), l10n.clone())?;
 
     // step 5 (98%-98%)
     progress_range.update(98, 98);
-    move_file_to_dir(&*logger, &progress_range, output_file_path.clone(), safe_dir_path, l10n.clone())
+    move_file_to_dir(&*logger, &progress_range, output_file_path, safe_dir_path, l10n)
 }
 
 fn move_file_to_dir(logger: &dyn ConversionLogger, progress_range: &ProgressRange, src_file_path: PathBuf, dest_dir_path: PathBuf, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {

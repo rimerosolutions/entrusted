@@ -94,40 +94,40 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let app = Command::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
-        .help_template(&cmd_help_template)
+        .help_template(cmd_help_template)
         .author(option_env!("CARGO_PKG_AUTHORS").unwrap_or("Unknown"))
         .about(option_env!("CARGO_PKG_DESCRIPTION").unwrap_or("Unknown"))
         .arg(
             Arg::new("output-filename")
                 .long("output-filename")
-                .help(&help_output_filename)
+                .help(help_output_filename)
                 .required(false)
         ).arg(
             Arg::new("ocr-lang")
                 .long("ocr-lang")
-                .help(&help_ocr_lang)
+                .help(help_ocr_lang)
                 .required(false)
         ).arg(
             Arg::new("update-checks")
                 .long("update-checks")
-                .help(&help_update_checks)
+                .help(help_update_checks)
                 .required(false)
                 .action(ArgAction::SetTrue)
         ).arg(
             Arg::new("input-filename")
                 .long("input-filename")
-                .help(&help_input_filename)
+                .help(help_input_filename)
                 .required_unless_present("update-checks")
         ).arg(
             Arg::new("container-image-name")
                 .long("container-image-name")
-                .help(&help_container_image_name)
+                .help(help_container_image_name)
                 .default_value(default_container_image_to_str())
                 .required(false)
         ).arg(
             Arg::new("log-format")
                 .long("log-format")
-                .help(&help_log_format)
+                .help(help_log_format)
                 .value_parser([
                     PossibleValue::new(common::LOG_FORMAT_JSON),
                     PossibleValue::new(LOG_FORMAT_PLAIN)
@@ -137,13 +137,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         ).arg(
             Arg::new("file-suffix")
                 .long("file-suffix")
-                .help(&help_file_suffix)
+                .help(help_file_suffix)
                 .default_value(default_file_suffix_to_str())
                 .required(false)
         ).arg(
             Arg::new("visual-quality")
                 .long("visual-quality")
-                .help(&help_visual_quality)
+                .help(help_visual_quality)
                 .required(false)
                 .value_parser([
                     PossibleValue::new(common::IMAGE_QUALITY_CHOICES[0]),
@@ -154,7 +154,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         ).arg(
             Arg::new("passwd-prompt")
                 .long("passwd-prompt")
-                .help(&help_password_prompt)
+                .help(help_password_prompt)
                 .required(false)
                 .action(ArgAction::SetTrue)
         );
@@ -335,11 +335,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let exit_code = {
         if let Ok(exec_result) = exec_handle.join() {
-            if exec_result.is_none() {
-                0
-            } else {
-                1
-            }
+            i32::from(exec_result.is_some())
         } else {
             1
         }

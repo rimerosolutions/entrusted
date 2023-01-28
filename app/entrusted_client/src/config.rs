@@ -52,9 +52,12 @@ pub fn load_config <T> () -> Result<T, Box<dyn Error>> where T: Default + Deseri
             let config_appfile = config_appdir.join(CFG_FILENAME);
 
             if config_appfile.exists() {
-                let ret = {
-                    let config_appdata = fs::read(&config_appfile)?;
-                    toml::from_slice(&config_appdata)
+                let ret: Result<T, Box<dyn Error>> = {
+                    let config_appdata = fs::read_to_string(&config_appfile)?;
+                    match toml::from_str(&config_appdata) {
+                        Ok(v)   => Ok(v),
+                        Err(ex) => Err(ex.into())
+                    }
                 };
 
                 if let Ok(data) = ret {
@@ -69,8 +72,7 @@ pub fn load_config <T> () -> Result<T, Box<dyn Error>> where T: Default + Deseri
 
 // Only used in the GUI Desktop client
 #[allow(dead_code)]
-pub fn save_config <T> (config_instance: T) -> Result<(), Box<dyn Error>>
-where T: Default + Serialize {
+pub fn save_config (config_instance: AppConfig) -> Result<(), Box<dyn Error>> {
     if let Some(config_dir) = dirs::config_dir() {
         let config_appdir = config_dir.join(PROGRAM_GROUP);
 
@@ -82,9 +84,9 @@ where T: Default + Serialize {
 
         let config_appfile = config_appdir.join(CFG_FILENAME);
         let mut f = fs::OpenOptions::new().create(true).write(true).truncate(true).open(config_appfile)?;
-        let config_appdata = toml::to_vec(&config_instance)?;
+        let config_appdata = toml::to_string(&config_instance)?;
 
-        if let Err(e) = f.write(&config_appdata) {
+        if let Err(e) = f.write(config_appdata.as_bytes()) {
             Err(format!("Could not save configuration! {}", e).into())
         } else {
             Ok(())

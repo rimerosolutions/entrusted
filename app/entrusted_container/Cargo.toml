@@ -13,6 +13,9 @@ authors = [
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+uuid = { version = "1.2.2", features = ["v4"] }
+once_cell = "1.16.0"
+clap = "4.0.29"
 image = { version = "0.24.5", default-features = false, features = ["gif", "jpeg", "png", "tiff", "jpeg_rayon" ]}
 poppler-rs = "0.20.0"
 cairo-rs = { version = "0.16.3", features = ["png", "pdf"] }

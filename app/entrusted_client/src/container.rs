@@ -360,15 +360,8 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         ]);
 
         convert_args.append(&mut vec![
-            "-e".to_string(), format!("ENTRUSTED_LOG_FORMAT={}", convert_options.log_format),
             "-e".to_string(), format!("{}={}", l10n::ENV_VAR_ENTRUSTED_LANGID, trans.langid())
         ]);
-
-        if let Some(ocr_language) = convert_options.opt_ocr_lang {
-            convert_args.append(&mut vec![
-                "-e".to_string(), format!("ENTRUSTED_OCR_LANGUAGE={}", ocr_language)
-            ]);
-        }
 
         if let Some(passwd) = convert_options.opt_passwd {
             if !passwd.is_empty() {
@@ -378,14 +371,20 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             }
         }
 
-        let image_quality = convert_options.visual_quality;
-        convert_args.append(&mut vec![
-            "-e".to_string(), format!("{}={}", "ENTRUSTED_VISUAL_QUALITY", image_quality)
-        ]);
-
         convert_args.append(&mut vec![
             convert_options.container_image_name.to_owned(),
             common::CONTAINER_IMAGE_EXE.to_string()
+        ]);
+
+        if let Some(ocr_language) = convert_options.opt_ocr_lang {
+            convert_args.append(&mut vec![
+                "--ocr-lang".to_string(), ocr_language
+            ]);
+        }
+
+        convert_args.append(&mut vec![
+            "--visual-quality".to_string(), convert_options.visual_quality,
+            "--log-format".to_string(), convert_options.log_format,
         ]);
 
         if exec_crt_command(trans.gettext("Starting document processing"), container_rt, convert_args, tx.clone_box(), true, printer.clone_box(), trans.clone()).is_ok() {

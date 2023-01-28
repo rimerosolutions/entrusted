@@ -9,8 +9,11 @@ ENTRUSTED_USERID=$(cat /files/entrusted_userid | head -1)
 echo ">>> Setting up hostname"
 echo "entrusted-livecd" > /etc/hostname
 
-echo ">>> Updating apt retries to 10"
-echo 'Acquire::Retries "10"; Acquire::GzipIndexes "true"; Acquire::CompressionTypes::Order:: "gz"; ' > /etc/apt/apt.conf.d/80-custom
+echo ">>> Applying apt configurations"
+echo 'APT::Sandbox::Seccomp "1";' >> /etc/apt/apt.conf.d/80custom
+echo 'Acquire::Retries "10";' >> /etc/apt/apt.conf.d/80custom
+echo 'Acquire::GzipIndexes "true";' >> /etc/apt/apt.conf.d/80custom
+echo 'Acquire::CompressionTypes::Order:: "gz";' >> /etc/apt/apt.conf.d/80custom
 
 echo ">>> Installing custom kernel"
 DEBIAN_FRONTEND=noninteractive apt update
@@ -26,7 +29,6 @@ DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
     auditd \
     iptables-persistent \
     doas \
-    uidmap \
     dbus-user-session \
     fuse-overlayfs \
     ca-certificates \
@@ -35,14 +37,17 @@ DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
     net-tools \
     mg \
     dropbear \
+    uidmap \
+    podman \
+    slirp4netns \
     crun \
     live-boot \
     systemd-sysv \
     && apt clean
 
-echo ">>> Installing podman-static"
-tar zxvf /files/podman/podman*.tar.gz --strip-components 1 --exclude="README.md" --exclude="fuse-overlayfs" --exclude="fusermount3" -C /
-rm /usr/local/bin/runc
+# echo ">>> Installing podman-static"
+# tar zxvf /files/podman/podman*.tar.gz --strip-components 1 --exclude="README.md" --exclude="fuse-overlayfs" --exclude="fusermount3" -C /
+# rm /usr/local/bin/runc
 
 echo ">>> Setting up system files"
 cp /files/etc/iptables/rules.v4 /etc/iptables/
@@ -154,9 +159,6 @@ perl -pi -e 's/^DROPBEAR_EXTRA_ARGS.*/DROPBEAR_EXTRA_ARGS="-w -g"/' /etc/default
 
 echo ">>> Enable few kernel modules"
 echo "zram" >> /etc/modules
-
-echo ">>> Apply seccomp rules to package manager"
-echo 'APT::Sandbox::Seccomp "1";' | tee /etc/apt/apt.conf.d/99seccomp
 
 echo ">>> Trim filesystem"
 mkdir -p /tmp/locales && cp -rf /usr/share/locale/locale.alias /usr/share/locale/en_CA /tmp/locales

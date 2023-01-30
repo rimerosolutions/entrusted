@@ -41,14 +41,14 @@ mkdir -p "${LIVE_BOOT_DIR}"/staging/isolinux
 cp "${LIVE_BOOT_DIR}"/chroot/boot/vmlinuz-* "${LIVE_BOOT_DIR}"/staging/live/vmlinuz
 cp "${LIVE_BOOT_DIR}"/chroot/boot/initrd.img-* "${LIVE_BOOT_DIR}"/staging/live/initrd
 
-echo ">>> Creating BIOS/Legacy bootable components"
+echo ">>> Creating EFI bootable components"
 cp "${ROOT_SCRIPTS_DIR}"/post_chroot_files/home/entrusted/LIVE_BOOT/staging/isolinux/grub.cfg "${LIVE_BOOT_DIR}"/staging/isolinux/
 if [ "${DEBIAN_ARCH}" != "amd64" ]
 then
     podman run -it \
            --platform linux/amd64 \
            -v "${LIVE_BOOT_DIR}/staging/isolinux":/ISOLINUX \
-           ghcr.io/linux-surface/grub-aarch64:fedora-37-2 \
+           docker.io/uycyjnzgntrn/grub-aarch64:fedora-37 \
            aarch64-grub-mkstandalone --format=${EFI_ARCH}-efi \
            --output=/ISOLINUX/BOOT${BOOT_EFI_ARCH_UPPER}.efi \
            --modules="part_gpt part_msdos" \
@@ -63,6 +63,8 @@ else
                       --fonts="" \
                       boot/grub/grub.cfg="${LIVE_BOOT_DIR}"/staging/isolinux/grub.cfg
 fi
+
+ls "${LIVE_BOOT_DIR}"/staging/isolinux/BOOT${BOOT_EFI_ARCH_UPPER}.efi || (echo "Unable to EFI bootable components!" && exit 1)
 
 echo ">>> Creating FAT16 UEFI boot disk image"
 dd if=/dev/zero of=${LIVE_BOOT_DIR}/staging/efiboot.img bs=1M count=10 && \

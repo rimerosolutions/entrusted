@@ -104,47 +104,48 @@ systemctl enable entrusted-webserver
 # See https://madaidans-insecurities.github.io/guides/linux-hardening.html
 # See https://www.pluralsight.com/blog/it-ops/linux-hardening-secure-server-checklist
 echo ">>> Hardening kernel"
+tee -a  /etc/sysctl.conf <<EOF
+kernel.unprivileged_userns_clone=1
 
-echo "kernel.unprivileged_userns_clone=1" >> /etc/sysctl.conf
+kernel.core_pattern=|/bin/false
+vm.swappiness=1
+fs.suid_dumpable=0
 
-echo "kernel.core_pattern=|/bin/false" >> /etc/sysctl.conf
-echo "vm.swappiness=1" >> /etc/sysctl.conf
-echo "fs.suid_dumpable=0" >> /etc/sysctl.conf
+kernel.randomize_va_space=1
+kernel.kptr_restrict=2
+kernel.dmesg_restrict=1
+kernel.printk=3 3 3 3
+kernel.unprivileged_bpf_disabled=1
+net.core.bpf_jit_harden=2
+kernel.kexec_load_disabled=1
+vm.unprivileged_userfaultfd=0
+kernel.sysrq=4
+dev.tty.ldisc_autoload=0
+kernel.perf_event_paranoid=2
 
-echo "kernel.randomize_va_space=1" >> /etc/sysctl.conf
-echo "kernel.kptr_restrict=2" >> /etc/sysctl.conf
-echo "kernel.dmesg_restrict=1" >> /etc/sysctl.conf
-echo "kernel.printk=3 3 3 3" >> /etc/sysctl.conf
-echo "kernel.unprivileged_bpf_disabled=1" >> /etc/sysctl.conf
-echo "net.core.bpf_jit_harden=2" >> /etc/sysctl.conf
-echo "kernel.kexec_load_disabled=1" >> /etc/sysctl.conf
-echo "vm.unprivileged_userfaultfd=0" >> /etc/sysctl.conf
-echo "kernel.sysrq=4" >> /etc/sysctl.conf
-echo "dev.tty.ldisc_autoload=0" >> /etc/sysctl.conf
-echo "kernel.perf_event_paranoid=2" >> /etc/sysctl.conf
+net.ipv4.tcp_syncookies=1
+net.ipv4.tcp_rfc1337=1
+net.ipv4.conf.all.rp_filter=1
+net.ipv4.conf.default.rp_filter=1
+net.ipv4.icmp_echo_ignore_all=1
+net.ipv4.conf.all.accept_source_route=0
+net.ipv4.conf.default.accept_source_route=0
+net.ipv6.conf.all.accept_source_route=0
+net.ipv6.conf.default.accept_source_route=0
+net.ipv6.conf.all.accept_ra=0
+net.ipv6.conf.default.accept_ra=0
+net.ipv4.tcp_sack=0
+net.ipv4.tcp_dsack=0
+net.ipv4.tcp_fack=0
 
-echo "net.ipv4.tcp_syncookies=1" >> /etc/sysctl.conf
-echo "net.ipv4.tcp_rfc1337=1" >> /etc/sysctl.conf
-echo "net.ipv4.conf.all.rp_filter=1" >> /etc/sysctl.conf
-echo "net.ipv4.conf.default.rp_filter=1" >> /etc/sysctl.conf
-echo "net.ipv4.icmp_echo_ignore_all=1" >> /etc/sysctl.conf
-echo "net.ipv4.conf.all.accept_source_route=0" >> /etc/sysctl.conf
-echo "net.ipv4.conf.default.accept_source_route=0" >> /etc/sysctl.conf
-echo "net.ipv6.conf.all.accept_source_route=0" >> /etc/sysctl.conf
-echo "net.ipv6.conf.default.accept_source_route=0" >> /etc/sysctl.conf
-echo "net.ipv6.conf.all.accept_ra=0" >> /etc/sysctl.conf
-echo "net.ipv6.conf.default.accept_ra=0" >> /etc/sysctl.conf
-echo "net.ipv4.tcp_sack=0" >> /etc/sysctl.conf
-echo "net.ipv4.tcp_dsack=0" >> /etc/sysctl.conf
-echo "net.ipv4.tcp_fack=0" >> /etc/sysctl.conf
-
-echo "kernel.yama.ptrace_scope=2" >> /etc/sysctl.conf
-echo "vm.mmap_rnd_bits=32" >> /etc/sysctl.conf
-echo "vm.mmap_rnd_compat_bits=16" >> /etc/sysctl.conf
-echo "fs.protected_symlinks=1" >> /etc/sysctl.conf
-echo "fs.protected_hardlinks=1" >> /etc/sysctl.conf
-echo "fs.protected_fifos=2" >> /etc/sysctl.conf
-echo "fs.protected_regular=2" >> /etc/sysctl.conf
+kernel.yama.ptrace_scope=2
+vm.mmap_rnd_bits=32
+vm.mmap_rnd_compat_bits=16
+fs.protected_symlinks=1
+fs.protected_hardlinks=1
+fs.protected_fifos=2
+fs.protected_regular=2
+EOF
 
 echo ">>> Updating machine-id"
 echo "b08dfa6083e7567a1921a715000001fb" > /var/lib/dbus/machine-id
@@ -175,6 +176,6 @@ rm -rf /usr/share/common-licences \
 mkdir -p /var/log/entrusted-webserver /var/log/audit
 
 echo ">>> Cleanup chroot files"
-rm -rf /files
+rm -rf /files /etc/entrusted_arch
 
 exit

@@ -94,12 +94,12 @@ echo "root:root" | /usr/sbin/chpasswd
 echo "${ENTRUSTED_USERNAME}:${ENTRUSTED_USERNAME}" | /usr/sbin/chpasswd
 
 echo ">>> Enabling default services"
-systemctl enable dropbear
-systemctl enable NetworkManager
-systemctl enable netfilter-persistent
-systemctl enable systemd-networkd
-systemctl enable entrusted-init
-systemctl enable entrusted-webserver
+systemctl enable dropbear      \
+          NetworkManager       \
+          netfilter-persistent \
+          systemd-networkd     \
+          entrusted-init       \
+          entrusted-webserver
 
 # See https://madaidans-insecurities.github.io/guides/linux-hardening.html
 # See https://www.pluralsight.com/blog/it-ops/linux-hardening-secure-server-checklist

@@ -99,7 +99,7 @@ if [ "$retVal" != "0" ]; then
 fi
 cd -
 
-sudo cp -f "${THIS_SCRIPTS_DIR}/in_chroot_files" "${LIVE_BOOT_DIR}/chroot/files"
+sudo cp -rf "${THIS_SCRIPTS_DIR}/in_chroot_files" "${LIVE_BOOT_DIR}/chroot/files"
 sudo cp -f "${THIS_SCRIPTS_DIR}/02-in-chroot.sh" "${LIVE_BOOT_DIR}/chroot/files/"
 sudo cp -rf "${LIVE_BOOT_TMP_DIR}/gvisor"         "${LIVE_BOOT_DIR}/chroot/files/gvisor"
 sudo cp -rf "${LIVE_BOOT_TMP_DIR}/minikernel"     "${LIVE_BOOT_DIR}/chroot/files/minikernel"

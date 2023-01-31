@@ -24,9 +24,8 @@ LABEL org.opencontainers.image.url="https://github.com/rimerosolutions/entrusted
 LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrusted.git"
 
 # Minimal runtime dependencies
-RUN echo "deb [trusted=yes] https://notesalexp.org/tesseract-ocr5/bullseye/ bullseye main" >> /etc/apt/sources.list \
-    && DEBIAN_FRONTEND=noninteractive apt -o "Acquire::https::Verify-Peer=false" update \
-    && DEBIAN_FRONTEND=noninteractive apt -o "Acquire::https::Verify-Peer=false" install --no-install-recommends -y \
+RUN DEBIAN_FRONTEND=noninteractive apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
     libleptonica-dev \
     libtesseract-dev \
     libreoffice-writer \
@@ -38,7 +37,7 @@ RUN echo "deb [trusted=yes] https://notesalexp.org/tesseract-ocr5/bullseye/ bull
     tesseract-ocr-all \
     fonts-dejavu \
     libpoppler-glib-dev \
-    && apt clean
+    && apt-get clean
 
 # Copy the main binary from the build container
 COPY --from=builder /usr/local/bin/entrusted-container /usr/local/bin/entrusted-container
@@ -87,7 +86,7 @@ RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.zip' -o -name '*.gz' 
 USER entrusted
 
 ENV ENTRUSTED_LIBREOFFICE_PROGRAM_DIR /usr/lib/libreoffice/program
-ENV ENTRUSTED_TESSERACT_TESSDATA_DIR  /usr/share/tesseract-ocr/5/tessdata
+ENV ENTRUSTED_TESSERACT_TESSDATA_DIR  /usr/share/tesseract-ocr/4.00/tessdata
 
 # We're not declaring all volumes explicity. input_file might get interpreted as a directory for squashed images somehow
 # Need to revisit the above claim in the future, based on old observations /tmp/input_file is not explicit....

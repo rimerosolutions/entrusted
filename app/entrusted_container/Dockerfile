@@ -1,4 +1,4 @@
-FROM docker.io/uycyjnzgntrn/debian:bullseye-rust-1.64.0 as builder
+FROM docker.io/uycyjnzgntrn/debian:bullseye-rust-1.64.0-tesseract5 as builder
 LABEL stage=entrusted_container_builder
 
 WORKDIR /home/rust/entrusted-container

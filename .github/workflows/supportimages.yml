@@ -85,7 +85,7 @@ jobs:
       with:
         archs: amd64, arm64
         image: ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/debian
-        tags: ${{ env.DEBIAN_VERSION }}-rust-${{ env.RUST_CI_VERSION }}
+        tags: ${{ env.DEBIAN_VERSION }}-rust-${{ env.RUST_CI_VERSION }}-tesseract5
         oci: false
         context: ci_cd/support
         containerfiles: |

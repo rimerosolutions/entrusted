@@ -45,7 +45,7 @@ echo ">>> Creating EFI bootable components"
 cp "${ROOT_SCRIPTS_DIR}"/post_chroot_files/home/entrusted/LIVE_BOOT/staging/isolinux/grub.cfg "${LIVE_BOOT_DIR}"/staging/isolinux/
 if [ "${DEBIAN_ARCH}" != "amd64" ]
 then
-    podman run -it \
+    podman run  \
            --platform linux/amd64 \
            -v "${LIVE_BOOT_DIR}/staging/isolinux":/ISOLINUX \
            docker.io/uycyjnzgntrn/grub-aarch64:fedora-37 \

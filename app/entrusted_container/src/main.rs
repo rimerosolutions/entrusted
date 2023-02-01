@@ -77,11 +77,19 @@ struct ExecCtx {
     root_tmp_dir: PathBuf,
     input_path: PathBuf,
     output_path: PathBuf,
-    log_format: String,
     visual_quality: String,
     ocr_lang: Option<String>,
     doc_passwd: Option<String>,
     l10n: l10n::Translations,
+    logger: Box<dyn ConversionLogger>,
+}
+
+ 
+impl std::fmt::Display for ExecCtx {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "ExecCtx: (doc_uuid={}, root_tmp_dir={}, input_path={}, output_path={}, visual_quality={}, ocr_lang={:?}, doc_passwd={:?})",
+               self.doc_uuid, self.root_tmp_dir.display(), self.input_path.display(), self.output_path.display(), self.visual_quality, self.ocr_lang, self.doc_passwd)
+    }
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -200,25 +208,25 @@ fn main() -> Result<(), Box<dyn Error>> {
     let tmp_dir      = env::temp_dir();    
     let root_tmp_dir = tmp_dir.join(&doc_uuid);
 
-    let ctx = ExecCtx {
-        root_tmp_dir,
-        doc_uuid,
-        input_path,
-        output_path,
-        log_format,
-        visual_quality,
-        ocr_lang,
-        doc_passwd,
-        l10n: l10n.clone(),
-    };
-
-    let logger: Box<dyn ConversionLogger> = match ctx.log_format.as_str() {
+    let logger: Box<dyn ConversionLogger> = match log_format.as_str() {
         "json" => {
             Box::new(JsonConversionLogger)
         },
         _ => Box::new(PlainConversionLogger)
     };
-
+    
+    let ctx = ExecCtx {
+        root_tmp_dir,
+        doc_uuid,
+        input_path,
+        output_path,
+        visual_quality,
+        ocr_lang,
+        doc_passwd,
+        l10n: l10n.clone(),
+        logger: logger.clone_box()
+    };
+    
     let mut exit_code = 0;
     let msg: String = if let Err(ex) = execute(ctx) {
         exit_code = 1;
@@ -236,6 +244,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
+    println!("Ctx: {}", ctx);
+    
     let document_password = ctx.doc_passwd;
     let image_quality = match ctx.visual_quality.as_str() {
         "low"    => IMAGE_SIZE_QUALITY_LOW,
@@ -246,12 +256,7 @@ fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
     let doc_uuid = ctx.doc_uuid;
     let l10n = ctx.l10n;
     
-    let logger: Box<dyn ConversionLogger> = match ctx.log_format.as_str() {
-        "json" => {
-            Box::new(JsonConversionLogger)
-        },
-        _ => Box::new(PlainConversionLogger)
-    };
+    let logger: Box<dyn ConversionLogger> = ctx.logger;
 
     let root_tmp_dir     = ctx.root_tmp_dir;
     let raw_input_path   = ctx.input_path;
@@ -632,14 +637,21 @@ fn ocr_img_to_pdf(
 
 trait ConversionLogger {
     fn log(&self, percent_complete: usize, data: String);
+    fn clone_box(&self) -> Box<dyn ConversionLogger>;
 }
 
+#[derive(Clone)]
 struct PlainConversionLogger;
+#[derive(Clone)]
 struct JsonConversionLogger;
 
 impl ConversionLogger for PlainConversionLogger {
     fn log(&self, percent_complete: usize, data: String) {
         println!("{}% {}", percent_complete, data);
+    }
+
+    fn clone_box(&self) -> Box<dyn ConversionLogger> {
+        Box::new(self.clone())
     }
 }
 
@@ -650,6 +662,10 @@ impl ConversionLogger for JsonConversionLogger {
         if let Ok(progress_json) = serde_json::to_string(&progress_msg) {
             println!("{}", progress_json);
         }
+    }
+
+    fn clone_box(&self) -> Box<dyn ConversionLogger> {
+        Box::new(self.clone())
     }
 }
 

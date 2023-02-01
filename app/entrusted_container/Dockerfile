@@ -25,7 +25,7 @@ LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrus
 
 # Minimal runtime dependencies
 RUN echo "deb [trusted=yes] https://notesalexp.org/tesseract-ocr5/bullseye/ bullseye main" >> /etc/apt/sources.list \
-    && DEBIAN_FRONTEND=noninteractive apt-get -o "Acquire::https::Verify-Peer=false" update \
+    && DEBIAN_FRONTEND=noninteractive apt-get -o "Acquire::Retries=10" -o "Acquire::https::Verify-Peer=false" update \
     && DEBIAN_FRONTEND=noninteractive apt-get -o "Acquire::https::Verify-Peer=false" install --no-install-recommends -y \
     libleptonica-dev \
     libtesseract-dev \

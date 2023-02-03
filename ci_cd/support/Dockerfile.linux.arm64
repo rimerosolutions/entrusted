@@ -1,4 +1,4 @@
-FROM docker.io/rust:1.64.0-bullseye
+FROM docker.io/rust:1.67.0-bullseye
 
 RUN apt update \
     && apt install -y xorg-dev \
@@ -24,7 +24,13 @@ RUN apt update \
     cpio \
     libjpeg62-turbo \
     rpm2cpio \
-    build-essential rpm pandoc \
+    libwayland-dev \
+    wayland-protocols \
+    libdbus-1-dev \
+    libxkbcommon-dev \
+    build-essential \
+    rpm \
+    pandoc \
     fuse \
     patchelf \
     desktop-file-utils \

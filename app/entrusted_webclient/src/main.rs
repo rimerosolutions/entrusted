@@ -91,9 +91,12 @@ fn load_config <T> () -> Result<T, Box<dyn Error>> where T: Default + Deserializ
             let config_path = config_dir_dgz.join(CFG_FILENAME);
 
             if config_path.exists() {
-                let ret = {
-                    let config_data = fs::read(&config_path)?;
-                    toml::from_slice(&config_data)
+                let ret: Result<T, Box<dyn Error>> = {
+                    let config_appdata = fs::read_to_string(&config_path)?;
+                    match toml::from_str(&config_appdata) {
+                        Ok(v)   => Ok(v),
+                        Err(ex) => Err(ex.into())
+                    }
                 };
 
                 if let Ok(data) = ret {
@@ -229,7 +232,7 @@ async fn process_cli_args() -> Result<(), Box<dyn Error + Send + Sync>> {
                     PossibleValue::new(IMAGE_QUALITY_CHOICES[1]),
                     PossibleValue::new(IMAGE_QUALITY_CHOICES[2]),                    
                 ])
-                .default_value(IMAGE_QUALITY_CHOICES[IMAGE_QUALITY_DEFAULT_CHOICE_INDEX as usize])
+                .default_value(IMAGE_QUALITY_CHOICES[IMAGE_QUALITY_DEFAULT_CHOICE_INDEX])
         ).arg(
             Arg::new("passwd-prompt")
                 .long("passwd-prompt")

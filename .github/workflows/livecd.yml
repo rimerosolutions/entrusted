@@ -2,6 +2,9 @@ name: livecd
 run-name: Build Live CD
 
 on: workflow_dispatch
+
+env:
+  RUST_CI_VERSION: 1.67.0
   
 jobs:
   livecd_amd64:
@@ -20,7 +23,7 @@ jobs:
         ENTRUSTED_CONTAINER_ARCH=amd64
         ENTRUSTED_TMPDIR=/tmp/entrusted-buildir
         ENTRUSTED_VERSION=$(grep "^version" ${{ github.workspace }}/app/entrusted_client/Cargo.toml | cut -d"=" -f2 | xargs)
-        ENTRUSTED_LINUX_ARTIFACTS_DIR="${ENTRUSTED_TMPDIR}/artifacts/entrusted-linux-${ENTRUSTED_CPU_ARCH}-${ENTRUSTED_VERSION}"
+        ENTRUSTED_LINUX_ARTIFACTS_DIR="${ENTRUSTED_TMPDIR}/artifacts/entrusted-${ENTRUSTED_VERSION}-linux-${ENTRUSTED_CPU_ARCH}"
         ENTRUSTED_LIVECD_ISO_DIR="${ENTRUSTED_TMPDIR}/artifacts/iso"
         ENTRUSTED_LIVECD_ISO_TMPDIR="${ENTRUSTED_TMPDIR}/artifacts/tmp"
         ENTRUSTED_LIVECD_BOOT_DIR="${ENTRUSTED_TMPDIR}/artifacts/boot"
@@ -56,7 +59,7 @@ jobs:
         sudo chmod -R a+rw "${{ env.entrusted_live_boot_tmpdir }}" 
         sudo chmod -R a+rw "${{ env.entrusted_live_boot_dir }}" 
         
-        podman run --platform linux/${{ env.entrusted_cpu_arch }} -v "$(pwd)":/src -v "${{ env.entrusted_linux_artifacts_dir }}":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c "CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /src/app/entrusted_webserver/Cargo.toml && cp /src/app/entrusted_webserver/target/x86_64-unknown-linux-musl/release/entrusted-webserver /artifacts/ && rm -rf /src/app/entrusted_webserver/target && CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /src/app/entrusted_client/Cargo.toml && cp /src/app/entrusted_client/target/x86_64-unknown-linux-musl/release/entrusted-cli /artifacts/ && rm -rf /src/app/entrusted_client/target && strip /artifacts/entrusted-cli && strip /artifacts/entrusted-webserver" 
+        podman run --platform linux/${{ env.entrusted_cpu_arch }} -v "$(pwd)":/src -v "${{ env.entrusted_linux_artifacts_dir }}":/artifacts docker.io/uycyjnzgntrn/rust-linux:${{ env.RUST_CI_VERSION }} /bin/sh -c "CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /src/app/entrusted_webserver/Cargo.toml && cp /src/app/entrusted_webserver/target/x86_64-unknown-linux-musl/release/entrusted-webserver /artifacts/ && rm -rf /src/app/entrusted_webserver/target && CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path /src/app/entrusted_client/Cargo.toml && cp /src/app/entrusted_client/target/x86_64-unknown-linux-musl/release/entrusted-cli /artifacts/ && rm -rf /src/app/entrusted_client/target && strip /artifacts/entrusted-cli && strip /artifacts/entrusted-webserver" 
     - name: Build live CD
       shell: bash
       run: |
@@ -83,7 +86,7 @@ jobs:
         ENTRUSTED_CONTAINER_ARCH=arm64
         ENTRUSTED_TMPDIR=/tmp/entrusted-buildir
         ENTRUSTED_VERSION=$(grep "^version" ${{ github.workspace }}/app/entrusted_client/Cargo.toml | cut -d"=" -f2 | xargs)
-        ENTRUSTED_LINUX_ARTIFACTS_DIR="${ENTRUSTED_TMPDIR}/artifacts/entrusted-linux-${ENTRUSTED_CPU_ARCH}-${ENTRUSTED_VERSION}"
+        ENTRUSTED_LINUX_ARTIFACTS_DIR="${ENTRUSTED_TMPDIR}/artifacts/entrusted-${ENTRUSTED_VERSION}-linux-${ENTRUSTED_CPU_ARCH}"
         ENTRUSTED_LIVECD_ISO_DIR="${ENTRUSTED_TMPDIR}/artifacts/iso"
         ENTRUSTED_LIVECD_ISO_TMPDIR="${ENTRUSTED_TMPDIR}/artifacts/tmp"
         ENTRUSTED_LIVECD_BOOT_DIR="${ENTRUSTED_TMPDIR}/artifacts/boot"
@@ -119,7 +122,7 @@ jobs:
         sudo chmod -R a+rw "${{ env.entrusted_live_boot_tmpdir }}" 
         sudo chmod -R a+rw "${{ env.entrusted_live_boot_dir }}" 
         
-        podman run --platform linux/${{ env.entrusted_cpu_arch }} -v "$(pwd)":/src -v "${{ env.entrusted_linux_artifacts_dir }}":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c "ln -sf /usr/bin/gcc /usr/bin/aarch64-linux-musl-gcc && ln -sf /usr/bin/ar /usr/bin/aarch64-linux-musl-ar; CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 CC_AARCH64_UNKNOWN_LINUX_MUSL=musl-gcc CXX_AARCH64_UNKNOWN_LINUX_MUSL=musl-g++ AR_AARCH64_UNKNOWN_LINUX_MUSL=ar CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc RUSTFLAGS='-C link-arg=-lgcc -C target-feature=+crt-static' cargo build --release --target aarch64-unknown-linux-musl --manifest-path /src/app/entrusted_webserver/Cargo.toml && cp /src/app/entrusted_webserver/target/aarch64-unknown-linux-musl/release/entrusted-webserver /artifacts/ && rm -rf /src/app/entrusted_webserver/target && CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 CC_AARCH64_UNKNOWN_LINUX_MUSL=musl-gcc CXX_AARCH64_UNKNOWN_LINUX_MUSL=musl-g++ AR_AARCH64_UNKNOWN_LINUX_MUSL=ar CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc RUSTFLAGS='-C link-arg=-lgcc -C target-feature=+crt-static' cargo build --release --target aarch64-unknown-linux-musl --manifest-path /src/app/entrusted_client/Cargo.toml && cp /src/app/entrusted_client/target/aarch64-unknown-linux-musl/release/entrusted-cli /artifacts/ && rm -rf /src/app/entrusted_client/target && strip /artifacts/entrusted-cli && strip /artifacts/entrusted-webserver" 
+        podman run --platform linux/${{ env.entrusted_cpu_arch }} -v "$(pwd)":/src -v "${{ env.entrusted_linux_artifacts_dir }}":/artifacts docker.io/uycyjnzgntrn/rust-linux:${{ env.RUST_CI_VERSION }} /bin/sh -c "ln -sf /usr/bin/gcc /usr/bin/aarch64-linux-musl-gcc && ln -sf /usr/bin/ar /usr/bin/aarch64-linux-musl-ar; CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 CC_AARCH64_UNKNOWN_LINUX_MUSL=musl-gcc CXX_AARCH64_UNKNOWN_LINUX_MUSL=musl-g++ AR_AARCH64_UNKNOWN_LINUX_MUSL=ar CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc RUSTFLAGS='-C link-arg=-lgcc -C target-feature=+crt-static' cargo build --release --target aarch64-unknown-linux-musl --manifest-path /src/app/entrusted_webserver/Cargo.toml && cp /src/app/entrusted_webserver/target/aarch64-unknown-linux-musl/release/entrusted-webserver /artifacts/ && rm -rf /src/app/entrusted_webserver/target && CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 CC_AARCH64_UNKNOWN_LINUX_MUSL=musl-gcc CXX_AARCH64_UNKNOWN_LINUX_MUSL=musl-g++ AR_AARCH64_UNKNOWN_LINUX_MUSL=ar CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc RUSTFLAGS='-C link-arg=-lgcc -C target-feature=+crt-static' cargo build --release --target aarch64-unknown-linux-musl --manifest-path /src/app/entrusted_client/Cargo.toml && cp /src/app/entrusted_client/target/aarch64-unknown-linux-musl/release/entrusted-cli /artifacts/ && rm -rf /src/app/entrusted_client/target && strip /artifacts/entrusted-cli && strip /artifacts/entrusted-webserver" 
     - name: Build live CD
       shell: bash
       run: |

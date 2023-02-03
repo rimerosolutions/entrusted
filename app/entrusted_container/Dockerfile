@@ -1,12 +1,14 @@
-FROM docker.io/uycyjnzgntrn/debian:bullseye-rust-1.64.0 as builder
+FROM docker.io/uycyjnzgntrn/debian:bullseye-rust-1.64.0-tesseract5 as builder
 LABEL stage=entrusted_container_builder
 
 WORKDIR /home/rust/entrusted-container
 COPY . .
 
 # Build the main binary
-RUN CARGO_NET_RETRY=10 CARGO_NET_GIT_FETCH_WITH_CLI=true PKG_CONFIG_ALLOW_CROSS=1 LO_INCLUDE_PATH=/usr/include/LibreOfficeKit cargo install --path entrusted_container --root /usr/local \
-    && cargo clean --manifest-path entrusted_container/Cargo.toml && strip --strip-unneeded /usr/local/bin/entrusted-container
+RUN CARGO_NET_RETRY=10 CARGO_NET_GIT_FETCH_WITH_CLI=true PKG_CONFIG_ALLOW_CROSS=1 LO_INCLUDE_PATH=/usr/include/LibreOfficeKit \
+    cargo install --path entrusted_container --root /usr/local \
+    && cargo clean --manifest-path entrusted_container/Cargo.toml \
+    && strip --strip-unneeded /usr/local/bin/entrusted-container
 
 FROM docker.io/debian:bullseye-slim
 
@@ -22,14 +24,21 @@ LABEL org.opencontainers.image.url="https://github.com/rimerosolutions/entrusted
 LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrusted.git"
 
 # Minimal runtime dependencies
-RUN DEBIAN_FRONTEND=noninteractive apt update && apt upgrade -y && DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends -y \
+RUN echo "deb [trusted=yes] https://notesalexp.org/tesseract-ocr5/bullseye/ bullseye main" >> /etc/apt/sources.list \
+    && DEBIAN_FRONTEND=noninteractive apt-get -o "Acquire::Retries=10" -o "Acquire::https::Verify-Peer=false" update \
+    && DEBIAN_FRONTEND=noninteractive apt-get -o "Acquire::https::Verify-Peer=false" install --no-install-recommends -y \
     libleptonica-dev \
     libtesseract-dev \
-    libreoffice-writer libreoffice-draw libreoffice-impress libreoffice-calc \
+    libreoffice-writer \
+    libreoffice-draw \
+    libreoffice-impress \
+    libreoffice-calc \
     libpoppler-dev \
     libcairo2-dev \
     tesseract-ocr-all \
-    fonts-dejavu libpoppler-glib-dev && apt clean
+    fonts-dejavu \
+    libpoppler-glib-dev \
+    && apt-get clean
 
 # Copy the main binary from the build container
 COPY --from=builder /usr/local/bin/entrusted-container /usr/local/bin/entrusted-container
@@ -56,10 +65,10 @@ RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.zip' -o -name '*.gz' 
     && rm -rf /usr/share/common-licenses /usr/share/doc-base \
     && rm -rf /usr/share/perl* /usr/bin/perl* /usr/lib/x86_64-linux-gnu/perl* \
     && rm -rf /usr/lib/python* /usr/bin/python* /usr/share/python* \
-    && rm -rf /usr/sbin/*add* /usr/sbin/*del* \
+    && rm -rf /usr/sbin/*add* /usr/sbin/*del* /usr/local/include \
     && rm -rf /usr/include /usr/share/icons /usr/share/applications /usr/share/pixmaps \
     && rm -rf /usr/games /var/cache/apt /var/lib/apt/lists /usr/sbin/dpkg* /usr/lib/dpkg* /var/lib/dpkg \
-    && rm -rf /usr/bin/apt* /usr/lib/apt/* /usr/bin/dpkg* /usr/bin/debconf* \
+    && rm -rf /usr/bin/apt* /usr/lib/apt/* /usr/bin/dpkg* /usr/bin/debconf* /var/cache/debconf \
     && rm -rf /usr/share/doc /usr/share/java /usr/share/man /usr/share/info  /var/log \
     && rm -rf /usr/lib/libreoffice/share/Scripts/* /usr/lib/libreoffice/share/palette/* /usr/lib/libreoffice/share/wizards/* \
     && rm -rf /usr/lib/libreoffice/share/theme_definitions /usr/lib/libreoffice/share/autocorr \
@@ -78,12 +87,12 @@ RUN /bin/sh -c "find /usr -type f -name '*.py' -o -name '*.zip' -o -name '*.gz' 
 USER entrusted
 
 ENV ENTRUSTED_LIBREOFFICE_PROGRAM_DIR /usr/lib/libreoffice/program
-ENV ENTRUSTED_TESSERACT_TESSDATA_DIR  /usr/share/tesseract-ocr/4.00/tessdata
+ENV ENTRUSTED_TESSERACT_TESSDATA_DIR  /usr/share/tesseract-ocr/5/tessdata
 
 # We're not declaring all volumes explicity. input_file might get interpreted as a directory for squashed images somehow
 # Need to revisit the above claim in the future, based on old observations /tmp/input_file is not explicit....
 #
 # /tmp/input_file is where the first convert expects the input file to be, and /tmp where it will write the pixel files
 #
-# /entrusted is where the wrapper eventually moves the sanitized files.
-VOLUME /entrusted
+# /safezone is where the wrapper eventually moves the sanitized files.
+VOLUME /safezone

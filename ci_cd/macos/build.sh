@@ -6,14 +6,15 @@ SCRIPTDIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${SCRIPTDIR}/../../app)"
 APPVERSION=$(grep "^version" ${PROJECTDIR}/entrusted_client/Cargo.toml  | cut -d"=" -f2 | xargs)
 CPU_ARCHS="amd64 aarch64"
+RUST_CI_VERSION="1.67.0"
 
 for CPU_ARCH in $CPU_ARCHS ; do
-    ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-macos-${CPU_ARCH}-${APPVERSION}"
+    ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-${APPVERSION}-macos-${CPU_ARCH}"
     rm -rf ${ARTIFACTSDIR}
 done
 
 for CPU_ARCH in $CPU_ARCHS ; do
-    ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-macos-${CPU_ARCH}-${APPVERSION}"
+    ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-${APPVERSION}-macos-${CPU_ARCH}"
     RUST_TARGET="x86_64-apple-darwin"
     BUILD_PREAMBLE="true"
     ADDITIONAL_PARAMS=""
@@ -44,7 +45,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
     podman run --rm \
            --volume "${PROJECTDIR}":/root/src \
            --workdir /root/src \
-           docker.io/uycyjnzgntrn/rust-macos:1.64.0 \
+           docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION} \
            sh -c "${EXPORT_PARAMS} ${BUILD_PREAMBLE}; ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --target  ${RUST_TARGET}  --manifest-path /root/src/entrusted_webserver/Cargo.toml && ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --features=gui --target ${RUST_TARGET} --manifest-path /root/src/entrusted_client/Cargo.toml && ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --target ${RUST_TARGET} --manifest-path /root/src/entrusted_webclient/Cargo.toml && ${STRIP_COMMAND} /root/src/entrusted_client/target/${RUST_TARGET}/release/entrusted-cli && ${STRIP_COMMAND} /root/src/entrusted_client/target/${RUST_TARGET}/release/entrusted-gui && ${STRIP_COMMAND} /root/src/entrusted_webclient/target/${RUST_TARGET}/release/entrusted-webclient && ${STRIP_COMMAND} /root/src/entrusted_webserver/target/${RUST_TARGET}/release/entrusted-webserver"    
     
     retVal=$?
@@ -103,13 +104,13 @@ for CPU_ARCH in $CPU_ARCHS ; do
 
     cp -r ${APPBUNDLE} ${APPDMGDIR}/
     ln -s /Applications ${APPDMGDIR}/
-    podman run --rm -v "${ARTIFACTSDIR}":/files docker.io/sporsh/create-dmg "Entrusted" /files/dmg/ /files/entrusted-macos-${CPU_ARCH}-${APPVERSION}.dmg
+    podman run --rm -v "${ARTIFACTSDIR}":/files docker.io/sporsh/create-dmg "Entrusted" /files/dmg/ /files/entrusted-${APPVERSION}-macos-${CPU_ARCH}.dmg
     rm -rf ${APPDMGDIR}
     mv ${ARTIFACTSDIR}/*.dmg ${ARTIFACTSDIR}/../
 
     cp ${SCRIPTDIR}/release_README.txt ${ARTIFACTSDIR}/README.txt
 
-    cd ${ARTIFACTSDIR}/.. && zip -r entrusted-macos-${CPU_ARCH}-${APPVERSION}.zip entrusted-macos-${CPU_ARCH}-${APPVERSION}
+    cd ${ARTIFACTSDIR}/.. && zip -r entrusted-${APPVERSION}-macos-${CPU_ARCH}.zip entrusted-${APPVERSION}-macos-${CPU_ARCH}
 done
 
 cd ${SCRIPTDIR}

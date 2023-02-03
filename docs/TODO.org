@@ -1,6 +1,6 @@
 #+TITLE: TODO
 
-* Milestone: From local CI/CD pipelines to GitHub Actions [14%]
+* Milestone: From local CI/CD pipelines to GitHub Actions [66%]
 
 - [X] GitHub actions tasks (some of it was already tested/tried)
   - [X] Refactor existing shell scripts to work with GitHub actions and also locally
@@ -13,39 +13,26 @@
     - [X] Binaries for Windows (amd64)
     - [X] Binaries for Linux (amd64 and aarch64)
     - [X] Binaries for Mac OS (amd64 and aarch64)
-- [ ] Sync with [[https://github.com/axtloss/flatpaks][Axtloss]] for updating the Linux Flatpak (also enquire for =arm64=)
+- [X] Sync with [[https://github.com/axtloss/flatpaks][Axtloss]] for updating the Linux Flatpak (also enquire for =arm64=)
 - [ ] Testing
   - [ ] See how to make it easier to test prior releases
   - [ ] Add few encrypted files to existing test data
-- [-] Security
-  - [ ] Research how to support additional "known security options" for the container execution
-  - [ ] Research enabling [[https://www.apparmor.net/][apparmor]] on the Live CD
-    - [ ] Research profile generation
-    - [ ] Fast POC to determine required changes and effort
-  - [X] Research enabling [[https://gvisor.dev/][gVisor]] on the Live CD
-    - [X] Re-assess performance
-    - [X] Re-assesss tasks required to make it happen
-- [ ] Conversions
-  - [ ] Evaluate level of flexibility for supporting more container solutions
+- [X] Security
+  - [X] Research enabling [[https://www.apparmor.net/][apparmor]] on the Live CD
+  - [X] Research and enable [[https://gvisor.dev/][gVisor]] on the Live CD
 - [-] User interface
   - [ ] Evaluate opportunities to simplify the UI without adding too many screens
-  - [ ] Desktop interface improvements
-    - [ ] Add an "Open" "hyperlink" next to the "Logs" link in the Desktop UI
-  - [-] Web interface improvements
+  - [X] Desktop interface improvements
+    - [X] Add an "Open" "hyperlink" next to the "Logs" link in the Desktop UI
+  - [X] Web interface improvements
     - [X] Add tabs in the Web UI, like in the Desktop UI
-    - [ ] Display progress information at the bottom of the page, like in the Desktop UI
-- [ ] Other topics
-  - [ ] Live CD software
-    - [ ] Investigate [[https://github.com/containerd/nerdctl][nerdctl]] as a lightweight alternative to [[https://github.com/containers/podman][podman]]
-    - [ ] Investigate [[https://github.com/mkj/dropbear][dropbear]] as a ligthweight alternative to [[https://www.openssh.com/][openssh]]
-  - [ ] Revisit [[https://www.alpinelinux.org/][Alpine Linux]]
-    - [ ] Review Alpine as container solution like few releases ago
-      - This would likely require regenerating the seccomp profile
-      - This was slower than Debian during conversions
-      - The container image size was tougher to trim than Debian
-    - [ ] Check if it's worth creating a highly tailored CD creation process
-      - Existing "kits" produced smaller ISO images than Debian (~600 MB vs ~800 MB)
-      - Overlays need to be uncompressed at boot time (slow boot, free disk space, etc.)
+- [X] Other topics
+  - [X] Live CD software
+    - [X] Investigate [[https://github.com/containerd/nerdctl][nerdctl]] as a lightweight alternative to [[https://github.com/containers/podman][podman]]
+    - [X] Investigate [[https://github.com/mkj/dropbear][dropbear]] as a ligthweight alternative to [[https://www.openssh.com/][openssh]]
+  - [X] Revisit [[https://www.alpinelinux.org/][Alpine Linux]]
+    - [X] Review Alpine as container solution like few releases ago
+    - [X] Check if it's worth creating a highly tailored CD creation process
 
 * Milestone: Hardening and features maturity [100%]
 

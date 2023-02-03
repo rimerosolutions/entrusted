@@ -2,7 +2,6 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fs;
-use std::io::Read;
 
 pub const PROGRAM_GROUP: &str = "com.rimerosolutions.entrusted.entrusted_webserver";
 pub const DEFAULT_FILE_SUFFIX: &str = "entrusted";
@@ -49,12 +48,12 @@ where
             let config_path = config_dir_dgz.join("config.toml");
 
             if config_path.exists() {
-                let mut f = fs::File::open(config_path)?;
-                let mut config_data = Vec::new();
-
-                let ret = {
-                    f.read_to_end(&mut config_data)?;
-                    toml::from_slice(&config_data)
+                let ret: Result<T, Box<dyn Error>> = {
+                    let config_appdata = fs::read_to_string(&config_path)?;
+                    match toml::from_str(&config_appdata) {
+                        Ok(v)   => Ok(v),
+                        Err(ex) => Err(ex.into())
+                    }
                 };
 
                 if let Ok(data) = ret {

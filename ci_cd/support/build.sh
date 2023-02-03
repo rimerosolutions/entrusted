@@ -3,7 +3,7 @@
 PREVIOUSDIR="$(echo $PWD)"
 ROOT_SCRIPTDIR="$(realpath $(dirname "$0"))"
 DEBIAN_VERSION="bullseye"
-RUST_CI_VERSION="1.64.0"
+RUST_CI_VERSION="1.67.0"
 
 cd ${ROOT_SCRIPTDIR}
 
@@ -49,26 +49,26 @@ fi
 buildah manifest add docker.io/uycyjnzgntrn/rust-linux:${RUST_CI_VERSION} docker.io/uycyjnzgntrn/rust-linux:${RUST_CI_VERSION}-arm64
 
 # # Processing Debian-based container for amd64 and arm64
-podman rmi --force docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}-amd64
-podman rmi --force docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}-arm64
-podman rmi --force docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}
+podman rmi --force docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}-amd64-tesseract5
+podman rmi --force docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}-arm64-tesseract5
+podman rmi --force docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}-tesseract5
 
-buildah manifest create docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}
+buildah manifest create docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}-tesseract5
 
-buildah bud --squash --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}-amd64 -f Dockerfile.container.builder .
+buildah bud --squash --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}-amd64-tesseract5 -f Dockerfile.container.builder .
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Failed to build debian base container image for amd64"
   exit 1
 fi
-buildah manifest add docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION} docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}-amd64
+buildah manifest add docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}-tesseract5 docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}-amd64-tesseract5
 
-buildah bud --squash --platform=linux/arm64/v8 --format docker -t docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}-arm64 -f Dockerfile.container.builder .
+buildah bud --squash --platform=linux/arm64/v8 --format docker -t docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}-arm64-tesseract5 -f Dockerfile.container.builder .
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo "Failed to build debian base container image for arm64"
   exit 1
 fi
-buildah manifest add docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION} docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}-arm64
+buildah manifest add docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}-tesseract5 docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}-arm64-tesseract5
 
 cd ${PREVIOUSDIR}

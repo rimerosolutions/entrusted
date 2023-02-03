@@ -1,6 +1,7 @@
+use clap::{Command, Arg, builder::PossibleValue};
 use cairo::{Context, Format, ImageSurface, PdfSurface};
 use std::env;
-
+use uuid::Uuid;
 use poppler::Document;
 use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
@@ -13,27 +14,32 @@ use std::time::Instant;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use libreoffice_rs::{Office, LibreOfficeKitOptionalFeatures, urls};
+use once_cell::sync::OnceCell;
 
 use entrusted_l10n as l10n;
 
 mod mimetypes;
 
+const LOG_FORMAT_PLAIN: &str = "plain";
+const LOG_FORMAT_JSON: &str = "json";
+
+const IMAGE_QUALITY_CHOICES: [&str; 3] = ["low", "medium", "high"];
+const IMAGE_QUALITY_CHOICE_DEFAULT_INDEX: usize = 1;
+
 const DEFAULT_DIR_TESSERACT_TESSDATA: &str  = "/usr/share/tesseract-ocr/4.00/tessdata";
 const DEFAULT_DIR_LIBREOFFICE_PROGRAM: &str = "/usr/lib/libreoffice/program";
 
-// TODO command line parameters of the program instead of vars?
-const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str              = "ENTRUSTED_DOC_PASSWD";
-const ENV_VAR_LOG_FORMAT: &str                        = "ENTRUSTED_LOG_FORMAT";
-const ENV_VAR_OCR_LANGUAGE: &str                      = "ENTRUSTED_OCR_LANGUAGE";
-const ENV_VAR_ENTRUSTED_VISUAL_QUALITY: &str          = "ENTRUSTED_VISUAL_QUALITY";
 const ENV_VAR_ENTRUSTED_TESSERACT_TESSDATA_DIR: &str  = "ENTRUSTED_TESSERACT_TESSDATA_DIR";
 const ENV_VAR_ENTRUSTED_LIBREOFFICE_PROGRAM_DIR: &str = "ENTRUSTED_LIBREOFFICE_PROGRAM_DIR";
+const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str              = "ENTRUSTED_DOC_PASSWD";
 
 // A4 150PPI/DPI
 // See https://www.a4-size.com/a4-size-in-pixels/?size=a4&unit=px&ppi=150
 const IMAGE_SIZE_QUALITY_LOW: (f64, f64)    = (794.0  , 1123.0);
 const IMAGE_SIZE_QUALITY_MEDIUM: (f64, f64) = (1240.0 , 1754.0);
 const IMAGE_SIZE_QUALITY_HIGH: (f64, f64)   = (4961.0 , 7016.0);
+
+static INSTANCE_DEFAULT_VISUAL_QUALITY: OnceCell<String> = OnceCell::new();
 
 macro_rules! incl_gettext_files {
     ( $( $x:expr ),* ) => {
@@ -61,6 +67,23 @@ struct TessSettings<'a> {
     data_dir: &'a str, // tesseract tessdata folder
 }
 
+
+fn default_visual_quality_to_str() -> &'static str {
+    INSTANCE_DEFAULT_VISUAL_QUALITY.get().expect("INSTANCE_VISUAL_QUALITY value not set!")
+}
+
+struct ExecCtx {
+    doc_uuid: String,
+    root_tmp_dir: PathBuf,
+    input_path: PathBuf,
+    output_path: PathBuf,
+    visual_quality: String,
+    ocr_lang: Option<String>,
+    doc_passwd: Option<String>,
+    l10n: l10n::Translations,
+    logger: Box<dyn ConversionLogger>,
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let timer = Instant::now();
 
@@ -74,107 +97,130 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let l10n = l10n::new_translations(locale);
 
-    let document_password = if let Ok(passwd) = env::var(ENV_VAR_ENTRUSTED_DOC_PASSWD) {
-        if !passwd.is_empty() {
-            Some(passwd)
+    let help_input_filename = l10n.gettext("Input filename");
+    let help_output_filename = l10n.gettext("Optional output filename defaulting to <filename>-entrusted.pdf.");
+    let help_visual_quality = l10n.gettext("PDF result visual quality");
+    let help_ocr_lang = l10n.gettext("Optional language for OCR (i.e. 'eng' for English)");
+    let help_log_format = l10n.gettext("Log format (json or plain)");
+
+    let cmd_help_template = l10n.gettext(&format!("{}\n{}\n{}\n\n{}\n\n{}\n{}",
+                                                  "{bin} {version}",
+                                                  "{author}",
+                                                  "{about}",
+                                                  "Usage: {usage}",
+                                                  "Options:",
+                                                  "{options}"));
+
+    INSTANCE_DEFAULT_VISUAL_QUALITY.set(IMAGE_QUALITY_CHOICES[IMAGE_QUALITY_CHOICE_DEFAULT_INDEX].to_string())?;
+
+    let app = Command::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
+        .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
+        .help_template(cmd_help_template)
+        .author(option_env!("CARGO_PKG_AUTHORS").unwrap_or("Unknown"))
+        .about(option_env!("CARGO_PKG_DESCRIPTION").unwrap_or("Unknown"))
+        .arg(
+            Arg::new("input-filename")
+                .long("input-filename")
+                .help(help_input_filename)
+                .required(false)
+                .default_value("/tmp/input_file")
+        ).arg(
+            Arg::new("output-filename")
+                .long("output-filename")
+                .help(help_output_filename)
+                .required(false)
+                .default_value("/safezone/safe-output-compressed.pdf")
+        ).arg(
+            Arg::new("ocr-lang")
+                .long("ocr-lang")
+                .help(help_ocr_lang)
+                .required(false)
+        ).arg(
+            Arg::new("log-format")
+                .long("log-format")
+                .help(help_log_format)
+                .value_parser([
+                    PossibleValue::new(LOG_FORMAT_JSON),
+                    PossibleValue::new(LOG_FORMAT_PLAIN)
+                ])
+                .default_value(LOG_FORMAT_JSON)
+                .required(false)
+        ).arg(
+            Arg::new("visual-quality")
+                .long("visual-quality")
+                .help(help_visual_quality)
+                .value_parser([
+                    PossibleValue::new(IMAGE_QUALITY_CHOICES[0]),
+                    PossibleValue::new(IMAGE_QUALITY_CHOICES[1]),
+                    PossibleValue::new(IMAGE_QUALITY_CHOICES[2]),
+                ])
+                .default_value(default_visual_quality_to_str())
+                .required(false)
+        );
+
+    let run_matches = app.get_matches();
+
+    let input_path = if let Some(v) = run_matches.get_one::<String>("input-filename") {
+        PathBuf::from(v)
+    } else {
+        PathBuf::from("/tmp/input_file")
+    };
+
+    let output_path = if let Some(v) = run_matches.get_one::<String>("output-filename") {
+        PathBuf::from(v)
+    } else {
+        PathBuf::from("/safezone/safe-output-compressed.pdf")
+    };
+
+    let ocr_lang = run_matches.get_one::<String>("ocr-lang").cloned();
+
+    let visual_quality = if let Some(v) = run_matches.get_one::<String>("visual-quality") {
+        v.clone()
+    } else {
+        default_visual_quality_to_str().to_string()
+    };
+
+    let log_format = if let Some(v) = run_matches.get_one::<String>("log-format") {
+        v.clone()
+    } else {
+        LOG_FORMAT_JSON.to_string()
+    };
+
+    let doc_passwd = if let Ok(v) = env::var(ENV_VAR_ENTRUSTED_DOC_PASSWD) {
+        if !v.is_empty() {
+            Some(v)
         } else {
             None
         }
     } else {
         None
     };
+    
+    let doc_uuid     = Uuid::new_v4().to_string();
+    let tmp_dir      = env::temp_dir();    
+    let root_tmp_dir = tmp_dir.join(&doc_uuid);
 
-    let image_quality = if let Ok(env_img_quality) = env::var(ENV_VAR_ENTRUSTED_VISUAL_QUALITY) {
-        let img_quality = env_img_quality.to_lowercase();
-        let img_quality_str = img_quality.as_str();
-
-        match img_quality_str {
-            "low"    => IMAGE_SIZE_QUALITY_LOW,
-            "medium" => IMAGE_SIZE_QUALITY_MEDIUM,
-            "high"   => IMAGE_SIZE_QUALITY_HIGH,
-            _        => IMAGE_SIZE_QUALITY_MEDIUM
-        }
-    } else {
-        IMAGE_SIZE_QUALITY_MEDIUM
+    let logger: Box<dyn ConversionLogger> = match log_format.as_str() {
+        "json" => {
+            Box::new(JsonConversionLogger)
+        },
+        _ => Box::new(PlainConversionLogger)
     };
-
-    let logger: Box<dyn ConversionLogger> = if let Ok(dgz_logformat_value) = env::var(ENV_VAR_LOG_FORMAT) {
-        match dgz_logformat_value.as_str() {
-            "json" => {
-                Box::new(JsonConversionLogger)
-            },
-            _ => Box::new(PlainConversionLogger)
-        }
-    } else {
-        Box::new(PlainConversionLogger)
+    
+    let ctx = ExecCtx {
+        root_tmp_dir,
+        doc_uuid,
+        input_path,
+        output_path,
+        visual_quality,
+        ocr_lang,
+        doc_passwd,
+        l10n: l10n.clone(),
+        logger: logger.clone_box()
     };
-
-    let ret = || -> Result<(), Box<dyn Error>> {
-        let raw_input_path   = Path::new("/tmp/input_file");
-        let output_file_path = Path::new("/tmp/safe-output-compressed.pdf");
-        let output_dir_path  = Path::new("/tmp/");
-        let safe_dir_path    = Path::new("/entrusted/safe-output-compressed.pdf");
-
-        // step 1 (0%-20%)
-        let mut progress_range = ProgressRange::new(0, 20);
-        let input_file_path = input_as_pdf_to_pathbuf_uri(&*logger, &progress_range, raw_input_path, document_password.clone(), l10n.clone())?;
-
-        let doc = if let Some(passwd) = document_password {
-            // We only care about originally encrypted PDF files
-            // If the document was in another format, then it's already decrypted at this stage
-            // Providing a password for a non-encrypted document doesn't fail which removes the need for additional logic and state handling
-            Document::from_file(&input_file_path.display().to_string(), Some(&passwd))?
-        } else {
-            Document::from_file(&input_file_path.display().to_string(), None)?
-        };
-
-        let page_count = doc.n_pages() as usize;
-
-        // step 2 (20%-45%)
-        progress_range.update(20, 45);
-        split_pdf_pages_into_images(&*logger, &progress_range, page_count, doc, image_quality, output_dir_path, l10n.clone())?;
-
-        // step 3 (45%-90%)
-        progress_range.update(45, 90);
-
-        if let Ok(ocr_lang)= env::var(ENV_VAR_OCR_LANGUAGE) {
-            let ocr_lang_text = ocr_lang.as_str();
-            let selected_langcodes: Vec<&str> = ocr_lang_text.split('+').collect();
-
-            for selected_langcode in selected_langcodes {
-                if !l10n::ocr_lang_key_by_name(&l10n).contains_key(&selected_langcode) {
-                    return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![selected_langcode]).into());
-                }
-            }
-
-            let provided_tessdata_dir = if let Ok(tessdata_dir) = env::var(ENV_VAR_ENTRUSTED_TESSERACT_TESSDATA_DIR) {
-                tessdata_dir
-            } else {
-                DEFAULT_DIR_TESSERACT_TESSDATA.to_string()
-            };
-
-            let tess_settings = TessSettings {
-                lang: ocr_lang_text,
-                data_dir: &provided_tessdata_dir
-            };
-
-            ocr_imgs_to_pdf(&*logger, &progress_range, page_count, tess_settings, output_dir_path, output_dir_path, l10n.clone())?;
-        } else {
-            imgs_to_pdf(&*logger, &progress_range, page_count, output_dir_path, output_dir_path, l10n.clone())?;
-        }
-
-        // step 4 (90%-98%)
-        progress_range.update(90, 98);
-        pdf_combine_pdfs(&*logger, &progress_range, page_count, output_dir_path, output_file_path, l10n.clone())?;
-
-        // step 5 (98%-98%)
-        progress_range.update(98, 98);
-        move_file_to_dir(&*logger, &progress_range, output_file_path, safe_dir_path, l10n.clone())
-    };
-
+    
     let mut exit_code = 0;
-
-    let msg: String = if let Err(ex) = ret() {
+    let msg: String = if let Err(ex) = execute(ctx) {
         exit_code = 1;
         l10n.gettext_fmt("Conversion failed with reason: {0}", vec![&ex.to_string()])
     } else {
@@ -189,13 +235,93 @@ fn main() -> Result<(), Box<dyn Error>> {
     std::process::exit(exit_code);
 }
 
-fn move_file_to_dir(logger: &dyn ConversionLogger, progress_range: &ProgressRange, src_file_path: &Path, dest_dir_path: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
-    if let Err(ex) = fs::copy(src_file_path, dest_dir_path) {
+fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
+    let document_password = ctx.doc_passwd;
+    let image_quality = match ctx.visual_quality.as_str() {
+        "low"    => IMAGE_SIZE_QUALITY_LOW,
+        "medium" => IMAGE_SIZE_QUALITY_MEDIUM,
+        "high"   => IMAGE_SIZE_QUALITY_HIGH,
+        _        => IMAGE_SIZE_QUALITY_MEDIUM
+    };
+    let doc_uuid = ctx.doc_uuid;
+    let l10n = ctx.l10n;
+    
+    let logger: Box<dyn ConversionLogger> = ctx.logger;
+
+    let root_tmp_dir     = ctx.root_tmp_dir;
+    let raw_input_path   = ctx.input_path;
+    let output_file_path = root_tmp_dir.join(format!("{}.pdf", doc_uuid));
+    let output_dir_path  = root_tmp_dir.clone();
+    let safe_dir_path    = ctx.output_path;
+
+    if let Err(ex) = fs::create_dir_all(&root_tmp_dir) {
+        return Err(l10n.gettext_fmt("Cannot temporary folder: {0}! Error: {1}", vec![&root_tmp_dir.display().to_string(), &ex.to_string()]).into());
+    }    
+
+    // step 1 (0%-20%)
+    let mut progress_range = ProgressRange::new(0, 20);
+    let input_file_path = input_as_pdf_to_pathbuf_uri(&*logger, &progress_range, raw_input_path, document_password.clone(), l10n.clone())?;
+
+    let doc = if let Some(passwd) = document_password {
+        // We only care about originally encrypted PDF files
+        // If the document was in another format, then it's already decrypted at this stage
+        // Providing a password for a non-encrypted document doesn't fail, and that removes the need for additional logic
+        Document::from_file(&input_file_path.display().to_string(), Some(&passwd))?
+    } else {
+        Document::from_file(&input_file_path.display().to_string(), None)?
+    };
+
+    let page_count = doc.n_pages() as usize;
+
+    // step 2 (20%-45%)
+    progress_range.update(20, 45);
+    split_pdf_pages_into_images(&*logger, &progress_range, page_count, doc, image_quality, output_dir_path.clone(), l10n.clone())?;
+
+    // step 3 (45%-90%)
+    progress_range.update(45, 90);
+
+    if let Some(v) = ctx.ocr_lang {
+        let ocr_lang_text = v.as_str();
+        let selected_langcodes: Vec<&str> = ocr_lang_text.split('+').collect();
+
+        for selected_langcode in selected_langcodes {
+            if !l10n::ocr_lang_key_by_name(&l10n).contains_key(&selected_langcode) {
+                return Err(l10n.gettext_fmt("Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English.", vec![selected_langcode]).into());
+            }
+        }
+
+        let provided_tessdata_dir = if let Ok(tessdata_dir) = env::var(ENV_VAR_ENTRUSTED_TESSERACT_TESSDATA_DIR) {
+            tessdata_dir
+        } else {
+            DEFAULT_DIR_TESSERACT_TESSDATA.to_string()
+        };
+
+        let tess_settings = TessSettings {
+            lang: ocr_lang_text,
+            data_dir: &provided_tessdata_dir
+        };
+
+        ocr_imgs_to_pdf(&*logger, &progress_range, page_count, tess_settings, output_dir_path.clone(), output_dir_path.clone(), l10n.clone())?;
+    } else {
+        imgs_to_pdf(&*logger, &progress_range, page_count, output_dir_path.clone(), output_dir_path.clone(), l10n.clone())?;
+    }
+
+    // step 4 (90%-98%)
+    progress_range.update(90, 98);
+    pdf_combine_pdfs(&*logger, &progress_range, page_count, output_dir_path, output_file_path.clone(), l10n.clone())?;
+
+    // step 5 (98%-98%)
+    progress_range.update(98, 98);
+    move_file_to_dir(&*logger, &progress_range, output_file_path, safe_dir_path, l10n)
+}
+
+fn move_file_to_dir(logger: &dyn ConversionLogger, progress_range: &ProgressRange, src_file_path: PathBuf, dest_dir_path: PathBuf, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
+    if let Err(ex) = fs::copy(&src_file_path, &dest_dir_path) {
         logger.log(progress_range.min, l10n.gettext_fmt("Failed to copy file from {0} to {1}", vec![&src_file_path.display().to_string(), &dest_dir_path.display().to_string()]));
         return Err(ex.into());
     }
 
-    if let Err(ex) = fs::remove_file(src_file_path) {
+    if let Err(ex) = fs::remove_file(&src_file_path) {
         logger.log(progress_range.min, l10n.gettext_fmt("Failed to remove file from {0}.", vec![&src_file_path.display().to_string()]));
         return Err(ex.into());
     }
@@ -205,7 +331,7 @@ fn move_file_to_dir(logger: &dyn ConversionLogger, progress_range: &ProgressRang
     Ok(())
 }
 
-fn input_as_pdf_to_pathbuf_uri(logger: &dyn ConversionLogger, _: &ProgressRange, raw_input_path: &Path, opt_passwd: Option<String>, l10n: l10n::Translations) -> Result<PathBuf, Box<dyn Error>> {
+fn input_as_pdf_to_pathbuf_uri(logger: &dyn ConversionLogger, _: &ProgressRange, raw_input_path: PathBuf, opt_passwd: Option<String>, l10n: l10n::Translations) -> Result<PathBuf, Box<dyn Error>> {
     let conversion_by_mimetype: HashMap<&str, ConversionType> = [
         ("application/pdf", ConversionType::None),
         (
@@ -268,7 +394,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &dyn ConversionLogger, _: &ProgressRange,
         return Err(l10n.gettext_fmt("Cannot find file at {0}", vec![&raw_input_path.display().to_string()]).into());
     }
 
-    if let Some(mime_type) = mimetypes::detect_from_path(raw_input_path)? {
+    if let Some(mime_type) = mimetypes::detect_from_path(raw_input_path.clone())? {
         if let Some(conversion_type) = conversion_by_mimetype.get(mime_type) {
             if let Some(parent_dir) = raw_input_path.parent() {
                 let filename_pdf: String = {
@@ -296,7 +422,8 @@ fn input_as_pdf_to_pathbuf_uri(logger: &dyn ConversionLogger, _: &ProgressRange,
                             "image/x-tiff" => Ok(image::ImageFormat::Tiff),
                             unknown_img_t  => Err(l10n.gettext_fmt("Unsupported image type {0}", vec![unknown_img_t])),
                         }?;
-                        img_to_pdf(img_format, raw_input_path, Path::new(&filename_pdf))?;
+
+                        img_to_pdf(img_format, raw_input_path, PathBuf::from(&filename_pdf))?;
                     }
                     ConversionType::LibreOffice(fileext) => {
                         logger.log(5, l10n.gettext("Converting to PDF using LibreOffice"));
@@ -399,8 +526,8 @@ fn ocr_imgs_to_pdf(
     progress_range: &ProgressRange,
     page_count: usize,
     tess_settings: TessSettings,
-    input_path: &Path,
-    output_path: &Path,
+    input_path: PathBuf,
+    output_path: PathBuf,
     l10n: l10n::Translations
 ) -> Result<(), Box<dyn Error>> {
     let progress_delta = progress_range.delta();
@@ -416,7 +543,7 @@ fn ocr_imgs_to_pdf(
         logger.log(progress_value, l10n.gettext_fmt("Performing OCR on page {0}", vec![&page_num_text]));
         let src = input_path.join(format!("page-{}.png", page_num));
         let dest = output_path.join(format!("page-{}", page_num));
-        ocr_img_to_pdf(api, &src, &dest)?;
+        ocr_img_to_pdf(api, src, dest)?;
     }
 
     tesseract_delete(api);
@@ -456,8 +583,8 @@ fn tesseract_delete(api: *mut tesseract_plumbing::tesseract_sys::TessBaseAPI) {
 
 fn ocr_img_to_pdf(
     api: *mut tesseract_plumbing::tesseract_sys::TessBaseAPI,
-    input_path: &Path,
-    output_path: &Path,
+    input_path: PathBuf,
+    output_path: PathBuf,
 ) -> Result<(), Box<dyn Error>> {
     let c_inputname = CString::new(input_path.display().to_string().as_str())?;
     let inputname = c_inputname.as_bytes().as_ptr() as *mut std::os::raw::c_char;
@@ -500,14 +627,21 @@ fn ocr_img_to_pdf(
 
 trait ConversionLogger {
     fn log(&self, percent_complete: usize, data: String);
+    fn clone_box(&self) -> Box<dyn ConversionLogger>;
 }
 
+#[derive(Clone)]
 struct PlainConversionLogger;
+#[derive(Clone)]
 struct JsonConversionLogger;
 
 impl ConversionLogger for PlainConversionLogger {
     fn log(&self, percent_complete: usize, data: String) {
         println!("{}% {}", percent_complete, data);
+    }
+
+    fn clone_box(&self) -> Box<dyn ConversionLogger> {
+        Box::new(self.clone())
     }
 }
 
@@ -518,6 +652,10 @@ impl ConversionLogger for JsonConversionLogger {
         if let Ok(progress_json) = serde_json::to_string(&progress_msg) {
             println!("{}", progress_json);
         }
+    }
+
+    fn clone_box(&self) -> Box<dyn ConversionLogger> {
+        Box::new(self.clone())
     }
 }
 
@@ -547,7 +685,7 @@ impl ProgressRange {
     }
 }
 
-fn split_pdf_pages_into_images(logger: &dyn ConversionLogger, progress_range: &ProgressRange, page_count: usize, doc: Document, target_size: (f64, f64), dest_folder: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
+fn split_pdf_pages_into_images(logger: &dyn ConversionLogger, progress_range: &ProgressRange, page_count: usize, doc: Document, target_size: (f64, f64), dest_folder: PathBuf, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
     let mut progress_value: usize = progress_range.min;
 
     logger.log(progress_value, l10n.ngettext("Extract PDF file into one image",
@@ -613,7 +751,7 @@ fn scaling_data(size_current: (f64, f64), size_target: (f64, f64)) -> (f64, (f64
     (ratio, (new_width, new_height))
 }
 
-fn pdf_combine_pdfs(logger: &dyn ConversionLogger, progress_range: &ProgressRange, page_count: usize, input_dir_path: &Path, output_path: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
+fn pdf_combine_pdfs(logger: &dyn ConversionLogger, progress_range: &ProgressRange, page_count: usize, input_dir_path: PathBuf, output_path: PathBuf, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
     logger.log(progress_range.min,
                l10n.ngettext("Combining one PDF document",
                              "Combining few PDF documents",
@@ -811,18 +949,18 @@ fn pdf_combine_pdfs(logger: &dyn ConversionLogger, progress_range: &ProgressRang
     progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
     logger.log(progress_value, l10n.gettext("Saving PDF"));
 
-    if let Err(ex) = document.save(output_path) {
+    if let Err(ex) = document.save(&output_path) {
         return Err(l10n.gettext_fmt("Could not save PDF file to {0}. {1}.", vec![&output_path.display().to_string(), &ex.to_string()]).into());
     }
 
-    if std::fs::metadata(output_path).is_err() {
+    if std::fs::metadata(&output_path).is_err() {
         return Err(l10n.gettext_fmt("Could not save PDF file to {0}.", vec![&output_path.display().to_string()]).into());
     }
 
     Ok(())
 }
 
-fn imgs_to_pdf(logger: &dyn ConversionLogger, progress_range: &ProgressRange, page_count: usize, input_path: &Path, output_path: &Path, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
+fn imgs_to_pdf(logger: &dyn ConversionLogger, progress_range: &ProgressRange, page_count: usize, input_path: PathBuf, output_path: PathBuf, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
     let progress_delta = progress_range.delta();
     let mut progress_value: usize = progress_range.min;
 
@@ -837,13 +975,13 @@ fn imgs_to_pdf(logger: &dyn ConversionLogger, progress_range: &ProgressRange, pa
         logger.log(progress_value, l10n.gettext_fmt("Saving PNG image {0} to PDF", vec![&idx_text]));
         let src = input_path.join(format!("page-{}.png", &idx));
         let dest = output_path.join(format!("page-{}.pdf", &idx));
-        img_to_pdf(image::ImageFormat::Png, &src, &dest)?;
+        img_to_pdf(image::ImageFormat::Png, src, dest)?;
     }
 
     Ok(())
 }
 
-fn img_to_pdf(src_format: image::ImageFormat, src_path: &Path, dest_path: &Path) -> Result<(), Box<dyn Error>> {
+fn img_to_pdf(src_format: image::ImageFormat, src_path: PathBuf, dest_path: PathBuf) -> Result<(), Box<dyn Error>> {
     let f = fs::File::open(src_path)?;
     let reader = BufReader::new(f);
     let img = image::load(reader, src_format)?;

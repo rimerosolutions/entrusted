@@ -31,7 +31,7 @@ VIAddVersionKey  "FileDescription" "${ProgramName} Installer"
 Name "Entrusted"
 
 ; The setup filename
-OutFile "entrusted-windows-amd64-_APPVERSION_.exe"
+OutFile "entrusted-_APPVERSION_-windows-amd64.exe"
 
 ; The default installation directory
 InstallDir "$PROGRAMFILES\${ProgramName}"

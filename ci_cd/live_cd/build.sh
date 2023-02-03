@@ -9,6 +9,7 @@ CPU_ARCHS="amd64 aarch64"
 ENTRUSTED_VERSION="${APPVERSION}"
 CONTAINER_USER_NAME="entrusted"
 CONTAINER_USER_ID="1024"
+RUST_CI_VERSION="1.67.0"
 
 echo "Install required packages"
 sudo apt update && sudo apt install -y \
@@ -25,6 +26,7 @@ sudo apt update && sudo apt install -y \
     systemd-container \
     bzip2 \
     gzip \
+    unzip \
     mtools
 
 for CPU_ARCH in $CPU_ARCHS ; do
@@ -36,9 +38,9 @@ for CPU_ARCH in $CPU_ARCHS ; do
     MY_TMPDIR="${TMPDIR}"
     test -d "${MY_TMPDIR}" || MY_TMPDIR="/tmp"
     ENTRUSTED_ROOT_TMPDIR="${MY_TMPDIR}/entrusted-tmpbuild"
-    LIVE_BOOT_DIR="${ENTRUSTED_ROOT_TMPDIR}/entrusted-livecd/live_boot_dir-${CPU_ARCH}-${ENTRUSTED_VERSION}"
-    LIVE_BOOT_TMP_DIR="${ENTRUSTED_ROOT_TMPDIR}/entrusted-livecd/live_boot_tmpdir-${CPU_ARCH}-${ENTRUSTED_VERSION}"
-    LINUX_ARTIFACTSDIR="${ENTRUSTED_ROOT_TMPDIR}/entrusted-livecd/linux_artifacts-${CPU_ARCH}-${ENTRUSTED_VERSION}"
+    LIVE_BOOT_DIR="${ENTRUSTED_ROOT_TMPDIR}/entrusted-livecd/live_boot_dir-${ENTRUSTED_VERSION}-${CPU_ARCH}"
+    LIVE_BOOT_TMP_DIR="${ENTRUSTED_ROOT_TMPDIR}/entrusted-livecd/live_boot_tmpdir-${ENTRUSTED_VERSION}-${CPU_ARCH}"
+    LINUX_ARTIFACTSDIR="${ENTRUSTED_ROOT_TMPDIR}/entrusted-livecd/linux_artifacts-${ENTRUSTED_VERSION}-${CPU_ARCH}"
     LIVE_ISO_DIR="${PROJECTDIR}/../artifacts"
     DEBIAN_ARCH="amd64"
     UNAME_ARCH="x86_64"
@@ -47,7 +49,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
     test -d "${ENTRUSTED_ROOT_TMPDIR}" && sudo rm -rf "${ENTRUSTED_ROOT_TMPDIR}"
     mkdir -p "${ENTRUSTED_ROOT_TMPDIR}" "${LIVE_BOOT_TMP_DIR}" "${LIVE_ISO_DIR}" "${LIVE_BOOT_DIR}" "${LINUX_ARTIFACTSDIR}"
     
-    test -f "${LIVE_ISO_DIR}"/entrusted-livecd-${CPU_ARCH}-${ENTRUSTED_VERSION}.iso && rm "${LIVE_ISO_DIR}"/entrusted-livecd-${CPU_ARCH}-${ENTRUSTED_VERSION}.iso
+    test -f "${LIVE_ISO_DIR}"/entrusted-${ENTRUSTED_VERSION}-livecd-${CPU_ARCH}.iso && rm "${LIVE_ISO_DIR}"/entrusted-${ENTRUSTED_VERSION}-livecd-${CPU_ARCH}.iso
 
     if [ ${CPU_ARCH} != "amd64" ]
     then
@@ -66,7 +68,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
     test -d ${PROJECTDIR}/entrusted_webclient/target && rm -rf ${PROJECTDIR}/entrusted_webclient/target
     test -d ${PROJECTDIR}/entrusted_webserver/target && rm -rf ${PROJECTDIR}/entrusted_webserver/target    
     
-    podman run --log-driver=none --platform linux/${DEBIAN_ARCH} -v "${PROJECTDIR}/..":/src -v "${LINUX_ARTIFACTSDIR}":/artifacts docker.io/uycyjnzgntrn/rust-linux:1.64.0 /bin/sh -c "CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 ${RUST_PREAMBLE} cargo build --release --target ${RUST_MUSL_TARGET} --manifest-path /src/app/entrusted_webserver/Cargo.toml && cp /src/app/entrusted_webserver/target/${RUST_MUSL_TARGET}/release/entrusted-webserver /artifacts/ && rm -rf /src/app/entrusted_webserver/target && CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 ${RUST_PREAMBLE} cargo build --release --target ${RUST_MUSL_TARGET} --manifest-path /src/app/entrusted_client/Cargo.toml && cp /src/app/entrusted_client/target/${RUST_MUSL_TARGET}/release/entrusted-cli /artifacts/ && rm -rf /src/app/entrusted_client/target && strip /artifacts/entrusted-cli && strip /artifacts/entrusted-webserver"
+    podman run --log-driver=none --platform linux/${DEBIAN_ARCH} -v "${PROJECTDIR}/..":/src -v "${LINUX_ARTIFACTSDIR}":/artifacts docker.io/uycyjnzgntrn/rust-linux:${RUST_CI_VERSION} /bin/sh -c "CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 ${RUST_PREAMBLE} cargo build --release --target ${RUST_MUSL_TARGET} --manifest-path /src/app/entrusted_webserver/Cargo.toml && cp /src/app/entrusted_webserver/target/${RUST_MUSL_TARGET}/release/entrusted-webserver /artifacts/ && rm -rf /src/app/entrusted_webserver/target && CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 ${RUST_PREAMBLE} cargo build --release --target ${RUST_MUSL_TARGET} --manifest-path /src/app/entrusted_client/Cargo.toml && cp /src/app/entrusted_client/target/${RUST_MUSL_TARGET}/release/entrusted-cli /artifacts/ && rm -rf /src/app/entrusted_client/target && strip --strip-unneeded /artifacts/entrusted-cli && strip --strip-unneeded /artifacts/entrusted-webserver"
     retVal=$?
     if [ "$retVal" != "0" ]; then
         echo "Could not build entrusted-cli and entrusted-webserver" && exit 1

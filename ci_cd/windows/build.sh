@@ -5,7 +5,8 @@ PREVIOUSDIR="$(echo $PWD)"
 SCRIPTDIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${SCRIPTDIR}/../../app)"
 APPVERSION=$(grep "^version" ${PROJECTDIR}/entrusted_client/Cargo.toml  | cut -d"=" -f2 | xargs)
-ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-windows-amd64-${APPVERSION}"
+ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-${APPVERSION}-windows-amd64"
+RUST_CI_VERSION="1.67.0"
 
 mkdir -p ${ARTIFACTSDIR}
 
@@ -21,7 +22,7 @@ cd ${PROJECTDIR}
 echo "Building all Windows binaries"
 echo "TODO check stripping binaries later after more testing"
 
-podman run --rm --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:1.64.0 sh -c "CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --features=gui --manifest-path /src/entrusted_client/Cargo.toml && CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --manifest-path /src/entrusted_webserver/Cargo.toml && CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --manifest-path /src/entrusted_webclient/Cargo.toml && x86_64-w64-mingw32-strip /src/entrusted_client/target/x86_64-pc-windows-gnu/release/entrusted-cli.exe && x86_64-w64-mingw32-strip /src/entrusted_client/target/x86_64-pc-windows-gnu/release/entrusted-gui.exe && x86_64-w64-mingw32-strip /src/entrusted_webserver/target/x86_64-pc-windows-gnu/release/entrusted-webserver.exe && x86_64-w64-mingw32-strip /src/entrusted_webclient/target/x86_64-pc-windows-gnu/release/entrusted-webclient.exe"
+podman run --rm --privileged -v "${PROJECTDIR}":/src docker.io/uycyjnzgntrn/rust-windows:${RUST_CI_VERSION} sh -c "CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --features=gui --manifest-path /src/entrusted_client/Cargo.toml && CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --manifest-path /src/entrusted_webserver/Cargo.toml && CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --manifest-path /src/entrusted_webclient/Cargo.toml && x86_64-w64-mingw32-strip /src/entrusted_client/target/x86_64-pc-windows-gnu/release/entrusted-cli.exe && x86_64-w64-mingw32-strip /src/entrusted_client/target/x86_64-pc-windows-gnu/release/entrusted-gui.exe && x86_64-w64-mingw32-strip /src/entrusted_webserver/target/x86_64-pc-windows-gnu/release/entrusted-webserver.exe && x86_64-w64-mingw32-strip /src/entrusted_webclient/target/x86_64-pc-windows-gnu/release/entrusted-webclient.exe"
 
 retVal=$?
 if [ $retVal -ne 0 ]; then
@@ -45,9 +46,9 @@ if [ $retVal -ne 0 ]; then
 fi
 
 rm ${ARTIFACTSDIR}/installer.nsi
-mv ${ARTIFACTSDIR}/entrusted-windows-amd64-${APPVERSION}.exe ${ARTIFACTSDIR}/../
+mv ${ARTIFACTSDIR}/entrusted-${APPVERSION}-windows-amd64.exe ${ARTIFACTSDIR}/../
 
 cp ${SCRIPTDIR}/release_README.txt ${ARTIFACTSDIR}/README.txt
-cd ${ARTIFACTSDIR}/.. && zip -r entrusted-windows-amd64-${APPVERSION}.zip entrusted-windows-amd64-${APPVERSION}
+cd ${ARTIFACTSDIR}/.. && zip -r entrusted-${APPVERSION}-windows-amd64.zip entrusted-${APPVERSION}-windows-amd64
 
 cd ${SCRIPTDIR}

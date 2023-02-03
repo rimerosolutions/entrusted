@@ -1,4 +1,4 @@
-FROM docker.io/rust:1.64-bullseye
+FROM docker.io/rust:1.67.0-bullseye
 
 RUN echo "deb [trusted=yes] https://notesalexp.org/tesseract-ocr5/bullseye/ bullseye main" >> /etc/apt/sources.list \
     && DEBIAN_FRONTEND=noninteractive apt-get -o "Acquire::https::Verify-Peer=false" update \
@@ -19,3 +19,5 @@ RUN echo "deb [trusted=yes] https://notesalexp.org/tesseract-ocr5/bullseye/ bull
     curl \
     libpoppler-glib-dev \
     && apt clean
+
+

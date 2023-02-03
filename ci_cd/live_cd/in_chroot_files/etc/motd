@@ -14,7 +14,8 @@ This is a live CD of Entrusted with a Web interface
 - 'mg' (minimal text editor) is installed instead of 'vim' or 'nano'
 - Standard service management: systemctl <action> entrusted-webserver
 - By default entrusted-webserver binds to ALL interfaces on port 13000 
-- By default internet connectivity is forbidden 
+- By default internet connectivity is disabled
   - As root, run 'entrusted-fw-disable' to allow internet access 
   - As root, run 'entrusted-fw-enable' to restore firewall rules
+- Please refresh caches ('apt update') prior installing more software
 - The Web interface is available at http://127.0.0.1:13000

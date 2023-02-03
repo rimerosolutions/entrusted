@@ -129,7 +129,7 @@ enum ContainerProgramStub<'a> {
 // TODO this is not good enough, ideally subcommands should be captured at a higher level
 // Especially for Lima and similar tooling, to avoid further downstream conditional blocks
 pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
-    let container_program_stubs = [
+    let mut container_program_stubs = vec![
         ContainerProgramStub::Docker("docker", vec![], vec!["--security-opt=no-new-privileges:true"], None),
         ContainerProgramStub::Podman("podman", vec![], vec!["--userns", "keep-id", "--security-opt", "no-new-privileges"], None),
         ContainerProgramStub::Lima("lima", vec!["nerdctl"], vec!["--security-opt", "no-new-privileges"], Some("/tmp/lima")),
@@ -141,7 +141,38 @@ pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
     } else {
         false
     };
-    
+
+    if gvisor_enabled {
+        // 5mb seems enough for temporary file storage required by the LibreOffice user settings creation process...
+        // - We're mapping XDG_CONFIG_HOME to /loffice for those temoporary files
+        // - The 'userns' flag is not supported by gVisor
+        // - For the Live CD, gVisor is configured inside ~/.config/containers/containers.conf
+        // - Additionally, we could check for the presence of multiple binaries and/or files: The current logic is not that flexible...
+        container_program_stubs = vec![
+            ContainerProgramStub::Podman("podman",
+                                         vec![],
+                                         vec![
+                                             "--security-opt",
+                                             "no-new-privileges",
+                                             "--tmpfs",
+                                             "/loffice:size=5m",
+                                             "--env",
+                                             "XDG_CONFIG_HOME=/loffice"
+                                         ],
+                                         None)
+        ];
+    } else if std::env::var("FLATPAK_ID").is_ok() {
+        // TODO this is probably not good enough to detect Flatpak (FLATPAK_ID and 'container' environment variable checks)
+        // https://stackoverflow.com/questions/75274925/is-there-a-way-to-find-out-if-i-am-running-inside-a-flatpak-appimage-or-another
+        if std::env::var("container").is_ok() {
+            if let Some(path_container_exe) = executable_find("entrusted-container") {
+                return Some(ContainerProgram::new(path_container_exe, vec![], vec![], None));
+            }
+        } else {
+            return None;
+        }
+    }
+
     for item in container_program_stubs {
         match item {
             ContainerProgramStub::Docker(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) |
@@ -151,14 +182,7 @@ pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
                 if let Some(path_container_exe) = executable_find(cmd) {
                     let suggested_tmp_dir = tmp_dir_opt.as_ref().map(PathBuf::from);
 
-                    let new_args = if !gvisor_enabled {
-                        cmd_args.clone()
-                    } else {
-                        // 5mb seems enough for temporary file storage required by the LibreOffice user settings creation process...
-                        vec!["--security-opt", "no-new-privileges", "--tmpfs", "/loffice:size=5m", "--env", "XDG_CONFIG_HOME=/loffice"]
-                    };
-                    
-                    return Some(ContainerProgram::new(path_container_exe, sub_cmd_args.clone(), new_args, suggested_tmp_dir));
+                    return Some(ContainerProgram::new(path_container_exe, sub_cmd_args.clone(), cmd_args.clone(), suggested_tmp_dir));
                 }
             }
         }

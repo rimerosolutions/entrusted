@@ -30,6 +30,33 @@ msgstr ""
 #~ "MIME-Version: 1.0\n"
 #~ "Content-Type: text/plain; charset=UTF-8"
 
+msgid ""
+"{bin} {version}\n"
+"{author}\n"
+"{about}\n\n"
+"Usage: {usage}\n\n"
+"Options:\n"
+"{options}"
+msgstr ""
+
+msgid "Input filename"
+msgstr ""
+
+msgid "Output filename"
+msgstr ""
+
+msgid "PDF result visual quality"
+msgstr ""
+
+msgid "Optional language for OCR (i.e. 'eng' for English)"
+msgstr ""
+
+msgid "Log format (json or plain)"
+msgstr ""
+
+msgid "Cannot temporary folder: {0}! Error: {1}"
+msgstr ""
+
 msgid "Could not save PDF file to {0}. {1}."
 msgstr ""
 

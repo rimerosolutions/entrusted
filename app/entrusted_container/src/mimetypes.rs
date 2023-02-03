@@ -1,12 +1,12 @@
 use std::io::{Cursor, BufReader, Read};
 use std::error::Error;
-use std::path::Path;
+use std::path::PathBuf;
 use std::fs;
 
 #[allow(clippy::unused_io_amount)]    
-pub fn detect_from_path (path: &Path) -> Result<Option<&str>, Box<dyn Error>> {
+pub fn detect_from_path<'a> (path: PathBuf) -> Result<Option<&'a str>, Box<dyn Error>> {
     let mut data = [0u8; 8];
-    let mut f: fs::File = fs::File::open(path)?;
+    let mut f: fs::File = fs::File::open(&path)?;
     f.read(&mut data)?;
 
     if is_png(&data) {
@@ -22,10 +22,10 @@ pub fn detect_from_path (path: &Path) -> Result<Option<&str>, Box<dyn Error>> {
     } else if is_pdf(&data) {
         return Ok(Some("application/pdf"));
     } else if is_zip(&data) {        
-        let ndata = fs::read(path)?;
+        let ndata = fs::read(&path)?;
         return office_mime(ndata);
     } else if is_cfb(&data) {
-        let ndata = fs::read(path)?;
+        let ndata = fs::read(&path)?;
         return legacy_office_mime(ndata);
     }
 

@@ -208,9 +208,8 @@ fn selected_ocr_langcodes(ocr_languages_by_lang: &HashMap<String, &str>, drop_do
         return ret
     } else {
         for i in 0..drop_down.size() {
-            let idx = i as i32;
-            if drop_down.selected(idx) {
-                if let Some(selected_lang) = drop_down.text(idx) {
+            if drop_down.selected(i) {
+                if let Some(selected_lang) = drop_down.text(i) {
                     if let Some(langcode) = ocr_languages_by_lang.get(&selected_lang) {
                         ret.push(langcode.to_string());
                     }
@@ -551,7 +550,7 @@ impl FileListWidget {
 
 
                             for j in 0..gg.children() {
-                                if let Some(mut cc) = gg.child(j as i32) {
+                                if let Some(mut cc) = gg.child(j) {
                                     cc.resize(startx, cc.y(), cc_width, wid.h());
                                     startx += cc_width + (WIDGET_GAP/2);
                                 }

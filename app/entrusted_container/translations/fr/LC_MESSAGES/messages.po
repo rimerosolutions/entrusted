@@ -18,6 +18,39 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid ""
+"{bin} {version}\n"
+"{author}\n"
+"{about}\n\n"
+"Usage: {usage}\n\n"
+"Options:\n"
+"{options}"
+msgstr ""
+msgstr "{bin} {version}\n"
+msgstr "{author}\n"
+msgstr "{about}\n\n"
+msgstr "Usage: {usage}\n\n"
+msgstr "Options:\n"
+msgstr "{options}"
+
+msgid "Input filename"
+msgstr fichier d'entrée
+
+msgid "Output filename"
+msgstr "Fichier de sortie"
+
+msgid "PDF result visual quality"
+msgstr "Qualité visuelle du résultat PDF"
+
+msgid "Optional language for OCR (i.e. 'eng' for English)" 
+msgstr "Langue facultative pour l'OCR (c'est-à-dire 'eng' pour l'anglais)"
+
+msgid "Log format (json or plain)"
+msgstr "Format de journal (json ou plain)"
+
+msgid "Cannot temporary folder: {0}! Error: {1}"
+msgstr "Impossible de dossier temporaire : {0} ! Erreur : {1}"
+
 msgid "Could not save PDF file to {0}. {1}."
 msgstr "Impossible d'enregistrer le fichier PDF dans {0}. {1}."
 

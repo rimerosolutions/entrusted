@@ -1,0 +1,4 @@
+APT::Sandbox::Seccomp "1";
+Acquire::Retries "10";
+Acquire::GzipIndexes "true";
+Acquire::CompressionTypes::Order:: "gz";

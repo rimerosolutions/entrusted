@@ -23,7 +23,7 @@ Key features include the following:
 - An optional Web interface is available and can act as an "online service"
 - The [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]] provides both enhanced security and configuration convenience
 - Password-protected files are supported (known Office document formats and PDF files)
-- The application has multilingual support (English and French for now)
+- The application is multilingual (English and French translations for now)
 - On Mac OS, [[https://github.com/lima-vm/lima][Lima]] can be installed as an alternative to [[https://www.docker.com/products/docker-desktop/][Docker]] (/default Lima instance/ only)
 
 ** Use-cases
@@ -99,4 +99,5 @@ Conversions will fail if the container solution is not running or available in y
 - [[https://dangerzone.rocks/][Dangerzone]], the application that =Entrusted= is originally based-on
 - Disabling file preview and thumbnails ([[https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/ADV200006][Windows]], [[https://osxdaily.com/2013/01/10/disable-finder-icon-thumbnails-previews-mac-os-x/][Mac OS]], Unix/Linux: [[https://gitlab.gnome.org/GNOME/eog/-/issues/130][Gnome]], [[https://www.reddit.com/r/kde/comments/gufzbh/how_do_you_turn_off_the_tiny_image_previews_in/][KDE]], etc.)
 - Security vulnerabilities for [[https://www.cvedetails.com/vulnerability-list/vendor_id-22772/product_id-80467/Podman-Project-Podman.html][Podman]], [[https://www.cvedetails.com/vulnerability-list/vendor_id-13534/product_id-28125/Docker-Docker.html][Docker]]
+- Few general vulnerability scanning tools: [[https://github.com/CISOfy/lynis][lynis]], [[https://github.com/jtesta/ssh-audit][ssh-audit]]
 - Few container vulnerability scanning tools: [[https://trivy.dev/][Trivy]], [[https://quay.github.io/clair/][Clair]], [[https://github.com/deepfence/ThreatMapper][ThreatMapper]]

@@ -18,8 +18,7 @@ PROJECTDIR="$(realpath ${THIS_SCRIPTS_DIR}/../../app)"
 
 echo ">>> Creating LIVE_BOOT folder"
 test -d "${LIVE_BOOT_DIR}" && sudo rm -rf "${LIVE_BOOT_DIR}"
-mkdir -p "${LIVE_BOOT_DIR}"
-sudo chmod -R a+rw "${LIVE_BOOT_DIR}"
+mkdir -p "${LIVE_BOOT_DIR}" && sudo chmod -R a+rw "${LIVE_BOOT_DIR}"
 
 echo ">>> Boostraping Debian installation"
 sudo debootstrap --arch=${DEBIAN_ARCH} --variant=minbase bullseye "${LIVE_BOOT_DIR}"/chroot https://mirror.csclub.uwaterloo.ca/debian/ || (sleep 10 && sudo debootstrap --arch=${DEBIAN_ARCH} --variant=minbase bullseye "${LIVE_BOOT_DIR}"/chroot https://mirror.csclub.uwaterloo.ca/debian/)
@@ -35,8 +34,8 @@ cp "${LINUX_ARTIFACTSDIR}"/entrusted-webserver "${LIVE_BOOT_TMP_DIR}"/live-entru
 echo ">>> Building custom kernel"
 test -d "${LIVE_BOOT_TMP_DIR}"/minikernel && rm -rf "${LIVE_BOOT_TMP_DIR}"/minikernel
 mkdir -p "${LIVE_BOOT_TMP_DIR}"/minikernel
-cd "${LIVE_BOOT_TMP_DIR}"/minikernel/ && wget "https://github.com/yveszoundi/kernel-deblive-smallserver/releases/download/${VERSION_KERNEL_DEBLIVE_SMALLSERVER}/kernel-deblive-smallserver-${VERSION_KERNEL_DEBLIVE_SMALLSERVER}-${DEBIAN_ARCH}.zip" && cd -
-cd "${LIVE_BOOT_TMP_DIR}"/minikernel/ && unzip "kernel-deblive-smallserver-${VERSION_KERNEL_DEBLIVE_SMALLSERVER}-${DEBIAN_ARCH}.zip" && cd -
+wget -P "${LIVE_BOOT_TMP_DIR}"/minikernel "https://github.com/yveszoundi/kernel-deblive-smallserver/releases/download/${VERSION_KERNEL_DEBLIVE_SMALLSERVER}/kernel-deblive-smallserver-${VERSION_KERNEL_DEBLIVE_SMALLSERVER}-${DEBIAN_ARCH}.zip"
+unzip -d "${LIVE_BOOT_TMP_DIR}"/minikernel "${LIVE_BOOT_TMP_DIR}/minikernel/kernel-deblive-smallserver-${VERSION_KERNEL_DEBLIVE_SMALLSERVER}-${DEBIAN_ARCH}.zip"
 ls "${LIVE_BOOT_TMP_DIR}"/minikernel/*.deb || (echo "Could not fetch custom kernel packages" && exit 1)
 
 echo ">>> Building hardened_malloc"
@@ -48,10 +47,11 @@ fi
 
 echo ">>> Downloading gvisor"
 test -d "${LIVE_BOOT_TMP_DIR}"/gvisor && rm -rf "${LIVE_BOOT_TMP_DIR}"/gvisor
-mkdir -p "${LIVE_BOOT_TMP_DIR}"/gvisor
-cd "${LIVE_BOOT_TMP_DIR}"/gvisor && wget https://storage.googleapis.com/gvisor/releases/release/latest/${UNAME_ARCH}/runsc 
-cd "${LIVE_BOOT_TMP_DIR}"/gvisor && wget https://storage.googleapis.com/gvisor/releases/release/latest/${UNAME_ARCH}/containerd-shim-runsc-v1
-cd "${LIVE_BOOT_TMP_DIR}"/gvisor && chmod a+rx runsc containerd-shim-runsc-v1
+mkdir -p "${LIVE_BOOT_TMP_DIR}"/gvisor \
+    && wget -P "${LIVE_BOOT_TMP_DIR}"/gvisor \
+    https://storage.googleapis.com/gvisor/releases/release/latest/${UNAME_ARCH}/runsc \
+    https://storage.googleapis.com/gvisor/releases/release/latest/${UNAME_ARCH}/containerd-shim-runsc-v1 \
+    && chmod +x "${LIVE_BOOT_TMP_DIR}"/gvisor/*
 retVal=$?
 if [ "$retVal" != "0" ]; then
 	echo "Could not download gvisor!" && exit 1
@@ -60,7 +60,7 @@ fi
 echo ">>> Downloading podman-static"
 test -d "${LIVE_BOOT_TMP_DIR}"/podman && rm -rf "${LIVE_BOOT_TMP_DIR}"/podman
 mkdir -p "${LIVE_BOOT_TMP_DIR}"/podman
-cd "${LIVE_BOOT_TMP_DIR}"/podman && wget https://github.com/mgoltzsche/podman-static/releases/download/v${VERSION_PODMAN_STATIC}/podman-linux-${DEBIAN_ARCH}.tar.gz && cd -
+wget -P "${LIVE_BOOT_TMP_DIR}"/podman https://github.com/mgoltzsche/podman-static/releases/download/v${VERSION_PODMAN_STATIC}/podman-linux-${DEBIAN_ARCH}.tar.gz
 
 CONTAINER_USER_HOMEDIR="/home/${CONTAINER_USER_NAME}"
 sudo mkdir -p "${LIVE_BOOT_TMP_DIR}/home" && sudo chmod -R a+rw "${LIVE_BOOT_TMP_DIR}/home"
@@ -100,14 +100,14 @@ fi
 cd -
 
 sudo cp -rf "${THIS_SCRIPTS_DIR}/in_chroot_files" "${LIVE_BOOT_DIR}/chroot/files"
-sudo cp -rf "${THIS_SCRIPTS_DIR}/02-in-chroot.sh" "${LIVE_BOOT_DIR}/chroot/files/"
+sudo cp -f "${THIS_SCRIPTS_DIR}/02-in-chroot.sh" "${LIVE_BOOT_DIR}/chroot/files/"
+sudo cp -rf "${LIVE_BOOT_TMP_DIR}/gvisor"         "${LIVE_BOOT_DIR}/chroot/files/gvisor"
+sudo cp -rf "${LIVE_BOOT_TMP_DIR}/minikernel"     "${LIVE_BOOT_DIR}/chroot/files/minikernel"
+sudo cp -rf "${LIVE_BOOT_TMP_DIR}/podman"         "${LIVE_BOOT_DIR}/chroot/files/podman"
 sudo cp "${LIVE_BOOT_TMP_DIR}/live-libhardened_malloc.so" "${LIVE_BOOT_DIR}/chroot/files/libhardened_malloc.so"
-sudo cp -r "${LIVE_BOOT_TMP_DIR}/podman" "${LIVE_BOOT_DIR}/chroot/files/podman"
-sudo cp -r "${LIVE_BOOT_TMP_DIR}/gvisor" "${LIVE_BOOT_DIR}/chroot/files/gvisor"
-sudo mv "${LIVE_BOOT_TMP_DIR}/entrusted-packaging" "${LIVE_BOOT_DIR}/chroot/files/entrusted-packaging"
-sudo mv "${LIVE_BOOT_TMP_DIR}/live-entrusted-cli" "${LIVE_BOOT_DIR}/chroot/files/entrusted-cli"
-sudo mv "${LIVE_BOOT_TMP_DIR}/live-entrusted-webserver" "${LIVE_BOOT_DIR}/chroot/files/entrusted-webserver"
-sudo cp -r "${LIVE_BOOT_TMP_DIR}/minikernel" "${LIVE_BOOT_DIR}/chroot/files/minikernel"
+sudo mv "${LIVE_BOOT_TMP_DIR}/entrusted-packaging"        "${LIVE_BOOT_DIR}/chroot/files/entrusted-packaging"
+sudo mv "${LIVE_BOOT_TMP_DIR}/live-entrusted-cli"         "${LIVE_BOOT_DIR}/chroot/files/entrusted-cli"
+sudo mv "${LIVE_BOOT_TMP_DIR}/live-entrusted-webserver"   "${LIVE_BOOT_DIR}/chroot/files/entrusted-webserver"
 
 sudo chmod +x "${LIVE_BOOT_DIR}"/chroot/files/*.sh
 

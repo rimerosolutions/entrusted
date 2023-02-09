@@ -11,7 +11,7 @@ jobs:
     name: AMD64 Windows
     runs-on: ubuntu-latest
     container:
-      image: uycyjnzgntrn/rust-windows:${{ env.RUST_CI_VERSION }}
+      image: uycyjnzgntrn/rust-windows:1.67.0
       volumes:
         - ${{ github.workspace }}:/src
     steps:
@@ -217,7 +217,7 @@ jobs:
     name: AMD64 Linux
     runs-on: ubuntu-latest
     container:
-      image: docker.io/uycyjnzgntrn/rust-linux:${{ env.RUST_CI_VERSION }}
+      image: docker.io/uycyjnzgntrn/rust-linux:1.67.0
       options: "--platform linux/amd64 --privileged --cap-add SYS_ADMIN --device /dev/fuse"
       volumes:
         - ${{ github.workspace }}:/src

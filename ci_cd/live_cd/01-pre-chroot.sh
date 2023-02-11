@@ -35,7 +35,7 @@ cp "${LINUX_ARTIFACTSDIR}"/entrusted-webserver "${LIVE_BOOT_TMP_DIR}"/live-entru
 echo ">>> Building custom kernel"
 test -d "${LIVE_BOOT_TMP_DIR}"/minikernel && rm -rf "${LIVE_BOOT_TMP_DIR}"/minikernel
 mkdir -p "${LIVE_BOOT_TMP_DIR}"/minikernel
-RELNUM_KERNEL_DEBLIVE_SMALLSERVER=$(echo $VERSION_KERNEL_DEBLIVE_SMALLSERVER | awk -F"." '{print $1"."$2}')
+RELNUM_KERNEL_DEBLIVE_SMALLSERVER=$(echo $VERSION_KERNEL_DEBLIVE_SMALLSERVER | cut -d"." -f1 -f2)
 wget -P "${LIVE_BOOT_TMP_DIR}"/minikernel "https://github.com/yveszoundi/kernel-deblive-smallserver/releases/download/${RELNUM_KERNEL_DEBLIVE_SMALLSERVER}/kernel-deblive-smallserver-${VERSION_KERNEL_DEBLIVE_SMALLSERVER}-${DEBIAN_ARCH}.zip"
 unzip -d "${LIVE_BOOT_TMP_DIR}"/minikernel "${LIVE_BOOT_TMP_DIR}/minikernel/kernel-deblive-smallserver-${VERSION_KERNEL_DEBLIVE_SMALLSERVER}-${DEBIAN_ARCH}.zip"
 ls "${LIVE_BOOT_TMP_DIR}"/minikernel/*.deb || (echo "Could not fetch custom kernel packages" && exit 1)

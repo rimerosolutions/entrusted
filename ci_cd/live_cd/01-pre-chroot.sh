@@ -12,7 +12,7 @@ CONTAINER_USER_NAME=$8
 CONTAINER_USER_ID=$9
 
 VERSION_PODMAN_STATIC="4.4.1"
-VERSION_KERNEL_DEBLIVE_SMALLSERVER="6.1.8"
+VERSION_KERNEL_DEBLIVE_SMALLSERVER="6.1.11"
 THIS_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${THIS_SCRIPTS_DIR}/../../app)"
 RUST_CI_VERSION="1.67.0"
@@ -35,7 +35,8 @@ cp "${LINUX_ARTIFACTSDIR}"/entrusted-webserver "${LIVE_BOOT_TMP_DIR}"/live-entru
 echo ">>> Building custom kernel"
 test -d "${LIVE_BOOT_TMP_DIR}"/minikernel && rm -rf "${LIVE_BOOT_TMP_DIR}"/minikernel
 mkdir -p "${LIVE_BOOT_TMP_DIR}"/minikernel
-wget -P "${LIVE_BOOT_TMP_DIR}"/minikernel "https://github.com/yveszoundi/kernel-deblive-smallserver/releases/download/${VERSION_KERNEL_DEBLIVE_SMALLSERVER}/kernel-deblive-smallserver-${VERSION_KERNEL_DEBLIVE_SMALLSERVER}-${DEBIAN_ARCH}.zip"
+RELNUM_KERNEL_DEBLIVE_SMALLSERVER=$(echo $VERSION_KERNEL_DEBLIVE_SMALLSERVER | awk -F"." '{print $1"."$2}')
+wget -P "${LIVE_BOOT_TMP_DIR}"/minikernel "https://github.com/yveszoundi/kernel-deblive-smallserver/releases/download/${RELNUM_KERNEL_DEBLIVE_SMALLSERVER}/kernel-deblive-smallserver-${VERSION_KERNEL_DEBLIVE_SMALLSERVER}-${DEBIAN_ARCH}.zip"
 unzip -d "${LIVE_BOOT_TMP_DIR}"/minikernel "${LIVE_BOOT_TMP_DIR}/minikernel/kernel-deblive-smallserver-${VERSION_KERNEL_DEBLIVE_SMALLSERVER}-${DEBIAN_ARCH}.zip"
 ls "${LIVE_BOOT_TMP_DIR}"/minikernel/*.deb || (echo "Could not fetch custom kernel packages" && exit 1)
 
@@ -101,10 +102,11 @@ fi
 cd -
 
 sudo cp -rf "${THIS_SCRIPTS_DIR}/in_chroot_files" "${LIVE_BOOT_DIR}/chroot/files"
-sudo cp -f "${THIS_SCRIPTS_DIR}/02-in-chroot.sh" "${LIVE_BOOT_DIR}/chroot/files/"
+sudo cp -f "${THIS_SCRIPTS_DIR}/02-in-chroot.sh"  "${LIVE_BOOT_DIR}/chroot/files/"
 sudo cp -rf "${LIVE_BOOT_TMP_DIR}/gvisor"         "${LIVE_BOOT_DIR}/chroot/files/gvisor"
 sudo cp -rf "${LIVE_BOOT_TMP_DIR}/minikernel"     "${LIVE_BOOT_DIR}/chroot/files/minikernel"
 sudo cp -rf "${LIVE_BOOT_TMP_DIR}/podman"         "${LIVE_BOOT_DIR}/chroot/files/podman"
+
 sudo cp "${LIVE_BOOT_TMP_DIR}/live-libhardened_malloc.so" "${LIVE_BOOT_DIR}/chroot/files/libhardened_malloc.so"
 sudo mv "${LIVE_BOOT_TMP_DIR}/entrusted-packaging"        "${LIVE_BOOT_DIR}/chroot/files/entrusted-packaging"
 sudo mv "${LIVE_BOOT_TMP_DIR}/live-entrusted-cli"         "${LIVE_BOOT_DIR}/chroot/files/entrusted-cli"
@@ -113,7 +115,7 @@ sudo mv "${LIVE_BOOT_TMP_DIR}/live-entrusted-webserver"   "${LIVE_BOOT_DIR}/chro
 sudo chmod +x "${LIVE_BOOT_DIR}"/chroot/files/*.sh
 
 echo "${CONTAINER_USER_NAME}" > "${LIVE_BOOT_TMP_DIR}"/entrusted_username
-echo "${CONTAINER_USER_ID}" > "${LIVE_BOOT_TMP_DIR}"/entrusted_userid
+echo "${CONTAINER_USER_ID}"   > "${LIVE_BOOT_TMP_DIR}"/entrusted_userid
 sudo mv "${LIVE_BOOT_TMP_DIR}"/entrusted_userid "${LIVE_BOOT_DIR}"/chroot/files/entrusted_userid
 sudo mv "${LIVE_BOOT_TMP_DIR}"/entrusted_username "${LIVE_BOOT_DIR}"/chroot/files/entrusted_username
 

@@ -52,13 +52,13 @@ cp /files/etc/systemd/system/*.service /etc/systemd/system/
 cp -r /files/etc/systemd/coredump.conf.d /etc/systemd/
 
 echo ">>> Creating ${ENTRUSTED_USERNAME} user"
-useradd -m -s /bin/bash -u ${ENTRUSTED_USERID} ${ENTRUSTED_USERNAME}
+useradd -m -s /bin/dash -u ${ENTRUSTED_USERID} ${ENTRUSTED_USERNAME}
 adduser ${ENTRUSTED_USERNAME} sudo
 
 echo ">>> Creating entrusted user files and pulling container image"
 runuser -l ${ENTRUSTED_USERNAME} -c "mkdir -p /home/${ENTRUSTED_USERNAME}/.config/containers /home/${ENTRUSTED_USERNAME}/.local/share"
-runuser -l ${ENTRUSTED_USERNAME} -c "cat /files/home/entrusted/.bash_profile >> /home/${ENTRUSTED_USERNAME}/.bashrc"
-runuser -l ${ENTRUSTED_USERNAME} -c "cat /files/home/entrusted/.bash_profile >> /home/${ENTRUSTED_USERNAME}/.bash_profile"
+runuser -l ${ENTRUSTED_USERNAME} -c "cat /files/home/entrusted/.profile >> /home/${ENTRUSTED_USERNAME}/.profile"
+runuser -l ${ENTRUSTED_USERNAME} -c "cat /files/home/entrusted/.shinit >> /home/${ENTRUSTED_USERNAME}/.shinit"
 runuser -l ${ENTRUSTED_USERNAME} -c "cat /files/home/entrusted/.config/containers/containers.conf >> /home/${ENTRUSTED_USERNAME}/.config/containers/containers.conf"
 mv /files/entrusted-packaging/containers /home/${ENTRUSTED_USERNAME}/.local/share/
 chown -R ${ENTRUSTED_USERNAME}:${ENTRUSTED_USERNAME} /home/${ENTRUSTED_USERNAME}/.local/share

@@ -8,7 +8,7 @@ Environment=ENTRUSTED_AUTOMATED_SECCOMP_ENABLEMENT=false
 Environment=ENTRUSTED_AUTOMATED_GVISOR_ENABLEMENT=true
 Type=simple
 User=entrusted
-ExecStart=bash -l -c "/usr/local/bin/entrusted-webserver --host 0.0.0.0 --port 13000"
+ExecStart=dash -l -c "/usr/local/bin/entrusted-webserver --host 0.0.0.0 --port 13000"
 StandardOutput=file:/var/log/entrusted-webserver/stdout.log
 StandardError=file:/var/log/entrusted-webserver/stderr.log
 Restart=always

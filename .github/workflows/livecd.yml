@@ -14,7 +14,7 @@ jobs:
     - name: Install software dependencies
       shell: bash
       run: |
-        sudo apt update && sudo apt install -y debootstrap squashfs-tools dosfstools xorriso xz-utils isolinux fakeroot wget syslinux-efi grub-pc-bin grub-efi-amd64-bin systemd-container bzip2 gzip mtools podman qemu-user-static
+        sudo apt update && sudo apt install -y debootstrap squashfs-tools dosfstools xorriso xz-utils fakeroot wget systemd-container bzip2 gzip mtools podman qemu-user-static
     - uses: actions/checkout@v3
     - name: Prepare environment
       shell: bash
@@ -77,7 +77,7 @@ jobs:
     - name: Install software dependencies
       shell: bash
       run: |
-        sudo apt update && sudo apt install -y debootstrap squashfs-tools dosfstools xorriso xz-utils isolinux fakeroot wget syslinux-efi grub-pc-bin grub-efi-amd64-bin systemd-container bzip2 gzip mtools podman qemu-user-static
+        sudo apt update && sudo apt install -y debootstrap squashfs-tools dosfstools xorriso xz-utils fakeroot wget systemd-container bzip2 gzip mtools podman qemu-user-static
     - uses: actions/checkout@v3
     - name: Prepare environment
       shell: bash

@@ -73,7 +73,7 @@ podman run  \
        ${CPU_ARCH}-grub-mkstandalone \
        --format=i386-pc \
        --output="/ISOLINUX/core.img" \
-       --install-modules="linux16 linux normal iso9660 biosdisk memdisk search tar ls" \
+       --install-modules="linux normal iso9660 biosdisk memdisk search tar ls" \
        --modules="linux16 linux normal iso9660 biosdisk search" \
        --locales="" \
        --fonts="" \

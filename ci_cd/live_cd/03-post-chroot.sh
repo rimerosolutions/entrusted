@@ -4,6 +4,7 @@ set -x
 DEBIAN_ARCH=$1
 LIVE_BOOT_DIR=$2
 LIVE_ISO_DIR=$3
+LIVE_BOOT_TMP_DIR=$4
 
 ROOT_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
 PREVIOUSDIR="$(echo $PWD)"
@@ -43,26 +44,18 @@ cp "${LIVE_BOOT_DIR}"/chroot/boot/initrd.img-* "${LIVE_BOOT_DIR}"/staging/live/i
 
 echo ">>> Creating EFI bootable components"
 cp "${ROOT_SCRIPTS_DIR}"/post_chroot_files/home/entrusted/LIVE_BOOT/staging/isolinux/grub.cfg "${LIVE_BOOT_DIR}"/staging/isolinux/
-if [ "${DEBIAN_ARCH}" != "amd64" ]
-then
-    podman run  \
-           --platform linux/amd64 \
-           -v "${LIVE_BOOT_DIR}/staging/isolinux":/ISOLINUX \
-           docker.io/uycyjnzgntrn/grub-aarch64:fedora-37 \
-           aarch64-grub-mkstandalone --format=${EFI_ARCH}-efi \
-           --output=/ISOLINUX/BOOT${BOOT_EFI_ARCH_UPPER}.efi \
-           --modules="part_gpt part_msdos" \
-           --locales="" \
-           --fonts="" \
-           boot/grub/grub.cfg=/ISOLINUX/grub.cfg                      
-else
-    grub-mkstandalone --format=${EFI_ARCH}-efi \
-                      --output="${LIVE_BOOT_DIR}"/staging/isolinux/BOOT${BOOT_EFI_ARCH_UPPER}.efi \
-                      --modules="part_gpt part_msdos" \
-                      --locales="" \
-                      --fonts="" \
-                      boot/grub/grub.cfg="${LIVE_BOOT_DIR}"/staging/isolinux/grub.cfg
-fi
+
+podman run  \
+       --platform linux/amd64 \
+       -v "${LIVE_BOOT_DIR}/staging/isolinux":/ISOLINUX \
+       docker.io/uycyjnzgntrn/grub-${CPU_ARCH}:fedora-37 \
+       ${CPU_ARCH}-grub-mkstandalone \
+       --format=${EFI_ARCH}-efi \
+       --output=/ISOLINUX/BOOT${BOOT_EFI_ARCH_UPPER}.efi \
+       --modules="part_gpt part_msdos" \
+       --locales="" \
+       --fonts="" \
+       boot/grub/grub.cfg=/ISOLINUX/grub.cfg
 
 ls "${LIVE_BOOT_DIR}"/staging/isolinux/BOOT${BOOT_EFI_ARCH_UPPER}.efi || (echo "Unable to EFI bootable components!" && exit 1)
 
@@ -73,26 +66,40 @@ dd if=/dev/zero of=${LIVE_BOOT_DIR}/staging/efiboot.img bs=1M count=10 && \
     LC_CTYPE=C mcopy -i ${LIVE_BOOT_DIR}/staging/efiboot.img "${LIVE_BOOT_DIR}"/staging/isolinux/BOOT${BOOT_EFI_ARCH_UPPER}.efi ::EFI/BOOT/
 
 echo ">>> Creating Grub BIOS image"
-grub-mkstandalone \
-    --format=i386-pc \
-    --output="${LIVE_BOOT_DIR}/staging/isolinux/core.img" \
-    --install-modules="linux16 linux normal iso9660 biosdisk memdisk search tar ls" \
-    --modules="linux16 linux normal iso9660 biosdisk search" \
-    --locales="" \
-    --fonts="" \
-    "boot/grub/grub.cfg=${LIVE_BOOT_DIR}/staging/isolinux/grub.cfg"
+podman run  \
+       --platform linux/amd64 \
+       -v "${LIVE_BOOT_DIR}/staging/isolinux":/ISOLINUX \
+       docker.io/uycyjnzgntrn/grub-amd64:fedora-37 \
+       ${CPU_ARCH}-grub-mkstandalone \
+       --format=i386-pc \
+       --output="/ISOLINUX/core.img" \
+       --install-modules="linux16 linux normal iso9660 biosdisk memdisk search tar ls" \
+       --modules="linux16 linux normal iso9660 biosdisk search" \
+       --locales="" \
+       --fonts="" \
+       "boot/grub/grub.cfg=/ISOLINUX/grub.cfg"
 
 echo ">>> Combine bootable Grub cdboot.img"
-cat /usr/lib/grub/i386-pc/cdboot.img ${LIVE_BOOT_DIR}/staging/isolinux/core.img > ${LIVE_BOOT_DIR}/staging/isolinux/bios.img
+podman run  \
+       --platform linux/amd64 \
+       -v "${LIVE_BOOT_DIR}/staging/isolinux":/ISOLINUX \
+       docker.io/uycyjnzgntrn/grub-amd64:fedora-37 \
+       sh -c "cat /usr/lib/grub/i386-pc/cdboot.img /ISOLINUX/core.img > /ISOLINUX/bios.img"
 
 echo ">>> Creating Live CD ISO image"
+podman run  \
+       --platform linux/amd64 \
+       -v "${LIVE_BOOT_TMP_DIR}":/MYTMP \
+       docker.io/uycyjnzgntrn/grub-amd64:fedora-37 \
+       sh -c "cp /usr/lib/grub/i386-pc/boot_hybrid.img /MYTMP"
+
 xorriso -as mkisofs \
         -iso-level 3 \
         -volid "ENTRUSTED_LIVE" \
         -full-iso9660-filenames \
         -J -J -joliet-long \
         -output "${LIVE_ISO_DIR}/entrusted-${ENTRUSTED_VERSION}-livecd-${CPU_ARCH}.iso" \
-        --grub2-mbr /usr/lib/grub/i386-pc/boot_hybrid.img \
+        --grub2-mbr "${LIVE_BOOT_TMP_DIR}/boot_hybrid.img" \
         -partition_offset 16 \
         --mbr-force-bootable \
         -append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b ${LIVE_BOOT_DIR}/staging/efiboot.img \

@@ -1,0 +1,13 @@
+FROM docker.io/fedora:37
+
+RUN dnf -y install grub2-efi \
+    grub2-efi-modules \
+    shim \
+    grub2-pc \
+    grub2-tools \
+    grub2-efi-x64\
+    grub2-efi-x64-modules \
+    grub2-tools-extra \
+    && ln -sf /usr/bin/grub2-mkstandalone /usr/bin/amd64-grub-mkstandalone \
+    && dnf clean all
+

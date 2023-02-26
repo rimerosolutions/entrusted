@@ -17,8 +17,6 @@ sudo apt update && sudo apt install -y \
     squashfs-tools \
     dosfstools \
     xorriso \
-    grub-efi-amd64-bin \
-    grub-pc-bin \
     fakeroot \
     sudo \
     bash \
@@ -91,7 +89,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
         echo "Failed to prepare build for ${CPU_ARCH}" && exit 1
     fi
 
-    "${ROOT_SCRIPTS_DIR}"/03-post-chroot.sh "${DEBIAN_ARCH}" "${LIVE_BOOT_DIR}" "${LIVE_ISO_DIR}"
+    "${ROOT_SCRIPTS_DIR}"/03-post-chroot.sh "${DEBIAN_ARCH}" "${LIVE_BOOT_DIR}" "${LIVE_ISO_DIR}" "${LIVE_BOOT_TMP_DIR}"
     retVal=$?
     if [ "$retVal" != "0" ]; then
         echo "Failed to create ISO image for ${CPU_ARCH}" && exit 1

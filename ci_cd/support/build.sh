@@ -7,6 +7,15 @@ RUST_CI_VERSION="1.67.0"
 
 cd ${ROOT_SCRIPTDIR}
 
+# # Grub amd64 image helper
+buildah bud --squash --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/grub-amd64:fedora-37 -f Dockerfile.grub.amd64 .
+
+retVal=$?
+if [ $retVal -ne 0 ]; then
+	echo "Failed to build grub container image"
+  exit 1
+fi
+
 # # Windows for amd64
 buildah bud --squash --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/rust-windows:${RUST_CI_VERSION} -f Dockerfile.windows.amd64 .
 

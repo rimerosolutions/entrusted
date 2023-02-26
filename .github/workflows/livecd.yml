@@ -64,7 +64,7 @@ jobs:
       shell: bash
       run: |
         "${{ env.entrusted_scripts_dir }}"/01-pre-chroot.sh  "${{ env.entrusted_version }}" "x86_64" "${{ env.entrusted_cpu_arch }}" "${{ env.entrusted_container_arch }}" "${{ env.entrusted_linux_artifacts_dir }}" "${{ env.entrusted_live_boot_dir }}" "${{ env.entrusted_live_boot_tmpdir }}" "${{ env.entrusted_livecd_user_name }}" "${{ env.entrusted_livecd_user_id }}"         
-        "${{ env.entrusted_scripts_dir }}"/03-post-chroot.sh "${{ env.entrusted_cpu_arch }}" "${{ env.entrusted_live_boot_dir }}" "${{ env.entrusted_live_iso_dir }}" 
+        "${{ env.entrusted_scripts_dir }}"/03-post-chroot.sh "${{ env.entrusted_cpu_arch }}" "${{ env.entrusted_live_boot_dir }}" "${{ env.entrusted_live_iso_dir }}" "${{ env.entrusted_live_boot_tmpdir }}"
     - name: Upload portable installation
       uses: actions/upload-artifact@v3
       with:
@@ -127,7 +127,7 @@ jobs:
       shell: bash
       run: |
         "${{ env.entrusted_scripts_dir }}"/01-pre-chroot.sh  "${{ env.entrusted_version }}" "aarch64" "${{ env.entrusted_cpu_arch }}" "${{ env.entrusted_container_arch }}" "${{ env.entrusted_linux_artifacts_dir }}" "${{ env.entrusted_live_boot_dir }}" "${{ env.entrusted_live_boot_tmpdir }}" "${{ env.entrusted_livecd_user_name }}" "${{ env.entrusted_livecd_user_id }}"         
-        "${{ env.entrusted_scripts_dir }}"/03-post-chroot.sh "${{ env.entrusted_cpu_arch }}" "${{ env.entrusted_live_boot_dir }}" "${{ env.entrusted_live_iso_dir }}" 
+        "${{ env.entrusted_scripts_dir }}"/03-post-chroot.sh "${{ env.entrusted_cpu_arch }}" "${{ env.entrusted_live_boot_dir }}" "${{ env.entrusted_live_iso_dir }}" "${{ env.entrusted_live_boot_tmpdir }}"
     - name: Upload portable installation
       uses: actions/upload-artifact@v3
       with:

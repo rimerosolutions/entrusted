@@ -9,6 +9,37 @@ env:
   DEBIAN_VERSION: "bullseye"
 
 jobs:
+  build_publish_grub_image:
+    name: BUILDER GRUB
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Prepare environment
+      shell: bash
+      run: |
+        sudo apt install -y qemu-user-static podman buildah
+    - name: Build Grub helper image
+      uses: redhat-actions/buildah-build@v2
+      with:
+        archs: amd64
+        image: ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/grub-amd64
+        tags: fedora-37
+        oci: false
+        context: ci_cd/support
+        containerfiles: |
+          ci_cd/support/Dockerfile.grub.amd64
+        extra-args: |
+          --squash
+    - name: Publish Grub helper image
+      uses: redhat-actions/push-to-registry@v2
+      with:
+        image: grub-amd64
+        tags: fedora-37
+        registry: ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        extra-args: |
+          --format docker  
   build_publish_windows_images:
     name: BUILDER WINDOWS
     runs-on: ubuntu-latest

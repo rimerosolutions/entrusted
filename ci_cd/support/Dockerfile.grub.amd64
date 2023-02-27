@@ -2,6 +2,7 @@ FROM docker.io/fedora:37
 
 RUN dnf -y install grub2-efi \
     grub2-efi-modules \
+    binutils \
     shim \
     curl \
     grub2-pc \
@@ -12,11 +13,11 @@ RUN dnf -y install grub2-efi \
     grub2-efi-x64-modules \
     grub2-tools-extra \
     && ln -sf /usr/bin/grub2-mkstandalone /usr/bin/amd64-grub-mkstandalone \
-    && dnf clean all
-
-RUN cd /tmp \
-    && curl -L -O http://http.us.debian.org/debian/pool/main/g/grub2/grub-pc-bin_2.06-3~deb11u5_amd64.deb \
-    && ar -x grub-pc-bin_2.06-3~deb11u5_amd64.deb \
+    && dnf clean all \
+    && cd /tmp \
+    && curl -L -o grub-pc-bin.deb http://http.us.debian.org/debian/pool/main/g/grub2/grub-pc-bin_2.06-3~deb11u5_amd64.deb \
+    && ar -x grub-pc-bin.deb \
+    && tar axf data.tar.xz \
     && cp ./usr/lib/grub/i386-pc/linux16.mod /usr/lib/grub/i386-pc/ \
     && cd / \
     && rm -rf /tmp/*

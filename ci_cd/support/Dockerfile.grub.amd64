@@ -19,5 +19,5 @@ RUN dnf -y install grub2-efi \
     && ar -x grub-pc-bin.deb \
     && tar axf data.tar.xz \
     && cp ./usr/lib/grub/i386-pc/linux16.mod /usr/lib/grub/i386-pc/ \
-    && cd / \
+    && ls /usr/lib/grub/i386-pc/linux16.mod \
     && rm -rf /tmp/*

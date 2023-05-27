@@ -4,17 +4,15 @@
 
 The main objective is to start generating all releases artifacts via the GitHub infrastructure going forward.
 
-- Builds and releases
+- Builds
   - Integrate local shell scripts with [[https://github.com/features/actions][GitHub Actions]] workflows
     - Generate of all release artifacts from GitHub (on demand)
     - Publish the "container sandbox" image to [[https://hub.docker.com/][Docker Hub]] (on demand)
     - Scan for container vulnerability in the "container sandbox" image (on demand)
     - Run minimal functional tests (automatically for the development branch)
-  - Prepare technical underpinnings for =Flatpak= builds on Linux
-  - Create =Musl= compatible binaries for Linux
-- Security (Live CD)
+  - Prepare technical underpinnings for supporting other "sandboxing" mechanisms in the future
+- Security
   - Implement [[https://gvisor.dev/][gVisor]] as container security platform
-  - Harden few services
 - Enhancements
   - Web User Interface: Add tabs to mimic more closely the Desktop version
   - Desktop User Interface: Add hyperlinks for opening directly PDF results

@@ -12,13 +12,13 @@ CONTAINER_USER_NAME=$8
 CONTAINER_USER_ID=$9
 
 VERSION_PODMAN_STATIC="4.5.0"
-VERSION_KERNEL_DEBLIVE_SMALLSERVER="6.1.13"
+VERSION_KERNEL_DEBLIVE_SMALLSERVER="6.1.30"
 THIS_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${THIS_SCRIPTS_DIR}/../../app)"
 RUST_CI_VERSION="1.67.0"
 
 echo ">>> Creating LIVE_BOOT folder"
-test -d "${LIVE_BOOT_DIR}" && sudo rm -rf "${LIVE_BOOT_DIR}"
+test -d "${LIVE_BOOT_DIR}"  && sudo rm -rf "${LIVE_BOOT_DIR}"
 mkdir -p "${LIVE_BOOT_DIR}" && sudo chmod -R a+rw "${LIVE_BOOT_DIR}"
 
 echo ">>> Boostraping Debian installation"

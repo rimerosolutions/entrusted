@@ -1,6 +1,9 @@
 #+TITLE: TODO
 
-* Milestone: From local CI/CD pipelines to GitHub Actions [66%]
+* Milestone: Future
+Who knows
+
+* Milestone: From local CI/CD pipelines to GitHub Actions [100%]
 
 - [X] GitHub actions tasks (some of it was already tested/tried)
   - [X] Refactor existing shell scripts to work with GitHub actions and also locally
@@ -14,16 +17,13 @@
     - [X] Binaries for Linux (amd64 and aarch64)
     - [X] Binaries for Mac OS (amd64 and aarch64)
 - [X] Sync with [[https://github.com/axtloss/flatpaks][Axtloss]] for updating the Linux Flatpak (also enquire for =arm64=)
-- [ ] Testing
-  - [ ] See how to make it easier to test prior releases
-  - [ ] Add few encrypted files to existing test data
 - [X] Security
   - [X] Research enabling [[https://www.apparmor.net/][apparmor]] on the Live CD
   - [X] Research and enable [[https://gvisor.dev/][gVisor]] on the Live CD
-- [-] User interface
-  - [ ] Evaluate opportunities to simplify the UI without adding too many screens
+- [X] User interface
   - [X] Desktop interface improvements
-    - [X] Add an "Open" "hyperlink" next to the "Logs" link in the Desktop UI
+    - [X] Add an "Open" "hyperlink" next to the "Logs" link
+    - [X] Add an "Open" "hyperlink" to open PDF result after conversions in the Desktop UI
   - [X] Web interface improvements
     - [X] Add tabs in the Web UI, like in the Desktop UI
 - [X] Other topics

@@ -64,7 +64,6 @@ pub struct ReleaseInfo {
     pub tag_name: String,
 }
 
-
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct LogMessage {
     pub data: String,

@@ -70,7 +70,7 @@ impl common::EventSender for GuiEventSender {
 struct ConversionTask {
     input_path: PathBuf,
     output_path: PathBuf,
-    options: common::ConvertOptions
+    options: common::ConvertOptions,
 }
 
 #[derive(Clone)]
@@ -88,9 +88,15 @@ struct FileListRow {
     logs_link: HyperLink,
     logs: Rc<RefCell<Vec<String>>>,
     opt_passwd: Rc<RefCell<Option<String>>>,
+    viewer_app_option: Rc<RefCell<Option<String>>>
 }
 
 impl FileListRow {
+
+    pub fn set_viewer_app(&mut self, viewer_app: String) {
+        self.viewer_app_option.replace(Some(viewer_app));
+    }
+    
     pub fn deactivate_controls(&mut self) {
         self.checkbox.deactivate();
         self.password_button.deactivate();
@@ -281,7 +287,7 @@ fn row_to_task(active_ociimage_option: &String, image_quality: String,  active_o
     ConversionTask {
         input_path,
         output_path,
-        options
+        options,
     }
 }
 
@@ -732,7 +738,8 @@ impl FileListWidget {
             file: path.clone(),
             output_file_button: output_file_button.clone(),
             opt_output_file: Rc::new(RefCell::new(None)),
-            opt_passwd: Rc::new(RefCell::new(None))
+            opt_passwd: Rc::new(RefCell::new(None)),
+            viewer_app_option: Rc::new(RefCell::new(None)),
         };
 
         output_file_button.set_callback({
@@ -994,12 +1001,24 @@ impl FileListWidget {
                 enums::Event::Push => {
                     if inside_hyperlink_bounds(app::event_coords(), wid) {
                         if let Some(output_path) = active_row.opt_output_file.borrow().clone() {
-                            if let Err(ex) = open_document(&output_path, "application/pdf", &trans_ref) {
-                                let err_text = ex.to_string();
-                                let err_msg = &trans_ref.gettext_fmt("Couldn't open PDF file in default application! {0}.", vec![&err_text]);
+                            let opt_viewer_app = active_row.viewer_app_option.borrow().clone();                            
 
-                                if let Some(wind_ref) = app::first_window() {
-                                    dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, err_msg);
+                            if let Some(viewer_app) = opt_viewer_app {
+                                if let Err(ex) = pdf_open_with(viewer_app, PathBuf::from(&output_path), &trans_ref) {
+                                    let err_text = format!("{}\n{}.", &trans_ref.gettext("Could not open PDF file!"), ex);
+
+                                    if let Some(wind_ref) = app::first_window() {
+                                        dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, &err_text);
+                                    }
+                                }
+                            } else {
+                                if let Err(ex) = open_document(&output_path, "application/pdf", &trans_ref) {
+                                    let err_text = ex.to_string();
+                                    let err_msg = &trans_ref.gettext_fmt("Couldn't open PDF file in default application! {0}.", vec![&err_text]);
+
+                                    if let Some(wind_ref) = app::first_window() {
+                                        dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, err_msg);
+                                    }
                                 }
                             }
                         }
@@ -1118,6 +1137,13 @@ impl FileListWidget {
         }
     }
 
+    pub fn set_viewer_app(&mut self, viewer_app: String) {
+        for row in self.rows.borrow_mut().iter() {
+            let mut active_row = row.clone();
+            active_row.set_viewer_app(viewer_app.clone());
+        }
+    }
+    
     fn deactivate_controls(&mut self) {
         for row in self.rows.borrow_mut().iter() {
             let mut active_row = row.clone();
@@ -1529,6 +1555,93 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
     ocrlang_pack.end();
+    // User settings - Open PDF result with a given application
+    let mut openwith_pack = group::Pack::default()
+        .with_size(570, 40)
+        .with_type(group::PackType::Horizontal);
+    openwith_pack.set_spacing(WIDGET_GAP);
+    let mut openwith_checkbutton = button::CheckButton::default().with_size(295, 20).with_label(&trans.gettext("Open resulting PDF with"));
+    openwith_checkbutton.set_tooltip(&trans.gettext("Automatically open resulting PDFs with a given program."));
+
+    let pdf_apps_by_name = list_apps_for_pdfs();
+    let openwith_inputchoice_rc = Rc::new(RefCell::new(misc::InputChoice::default().with_size(240, 20)));
+    let mut pdf_viewer_app_names = Vec::with_capacity(pdf_apps_by_name.len());
+
+    for k in pdf_apps_by_name.keys() {
+        pdf_viewer_app_names.push(k.as_str());
+    }
+
+    pdf_viewer_app_names.sort();
+
+    for k in pdf_viewer_app_names.iter() {
+        openwith_inputchoice_rc.borrow_mut().add(k);
+    }
+
+    openwith_inputchoice_rc.borrow_mut().set_tooltip(&trans.gettext("You can also paste the path to a PDF viewer"));
+
+    if !pdf_apps_by_name.is_empty() {
+        let idx = if let Some(viewer_appname) = appconfig.openwith_appname.clone() {
+            if let Some(pos) = pdf_viewer_app_names.iter().position(|r| r == &viewer_appname) {
+                pos
+            } else {
+                0
+            }
+        } else {
+            0
+        };
+        openwith_inputchoice_rc.borrow_mut().set_value_index(idx as i32);
+    }
+
+    if appconfig.openwith_appname.is_none() {
+        openwith_inputchoice_rc.borrow_mut().deactivate();
+    }
+
+    let openwith_button_rc = Rc::new(RefCell::new(button::Button::default().with_size(35, 20).with_label("..")));
+    let openwith_button_tooltip = trans.gettext("Browse for PDF viewer program");
+    openwith_button_rc.borrow_mut().set_tooltip(&openwith_button_tooltip);
+
+    openwith_button_rc.borrow_mut().deactivate();
+
+    if appconfig.openwith_appname.is_some() {
+        openwith_checkbutton.set_checked(true);
+    }
+
+    openwith_checkbutton.set_callback({
+        let pdf_viewer_list_ref = openwith_inputchoice_rc.clone();
+        let openwith_button_rc_ref = openwith_button_rc.clone();
+
+        move |b| {
+            let will_be_read_only = !b.is_checked();
+            pdf_viewer_list_ref.borrow_mut().input().set_readonly(will_be_read_only);
+
+            if will_be_read_only {
+                pdf_viewer_list_ref.borrow_mut().deactivate();
+                openwith_button_rc_ref.borrow_mut().deactivate();
+            } else {
+                pdf_viewer_list_ref.borrow_mut().activate();
+                openwith_button_rc_ref.borrow_mut().activate();
+            };
+        }
+    });
+
+    openwith_button_rc.borrow_mut().set_callback({
+        let pdf_viewer_list_ref = openwith_inputchoice_rc.clone();
+
+        move |_| {
+            let mut selectpdfviewer_dialog = dialog::FileDialog::new(dialog::FileDialogType::BrowseFile);
+            selectpdfviewer_dialog.set_title(&openwith_button_tooltip);
+            selectpdfviewer_dialog.show();
+
+            let selected_filename = selectpdfviewer_dialog.filename();
+
+            if !selected_filename.as_os_str().is_empty() {
+                let path_name = selectpdfviewer_dialog.filename().display().to_string();
+                pdf_viewer_list_ref.borrow_mut().set_value(&path_name);
+            }
+        }
+    });
+
+    openwith_pack.end();
 
     // User settings - custom container image
     let mut ociimage_pack = group::Pack::default()
@@ -1596,6 +1709,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         let ociimage_input_rc_ref = ociimage_input_rc.clone();
         let ocr_languages_by_lang_ref = ocr_languages_by_lang.clone();
         let result_visual_quality_checkbutton_ref = result_visual_quality_checkbutton.clone();
+        let openwith_checkbutton_ref = openwith_checkbutton.clone();
+        let openwith_inputchoice_rc_ref = openwith_inputchoice_rc.clone();
         let wind_ref = wind.clone();
 
         move|_| {
@@ -1641,6 +1756,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             } else {
                 new_appconfig.file_suffix = None;
+            }
+
+            if openwith_checkbutton_ref.is_checked() {
+                new_appconfig.openwith_appname = openwith_inputchoice_rc_ref.borrow().value();
             }
 
             if let Err(ex) = config::save_config(new_appconfig) {
@@ -1899,6 +2018,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut overall_progress_frame_ref  = overall_progress_frame.clone();
         let mut cancel_tasks_button_ref = cancel_tasks_button.clone();
         let mut overall_progress_progressbar_ref  = overall_progress_progressbar.clone();
+        let openwith_checkbutton_ref = openwith_checkbutton.clone();
+        let pdf_viewer_list_ref = openwith_inputchoice_rc.clone();
 
         move |b| {
             b.deactivate();
@@ -1916,6 +2037,17 @@ fn main() -> Result<(), Box<dyn Error>> {
             let image_quality_value_index = result_visual_quality_menuchoice_rc.borrow().value();
             let image_quality = common::IMAGE_QUALITY_CHOICES[image_quality_value_index as usize].to_lowercase();
 
+            let opt_viewer_app = if openwith_checkbutton_ref.is_checked() {
+                let viewer_app_name = pdf_viewer_list_ref.borrow_mut().input().value();
+                if let Some(viewer_app_path) = pdf_apps_by_name.get(&viewer_app_name) {
+                    Some(viewer_app_path.clone())
+                } else {
+                    Some(viewer_app_name.trim().to_owned())
+                }
+            } else {
+                None
+            };
+            
             let opt_ocr_lang = if ocrlang_checkbutton_ref.is_checked() {
                 let ocrlang_dropdown = ocrlang_holdbrowser_rc_ref.borrow();
                 let selected_langcodes = selected_ocr_langcodes(&ocr_languages_by_lang, &ocrlang_dropdown);
@@ -1947,7 +2079,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 false
             };
 
-            let tasks: Vec<ConversionTask> = filelist_widget_ref.rows.borrow().iter().map(|row| {
+            let tasks: Vec<ConversionTask> = filelist_widget_ref.rows.borrow().iter().map(|row| {                
                 row_to_task(&opt_oci_image,
                             image_quality.clone(),
                             &opt_ocr_lang,
@@ -1958,6 +2090,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             }).collect();
 
             filelist_widget_ref.deactivate_controls();
+
+            if let Some(viewer_app) = &opt_viewer_app {
+                filelist_widget_ref.set_viewer_app(viewer_app.clone());
+            }            
+            
             filelist_scroll_ref.scroll_to(0, 0);
             let task_count = tasks.len();
 
@@ -2373,6 +2510,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut ocrlang_pack_ref = ocrlang_pack.clone();
         let mut ocrlang_checkbutton_ref = ocrlang_checkbutton.clone();
 
+        let mut openwith_pack_ref = openwith_pack.clone();
+        let mut openwith_checkbutton_ref = openwith_checkbutton.clone();
+
         let ociimage_input_rc_ref = ociimage_input_rc.clone();
         let mut ociimage_checkbutton_ref = ociimage_checkbutton.clone();
         let mut ociimage_pack_ref = ociimage_pack.clone();
@@ -2523,6 +2663,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                     wid.w() - (WIDGET_GAP * 2),
                     filesuffix_pack_ref.h(),
                 );
+                openwith_pack_ref.resize(
+                    openwith_pack_ref.x() + WIDGET_GAP / 2,
+                    openwith_pack_ref.y(),
+                    wid.w() - (WIDGET_GAP * 2),
+                    openwith_pack_ref.h(),
+                );
 
                 filesuffix_checkbutton_ref.resize(
                     xx,
@@ -2538,13 +2684,21 @@ fn main() -> Result<(), Box<dyn Error>> {
                 );
 
                 let ocw = wid.w() - (WIDGET_GAP * 3) - ocrlang_checkbutton.w();
-                let och = wid.h() - (WIDGET_GAP * 8) - (30 * 6);
+                let och = wid.h() - (WIDGET_GAP * 8) - (30 * 7);
 
+                
                 ociimage_checkbutton_ref.resize(
                     ocrlang_checkbutton_ref.x(),
                     ociimage_checkbutton_ref.y(),
                     ocrlang_checkbutton_ref.w(),
                     ociimage_checkbutton_ref.h(),
+                );
+
+                openwith_checkbutton_ref.resize(
+                    ocrlang_checkbutton_ref.x(),
+                    openwith_checkbutton_ref.y(),
+                    ocrlang_checkbutton_ref.w(),
+                    openwith_checkbutton_ref.h(),
                 );
 
                 ocrlang_pack_ref.resize(
@@ -3034,5 +3188,336 @@ pub fn open_document(url: &str,  content_type: &str, trans: &l10n::Translations)
         }
     } else {
         Err(trans.gettext_fmt("Cannot find default application for content type: {0}", vec![content_type]).into())
+    }
+}
+
+#[cfg(not(any(target_os = "windows", target_os = "macos")))]
+pub fn list_apps_for_pdfs() -> HashMap<String, String> {
+    use freedesktop_entry_parser::parse_entry;
+
+    let mut ret = HashMap::new();
+
+    // See https://wiki.archlinux.org/title/XDG_MIME_Applications for the logic
+    // TODO is TryExec the best way to get a program name vs 'Exec' and stripping arguments???
+    // TODO This is not robust enough...
+    // Exec=someapp -newtab %u => where '%u' could be the file input parameter on top of other defaults '-newtab'
+    fn parse_desktop_apps(
+        apps_dir: Vec<&str>,
+        mime_pdf_desktop_refs: &str,
+    ) -> HashMap<String, String> {
+        let desktop_entries: Vec<&str> = mime_pdf_desktop_refs.split(";").collect();
+        let mut result = HashMap::with_capacity(desktop_entries.len());
+
+        for desktop_entry in desktop_entries {
+            if desktop_entry.is_empty() {
+                continue;
+            }
+
+            for app_dir in apps_dir.iter() {
+                let mut desktop_entry_path = PathBuf::from(app_dir.clone());
+                desktop_entry_path.push(desktop_entry);
+
+                if desktop_entry_path.exists() {
+                    if let Ok(desktop_entry_data) = parse_entry(desktop_entry_path) {
+                        let desktop_entry_section = desktop_entry_data.section("Desktop Entry");
+
+                        if let (Some(app_name), Some(cmd_name)) = (
+                            &desktop_entry_section.attr("Name"),
+                            &desktop_entry_section
+                                .attr("TryExec")
+                                .or(desktop_entry_section.attr("Exec")),
+                        ) {
+                            let cmd_name_sanitized = cmd_name
+                                .to_string()
+                                .replace("%u", "")
+                                .replace("%U", "")
+                                .replace("%f", "")
+                                .replace("%F", "");
+                            result.insert(app_name.to_string(), cmd_name_sanitized);
+                        }
+                    }
+                }
+            }
+        }
+
+        result
+    }
+
+    let applications_folders = &["/usr/share/applications", "/usr/local/share/applications"];
+    let applications_folders_vec = applications_folders.to_vec();
+
+    for applications_folder in applications_folders {
+        let path_usr_share_applications_orig = PathBuf::from(applications_folder);
+        let mut ret: HashMap<String, String> = HashMap::new();
+        let mut path_mimeinfo_cache = path_usr_share_applications_orig.clone();
+        path_mimeinfo_cache.push("mimeinfo.cache");
+
+        if path_mimeinfo_cache.exists() {
+            if let Ok(conf) = parse_entry(path_mimeinfo_cache) {
+                if let Some(mime_pdf_desktop_refs) = conf.section("MIME Cache").attr("application/pdf") {
+                    let tmp_result = parse_desktop_apps(
+                        applications_folders_vec.clone(),
+                        mime_pdf_desktop_refs,
+                    );
+
+                    for (k, v) in &tmp_result {
+                        ret.insert(k.to_string(), v.to_string());
+                    }
+                }
+            }
+        }
+    }
+
+    let mut additional_xdg_files = vec![
+        PathBuf::from("/etc/xdg/mimeapps.list"),
+        PathBuf::from("/usr/local/share/applications/mimeapps.list"),
+        PathBuf::from("/usr/share/applications/mimeapps.list"),
+    ];
+
+    if let Ok(homedir) = env::var("HOME") {
+        let home_config_mimeapps: PathBuf =
+            [homedir.as_str(), ".config/mimeapps.list"].iter().collect();
+        let home_local_mimeapps: PathBuf =
+            [homedir.as_str(), ".local/share/applications/mimeapps.list"]
+            .iter()
+            .collect();
+        additional_xdg_files.push(home_config_mimeapps);
+        additional_xdg_files.push(home_local_mimeapps);
+    }
+
+    for additional_xdg_file in additional_xdg_files {
+        if additional_xdg_file.exists() {
+            if let Ok(conf) = parse_entry(additional_xdg_file) {
+                if let Some(mime_pdf_desktop_refs) =
+                    conf.section("Added Associations").attr("application/pdf")
+                {
+                    let tmp_result = parse_desktop_apps(
+                        applications_folders_vec.clone(),
+                        mime_pdf_desktop_refs,
+                    );
+
+                    for (k, v) in &tmp_result {
+                        ret.insert(k.to_string(), v.to_string());
+                    }
+                }
+            }
+        }
+    }
+
+    ret
+}
+
+#[cfg(target_os = "windows")]
+pub fn list_apps_for_pdfs() -> HashMap<String, String> {
+    use winreg::enums::RegType;
+    use winreg::enums::HKEY_CLASSES_ROOT;
+    use winreg::RegKey;
+    let mut ret = HashMap::new();
+    let hkcr = RegKey::predef(HKEY_CLASSES_ROOT);
+    let open_with_list_hkcr_res = hkcr.open_subkey(".pdf\\OpenWithProgids");
+
+    fn friendly_app_name(regkey: &RegKey, name: String) -> String {
+        let app_id = format!("{}\\Application", name);
+
+        if let Ok(app_application_regkey) = regkey.open_subkey(app_id) {
+            let app_result: std::io::Result<String> =
+                app_application_regkey.get_value("ApplicationName");
+
+            if let Ok(ret) = app_result {
+                return ret;
+            }
+        }
+
+        name
+    }
+
+    if let Ok(open_with_list_hkcr) = open_with_list_hkcr_res {
+        let mut candidates = HashSet::new();
+
+        for (name, v) in open_with_list_hkcr.enum_values().map(|x| x.unwrap()) {
+            if !name.is_empty() && v.vtype != RegType::REG_NONE {
+                candidates.insert(name);
+            }
+        }
+
+        for name in candidates.iter() {
+            let app_id = format!("{}\\shell\\Open\\command", name);
+            let new_name = friendly_app_name(&hkcr, name.clone());
+
+            if let Ok(app_application_regkey) = hkcr.open_subkey(app_id) {
+                for (_, value) in app_application_regkey.enum_values().map(|x| x.unwrap()) {
+                    let human_value = format!("{}", value);
+                    let human_val: Vec<&str> = human_value.split("\"").collect();
+
+                    // "C:\ Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe" "%1"
+                    if human_val.len() > 3 {
+                        let human_app_path_with_trailing_backlash = human_val[2];
+
+                        if human_app_path_with_trailing_backlash.ends_with("\\") {
+                            let path_len = human_app_path_with_trailing_backlash.len() - 1;
+                            let updated_path =
+                                human_app_path_with_trailing_backlash[..path_len].to_string();
+
+                            if PathBuf::from(&updated_path).exists() {
+                                let new_name_copy = new_name.clone();
+
+                                if new_name_copy.to_lowercase() == "entrusted" {
+                                    continue;
+                                }
+
+                                ret.insert(new_name_copy, updated_path);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    ret
+}
+
+#[cfg(target_os = "macos")]
+pub fn list_apps_for_pdfs() -> HashMap<String, String> {
+    use core_foundation::array::{CFArrayGetCount, CFArrayGetValueAtIndex};
+    use core_foundation::url::CFURL;
+    use core_foundation::bundle::CFBundle;
+    use core_services::CFString;
+    use core_foundation::string::{
+        kCFStringEncodingUTF8, CFStringCreateWithCString, CFStringGetCStringPtr, CFStringRef,
+    };
+    use core_foundation::url::{CFURLCopyPath, CFURLRef};
+    use core_services::{
+        kLSRolesAll, LSCopyAllRoleHandlersForContentType, LSCopyApplicationURLsForBundleIdentifier,
+    };
+    use percent_encoding::percent_decode;
+    use std::ffi::{CStr, CString};
+
+    let content_type = "com.adobe.pdf";
+    let mut ret = HashMap::new();
+
+    unsafe {
+        if let Ok(c_key) = CString::new(content_type) {
+            let cf_key = CFStringCreateWithCString(std::ptr::null(), c_key.as_ptr(), kCFStringEncodingUTF8);
+            let result = LSCopyAllRoleHandlersForContentType(cf_key, kLSRolesAll);
+            let count = CFArrayGetCount(result);
+
+            for i in 0..count {
+                let bundle_id = CFArrayGetValueAtIndex(result, i) as CFStringRef;
+                let err_ref = std::ptr::null_mut();
+                let apps = LSCopyApplicationURLsForBundleIdentifier(bundle_id, err_ref);
+
+                if err_ref.is_null() {
+                    let app_count = CFArrayGetCount(apps);
+
+                    for j in 0..app_count {
+                        let cf_ref = CFArrayGetValueAtIndex(apps, j) as CFURLRef;
+                        let cf_path = CFURLCopyPath(cf_ref);
+                        let cf_ptr = CFStringGetCStringPtr(cf_path, kCFStringEncodingUTF8);
+                        let c_str = CStr::from_ptr(cf_ptr);
+                        let mut app_name = String::new();
+
+                        if let Ok(app_url) = c_str.to_str() {
+                            if let Ok(app_url_decoded) = percent_decode(app_url.as_bytes()).decode_utf8() {
+                                let app_path = app_url_decoded.to_string();
+
+                                if let Some(bundle_url) = CFURL::from_path(&app_path, true) {
+                                    if let Some(bundle) = CFBundle::new(bundle_url) {
+                                        let bundle_dict = bundle.info_dictionary();
+                                        let bundle_key_display_name = CFString::new("CFBundleDisplayName");
+                                        let bundle_key_name = CFString::new("CFBundleName");
+
+                                        let current_key = if bundle_dict.contains_key(&bundle_key_display_name) {
+                                            Some(bundle_key_display_name)
+                                        } else if bundle_dict.contains_key(&bundle_key_display_name) {
+                                            Some(bundle_key_name)
+                                        } else {
+                                            None
+                                        };
+
+                                        if let Some(active_key) = current_key {
+                                            
+                                            if let Some(active_key_value) = bundle_dict.find(&active_key)
+                                                .and_then(|value_ref| value_ref.downcast::<CFString>())
+                                                .map(|value| value.to_string()) {
+                                                    if &active_key_value == "Entrusted" {
+                                                        continue;
+                                                    }
+                                                    app_name.push_str(&active_key_value);
+                                                }
+                                        } else if let Some(basename_ostr) = std::path::Path::new(&app_url).file_stem() {
+                                            if let Some(basename) = &basename_ostr.to_str() {
+                                                
+                                                
+                                                let implied_app_name = percent_decode(basename.as_bytes());
+
+                                                if let Ok(r_app_name_decoded)= implied_app_name.decode_utf8() {
+                                                    app_name.push_str(&r_app_name_decoded);
+                                                }
+                                            }
+                                        }
+
+                                        if !app_name.is_empty() {
+                                            ret.insert(app_name, app_path);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    ret
+}
+
+#[cfg(target_os = "windows")]
+pub fn pdf_open_with(cmd: String, input: PathBuf, _: &l10n::Translations) -> Result<(), Box<dyn Error>> {
+    use std::os::windows::process::CommandExt;
+    match Command::new(cmd).arg(input).creation_flags(0x08000000).spawn() {
+        Ok(_)   => Ok(()),
+        Err(ex) => Err(ex.into()),
+    }
+}
+
+#[cfg(not(any(target_os = "windows", target_os = "macos")))]
+pub fn pdf_open_with(cmd: String, input: PathBuf, _: &l10n::Translations) -> Result<(), Box<dyn Error>> {
+    match Command::new(cmd).arg(input).spawn() {
+        Ok(_)   => Ok(()),
+        Err(ex) => Err(ex.into()),
+    }
+}
+
+#[cfg(target_os = "macos")]
+pub fn pdf_open_with(cmd: String, input: PathBuf, trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {
+    let p = std::path::Path::new(&cmd);
+
+    if p.exists() && p.is_dir() {
+        match common::executable_find("open") {
+            Some(open_cmd) => match Command::new(open_cmd).arg("-a").arg(cmd).arg(input).spawn() {
+                Ok(mut child_proc) => {
+                    match child_proc.wait() {
+                        Ok(exit_status) => {
+                            if exit_status.success() {
+                                Ok(())
+                            } else {
+                                Err(trans.gettext("Could not open PDF file!").into())
+                            }
+                        },
+                        Err(ex) => Err(ex.into())
+                    }
+                },
+                Err(ex) => Err(ex.into()),
+            },
+            None => Err(trans.gettext("Could not find 'open' command in 'PATH' environment variable!").into()),
+        }
+    } else {
+        if let Err(ex) = Command::new(cmd).arg(input).spawn() {
+            return Err(ex.into());
+        }
+
+        Ok(())
     }
 }

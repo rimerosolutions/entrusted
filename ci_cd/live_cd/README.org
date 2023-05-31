@@ -2,7 +2,7 @@
 
 This is ONLY tested locally under Ubuntu Linux and a *working rootless setup of podman* is required.
 - Some of the Linux binaries are included in the ISO image (=entrusted-cli= and =entrusted-webserver=)
-- The [[.build.sh]] script assumes that Linux binaries have been created by the [[../ci_cd/linux/build.sh]] script
+- The [[build.sh]] script assumes that Linux binaries have been created by the [[../ci_cd/linux/build.sh]] script
 
 * Overview
 

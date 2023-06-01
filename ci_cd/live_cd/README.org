@@ -1,9 +1,5 @@
 #+TITLE: entrusted/ci_cd/live_cd
 
-This is ONLY tested locally under Ubuntu Linux and a *working rootless setup of podman* is required.
-- Some of the Linux binaries are included in the ISO image (=entrusted-cli= and =entrusted-webserver=)
-- The [[build.sh]] script assumes that Linux binaries have been created by the [[../ci_cd/linux/build.sh]] script
-
 * Overview
 
 The live CD is based on [[https://www.debian.org/][Debian GNU/Linux]] and aims to provide a convenient way to run =Entrusted=.
@@ -52,6 +48,10 @@ On top of default regular processes, the following key services run on boot ([[h
 - Custom firewall rules (=iptables=) restrict network access to SSH and the =entrusted-webserver=
   - The command =entrusted-fw-disable= allows all network traffic
   - The command =entrusted-fw-enable= restores default firewall rules
+
+Please consult the documentation of your virtualization solution for exposing/mapping/forwarding virtual machine ports as needed (networking parameters).
+
+You'll need to ensure that you've got access to access the Web Interface (port 13000) and SSH (port 22).
   
 * Entrusted Web UI access
 

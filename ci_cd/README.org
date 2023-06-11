@@ -1,12 +1,11 @@
 #+TITLE: entrusted/ci_cd
 
-
 * Overview
 
 It is possible to produce all release artifacts using [[https://github.com/features/actions][GitHub Actions]] or locally.
 
 The local build server is a virtual machine running [[https://ubuntu.com/][Ubuntu Linux]] :
-- A *working rootless setup of podman* is required
+- A [[https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md][working rootless setup of podman]] is required
 - Existing shell scripts are meant for release artifacts, in comparison to invoking directly standard parameterized cargo commands
 - Local builds are only being tested under Ubuntu with shell scripts, and it's difficult to provide step by step explanations for every single Linux distribution
 

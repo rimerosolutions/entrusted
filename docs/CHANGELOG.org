@@ -4,7 +4,7 @@
 
 The main objective is to start generating all releases artifacts via the GitHub infrastructure going forward.
 
-- Builds
+- Build and Releases Pipelines
   - Integrate local shell scripts with [[https://github.com/features/actions][GitHub Actions]] workflows
     - Generate of all release artifacts from GitHub (on demand)
     - Publish the "container sandbox" image to [[https://hub.docker.com/][Docker Hub]] (on demand)

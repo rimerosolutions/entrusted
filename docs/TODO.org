@@ -1,7 +1,12 @@
 #+TITLE: TODO
 
 * Milestone: Future
-Who knows
+
+- [ ] Cleanup Linux dependencies and potentially remove AppImage integration (used in Linux GUI)
+- [ ] Provide [[https://musl.libc.org/][Musl]] compatible release binaries
+- [ ] Provide [[https://flatpak.org/][Flatpak]] binaries??
+- [ ] Simplify local builds pipeline
+- [ ] Improve documentation  
 
 * Milestone: From local CI/CD pipelines to GitHub Actions [100%]
 
@@ -16,7 +21,6 @@ Who knows
     - [X] Binaries for Windows (amd64)
     - [X] Binaries for Linux (amd64 and aarch64)
     - [X] Binaries for Mac OS (amd64 and aarch64)
-- [X] Sync with [[https://github.com/axtloss/flatpaks][Axtloss]] for updating the Linux Flatpak (also enquire for =arm64=)
 - [X] Security
   - [X] Research enabling [[https://www.apparmor.net/][apparmor]] on the Live CD
   - [X] Research and enable [[https://gvisor.dev/][gVisor]] on the Live CD

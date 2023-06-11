@@ -49,9 +49,7 @@ On top of default regular processes, the following key services run on boot ([[h
   - The command =entrusted-fw-disable= allows all network traffic
   - The command =entrusted-fw-enable= restores default firewall rules
 
-Please consult the documentation of your virtualization solution for exposing/mapping/forwarding virtual machine ports as needed (networking parameters).
-
-You'll need to ensure that you've got access to access the Web Interface (port 13000) and SSH (port 22).
+You'll need to ensure that you've got access to access the Web Interface (port 13000) and SSH (port 22). Depending your virtualization software and its networking settings, you may need to map or forward port =13000= and =22=.
   
 * Entrusted Web UI access
 

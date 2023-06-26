@@ -629,9 +629,7 @@ pub async fn save_file(
 
     let id = bs58::encode(id_token).into_string();
 
-    let p = std::path::Path::new(&filename);
-
-    if let Some(fext) = p.extension().map(|i| i.to_str()).and_then(|i| i) {
+    if let Some(fext) = std::path::Path::new(&filename).extension().map(|i| i.to_str()).and_then(|i| i) {
         fileext.push_str(fext);
     } else {
         return Err(format!(

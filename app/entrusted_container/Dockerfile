@@ -10,7 +10,7 @@ RUN CARGO_NET_RETRY=10 CARGO_NET_GIT_FETCH_WITH_CLI=true PKG_CONFIG_ALLOW_CROSS=
     && cargo clean --manifest-path entrusted_container/Cargo.toml \
     && strip --strip-unneeded /usr/local/bin/entrusted-container
 
-FROM docker.io/debian:bullseye-slim
+FROM docker.io/debian:bookwork-slim
 
 LABEL maintainer="Yves Zoundi, Rimero Solutions Inc."
 LABEL org.opencontainers.image.title="Entrusted document sanitizer container image"
@@ -24,9 +24,7 @@ LABEL org.opencontainers.image.url="https://github.com/rimerosolutions/entrusted
 LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrusted.git"
 
 # Minimal runtime dependencies
-RUN echo "deb [trusted=yes] https://notesalexp.org/tesseract-ocr5/bullseye/ bullseye main" >> /etc/apt/sources.list \
-    && DEBIAN_FRONTEND=noninteractive apt-get -o "Acquire::Retries=10" -o "Acquire::https::Verify-Peer=false" update \
-    && DEBIAN_FRONTEND=noninteractive apt-get -o "Acquire::https::Verify-Peer=false" install --no-install-recommends -y \
+RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
     libleptonica-dev \
     libtesseract-dev \
     libreoffice-writer \

@@ -20,7 +20,7 @@ image = { version = "0.24.5", default-features = false, features = ["gif", "jpeg
 poppler-rs = "0.20.0"
 cairo-rs = { version = "0.16.7", features = ["png", "pdf"] }
 tesseract-plumbing = "0.9.0"
-lopdf = { version = "0.29.0", default-features = false, features = ["chrono_time", "pom_parser"] }
+lopdf = { version = "0.29.0", default-features = false, features = ["chrono_time", "nom_parser"] }
 cfb = "0.7.3"
 zip = { version = "0.6.3", default-features = false, features = ["deflate"] }
 serde = { version = "1.0.152", features = ["derive"] }

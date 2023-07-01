@@ -6,7 +6,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
     libreofficekit-dev \
     libpoppler-dev \
     libcairo2-dev \
-    libclang-11-dev \
+    libclang-dev \
     llvm \
     gcc \
     libtiff-dev \

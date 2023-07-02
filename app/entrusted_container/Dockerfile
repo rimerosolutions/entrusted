@@ -10,7 +10,7 @@ RUN CARGO_NET_RETRY=10 CARGO_NET_GIT_FETCH_WITH_CLI=true PKG_CONFIG_ALLOW_CROSS=
     && cargo clean --manifest-path entrusted_container/Cargo.toml \
     && strip --strip-unneeded /usr/local/bin/entrusted-container
 
-FROM docker.io/debian:bookworkm-slim
+FROM docker.io/debian:bookworm-slim
 
 LABEL maintainer="Yves Zoundi, Rimero Solutions Inc."
 LABEL org.opencontainers.image.title="Entrusted document sanitizer container image"

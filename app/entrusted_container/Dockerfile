@@ -24,7 +24,8 @@ LABEL org.opencontainers.image.url="https://github.com/rimerosolutions/entrusted
 LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrusted.git"
 
 # Minimal runtime dependencies
-RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
     libleptonica-dev \
     libtesseract-dev \
     libreoffice-writer \

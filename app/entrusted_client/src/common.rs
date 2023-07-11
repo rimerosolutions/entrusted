@@ -76,8 +76,7 @@ pub struct ConvertOptions {
     pub log_format: String,
     pub visual_quality: String,
     pub opt_ocr_lang: Option<String>,
-    pub opt_passwd: Option<String>,
-    pub seccomp_profile_enabled: bool,
+    pub opt_passwd: Option<String>
 }
 
 impl ConvertOptions {
@@ -85,16 +84,14 @@ impl ConvertOptions {
                log_format: String,
                visual_quality: String,
                opt_ocr_lang: Option<String>,
-               opt_passwd: Option<String>,
-               seccomp_profile_enabled: bool,
+               opt_passwd: Option<String>
     ) -> Self {
         Self {
             container_image_name,
             log_format,
             visual_quality,
             opt_ocr_lang,
-            opt_passwd,
-            seccomp_profile_enabled
+            opt_passwd
         }
     }
 }

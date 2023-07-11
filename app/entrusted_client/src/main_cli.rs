@@ -287,18 +287,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         None
     };
 
-    let seccomp_profile_disabled = if let Ok(env_seccomp_enablement) = env::var("ENTRUSTED_AUTOMATED_SECCOMP_ENABLEMENT") {
-        env_seccomp_enablement.to_lowercase() == "false" || env_seccomp_enablement.to_lowercase() == "no"
-    } else {
-        false
-    };
-
     let (exec_handle, rx) = {
         let (tx, rx) = mpsc::channel::<common::AppEvent>();
 
         let exec_handle = thread::spawn({
             move || {
-                let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), image_quality, ocr_lang, opt_passwd, !seccomp_profile_disabled);
+                let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), image_quality, ocr_lang, opt_passwd);
                 let eventer = Box::new(CliEventSender {
                     tx
                 });

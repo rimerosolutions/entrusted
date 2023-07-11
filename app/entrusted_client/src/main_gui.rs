@@ -263,7 +263,7 @@ fn paint_underline<W: WidgetExt>(wid: &mut W) {
     }
 }
 
-fn row_to_task(active_ociimage_option: &String, image_quality: String,  active_ocrlang_option: &Option<String>, active_file_suffix: &str, active_seccomp: bool, active_row: &FileListRow) -> ConversionTask {
+fn row_to_task(active_ociimage_option: &String, image_quality: String,  active_ocrlang_option: &Option<String>, active_file_suffix: &str, active_row: &FileListRow) -> ConversionTask {
     let input_path = active_row.file.clone();
 
     let output_path = if let Some(custom_output_path) = active_row.opt_output_file.borrow().clone() {
@@ -280,8 +280,7 @@ fn row_to_task(active_ociimage_option: &String, image_quality: String,  active_o
         common::LOG_FORMAT_JSON.to_string(),
         image_quality,
         active_ocrlang_option.to_owned(),
-        opt_row_passwd,
-        active_seccomp
+        opt_row_passwd
     );
 
     ConversionTask {
@@ -2071,20 +2070,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             let mut file_suffix = filesuffix_input_rc_ref.borrow().value();
             if file_suffix.trim().is_empty() {
                 file_suffix = appconfig.file_suffix.to_owned().unwrap_or_else(|| common::DEFAULT_FILE_SUFFIX.to_string());
-            }
-
-            let seccomp_disabled = if let Ok(env_seccomp_enablement) = env::var("ENTRUSTED_AUTOMATED_SECCOMP_ENABLEMENT") {
-                env_seccomp_enablement.to_lowercase() == "false" || env_seccomp_enablement.to_lowercase() == "no"
-            } else {
-                false
-            };
+            }            
 
             let tasks: Vec<ConversionTask> = filelist_widget_ref.rows.borrow().iter().map(|row| {                
                 row_to_task(&opt_oci_image,
                             image_quality.clone(),
                             &opt_ocr_lang,
                             &file_suffix,
-                            !seccomp_disabled,
                             row
                 )
             }).collect();

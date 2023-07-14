@@ -1,3 +1,11 @@
+entrusted (0.3.1) stable; urgency=medium
+
+  * Update to the latest stable Debian version for the container sandbox image
+  * Introduce fine-grained seccomp security profile for container sandbox
+  * Implement few minimal user interface improvements
+
+ -- Yves Zoundi <yves_zoundi@hotmail.com>  Sat, 15 Jul 2023 12:38:25 -0400
+
 entrusted (0.3.0) stable; urgency=medium
 
   * Address more scenarios that could result into intermittent conversion failures

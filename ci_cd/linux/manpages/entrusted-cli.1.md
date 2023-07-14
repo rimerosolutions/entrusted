@@ -43,6 +43,12 @@ OPTIONS
 `--passwd-prompt`
   Prompt for document password
 
+`--update-checks`
+  Check for updates
+
+`--visual-quality`
+  Set the output quality (low, medium or high)
+
 FILES
 =====
 

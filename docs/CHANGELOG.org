@@ -6,15 +6,15 @@ The main objective is to start generating all releases artifacts via the GitHub 
 
 - Build and Releases Pipelines
   - Integrate local shell scripts with [[https://github.com/features/actions][GitHub Actions]] workflows
-    - Generate of all release artifacts from GitHub (on demand)
-    - Publish the "container sandbox" image to [[https://hub.docker.com/][Docker Hub]] (on demand)
-    - Scan for container vulnerability in the "container sandbox" image (on demand)
-    - Run minimal functional tests (automatically for the development branch)
-  - Prepare technical underpinnings for supporting other "sandboxing" mechanisms in the future
+    - Generate all release artifacts from GitHub (on-demand), instead of from a local virtual machine
+    - Publish the "container sandbox" image to [[https://hub.docker.com/][Docker Hub]] (on-demand)
+    - Scan for container vulnerability in the "container sandbox" image (on-demand)
+    - Run minimal functional test (on-demand)
+  - Prepare basic technical underpinnings for allowing other "sandboxing" mechanisms in the future
 - Security
-  - Implement [[https://gvisor.dev/][gVisor]] as container security platform
+  - Implement [[https://gvisor.dev/][gVisor]] as container security platform on the Live CD
 - Enhancements
-  - Web User Interface: Add tabs to mimic more closely the Desktop version
+  - Web User Interface: Add tabs to mimic more closely the Desktop interface appearance
   - Desktop User Interface: Add hyperlinks for opening directly PDF results
 - Maintenance
   - Trim the Live CD image size by roughly 15% (=~800 MB= to =~670 MB=)
@@ -22,7 +22,8 @@ The main objective is to start generating all releases artifacts via the GitHub 
     - SSH server: Replace [[https://www.openssh.com/][OpenSSH]] with [[https://matt.ucc.asn.au/dropbear/dropbear.html][DropBear]]
     - Container solution: Replace the default [[https://packages.debian.org/search?keywords=podman&searchon=names&exact=1&suite=stable&section=all][Debian Podman]] version with [[https://github.com/mgoltzsche/podman-static][podman-static]]
     - Linux kernel: Compile custom kernel (=6.x=) for removing unessential modules
-  - Address potential conversion failures on the Live CD (disable [[https://github.com/GrapheneOS/hardened_malloc][Hardened malloc]] CPU optimizations)
+  - Upgrade to the latest Debian stable version (Live CD and container sandbox image)
+  - Address potential conversion crashes with the Live CD (disable [[https://github.com/GrapheneOS/hardened_malloc][Hardened malloc]] CPU optimizations)
 
 * entrusted 0.3.0
 

@@ -1,5 +1,9 @@
 #+TITLE: DEVNOTES
 
+It is best to build from an Ubuntu virtual machine, especially for the Live CD.
+- The Live CD creation has only been tested under Ubuntu (recent versions)
+- For other applications (CLI or Desktop GUI), this has been tested few times on popular Linux distributions
+
 * Container images dev testing
 
 In order to discard any environment related issues, it's best to use unique container image names to test new changes.

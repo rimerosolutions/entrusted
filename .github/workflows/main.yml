@@ -99,9 +99,8 @@ jobs:
         mkdir -p ./artifacts/appbundle/Entrusted.app/Contents/MacOS
         mkdir -p ./artifacts/appbundle/Entrusted.app/Contents/Resources
         cp ci_cd/macos/macos/Info.plist ci_cd/macos/macos/PkgInfo ./artifacts/appbundle/Entrusted.app/Contents/
-        cp ci_cd/macos/macos/Entrusted ./artifacts/appbundle/Entrusted.app/Contents/MacOS
         cp artifacts/entrusted-${APPVERSION}-macos-amd64/entrusted-cli ./artifacts/appbundle/Entrusted.app/Contents/MacOS
-        mv artifacts/entrusted-${APPVERSION}-macos-amd64/entrusted-gui ./artifacts/appbundle/Entrusted.app/Contents/MacOS
+        mv artifacts/entrusted-${APPVERSION}-macos-amd64/entrusted-gui ./artifacts/appbundle/Entrusted.app/Contents/MacOS/Entrusted
         APPBUNDLECOMPANY="Rimero Solutions Inc"
         APPBUNDLEVERSION=${APPVERSION}
         perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ./artifacts/appbundle/Entrusted.app/Contents/Info.plist
@@ -179,9 +178,8 @@ jobs:
           mkdir -p ./artifacts/appbundle/Entrusted.app/Contents/MacOS
           mkdir -p ./artifacts/appbundle/Entrusted.app/Contents/Resources
           cp ci_cd/macos/macos/Info.plist ci_cd/macos/macos/PkgInfo ./artifacts/appbundle/Entrusted.app/Contents/
-          cp ci_cd/macos/macos/Entrusted ./artifacts/appbundle/Entrusted.app/Contents/MacOS
           cp artifacts/entrusted-${APPVERSION}-macos-aarch64/entrusted-cli ./artifacts/appbundle/Entrusted.app/Contents/MacOS
-          mv artifacts/entrusted-${APPVERSION}-macos-aarch64/entrusted-gui ./artifacts/appbundle/Entrusted.app/Contents/MacOS
+          mv artifacts/entrusted-${APPVERSION}-macos-aarch64/entrusted-gui ./artifacts/appbundle/Entrusted.app/Contents/MacOS/Entrusted
           APPBUNDLECOMPANY="Rimero Solutions Inc"
           APPBUNDLEVERSION=${APPVERSION}
           perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ./artifacts/appbundle/Entrusted.app/Contents/Info.plist

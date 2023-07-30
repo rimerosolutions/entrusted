@@ -97,8 +97,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
     cp ${SCRIPTDIR}/macos/PkgInfo ${APPBUNDLECONTENTS}/
 
     cp ${PROJECTDIR}/entrusted_client/target/${RUST_TARGET}/release/entrusted-cli ${APPBUNDLEEXE}/
-    mv ${ARTIFACTSDIR}/entrusted-gui ${APPBUNDLEEXE}/
-    cp ${SCRIPTDIR}/macos/${APPNAME}  ${APPBUNDLEEXE}/
+    mv ${ARTIFACTSDIR}/entrusted-gui ${APPBUNDLEEXE}/${APPNAME}
     perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ${APPBUNDLECONTENTS}/Info.plist
     perl -pi -e "s/_APPVERSION_/${APPBUNDLEVERSION}/g" ${APPBUNDLECONTENTS}/Info.plist
 

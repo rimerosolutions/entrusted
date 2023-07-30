@@ -8,7 +8,7 @@
 - This is achieved by removing active content inside a "lightweight sandbox" ([[https://www.ibm.com/cloud/learn/containerization][containerization]])
 - Please note that this tool doesn't provide absolute security guarantees
 
-Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]], you *MUST* install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior launching the program.
+Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]], you *MUST* install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior launching the program. On Mac OS, you need more specifically [[https://www.docker.com/products/docker-desktop/][Docker Desktop]].
 
 [[./images/screenshot.png]]
 
@@ -24,7 +24,6 @@ Key features include the following:
 - The [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]] provides both enhanced security and configuration convenience
 - Password-protected files are supported (known Office document formats and PDF files)
 - The application is multilingual (English and French translations for now)
-- On Mac OS, [[https://github.com/lima-vm/lima][Lima]] can be installed as an alternative to [[https://www.docker.com/products/docker-desktop/][Docker]] (/default Lima instance/ only)
 
 ** Use-cases
 
@@ -87,7 +86,7 @@ Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releas
 
 It is assumed that you can allocate at least 1 GB of memory for document processing.
 - Operating System: Linux, Mac OS or Windows
-- Container Runtime: [[https://podman.io/][Podman]] (Linux), [[https://www.docker.com/][Docker]] (Linux, Mac OS, Windows) or [[https://github.com/lima-vm/lima][Lima]] (Mac OS)
+- Container Runtime: [[https://podman.io/][Podman]] (Linux) or [[https://www.docker.com/][Docker]] (Linux, Mac OS, Windows). On Mac OS, you need more specifically [[https://www.docker.com/products/docker-desktop/][Docker Desktop]].
 
 Conversions will fail if the container solution is not running or available in your [[https://www.java.com/en/download/help/path.html]["PATH settings"]]:
   - The tool doesn't attempt to modify software on your machine (install or change programs)

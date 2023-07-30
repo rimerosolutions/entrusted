@@ -20,6 +20,7 @@ jobs:
   #       set CARGO_NET_RETRY=10
   #       Set-ExecutionPolicy Unrestricted
   #       cargo test --manifest-path app/entrusted_client/Cargo.toml
+  # TODO review macos to use Docker in /Applications folder with Docker Desktop  
   amd64_macos:
     name: AMD64 Mac OS
     runs-on: macos-11

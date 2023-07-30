@@ -408,11 +408,10 @@ fn show_dialog_help(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Tra
         .with_type(group::PackType::Vertical);
     grp.set_spacing(WIDGET_GAP / 4);
 
-    let label_container_solution = format!("{}{}{}{}",
+    let label_container_solution = format!("{}{}{}",
                                            "The program requires a container solution: \n",
                                            "- Docker (Windows, Linux, Mac OS)\n",
-                                           "- or Podman (Linux)\n",
-                                           "- or Lima (Mac OS)");
+                                           "- or Podman (Linux)");
 
     frame::Frame::default()
         .with_size(350, 80)

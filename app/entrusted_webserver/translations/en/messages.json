@@ -18,7 +18,6 @@
     "l10n-window-help-program-reqs-line1": "The program requires a container solution:",
     "l10n-window-help-program-reqs-line2": "Docker (Windows, Linux, Mac OS)",
     "l10n-window-help-program-reqs-line3": "or Podman (Linux)",
-    "l10n-window-help-program-reqs-line4": "or Lima (Mac OS)",
     "l10n-window-help-supported-docs-line1": "Supported document types:",
     "l10n-window-help-supported-docs-line2": "Images (.jpg, .jpeg, .gif, .png, .tif, .tiff)",
     "l10n-window-help-supported-docs-line3": "Document Graphics (.odg)",

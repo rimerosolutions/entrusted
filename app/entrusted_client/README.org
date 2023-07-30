@@ -6,7 +6,7 @@ This module provides graphical and command-line interfaces for the document sani
 
 * What is required?
 
-- For execution, it is assumed that the [[../entrusted_container][entrusted_container]] component is deployed (under [[https://www.docker.com/][Docker]] or [[https://podman.io/][Podman]] or [[https://github.com/lima-vm/lima][Lima]])
+- For execution, it is assumed that the [[../entrusted_container][entrusted_container]] component is deployed (under [[https://www.docker.com/][Docker]] or [[https://podman.io/][Podman]]). On Mac OS, you need more specifically [[https://www.docker.com/products/docker-desktop/][Docker Desktop]].
 - For compilation, you need a recent version of the Rust toolchain ([[https://www.rust-lang.org/tools/install][rustc]] compiler and [[https://doc.rust-lang.org/cargo/][cargo]]).
 
 * What does it look like?

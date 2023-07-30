@@ -34,6 +34,7 @@ entrusted_l10n = { path = "../entrusted_l10n" }
 default = []
 gui = ["fltk"]
 
+
 [target.'cfg(target_os = "linux")'.dependencies]
 freedesktop_entry_parser = "1.3.0"
 fltk = { version = "1.3.30", features = ["fltk-bundled", "use-wayland"], optional = true }
@@ -43,6 +44,8 @@ core-services = "0.2.0"
 core-foundation = "0.9.3"
 percent-encoding = "2.1.0"
 fltk = { version = "1.3.30", features = ["fltk-bundled"], optional = true }
+icrate = { version = "0.0.3", features= [ "Foundation", "Foundation_NSBundle", "Foundation_NSString", "Foundation_NSURL" ]}
+objc2 = "0.4.0"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 winreg = "0.10.1"
@@ -63,7 +66,7 @@ name = "entrusted-cli"
 path = "src/main_cli.rs"
 
 [[bin]]
-name = "entrusted-gui"
+name = "entrusted-gui" 
 path = "src/main_gui.rs"
 required-features = ["gui"]
 

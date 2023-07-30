@@ -138,8 +138,7 @@ msgstr ""
 msgid ""
 "The program requires a container solution: \n"
 "- Docker (Windows, Linux, Mac OS)\n"
-"- or Podman (Linux)\n"
-"- or Lima (Mac OS)"
+"- or Podman (Linux)"
 msgstr ""
 
 msgid ""
@@ -362,7 +361,7 @@ msgstr ""
 msgid "Please install Docker and make sure that it's running."
 msgstr ""
 
-msgid "Please install Docker or Lima, and make sure that it's running."
+msgid "Please install Docker Desktop and make sure that it's running."
 msgstr ""
 
 msgid "Please install Docker or Podman, and make sure that it's running."

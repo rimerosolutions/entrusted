@@ -17,9 +17,8 @@ Over time, it's been painful to test software releases due to the lack of an aut
     - amd64: Few Linux distributions, Mac OS and Windows 11
     - arm64: Linux only (Alpine Linux Virtual machine running on an amd64 machine, per arm64 testing instructions to follow)
   - *Container solutions*
-    - [[https://www.docker.com/][Docker]] (Windows amd64, Linux arm64)
+    - [[https://www.docker.com/][Docker]] (Windows amd64, Linux arm64, Mac OS amd64). *On Mac OS, only Docker Desktop is supported*.
     - [[https://podman.io/][Podman]] (Linux amd64)
-    - [[https://github.com/lima-vm/lima][Lima]] (Mac OS amd64)
   - *Components*
     - =entrusted-client= (Desktop and command-line interfaces)
     - =entrusted-webserver= (Online Web service with a Web interface)

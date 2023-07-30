@@ -58,6 +58,86 @@ pub fn executable_find(exe_name: &str) -> Option<PathBuf> {
     }
 }
 
+#[cfg(not(any(target_os = "macos")))]
+fn rt_executable_find(exe_name: &str) -> Option<PathBuf> {
+    executable_find(exe_name)
+}
+
+#[cfg(target_os = "macos")]
+fn rt_executable_find(exe_name: &str) -> Option<PathBuf> {
+    use icrate::Foundation::{NSString, NSBundle, NSURL};
+    use objc2::rc::autoreleasepool;
+    use objc2::ClassType;
+    use core_foundation::array::{CFArrayGetCount, CFArrayGetValueAtIndex};
+    use core_services::CFString;
+    use core_foundation::string::{
+        kCFStringEncodingUTF8, CFStringGetCStringPtr, CFStringRef,
+    };
+
+    use core_foundation::base::TCFType;
+    use core_foundation::url::{CFURLCopyPath, CFURLRef};
+    use core_services::LSCopyApplicationURLsForBundleIdentifier;
+    use std::ffi::CStr;
+
+    unsafe {
+        fn find_docker_bundle_url() -> Option<String> {
+            unsafe {
+                let bundle_id = CFString::new("com.docker.docker");
+                let cfstring_ref : CFStringRef = bundle_id.as_concrete_TypeRef();
+                let err_ref = std::ptr::null_mut();
+                let apps = LSCopyApplicationURLsForBundleIdentifier(cfstring_ref, err_ref);
+
+                if err_ref.is_null() {
+                    let app_count = CFArrayGetCount(apps);
+
+                    for j in 0..app_count {
+                        let cf_ref = CFArrayGetValueAtIndex(apps, j) as CFURLRef;
+                        let cf_path = CFURLCopyPath(cf_ref);
+                        let cf_ptr = CFStringGetCStringPtr(cf_path, kCFStringEncodingUTF8);
+                        let c_str = CStr::from_ptr(cf_ptr);
+
+                        if let Ok(pp) = c_str.to_str() {
+                            return Some(pp.to_string());
+                        }
+                    }
+                }
+            }
+
+            None
+        }
+
+        if let Some(docker_bundle_location) = find_docker_bundle_url() {
+            let docker_bundle_string = NSString::from_str(&docker_bundle_location);
+            let docker_bundle_nsurl = NSURL::alloc();
+            let docker_bundle_url =  NSURL::initFileURLWithPath(docker_bundle_nsurl, &docker_bundle_string);
+            let docker_bundle_opt = NSBundle::bundleWithURL(&docker_bundle_url);
+
+            if let Some(docker_bundle) = docker_bundle_opt {
+                let exec_rel_path = format!("bin/{}", exe_name);
+                let exec_rel_str = exec_rel_path.as_str();
+                let exec_rel_string = NSString::from_str(exec_rel_str);
+
+                if let Some(url) = docker_bundle.resourceURL() {
+                    if let Some(docker_exe_url) = NSURL::URLWithString_relativeToURL(&exec_rel_string, Some(&url)) {
+                        if let Some(docker_exe_path) = docker_exe_url.path() {
+                            let mut ret = String::new();
+
+                            autoreleasepool(|pool| {
+                                let v = docker_exe_path.as_str(pool);
+                                ret.push_str(v);
+                            });
+
+                            return Some(PathBuf::from(ret));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    None
+}
+
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct ReleaseInfo {
     pub html_url: String,
@@ -178,7 +258,7 @@ pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
             ContainerProgramStub::Podman(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) |
             ContainerProgramStub::Lima(cmd, sub_cmd_args, cmd_args, tmp_dir_opt)   |
             ContainerProgramStub::Nerdctl(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) => {
-                if let Some(path_container_exe) = executable_find(cmd) {
+                if let Some(path_container_exe) = rt_executable_find(cmd) {
                     let suggested_tmp_dir = tmp_dir_opt.as_ref().map(PathBuf::from);
 
                     return Some(ContainerProgram::new(path_container_exe, sub_cmd_args.clone(), cmd_args.clone(), suggested_tmp_dir));

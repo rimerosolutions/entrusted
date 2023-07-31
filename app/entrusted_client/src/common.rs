@@ -201,7 +201,6 @@ impl<'a> ContainerProgram<'a> {
 enum ContainerProgramStub<'a> {
     Docker(&'a str, Vec<&'a str>, Vec<&'a str>, Option<&'a str>),
     Podman(&'a str, Vec<&'a str>, Vec<&'a str>, Option<&'a str>),
-    Lima(&'a str, Vec<&'a str>, Vec<&'a str>, Option<&'a str>),
     Nerdctl(&'a str, Vec<&'a str>, Vec<&'a str>, Option<&'a str>)
 }
 
@@ -211,7 +210,6 @@ pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
     let mut container_program_stubs = vec![
         ContainerProgramStub::Docker("docker", vec![], vec!["--security-opt=no-new-privileges:true"], None),
         ContainerProgramStub::Podman("podman", vec![], vec!["--userns", "keep-id", "--security-opt", "no-new-privileges"], None),
-        ContainerProgramStub::Lima("lima", vec!["nerdctl"], vec!["--security-opt", "no-new-privileges"], Some("/tmp/lima")),
         ContainerProgramStub::Nerdctl("nerdctl", vec![], vec!["--security-opt", "no-new-privileges"], None),
     ];
 
@@ -256,7 +254,6 @@ pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
         match item {
             ContainerProgramStub::Docker(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) |
             ContainerProgramStub::Podman(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) |
-            ContainerProgramStub::Lima(cmd, sub_cmd_args, cmd_args, tmp_dir_opt)   |
             ContainerProgramStub::Nerdctl(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) => {
                 if let Some(path_container_exe) = rt_executable_find(cmd) {
                     let suggested_tmp_dir = tmp_dir_opt.as_ref().map(PathBuf::from);

@@ -29,12 +29,6 @@ Because of a shared library, you /MUST/ build the container image from the =entr
   docker build -t docker.io/uycyjnzgntrn/entrusted_container:0.2.7 . -f entrusted_container/Dockerfile
 #+end_src
 
-** Lima
-
-#+begin_src sh
-  lima nerdctl build -t docker.io/uycyjnzgntrn/entrusted_container:0.2.7 . -f entrusted_container/Dockerfile
-#+end_src
-
 * How to publish to Docker Hub?
 
 The commands below apply to =Podman=, the syntax might different a bit for =Docker= or =Lima=.

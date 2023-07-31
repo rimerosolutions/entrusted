@@ -44,8 +44,6 @@ core-services = "0.2.0"
 core-foundation = "0.9.3"
 percent-encoding = "2.1.0"
 fltk = { version = "=1.4.8", features = ["fltk-bundled"], optional = true }
-icrate = { version = "0.0.3", features= [ "Foundation", "Foundation_NSBundle", "Foundation_NSString", "Foundation_NSURL" ]}
-objc2 = "0.4.0"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 winreg = "0.10.1"

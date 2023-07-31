@@ -1,0 +1,25 @@
+% TESTING activities ahead of releases
+
+All conversions are tested with and without OCR (English only) using files in the `test_data` folder.
+
+- [ ] Linux testing (docker and podman) 
+  - [ ] On amd64
+    -   [ ] With Docker
+        -   [ ] Test artifacts in Zip file (webserver, webclient, Desktop clients: CLI and GUI)
+        -   [ ] Test DEB artifact on Ubuntu (Desktop clients: CLI and GUI)
+        -   [ ] Test RPM artifact on Fedora (Desktop clients: CLI and GUI)
+    -   [ ] With Podman
+        -   [ ] Test artifacts in Zip file (webserver, webclient, Desktop clients: CLI and GUI)
+        -   [ ] Test DEB artifact on Ubuntu (Desktop clients: CLI and GUI)
+        -   [ ] Test RPM artifact on Fedora (Desktop clients: CLI and GUI)
+  - [ ] On arm64 (Podman)
+     -   [ ] This is only tested with `podman` for the CLI, on a Live CD of `Alpine Linux`.
+- [ ]  Windows testing (amd64 only, Docker)
+  -   [ ] Test Windows EXE installer
+  -   [ ] Test artifacts in Zip file (webserver, webclient, Desktop clients: CLI and GUI)
+- [ ] Mac OS testing (amd64 only, Docker Desktop)
+  -   [ ] Test DMG image
+  -   [ ] Test artifacts in Zip file (webserver, webclient, Desktop clients: CLI and GUI)
+- [ ] Live CD testing
+  - [ ] amd64 testing
+  - [ ] arm64 testing

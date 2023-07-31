@@ -13,13 +13,15 @@
   
 * Build tasks
 
-- On a recent Ubuntu Linux installation, build all the release artifacts =ci_cd/build.sh=
+Builds are now performed with GitHub Actions ahead of releases.
+
+If you still want to build all artifacts locally:
+- On a recent Ubuntu Linux installation (Virtual Machine preferred), build all the release artifacts =ci_cd/build.sh=
 - This generates release artifacts under a new folder called =packages=
 
 * Testing tasks
 
-- You can then test the resulting archives and executables under Linux, Mac OS and Windows
-- You can test the live CD ISO image with a tool such as [[https://www.qemu.org/][QEMU]] or similar
+Ahead of releases, create a new issue on GitHub with the contents of [[./TESTING.md][TESTING.md]].
 
 * DockerHub tasks  
 

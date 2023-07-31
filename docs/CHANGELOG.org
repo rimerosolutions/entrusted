@@ -17,6 +17,7 @@ The main objective is to start generating all releases artifacts via the GitHub 
   - Web User Interface: Add tabs to mimic more closely the Desktop interface appearance
   - Desktop User Interface: Add hyperlinks for opening directly PDF results
 - Maintenance
+  - On Mac OS, only support Docker Desktop as container solution to avoid Apple sandbox issues
   - Trim the Live CD image size by roughly 15% (=~800 MB= to =~670 MB=)
     - Boot manager: Use only [[https://www.gnu.org/software/grub/][Grub]] as boot manager for both UEFI and BIOS (removal of [[https://wiki.syslinux.org/wiki/index.php?title=SYSLINUX][SysLinux]])
     - SSH server: Replace [[https://www.openssh.com/][OpenSSH]] with [[https://matt.ucc.asn.au/dropbear/dropbear.html][DropBear]]

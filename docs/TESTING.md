@@ -1,5 +1,3 @@
-% TESTING activities ahead of releases
-
 All conversions are tested with and without OCR (English only) using files in the `test_data` folder.
 
 - [ ] Linux testing (docker and podman) 

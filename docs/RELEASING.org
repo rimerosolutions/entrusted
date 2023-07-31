@@ -1,5 +1,13 @@
 #+TITLE: RELEASING
 
+
+* Docker Hub tasks  
+
+This should happen continuously as part of the development cycle.
+
+- Push the container image to [[https://hub.docker.com/r/uycyjnzgntrn/entrusted_container][Docker Hub]] per [[../app/entrusted_container/README.org][publishing instructions]]
+- Apply the =latest= tag to the new image version
+  
 * Preparation tasks
 
 - Review and update the =README= page for impacted components (/if needed/)
@@ -23,16 +31,12 @@ If you still want to build all artifacts locally:
 
 Ahead of releases, create a new issue on GitHub with the contents of [[./TESTING.md][TESTING.md]].
 
-* DockerHub tasks  
-
-- Push the container image to [[https://hub.docker.com/r/uycyjnzgntrn/entrusted_container][Docker Hub]] per [[../app/entrusted_container/README.org][publishing instructions]]
-- Apply the =latest= tag to the new image version
-  
-* Revision control tasks
+* Publish releases
+** Revision control tasks
 
 - Tag the main branch with the new =release version= (i.e. =1.1.1=) and push the tag  
 
-* GitHub Web interface tasks  
+** GitHub Web interface tasks  
 
 - Draft a new releases associated with the newly created =git= tag
 - Write the release notes based on entries in =CHANGELOG.org=

@@ -59,12 +59,14 @@ pub fn executable_find(exe_name: &str) -> Option<PathBuf> {
 }
 
 #[cfg(not(any(target_os = "macos")))]
-fn rt_executable_find(exe_name: &str) -> Option<PathBuf> {
+fn crt_executable_find(exe_name: &str) -> Option<PathBuf> {
     executable_find(exe_name)
 }
 
+// For Mac OS, there are sandbox restrictions that impact the ability to invoke external tools
+// Only Docker Desktop is supported for now, maybe Rancher Desktop support will also be added in the future
 #[cfg(target_os = "macos")]
-fn rt_executable_find(exe_name: &str) -> Option<PathBuf> {
+fn crt_executable_find(exe_name: &str) -> Option<PathBuf> {
     use core_foundation::array::{CFArrayGetCount, CFArrayGetValueAtIndex};
     use core_services::CFString;
     use core_foundation::string::{
@@ -230,7 +232,7 @@ pub fn container_runtime_path<'a>() -> Option<ContainerProgram<'a>> {
             ContainerProgramStub::Docker(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) |
             ContainerProgramStub::Podman(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) |
             ContainerProgramStub::Nerdctl(cmd, sub_cmd_args, cmd_args, tmp_dir_opt) => {
-                if let Some(path_container_exe) = rt_executable_find(cmd) {
+                if let Some(path_container_exe) = crt_executable_find(cmd) {
                     let suggested_tmp_dir = tmp_dir_opt.as_ref().map(PathBuf::from);
 
                     return Some(ContainerProgram::new(path_container_exe, sub_cmd_args.clone(), cmd_args.clone(), suggested_tmp_dir));

@@ -19,5 +19,5 @@ All conversions are tested with and without OCR (English only) using files in th
   -   [ ] Test DMG image
   -   [ ] Test artifacts in Zip file (webserver, webclient, Desktop clients: CLI and GUI)
 - [ ] Live CD testing
-  - [ ] amd64 testing
-  - [ ] arm64 testing
+  - [ ] amd64 testing (UEFI and BIOS boot)
+  - [ ] arm64 testing (UEFI boot)

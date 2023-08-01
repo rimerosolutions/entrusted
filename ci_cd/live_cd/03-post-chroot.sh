@@ -52,7 +52,7 @@ podman run  \
        ${CPU_ARCH}-grub-mkstandalone \
        --format=${EFI_ARCH}-efi \
        --output=/ISOLINUX/BOOT${BOOT_EFI_ARCH_UPPER}.efi \
-       --modules="part_gpt part_msdos" \
+       --modules="part_gpt part_msdos fat iso9660" \
        --locales="" \
        --fonts="" \
        boot/grub/grub.cfg=/ISOLINUX/grub.cfg

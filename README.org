@@ -58,8 +58,11 @@ There are three user interfaces ([[./app/entrusted_client][Desktop and Command-L
 ** Downloads
 
 Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releases page]] for downloads (64-bit: [[https://en.wikipedia.org/wiki/X86-64][amd64/x86_64]] and [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]]).
-- If you prefer [[https://flatpak.org/][Flatpak]] on Linux, please check out the [[https://github.com/axtloss/flatpaks][axtloss flatpaks]] project page (might be dated).
 - =aarch64= (=arm64=) builds are not yet available for Windows
+- Ignore any warnings about trusting the application under Windows or Mac OS, the binaries are not signed
+  - [[https://support.apple.com/en-ca/guide/mac-help/mh40616/mac][Notes for Mac OS]]
+  - Notes for Windows: Click "Ignore" or "Run", if you get a warning dialog.
+    
 
 |-----------+------------------------------------------+-----------------------------------------------|
 | "System"  | Artifact                                 | Description                                   |

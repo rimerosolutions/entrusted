@@ -3475,10 +3475,13 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
 #[cfg(target_os = "windows")]
 pub fn pdf_open_with(cmd: String, input: PathBuf, _: &l10n::Translations) -> Result<(), Box<dyn Error>> {
     use std::os::windows::process::CommandExt;
-    match Command::new(cmd).arg(input).creation_flags(0x08000000).spawn() {
-        Ok(_)   => Ok(()),
-        Err(ex) => Err(ex.into()),
-    }
+    match Command::new(cmd)
+        .arg(input)
+        .creation_flags(0x08000000)
+        .spawn() {
+            Ok(_)   => Ok(()),
+            Err(ex) => Err(ex.into()),
+        }
 }
 
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]

@@ -93,6 +93,10 @@ podman run  \
        docker.io/uycyjnzgntrn/grub-amd64:fedora-37 \
        sh -c "cp /usr/lib/grub/i386-pc/boot_hybrid.img /MYTMP"
 
+echo ">>> Adding grub.cfg to /boot/grub"
+mkdir -p "${LIVE_BOOT_DIR}/staging/boot/grub"
+cp "${LIVE_BOOT_DIR}/staging/isolinux/grub.cfg" "${LIVE_BOOT_DIR}/staging/boot/grub/grub.cfg"
+
 xorriso -as mkisofs \
         -iso-level 3 \
         -volid "ENTRUSTED_LIVE" \

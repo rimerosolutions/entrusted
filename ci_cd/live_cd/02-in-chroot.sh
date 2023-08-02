@@ -34,7 +34,6 @@ DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
     net-tools \
     mg \
     dropbear \
-    grub-efi-${ENTRUSTED_ARCH}-bin \
     uidmap \
     crun \
     live-boot \
@@ -156,10 +155,6 @@ perl -pi -e 's/^DROPBEAR_EXTRA_ARGS.*/DROPBEAR_EXTRA_ARGS="-w -g"/' /etc/default
 
 echo ">>> Enable few kernel modules"
 echo "zram" >> /etc/modules
-
-echo ">>> Adjust grub configuration"
-mkdir -p /etc/default
-echo "GRUB_ENABLE_BLSCFG=false" >> /etc/default/grub
 
 echo ">>> Trim filesystem"
 mkdir -p /tmp/locales && cp -rf /usr/share/locale/locale.alias /usr/share/locale/en_CA /tmp/locales

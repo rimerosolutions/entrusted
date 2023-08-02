@@ -34,6 +34,7 @@ DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
     net-tools \
     mg \
     dropbear \
+    grub-efi-${ENTRUSTED_ARCH}-bin \
     uidmap \
     crun \
     live-boot \

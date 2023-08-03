@@ -61,6 +61,7 @@
         "mprotect",
         "munmap",
         "newfstatat",
+        "open",
         "openat",
         "openat2",
         "pipe",

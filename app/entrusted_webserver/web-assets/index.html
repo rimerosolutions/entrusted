@@ -947,13 +947,12 @@
         let uploadForm = document.getElementById("uploadForm");
         let imgQualitySelectElement = document.getElementById("imgQualitySelect");
         let imgQualityCheckboxElement = document.getElementById("imgQualityCheckbox");
-        let imgQuality = imgQualitySelectElement.value;
         let uploadUrl = uploadForm.action;
-
+        let imgQuality = null;
         let ocrSettings = {};
 
-        if (!imgQualityCheckboxElement.checked) {
-          imgQuality = null;
+        if (imgQualityCheckboxElement.checked) {
+          imgQuality = imgQualitySelectElement.value;
         }
 
         if (ocrCheckbox.checked) {

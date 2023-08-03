@@ -82,7 +82,7 @@ podman run  \
 echo ">>> Combine bootable Grub cdboot.img"
 podman run  \
        --platform linux/amd64 \
-       -v "${LIVE_BOOT_DIR}/staging/isolinux":/ISOLINUX \
+       -v "${LIVE_BOOT_DIR}/staging/isolinux":/ISOLIbNUX \
        docker.io/uycyjnzgntrn/grub-amd64:fedora-37 \
        sh -c "cat /usr/lib/grub/i386-pc/cdboot.img /ISOLINUX/core.img > /ISOLINUX/bios.img"
 
@@ -93,29 +93,25 @@ podman run  \
        docker.io/uycyjnzgntrn/grub-amd64:fedora-37 \
        sh -c "cp /usr/lib/grub/i386-pc/boot_hybrid.img /MYTMP"
 
-echo ">>> Adding grub.cfg to /boot/grub"
-mkdir -p "${LIVE_BOOT_DIR}/staging/boot/grub"
-cp "${LIVE_BOOT_DIR}/staging/isolinux/grub.cfg" "${LIVE_BOOT_DIR}/staging/boot/grub/grub.cfg"
-
 xorriso -as mkisofs \
         -iso-level 3 \
-        -volid "ENTRUSTED_LIVE" \
         -full-iso9660-filenames \
-        -J -J -joliet-long \
-        -output "${LIVE_ISO_DIR}/entrusted-${ENTRUSTED_VERSION}-livecd-${CPU_ARCH}.iso" \
-        --grub2-mbr "${LIVE_BOOT_TMP_DIR}/boot_hybrid.img" \
-        -partition_offset 16 \
-        --mbr-force-bootable \
-        -append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b ${LIVE_BOOT_DIR}/staging/efiboot.img \
-        -appended_part_as_gpt \-iso_mbr_part_type a2a0d0ebe5b9334487c068b6b72699c7 \
-        -eltorito-boot isolinux/bios.img \
+        -volid "ENTRUSTED_LIVE" \
+        -eltorito-boot boot/grub/bios.img \
         -no-emul-boot \
         -boot-load-size 4 \
         -boot-info-table \
-        --eltorito-catalog isolinux/boot.cat \
+        --eltorito-catalog boot/grub/boot.cat \
         --grub2-boot-info \
+        --grub2-mbr "${LIVE_BOOT_TMP_DIR}/boot_hybrid.img" \
         -eltorito-alt-boot \
-        -e '--interval:appended_partition_2:::' \
-        -no-emul-boot "${LIVE_BOOT_DIR}/staging"
+        -e EFI/efiboot.img \
+        -no-emul-boot \
+        -append_partition 2 0xef "${LIVE_BOOT_DIR}/staging/efiboot.img" \
+        -output "${LIVE_ISO_DIR}/entrusted-${ENTRUSTED_VERSION}-livecd-${CPU_ARCH}.iso" \
+        -graft-points \
+        "${LIVE_BOOT_DIR}/staging" \
+        /boot/grub/bios.img="${LIVE_BOOT_DIR}/staging/isolinux/bios.img" \
+        /EFI/efiboot.img="${LIVE_BOOT_DIR}/staging/efiboot.img"        
 
 cd $PREVIOUSDIR

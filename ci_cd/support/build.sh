@@ -8,13 +8,36 @@ RUST_CI_VERSION="1.67.0"
 cd ${ROOT_SCRIPTDIR}
 
 # # Grub amd64 image helper
-buildah bud --squash --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/grub-amd64:fedora-37 -f Dockerfile.grub.amd64 .
+podman rmi --force docker.io/uycyjnzgntrn/grub:amd64
+podman rmi --force docker.io/uycyjnzgntrn/grub:arm64
+podman rmi --force docker.io/uycyjnzgntrn/grub
 
+podman rm --force docker.io/uycyjnzgntrn/grub:amd64
+podman rm --force docker.io/uycyjnzgntrn/grub:arm64
+podman rm --force docker.io/uycyjnzgntrn/grub
+
+podman manifest rm docker.io/uycyjnzgntrn/grub:amd64
+podman manifest rm docker.io/uycyjnzgntrn/grub:arm64
+podman manifest rm docker.io/uycyjnzgntrn/grub
+
+buildah manifest create docker.io/uycyjnzgntrn/grub
+
+buildah bud --squash --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/grub:amd64 -f Dockerfile.grub.amd64 .
 retVal=$?
 if [ $retVal -ne 0 ]; then
-	echo "Failed to build grub container image"
-  exit 1
+    echo "Failure to create grub container image for amd64"
+    exit 1
 fi
+buildah manifest add docker.io/uycyjnzgntrn/grub docker.io/uycyjnzgntrn/grub:amd64
+
+
+buildah bud --squash --platform=linux/arm64 --format docker -t docker.io/uycyjnzgntrn/grub:arm64 -f Dockerfile.grub.arm64 .
+retVal=$?
+if [ $retVal -ne 0 ]; then
+    echo "Failure to create grub container image for arm64"
+    exit 1
+fi
+buildah manifest add docker.io/uycyjnzgntrn/grub docker.io/uycyjnzgntrn/grub:arm64
 
 # # Windows for amd64
 buildah bud --squash --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/rust-windows:${RUST_CI_VERSION} -f Dockerfile.windows.amd64 .

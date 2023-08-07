@@ -76,6 +76,7 @@
         "pwrite64",
         "read",
         "readlink",
+        "readlinkat",
         "rename",
         "rmdir",
         "rseq",

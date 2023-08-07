@@ -1010,14 +1010,12 @@ impl FileListWidget {
                                         dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, &err_text);
                                     }
                                 }
-                            } else {
-                                if let Err(ex) = open_document(&output_path, "application/pdf", &trans_ref) {
-                                    let err_text = ex.to_string();
-                                    let err_msg = &trans_ref.gettext_fmt("Couldn't open PDF file in default application! {0}.", vec![&err_text]);
+                            } else if let Err(ex) = open_document(&output_path, "application/pdf", &trans_ref) {
+                                let err_text = ex.to_string();
+                                let err_msg = &trans_ref.gettext_fmt("Couldn't open PDF file in default application! {0}.", vec![&err_text]);
 
-                                    if let Some(wind_ref) = app::first_window() {
-                                        dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, err_msg);
-                                    }
+                                if let Some(wind_ref) = app::first_window() {
+                                    dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, err_msg);
                                 }
                             }
                         }
@@ -2018,7 +2016,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut cancel_tasks_button_ref = cancel_tasks_button.clone();
         let mut overall_progress_progressbar_ref  = overall_progress_progressbar.clone();
         let openwith_checkbutton_ref = openwith_checkbutton.clone();
-        let pdf_viewer_list_ref = openwith_inputchoice_rc.clone();
+        let pdf_viewer_list_ref = openwith_inputchoice_rc;
 
         move |b| {
             b.deactivate();

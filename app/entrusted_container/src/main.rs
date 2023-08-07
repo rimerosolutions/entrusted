@@ -438,7 +438,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &dyn ConversionLogger, _: &ProgressRange,
                         };
 
                         let mut office = Office::new(&libreoffice_program_dir)?;
-                        let input_uri = urls::local_into_abs(&new_input_path.display().to_string())?;
+                        let input_uri = urls::local_into_abs(new_input_path.display().to_string())?;
                         let password_was_set = AtomicBool::new(false);
                         let failed_password_input = Arc::new(AtomicBool::new(false));
 
@@ -705,7 +705,7 @@ fn split_pdf_pages_into_images(logger: &dyn ConversionLogger, progress_range: &P
 
         if let Some(page) = doc.page(i as i32) {
             let idx_text = idx.to_string();
-            progress_value = progress_range.min + (idx * progress_delta / page_count) as usize;
+            progress_value = progress_range.min + (idx * progress_delta / page_count);
             logger.log(progress_value, l10n.gettext_fmt("Extracting page {0} into a PNG image", vec![&idx_text]));
 
             let dest_path = dest_folder.join(format!("page-{}.png", idx));
@@ -764,7 +764,7 @@ fn pdf_combine_pdfs(logger: &dyn ConversionLogger, progress_range: &ProgressRang
     let progress_delta = progress_range.delta();
 
     // step 1/7
-    let mut progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
+    let mut progress_value = progress_range.min + (step_num * progress_delta / step_count);
     logger.log(progress_value, l10n.gettext("Collecting PDF pages"));
 
     for i in 0..page_count {
@@ -784,7 +784,7 @@ fn pdf_combine_pdfs(logger: &dyn ConversionLogger, progress_range: &ProgressRang
 
     // step 2/7
     step_num += 1;
-    progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
+    progress_value = progress_range.min + (step_num * progress_delta / step_count);
     logger.log(progress_value, l10n.gettext("Updating bookmarks and page numbering"));
 
     for mut doc in documents {
@@ -793,8 +793,8 @@ fn pdf_combine_pdfs(logger: &dyn ConversionLogger, progress_range: &ProgressRang
         max_id = doc.max_id + 1;
 
         doc.get_pages()
-            .into_iter()
-            .map(|(_, object_id)| {
+            .into_values()
+            .map(|object_id| {
                 if !first {
                     let bookmark = lopdf::Bookmark::new(format!("Page_{}", pagenum), [0.0, 0.0, 1.0], 0, object_id);
                     document.add_bookmark(bookmark, None);
@@ -817,7 +817,7 @@ fn pdf_combine_pdfs(logger: &dyn ConversionLogger, progress_range: &ProgressRang
 
     // step 3/7 Process all objects except "Page" type
     step_num += 1;
-    progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
+    progress_value = progress_range.min + (step_num * progress_delta / step_count);
     logger.log(progress_value, l10n.gettext("Processing PDF structure"));
 
     for (object_id, object) in documents_objects.iter() {
@@ -861,7 +861,7 @@ fn pdf_combine_pdfs(logger: &dyn ConversionLogger, progress_range: &ProgressRang
 
     // step 4/7 Iter over all "Page" and collect with the parent "Pages" created before
     step_num += 1;
-    progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
+    progress_value = progress_range.min + (step_num * progress_delta / step_count);
     logger.log(progress_value, l10n.gettext("Updating PDF dictionary"));
 
     for (object_id, object) in documents_pages.iter() {
@@ -883,7 +883,7 @@ fn pdf_combine_pdfs(logger: &dyn ConversionLogger, progress_range: &ProgressRang
 
     // step 5/7 Merge objects
     step_num += 1;
-    progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
+    progress_value = progress_range.min + (step_num * progress_delta / step_count);
     logger.log(progress_value, l10n.gettext("Combining PDF objects"));
 
     if let (Some(catalog_object), Some(pages_object)) = (catalog_object, pages_object) {
@@ -898,8 +898,8 @@ fn pdf_combine_pdfs(logger: &dyn ConversionLogger, progress_range: &ProgressRang
             dictionary.set(
                 "Kids",
                 documents_pages
-                    .into_iter()
-                    .map(|(object_id, _)| lopdf::Object::Reference(object_id))
+                    .into_keys()
+                    .map(lopdf::Object::Reference)
                     .collect::<Vec<_>>(),
             );
 
@@ -937,7 +937,7 @@ fn pdf_combine_pdfs(logger: &dyn ConversionLogger, progress_range: &ProgressRang
 
     // step 6/7 Compress the document
     step_num += 1;
-    progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
+    progress_value = progress_range.min + (step_num * progress_delta / step_count);
     logger.log(progress_value, l10n.gettext("Compressing PDF"));
 
     document.prune_objects();
@@ -946,7 +946,7 @@ fn pdf_combine_pdfs(logger: &dyn ConversionLogger, progress_range: &ProgressRang
 
     // step 7/7 Save the merged PDF
     step_num += 1;
-    progress_value = progress_range.min + (step_num * progress_delta / step_count) as usize;
+    progress_value = progress_range.min + (step_num * progress_delta / step_count);
     logger.log(progress_value, l10n.gettext("Saving PDF"));
 
     if let Err(ex) = document.save(&output_path) {
@@ -971,7 +971,7 @@ fn imgs_to_pdf(logger: &dyn ConversionLogger, progress_range: &ProgressRange, pa
     for i in 0..page_count {
         let idx = i + 1;
         let idx_text = idx.to_string();
-        progress_value = progress_range.min + (idx * progress_delta / page_count) as usize;
+        progress_value = progress_range.min + (idx * progress_delta / page_count);
         logger.log(progress_value, l10n.gettext_fmt("Saving PNG image {0} to PDF", vec![&idx_text]));
         let src = input_path.join(format!("page-{}.png", &idx));
         let dest = output_path.join(format!("page-{}.pdf", &idx));

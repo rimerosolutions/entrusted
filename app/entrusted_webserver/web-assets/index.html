@@ -452,6 +452,8 @@
           overallProgressTableElement.className = "invisible";
           let cancelPendingTasksButtonElement = document.getElementById("cancelPendingTasksButton");
           cancelPendingTasksButtonElement.disabled = false;
+          let tabSettingsButtonElement = document.getElementById("tabSettingsButton");
+          tabSettingsButtonElement.disabled = false;
           cancelPendingTasksButtonElement.className = "button-cancelled";
           let conversionSummaryElement = document.getElementById("conversionSummary");
           conversionSummaryElement.innerText = "";
@@ -811,6 +813,8 @@
             passwdElement.disabled = true;
             submitOneFile(++idx, newFailCount, nextFileObj, visualQuality, ocrSettings, uploadUrl);
           } else {
+            let tabSettingsButtonElement = document.getElementById("tabSettingsButton");
+            tabSettingsButtonElement.disabled = false;
             let cancelPendingTasksButtonElement = document.getElementById("cancelPendingTasksButton");
             cancelPendingTasksButtonElement.disabled = true;
             let dropFileZoneElement = document.getElementById("dropFileZone");
@@ -947,6 +951,7 @@
         let uploadForm = document.getElementById("uploadForm");
         let imgQualitySelectElement = document.getElementById("imgQualitySelect");
         let imgQualityCheckboxElement = document.getElementById("imgQualityCheckbox");
+        let tabSettingsButtonElement = document.getElementById("tabSettingsButton");
         let uploadUrl = uploadForm.action;
         let imgQuality = null;
         let ocrSettings = {};
@@ -970,6 +975,7 @@
         dropFileZoneElement.className = "dropFileZoneDisabled";
         dropFileZoneElement.disabled = true;
         submitButtonElement.disabled = true;
+        tabSettingsButtonElement.disabled = true;
 
         let fileCount = fileList.length;
         let fileObj = fileList.shift();
@@ -1091,6 +1097,8 @@
 
         let submitButton = document.getElementById("submitButton");
         let deleteButton = document.getElementById("deleteButton");
+        let tabSettingsButtonElement = document.getElementById("tabSettingsButton");
+        tabSettingsButtonElement.disabled = false;
         deleteButton.disabled = true;
         submitButton.disabled = true;
 
@@ -1467,8 +1475,8 @@
     <div>
       <div class="helpContainer" onclick="showHelpDialog(event)"><span class="help" data-l10n-title="l10n-window-help-title">?</span></div>
       <div class="tab">
-        <button class="tabLinks" onclick="openTab(event, 'tabSettings')">Settings</button>
-        <button class="tabLinks active" onclick="openTab(event, 'tabConvert')">Convert</button>
+        <button id="tabSettingsButton" class="tabLinks" onclick="openTab(event, 'tabSettings')">Settings</button>
+        <button id="tabConvertButton"  class="tabLinks active" onclick="openTab(event, 'tabConvert')">Convert</button>
       </div>
       <form id="uploadForm" action="./api/v1/upload" method="post" enctype="multipart/form-data" onsubmit="preventDefaults(event)">
         <div id="tabSettings" class="tabContent" style="display:none">

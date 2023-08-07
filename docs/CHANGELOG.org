@@ -17,13 +17,13 @@ The main objective is to start generating all releases artifacts via the GitHub 
   - Web User Interface: Add tabs to mimic more closely the Desktop interface appearance
   - Desktop User Interface: Add hyperlinks for opening directly PDF results
 - Maintenance
-  - On Mac OS, only support Docker Desktop as container solution to avoid Apple sandbox issues
-  - Trim the Live CD image size by roughly 15% (=~800 MB= to =~670 MB=)
-    - Boot manager: Use only [[https://www.gnu.org/software/grub/][Grub]] as boot manager for both UEFI and BIOS (removal of [[https://wiki.syslinux.org/wiki/index.php?title=SYSLINUX][SysLinux]])
+  - Update from [[https://www.debian.org/releases/bullseye/][Debian Bullseye]] to [[https://www.debian.org/releases/bookworm/][Debian Bookworm]] (Live CD and sandbox container image)
+  - On Mac OS, only support [[https://www.docker.com/products/docker-desktop/][Docker Desktop]] as container solution to avoid Apple sandbox issues
+  - Trim the Live CD image size by roughly 12% (=~800 MB= to =~700 MB=)
+    - Boot manager: Use only [[https://www.gnu.org/software/grub/][Grub]] as boot manager for both =UEFI= and =BIOS= (removal of [[https://wiki.syslinux.org/wiki/index.php?title=SYSLINUX][SysLinux]])
     - SSH server: Replace [[https://www.openssh.com/][OpenSSH]] with [[https://matt.ucc.asn.au/dropbear/dropbear.html][DropBear]]
     - Container solution: Replace the default [[https://packages.debian.org/search?keywords=podman&searchon=names&exact=1&suite=stable&section=all][Debian Podman]] version with [[https://github.com/mgoltzsche/podman-static][podman-static]]
-    - Linux kernel: Compile custom kernel (=6.x=) for removing unessential modules
-  - Upgrade to the latest Debian stable version (Live CD and container sandbox image)
+    - Linux kernel: Compile [[https://github.com/yveszoundi/kernel-deblive-smallserver][custom kernel]] (=6.x=) for removing unessential modules
   - Address potential conversion crashes with the Live CD (disable [[https://github.com/GrapheneOS/hardened_malloc][Hardened malloc]] CPU optimizations)
 
 * entrusted 0.3.0

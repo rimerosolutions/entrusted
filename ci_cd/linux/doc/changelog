@@ -4,7 +4,7 @@ entrusted (0.3.1) stable; urgency=medium
   * Introduce fine-grained seccomp security profile for container sandbox
   * Implement few minimal user interface improvements
 
- -- Yves Zoundi <yves_zoundi@hotmail.com>  Sat, 15 Jul 2023 12:38:25 -0400
+ -- Yves Zoundi <yves_zoundi@hotmail.com>  Mon, 8 Aug 2023 16:38:25 -0400
 
 entrusted (0.3.0) stable; urgency=medium
 

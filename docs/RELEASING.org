@@ -32,6 +32,7 @@ If you still want to build all artifacts locally:
 Ahead of releases, create a new issue on GitHub with the contents of [[./TESTING.md][TESTING.md]].
 
 * Publish releases
+
 ** Revision control tasks
 
 - Tag the main branch with the new =release version= (i.e. =1.1.1=) and push the tag  

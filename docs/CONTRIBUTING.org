@@ -1,6 +1,6 @@
 #+TITLE: CONTRIBUTING
 
-  There are plenty of ways to help.  
+  There are plenty of ways to help. Please note that the best way to contribute is via pull requests.
 
 * Bug reports and comments
 

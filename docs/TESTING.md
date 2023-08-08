@@ -1,6 +1,6 @@
 All conversions are tested with and without OCR (English only) using files in the `test_data` folder.
 
-- [ ] Linux testing (docker and podman) 
+- [ ] Linux testing (Docker and Podman) 
   - [ ] On amd64
     -   [ ] With Docker
         -   [ ] Test artifacts in Zip file (webserver, webclient, Desktop clients: CLI and GUI)

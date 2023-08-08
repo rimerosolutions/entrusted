@@ -91,7 +91,7 @@ Run the =setup-timezone= command and enter =America/New_York=.
 
 *** Create networking file
 
-Create a file at =/etc/network/interfaces=.
+Create a file at =/etc/network/interfaces=, with =vi= for example.
 
 #+begin_src text
   auto lo

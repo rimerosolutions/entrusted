@@ -1,9 +1,9 @@
 #+TITLE: TODO
 
-* Milestone: Future
+* Milestone: Musl builds and flatpak mostly? [0%]
 
 - [ ] Cleanup Linux dependencies and potentially remove AppImage integration (used in Linux GUI)
-- [ ] Provide [[https://musl.libc.org/][Musl]] compatible release binaries
+- [ ] Create [[https://musl.libc.org/][Musl]] compatible release binaries
 - [ ] Provide [[https://flatpak.org/][Flatpak]] binaries??
 - [ ] Simplify local builds pipeline
 - [ ] Improve documentation  

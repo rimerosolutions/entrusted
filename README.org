@@ -20,7 +20,8 @@ Key features include the following:
 - Files are processed inside a "sandbox" (disabled internet connectivity)
 - The sanitization of huge documents is frictionless
 - Files can be converted in batch (sequentially)
-- An optional Web interface is available and can act as an "online service"
+- A Web server with a user interface is available and can act as an "online service"
+- Optionally, [[https://en.wikipedia.org/wiki/Optical_character_recognition][OCR]] can be applied to PDF results (selectable and searchable text)
 - The [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]] provides both enhanced security and configuration convenience
 - Password-protected files are supported (known Office document formats and PDF files)
 - The application is multilingual (English and French translations for now)

@@ -17,7 +17,7 @@ jobs:
     - name: Prepare environment
       shell: bash
       run: |
-        sudo apt install -y qemu-user-static podman buildah
+        sudo apt-get install -y qemu-user-static podman buildah && sudo apt-get clean
     - name: Build Linux builder images
       shell: bash
       run: |
@@ -44,7 +44,7 @@ jobs:
     - name: Prepare environment
       shell: bash
       run: |
-        sudo apt install -y qemu-user-static podman buildah
+        sudo apt-get install -y qemu-user-static podman buildah && apt-get clean
     - name: Build Windows builder image
       uses: redhat-actions/buildah-build@v2
       with:
@@ -75,7 +75,7 @@ jobs:
     - name: Prepare environment
       shell: bash
       run: |
-        sudo apt install -y qemu-user-static podman buildah
+        sudo apt-get install -y qemu-user-static podman buildah && sudo apt-get clean
     - name: Build Mac OS builder image
       uses: redhat-actions/buildah-build@v2
       with:
@@ -87,7 +87,7 @@ jobs:
         containerfiles: |
           ci_cd/support/Dockerfile.macos.amd64
         extra-args: |
-          --squash
+          --squash --storage-driver overlay
     - name: Publish Mac OS image
       uses: redhat-actions/push-to-registry@v2
       with:
@@ -106,7 +106,7 @@ jobs:
     - name: Prepare environment
       shell: bash
       run: |
-        sudo apt install -y qemu-user-static podman buildah
+        sudo apt-get install -y qemu-user-static podman buildah && sudo apt-get clean
     - name: Build container builder image
       uses: redhat-actions/buildah-build@v2
       with:
@@ -137,7 +137,7 @@ jobs:
     - name: Prepare environment
       shell: bash
       run: |
-        sudo apt install -y qemu-user-static podman buildah
+        sudo apt-get install -y qemu-user-static podman buildah && sudo apt-get clean
     - name: Build Linux builder images
       shell: bash
       run: |

@@ -90,7 +90,7 @@ jobs:
         containerfiles: |
           ci_cd/support/Dockerfile.macos.amd64
         extra-args: |
-          --squash 
+          --squash --storage-driver overlay
     - name: Publish Mac OS image
       uses: redhat-actions/push-to-registry@v2
       with:

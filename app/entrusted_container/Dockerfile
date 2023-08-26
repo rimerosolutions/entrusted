@@ -1,4 +1,4 @@
-FROM docker.io/uycyjnzgntrn/debian:bookworm-rust-1.70.0-tesseract5 as builder
+FROM docker.io/uycyjnzgntrn/debian:bookworm-rust-1.72.0-tesseract5 as builder
 LABEL stage=entrusted_container_builder
 
 WORKDIR /home/rust/entrusted-container

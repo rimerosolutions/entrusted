@@ -5,7 +5,7 @@ on: workflow_dispatch
 
 env:
   IMAGE_REGISTRY: "docker.io"
-  RUST_CI_VERSION: "1.70.0"
+  RUST_CI_VERSION: "1.72.0"
   DEBIAN_VERSION: "bookworm"
 
 jobs:
@@ -79,6 +79,8 @@ jobs:
         sudo rm -rf /usr/share/common-licenses /usr/share/doc-base
         sudo rm -rf /usr/share/doc /usr/share/java /usr/share/man /usr/share/info
         sudo rm -rf /usr/share/icons /usr/share/applications /usr/share/pixmaps
+        find /usr -type f -name "*.png"
+        dpkg -l
         mkdir -p ~/.config/containers/
         echo "[storage]" >> ~/.config/containers/storage.conf
         echo "  driver = \"overlay\"" >> ~/.config/containers/storage.conf        

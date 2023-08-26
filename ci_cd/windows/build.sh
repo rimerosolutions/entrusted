@@ -6,7 +6,7 @@ SCRIPTDIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${SCRIPTDIR}/../../app)"
 APPVERSION=$(grep "^version" ${PROJECTDIR}/entrusted_client/Cargo.toml  | cut -d"=" -f2 | xargs)
 ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-${APPVERSION}-windows-amd64"
-RUST_CI_VERSION="1.70.0"
+RUST_CI_VERSION="1.72.0"
 
 mkdir -p ${ARTIFACTSDIR}
 

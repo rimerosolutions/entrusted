@@ -21,6 +21,8 @@ The client invokes the =entrusted-webserver= Web API and processes notifications
 
 At the root of this project, open a command prompt and type =cargo build=.
 
+You'll need a recent version of rust (=1.70+=) installed.
+
 * How to run this?
 
 The =entrusted-webclient= binary is similar to the =entrusted-cli= except that it interacts with a Web API.

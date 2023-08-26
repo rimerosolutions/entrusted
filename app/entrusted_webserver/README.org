@@ -45,6 +45,8 @@ It's possible to produce standalone binaries on Linux, with no runtime dependenc
   
 ** Build command
 
+Please use a recent version of rust (=1.70.0+=) to compile the program.
+
 This is the basic command to build dynamically linked binaries: =cargo build=.
 
 For detailed build instructions, please take a look at some of the commands in [[../../ci_cd/][ci_cd]] scripts.

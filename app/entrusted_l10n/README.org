@@ -19,7 +19,7 @@ GNU Gettext is not necessarily the "best thing out there", but:
 
 * What is required?
 
-The usual [[https://doc.rust-lang.org/book/ch01-01-installation.html][Rust toolchain]] (=1.58+=) is needed for builds. The code itself is used from other modules (=entrusted_container=, =entrusted_client=, =entrusted_webserver=, =entrusted_webclient=).
+The usual [[https://doc.rust-lang.org/book/ch01-01-installation.html][Rust toolchain]] (=1.70+=) is needed for builds. The code itself is used from other modules (=entrusted_container=, =entrusted_client=, =entrusted_webserver=, =entrusted_webclient=).
 
 * How to build this?
 

@@ -5,8 +5,8 @@ on: workflow_dispatch
 
 env:
   IMAGE_REGISTRY: "docker.io"
-  RUST_CI_VERSION: "1.67.0"
-  DEBIAN_VERSION: "bullseye"
+  RUST_CI_VERSION: "1.70.0"
+  DEBIAN_VERSION: "bookworm"
 
 jobs:
   build_publish_grub_image:

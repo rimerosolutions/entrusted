@@ -4,14 +4,14 @@ run-name: Build main binaries
 on: workflow_dispatch
 
 env:
-  RUST_CI_VERSION: 1.67.0
+  RUST_CI_VERSION: 1.70.0
 
 jobs:
   amd64_windows:
     name: AMD64 Windows
     runs-on: ubuntu-latest
     container:
-      image: uycyjnzgntrn/rust-windows:1.67.0
+      image: uycyjnzgntrn/rust-windows:1.70.0
       volumes:
         - ${{ github.workspace }}:/src
     steps:
@@ -215,7 +215,7 @@ jobs:
     name: AMD64 Linux
     runs-on: ubuntu-latest
     container:
-      image: docker.io/uycyjnzgntrn/rust-linux:1.67.0
+      image: docker.io/uycyjnzgntrn/rust-linux:1.70.0
       options: "--platform linux/amd64 --privileged --cap-add SYS_ADMIN --device /dev/fuse"
       volumes:
         - ${{ github.workspace }}:/src

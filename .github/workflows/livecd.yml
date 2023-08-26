@@ -4,7 +4,7 @@ run-name: Build Live CD
 on: workflow_dispatch
 
 env:
-  RUST_CI_VERSION: 1.67.0
+  RUST_CI_VERSION: 1.70.0
   
 jobs:
   livecd_amd64:

@@ -22,9 +22,9 @@ jobs:
       shell: bash
       run: |
         cd ${{ github.workspace }}/ci_cd/support && buildah manifest create docker.io/uycyjnzgntrn/grub:latest
-        cd ${{ github.workspace }}/ci_cd/support && buildah bud --squash  --storage-driver overlay --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/grub:amd64 -f Dockerfile.grub.amd64 .
+        cd ${{ github.workspace }}/ci_cd/support && buildah bud --squash  --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/grub:amd64 -f Dockerfile.grub.amd64 .
         buildah manifest add docker.io/uycyjnzgntrn/grub:latest docker.io/uycyjnzgntrn/grub:amd64
-        cd ${{ github.workspace }}/ci_cd/support && buildah bud --squash  --storage-driver overlay --platform=linux/arm64 --format docker -t docker.io/uycyjnzgntrn/grub:arm64 -f Dockerfile.grub.arm64 .
+        cd ${{ github.workspace }}/ci_cd/support && buildah bud --squash  --platform=linux/arm64 --format docker -t docker.io/uycyjnzgntrn/grub:arm64 -f Dockerfile.grub.arm64 .
         buildah manifest add docker.io/uycyjnzgntrn/grub:latest docker.io/uycyjnzgntrn/grub:arm64
     - name: Publish Linux image
       uses: redhat-actions/push-to-registry@v2
@@ -56,7 +56,7 @@ jobs:
         containerfiles: |
           ci_cd/support/Dockerfile.windows.amd64
         extra-args: |
-          --squash  overlay
+          --squash 
     - name: Publish Windows builder image
       uses: redhat-actions/push-to-registry@v2
       with:

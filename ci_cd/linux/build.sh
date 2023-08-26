@@ -6,7 +6,7 @@ SCRIPTDIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${SCRIPTDIR}/../../app)"
 APPVERSION=$(grep "^version" ${PROJECTDIR}/entrusted_client/Cargo.toml  | cut -d"=" -f2 | xargs)
 CPU_ARCHS="amd64 aarch64"
-RUST_CI_VERSION="1.67.0"
+RUST_CI_VERSION="1.72.0"
 
 for CPU_ARCH in ${CPU_ARCHS} ; do
     ARTIFACTSDIR="${PROJECTDIR}/../artifacts/entrusted-${APPVERSION}-linux-${CPU_ARCH}"

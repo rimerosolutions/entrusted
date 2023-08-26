@@ -3,7 +3,7 @@
 PREVIOUSDIR="$(echo $PWD)"
 ROOT_SCRIPTDIR="$(realpath $(dirname "$0"))"
 DEBIAN_VERSION="bookworm"
-RUST_CI_VERSION="1.67.0"
+RUST_CI_VERSION="1.72.0"
 
 cd ${ROOT_SCRIPTDIR}
 

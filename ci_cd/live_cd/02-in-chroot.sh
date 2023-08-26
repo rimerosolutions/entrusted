@@ -15,14 +15,14 @@ cp /files/etc/apt/apt.conf.d/80custom /etc/apt/apt.conf.d/
 echo ">>> Installing custom kernel"
 DEBIAN_FRONTEND=noninteractive apt update
 dpkg -i /files/minikernel/linux-image*.deb
-DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends initramfs-tools zstd
+DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends initramfs-tools zstd
 perl -pi -e 's/^COMPRESS=.*/COMPRESS=zstd/' /etc/initramfs-tools/initramfs.conf
 echo "COMPRESSLEVEL=22" >> /etc/initramfs-tools/initramfs.conf
 cd /boot && initrdsuffix=$(ls vmlinuz-* | awk -F"vmlinuz-" '{print $2}') && cd -
 cd /boot && mkinitramfs -o initrd.img-${initrdsuffix} ${initrdsuffix} && cd -
 
 echo ">>> Installing default packages"
-DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
+DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     auditd \
     iptables-persistent \
     doas \
@@ -38,7 +38,7 @@ DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
     crun \
     live-boot \
     systemd-sysv \
-    && apt clean
+    && apt-get clean
 
 echo ">>> Installing podman-static"
 tar zxvf /files/podman/podman*.tar.gz --strip-components 1 --exclude="README.md" --exclude="fuse-overlayfs" --exclude="fusermount3" -C /

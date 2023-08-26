@@ -1,4 +1,4 @@
-FROM docker.io/rust:1.67.0-bookworm
+FROM docker.io/rust:1.72.0-bookworm
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
     libleptonica-dev \
@@ -16,6 +16,5 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
     libjpeg-dev \
     curl \
     libpoppler-glib-dev \
-    && apt clean
-
+    && apt-get clean
 

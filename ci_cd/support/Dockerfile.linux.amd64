@@ -1,4 +1,4 @@
-FROM docker.io/rust:1.67.0-bullseye
+FROM docker.io/rust:1.72.0-bookworm
 
 RUN apt update \
     && apt install -y libjpeg62-turbo-dev \

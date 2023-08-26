@@ -1,7 +1,7 @@
 FROM docker.io/rust:1.72.0-bookworm
 
-RUN apt update \
-    && apt install -y libjpeg62-turbo-dev \
+RUN DEBIAN_FRONTEND=noninteractive apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y libjpeg62-turbo-dev \
     squashfs-tools \
     xorg-dev \
     musl-dev \
@@ -35,7 +35,7 @@ RUN apt update \
     libxkbcommon-dev \
     patchelf \
     desktop-file-utils \
-    squashfuse && apt clean
+    squashfuse && DEBIAN_FRONTEND=noninteractive apt-get clean
 
 RUN rustup target add x86_64-unknown-linux-musl; rustup target add x86_64-unknown-linux-gnu;
 

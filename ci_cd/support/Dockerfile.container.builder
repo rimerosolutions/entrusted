@@ -1,6 +1,7 @@
 FROM docker.io/rust:1.72.0-bookworm
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
     libleptonica-dev \
     libtesseract-dev \
     libreofficekit-dev \
@@ -16,5 +17,5 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
     libjpeg-dev \
     curl \
     libpoppler-glib-dev \
-    && apt-get clean
+    && DEBIAN_FRONTEND=noninteractive apt-get clean
 

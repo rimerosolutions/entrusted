@@ -166,10 +166,12 @@ async fn upload(
     }
 
     if err_msg.is_empty() {
-        NOTIFICATIONS_PER_REFID.lock().unwrap().insert(
-            uploaded_file.id.clone(),
-            Arc::new(Mutex::new(Vec::<model::Notification>::new())),
-        );
+        if let Ok(mut notifs_per_refid) = NOTIFICATIONS_PER_REFID.lock() {
+            notifs_per_refid.insert(
+                uploaded_file.id.clone(),
+                Arc::new(Mutex::new(Vec::<model::Notification>::new())),
+            );
+        }
 
         let new_upload_info = uploaded_file.clone();
         let l10n_async_ref = trans.clone();

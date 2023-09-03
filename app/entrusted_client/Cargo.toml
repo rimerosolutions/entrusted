@@ -50,7 +50,7 @@ dunce = "1.0.3"
 fltk = { version = "1.4.10", features = ["fltk-bundled"], optional = true }
 
 [build-dependencies]
-embed-resource = "1.7.2" # stuck with 1.7.2 instead of latest now due to conflicts for toml > 0.5.8
+embed-resource = "2.3.0"
 polib = "0.1.0"
 
 [dev-dependencies]

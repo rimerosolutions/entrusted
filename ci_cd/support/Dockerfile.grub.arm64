@@ -15,5 +15,5 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     grub-efi-arm64-bin \
     dosfstools \
     mtools \
-    xorisso \
+    xorriso \
     && apt-get clean

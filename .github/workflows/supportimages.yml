@@ -17,7 +17,7 @@ jobs:
     - name: Prepare environment
       shell: bash
       run: |
-        sudo apt-get install -y qemu-user-static podman buildah && sudo apt-get clean
+        sudo apt-get update && sudo apt-get install -y qemu-user-static podman buildah && sudo apt-get clean
     - name: Build Linux builder images
       shell: bash
       run: |
@@ -44,7 +44,7 @@ jobs:
     - name: Prepare environment
       shell: bash
       run: |
-        sudo apt-get install -y qemu-user-static podman buildah && sudo apt-get clean
+        sudo apt-get update && sudo apt-get install -y qemu-user-static podman buildah && sudo apt-get clean
     - name: Build Windows builder image
       uses: redhat-actions/buildah-build@v2
       with:
@@ -75,6 +75,7 @@ jobs:
     - name: Prepare environment
       shell: bash
       run: |
+        sudo apt-get update
         sudo apt-get install -y qemu-user-static podman buildah && sudo apt-get clean
         sudo rm -rf /usr/share/common-licenses /usr/share/doc-base
         sudo rm -rf /usr/local/share/boost
@@ -116,6 +117,7 @@ jobs:
     - name: Prepare environment
       shell: bash
       run: |
+        sudo apt-get update
         sudo apt-get install -y qemu-user-static podman buildah && sudo apt-get clean
     - name: Build container builder image
       uses: redhat-actions/buildah-build@v2
@@ -147,6 +149,7 @@ jobs:
     - name: Prepare environment
       shell: bash
       run: |
+        sudo apt-get update
         sudo apt-get install -y qemu-user-static podman buildah && sudo apt-get clean
     - name: Build Linux builder images
       shell: bash

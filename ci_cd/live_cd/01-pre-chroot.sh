@@ -47,6 +47,10 @@ podman run --platform linux/${DEBIAN_ARCH} \
        docker.io/uycyjnzgntrn/rust-linux:${RUST_CI_VERSION} \
        /bin/sh -c "test -d /live_boot_tmp_dir/minikernel && rm -rf /live_boot_tmp_dir/minikernel; mkdir -p /live_boot_tmp_dir/minikernel; wget -P /live_boot_tmp_dir/minikernel https://github.com/yveszoundi/kernel-deblive-smallserver/releases/download/${RELNUM_KERNEL_DEBLIVE_SMALLSERVER}/kernel-deblive-smallserver-${VERSION_KERNEL_DEBLIVE_SMALLSERVER}-${DEBIAN_ARCH}.zip && unzip -d /live_boot_tmp_dir/minikernel /live_boot_tmp_dir/minikernel/kernel-deblive-smallserver-${VERSION_KERNEL_DEBLIVE_SMALLSERVER}-${DEBIAN_ARCH}.zip"
 ls "${LIVE_BOOT_TMP_DIR}"/minikernel/*.deb || (echo "Could not fetch custom kernel!" && exit 1)
+retVal=$?
+if [ "$retVal" != "0" ]; then
+	echo "Could not fetch custom kernel!" && exit 1
+fi
 
 echo ">>> Building hardened_malloc"
 podman run --platform linux/${DEBIAN_ARCH} \

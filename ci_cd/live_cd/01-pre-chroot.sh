@@ -20,7 +20,7 @@ RUST_CI_VERSION="1.72.0"
 
 echo ">>> Creating LIVE_BOOT folder"
 test -d "${LIVE_BOOT_DIR}"  && sudo rm -rf "${LIVE_BOOT_DIR}"
-mkdir -p "${LIVE_BOOT_DIR}" && sudo chmod -R a+rw "${LIVE_BOOT_DIR}"
+mkdir -p "${LIVE_BOOT_DIR}/chroot" && sudo chmod -R a+rw "${LIVE_BOOT_DIR}"
 
 echo ">>> Boostraping Debian installation"
 podman run --platform linux/${DEBIAN_ARCH} \

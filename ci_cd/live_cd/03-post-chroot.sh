@@ -29,19 +29,23 @@ test -d "${LIVE_ISO_DIR}" || mkdir -p "${LIVE_ISO_DIR}"
 echo ">>> Creating Live CD squashfs filesystem"
 test -f "${LIVE_BOOT_DIR}"/staging/live/filesystem.squashfs && sudo rm "${LIVE_BOOT_DIR}"/staging/live/filesystem.squashfs
 mkdir -p "${LIVE_BOOT_DIR}"/staging/live
-sudo mksquashfs "${LIVE_BOOT_DIR}"/chroot "${LIVE_BOOT_DIR}"/staging/live/filesystem.squashfs \
-     -e boot \
-     -b 1M \
-     -Xdict-size 1M \
-     -no-recovery \
-     -comp zstd \
-     -Xcompression-level 22
+
+podman run  \
+       --platform linux/${DEBIAN_ARCH} \
+       -v "${LIVE_BOOT_DIR}":/liveboot \
+       docker.io/uycyjnzgntrn/grub:latest \
+       fakeroot mksquashfs /liveboot/chroot /liveboot/staging/live/filesystem.squashfs \
+       -e boot \
+       -b 1M \
+       -Xdict-size 1M \
+       -no-recovery \
+       -comp zstd \
+       -Xcompression-level 22
 
 echo ">>> Copying Live CD kernel, initrd"
 mkdir -p "${LIVE_BOOT_DIR}"/staging/isolinux
 cp "${LIVE_BOOT_DIR}"/chroot/boot/vmlinuz-* "${LIVE_BOOT_DIR}"/staging/live/vmlinuz
 cp "${LIVE_BOOT_DIR}"/chroot/boot/initrd.img-* "${LIVE_BOOT_DIR}"/staging/live/initrd
-
 
 echo ">>> Creating EFI bootable components"
 cp "${ROOT_SCRIPTS_DIR}"/post_chroot_files/home/entrusted/LIVE_BOOT/staging/isolinux/grub.cfg "${LIVE_BOOT_DIR}"/staging/isolinux/
@@ -61,10 +65,11 @@ podman run  \
 ls "${LIVE_BOOT_DIR}"/staging/isolinux/BOOT${BOOT_EFI_ARCH_UPPER}.efi || (echo "Unable to EFI bootable components!" && exit 1)
 
 echo ">>> Creating FAT16 UEFI boot disk image"
-dd if=/dev/zero of=${LIVE_BOOT_DIR}/staging/efiboot.img bs=1M count=10 && \
-    sudo mkfs.vfat ${LIVE_BOOT_DIR}/staging/efiboot.img && \
-    LC_CTYPE=C mmd -i ${LIVE_BOOT_DIR}/staging/efiboot.img EFI EFI/BOOT && \
-    LC_CTYPE=C mcopy -i ${LIVE_BOOT_DIR}/staging/efiboot.img "${LIVE_BOOT_DIR}"/staging/isolinux/BOOT${BOOT_EFI_ARCH_UPPER}.efi ::EFI/BOOT/
+podman run  \
+       --platform linux/${DEBIAN_ARCH} \
+       -v "${LIVE_BOOT_DIR}/staging":/staging \
+       docker.io/uycyjnzgntrn/grub:latest \
+       /bin/sh -c "dd if=/dev/zero of=/staging/efiboot.img bs=1M count=10 && fakeroot mkfs.vfat /staging/efiboot.img && LC_CTYPE=C mmd -i /staging/efiboot.img EFI EFI/BOOT && LC_CTYPE=C mcopy -i /staging/efiboot.img /staging/isolinux/BOOT${BOOT_EFI_ARCH_UPPER}.efi ::EFI/BOOT/"
 
 echo ">>> Creating Grub BIOS image"
 podman run  \
@@ -94,25 +99,12 @@ podman run  \
        docker.io/uycyjnzgntrn/grub:latest \
        sh -c "cp /usr/lib/grub/i386-pc/boot_hybrid.img /MYTMP"
 
-xorriso -as mkisofs \
-        -iso-level 3 \
-        -volid "ENTRUSTED_LIVE" \
-        -full-iso9660-filenames \
-        -J -J -joliet-long \
-        -output "${LIVE_ISO_DIR}/entrusted-${ENTRUSTED_VERSION}-livecd-${CPU_ARCH}.iso" \
-        --grub2-mbr "${LIVE_BOOT_TMP_DIR}/boot_hybrid.img" \
-        -partition_offset 16 \
-        --mbr-force-bootable \
-        -append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b ${LIVE_BOOT_DIR}/staging/efiboot.img \
-        -appended_part_as_gpt \-iso_mbr_part_type a2a0d0ebe5b9334487c068b6b72699c7 \
-        -eltorito-boot isolinux/bios.img \
-        -no-emul-boot \
-        -boot-load-size 4 \
-        -boot-info-table \
-        --eltorito-catalog isolinux/boot.cat \
-        --grub2-boot-info \
-        -eltorito-alt-boot \
-        -e '--interval:appended_partition_2:::' \
-        -no-emul-boot "${LIVE_BOOT_DIR}/staging"
+podman run  \
+       --platform linux/amd64 \
+       -v "${LIVE_ISO_DIR}":/live_iso_dir \
+       -v "${LIVE_BOOT_TMP_DIR}":/live_boot_tmp_dir \
+       -v "${LIVE_BOOT_DIR}":/live_boot_dir \
+       docker.io/uycyjnzgntrn/grub:latest \
+       /bin/sh -c "fakeroot xorriso -as mkisofs -iso-level 3 -volid 'ENTRUSTED_LIVE' -full-iso9660-filenames -J -J -joliet-long -output ${LIVE_ISO_DIR}/entrusted-${ENTRUSTED_VERSION}-livecd-${CPU_ARCH}.iso --grub2-mbr ${LIVE_BOOT_TMP_DIR}/boot_hybrid.img -partition_offset 16 --mbr-force-bootable -append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b ${LIVE_BOOT_DIR}/staging/efiboot.img -appended_part_as_gpt \-iso_mbr_part_type a2a0d0ebe5b9334487c068b6b72699c7 -eltorito-boot isolinux/bios.img -no-emul-boot -boot-load-size 4 -boot-info-table --eltorito-catalog isolinux/boot.cat --grub2-boot-info -eltorito-alt-boot -e '--interval:appended_partition_2:::' -no-emul-boot ${LIVE_BOOT_DIR}/staging"
 
 cd $PREVIOUSDIR

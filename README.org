@@ -8,7 +8,7 @@
 - This is achieved by removing active content inside a "lightweight sandbox" ([[https://www.ibm.com/cloud/learn/containerization][containerization]])
 - Please note that this tool doesn't provide absolute security guarantees
 
-Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]], you *MUST* install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior launching the program. On Mac OS, you need more specifically [[https://www.docker.com/products/docker-desktop/][Docker Desktop]].
+Unless you use the [[https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/live_cd][live CD]], you *MUST* install either [[https://www.docker.com/products/docker-desktop/][Docker]] or [[https://podman.io/getting-started/][Podman]] prior launching the program. *On Mac OS*, you need more specifically [[https://www.docker.com/products/docker-desktop/][Docker Desktop]].
 
 [[./images/screenshot.png]]
 

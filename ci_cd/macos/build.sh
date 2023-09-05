@@ -83,8 +83,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
     mkdir -p ${APPBUNDLE}/Contents/Resources
     mkdir -p ${APPBUNDLETMP}    
 
-    convert ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_icon.jpg
-    
+    convert ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_icon.jpg    
     convert -scale 16x16    -depth 8 ${APPBUNDLETMP}/${APPNAME}_icon.jpg  ${APPBUNDLETMP}/${APPNAME}_16_16.png
     convert -scale 32x32    -depth 8 ${APPBUNDLETMP}/${APPNAME}_icon.jpg  ${APPBUNDLETMP}/${APPNAME}_32_32.png
     convert -scale 128x128  -depth 8 ${APPBUNDLETMP}/${APPNAME}_icon.jpg  ${APPBUNDLETMP}/${APPNAME}_128_128.png

@@ -43,7 +43,6 @@ for CPU_ARCH in $CPU_ARCHS ; do
     DEBIAN_ARCH="amd64"
     UNAME_ARCH="x86_64"
     RUST_MUSL_TARGET="x86_64-unknown-linux-musl"
-    PREP_BUILD="echo "
     RUST_PREAMBLE="RUSTFLAGS='-C target-feature=+crt-static'"
     test -d "${ENTRUSTED_ROOT_TMPDIR}" && sudo rm -rf "${ENTRUSTED_ROOT_TMPDIR}"
     mkdir -p "${ENTRUSTED_ROOT_TMPDIR}" "${LIVE_BOOT_TMP_DIR}" "${LIVE_ISO_DIR}" "${LIVE_BOOT_DIR}" "${LINUX_ARTIFACTSDIR}"
@@ -54,7 +53,6 @@ for CPU_ARCH in $CPU_ARCHS ; do
     then
         DEBIAN_ARCH="arm64"
         UNAME_ARCH="aarch64"
-        PREP_BUILD="ln -sf /usr/bin/gcc /usr/bin/aarch64-linux-musl-gcc; ln -sf /usr/bin/ar /usr/bin/aarch64-linux-musl-ar; ln -sf /usr/bin/ar /usr/bin/musl-ar"
         RUST_MUSL_TARGET="aarch64-unknown-linux-musl"
         RUST_PREAMBLE="CC_AARCH64_UNKNOWN_LINUX_MUSL=musl-gcc CXX_AARCH64_UNKNOWN_LINUX_MUSL=musl-g++ AR_AARCH64_UNKNOWN_LINUX_MUSL=ar CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc RUSTFLAGS='-C link-arg=-lgcc -C target-feature=+crt-static'"
     fi        
@@ -68,7 +66,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
     test -d ${PROJECTDIR}/entrusted_webclient/target && rm -rf ${PROJECTDIR}/entrusted_webclient/target
     test -d ${PROJECTDIR}/entrusted_webserver/target && rm -rf ${PROJECTDIR}/entrusted_webserver/target    
     
-    podman run --log-driver=none --platform linux/${DEBIAN_ARCH} -v "${PROJECTDIR}/..":/src -v "${LINUX_ARTIFACTSDIR}":/artifacts docker.io/uycyjnzgntrn/rust-linux:${RUST_CI_VERSION} /bin/sh -c "${PREP_BUILD}; CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 ${RUST_PREAMBLE} cargo build --release --target ${RUST_MUSL_TARGET} --manifest-path /src/app/entrusted_webserver/Cargo.toml && cp /src/app/entrusted_webserver/target/${RUST_MUSL_TARGET}/release/entrusted-webserver /artifacts/ && rm -rf /src/app/entrusted_webserver/target && CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 ${RUST_PREAMBLE} cargo build --release --target ${RUST_MUSL_TARGET} --manifest-path /src/app/entrusted_client/Cargo.toml && cp /src/app/entrusted_client/target/${RUST_MUSL_TARGET}/release/entrusted-cli /artifacts/ && rm -rf /src/app/entrusted_client/target && strip --strip-unneeded /artifacts/entrusted-cli && strip --strip-unneeded /artifacts/entrusted-webserver"
+    podman run --rm --log-driver=none --platform linux/${DEBIAN_ARCH} -v "${PROJECTDIR}/..":/src -v "${LINUX_ARTIFACTSDIR}":/artifacts docker.io/uycyjnzgntrn/rust-linux:${RUST_CI_VERSION} /bin/sh -c "CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 ${RUST_PREAMBLE} cargo build --release --target ${RUST_MUSL_TARGET} --manifest-path /src/app/entrusted_webserver/Cargo.toml && cp /src/app/entrusted_webserver/target/${RUST_MUSL_TARGET}/release/entrusted-webserver /artifacts/ && rm -rf /src/app/entrusted_webserver/target && CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 ${RUST_PREAMBLE} cargo build --release --target ${RUST_MUSL_TARGET} --manifest-path /src/app/entrusted_client/Cargo.toml && cp /src/app/entrusted_client/target/${RUST_MUSL_TARGET}/release/entrusted-cli /artifacts/ && rm -rf /src/app/entrusted_client/target && strip --strip-unneeded /artifacts/entrusted-cli && strip --strip-unneeded /artifacts/entrusted-webserver"
     retVal=$?
     if [ "$retVal" != "0" ]; then
         echo "Could not build entrusted-cli and entrusted-webserver" && exit 1

@@ -3,7 +3,11 @@ Entrusted README
 
 * Requirements
 
-Please install Docker:  https://docs.docker.com/desktop/mac/install/
+Please install Docker Desktop:  https://docs.docker.com/desktop/mac/install/
+
+Docker Desktop is required to avoid Apple applications sandboxing issues: 
+- 'Entrusted' might not be able to locate your Docker installation, because it cannot see or call programs at random locations
+- The Apple applications sandbox essentially isolate programs from each other on your machine, on top of other things
 
 * About the binaries
 

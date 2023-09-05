@@ -72,7 +72,6 @@ for CPU_ARCH in $CPU_ARCHS ; do
     APPBUNDLETMP=${APPBUNDLE}/tmp
     APPBUNDLEEXE=${APPBUNDLECONTENTS}/MacOS
     APPBUNDLERESOURCES=${APPBUNDLECONTENTS}/Resources
-    APPBUNDLEICON=${APPBUNDLECONTENTS}/Resources
     APPBUNDLECOMPANY="Rimero Solutions Inc"
     APPBUNDLEVERSION=${APPVERSION}
 
@@ -83,22 +82,23 @@ for CPU_ARCH in $CPU_ARCHS ; do
     mkdir -p ${APPBUNDLE}/Contents/Resources
     mkdir -p ${APPBUNDLETMP}    
 
-    convert ${PROJECTDIR}/images/${APPNAME}_icon.png ${APPBUNDLETMP}/${APPNAME}_icon.jpg    
-    convert -scale 16x16    -depth 8 ${APPBUNDLETMP}/${APPNAME}_icon.jpg  ${APPBUNDLETMP}/${APPNAME}_16_16.png
-    convert -scale 32x32    -depth 8 ${APPBUNDLETMP}/${APPNAME}_icon.jpg  ${APPBUNDLETMP}/${APPNAME}_32_32.png
-    convert -scale 128x128  -depth 8 ${APPBUNDLETMP}/${APPNAME}_icon.jpg  ${APPBUNDLETMP}/${APPNAME}_128_128.png
-    convert -scale 256x256  -depth 8 ${APPBUNDLETMP}/${APPNAME}_icon.jpg  ${APPBUNDLETMP}/${APPNAME}_256_256.png
-    convert -scale 512x512  -depth 8 ${APPBUNDLETMP}/${APPNAME}_icon.jpg  ${APPBUNDLETMP}/${APPNAME}_512_512.png
+    podman run --rm \
+           -v "${PROJECTDIR}":/projectdir \
+           -v "${APPBUNDLETMP}":/app_bundle_dir
+           docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION} \
+           sh -c "convert /project_dir/images/${APPNAME}_icon.png /app_bundle_dir/${APPNAME}_icon.jpg && convert -scale 16x16 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg /app_bundle_dir/${APPNAME}_16_16.png && convert -scale 32x32 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg  /app_bundle_dir/${APPNAME}_32_32.png && convert -scale 128x128 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg /app_bundle_dir/${APPNAME}_128_128.png && convert -scale 256x256  -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg  /app_bundle_dir/${APPNAME}_256_256.png && convert -scale 512x512 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg /app_bundle_dir/${APPNAME}_512_512.png && png2icns ${APPBUNDLERESOURCES}/${APPNAME}.icns /app_bundle_dir/${APPNAME}_16_16.png /app_bundle_dir/${APPNAME}_32_32.png /app_bundle_dir/${APPNAME}_128_128.png /app_bundle_dir/${APPNAME}_256_256.png /app_bundle_dir/${APPNAME}_512_512.png"
 
-    png2icns ${APPBUNDLEICON}/${APPNAME}.icns ${APPBUNDLETMP}/${APPNAME}_16_16.png ${APPBUNDLETMP}/${APPNAME}_32_32.png ${APPBUNDLETMP}/${APPNAME}_128_128.png ${APPBUNDLETMP}/${APPNAME}_256_256.png  ${APPBUNDLETMP}/${APPNAME}_512_512.png && rm -rf ${APPBUNDLETMP}
+    rm -rf ${APPBUNDLETMP}
     
     cp ${SCRIPTDIR}/macos/Info.plist ${APPBUNDLECONTENTS}/
     cp ${SCRIPTDIR}/macos/PkgInfo ${APPBUNDLECONTENTS}/
 
     cp ${PROJECTDIR}/entrusted_client/target/${RUST_TARGET}/release/entrusted-cli ${APPBUNDLEEXE}/
     mv ${ARTIFACTSDIR}/entrusted-gui ${APPBUNDLEEXE}/${APPNAME}
-    perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ${APPBUNDLECONTENTS}/Info.plist
-    perl -pi -e "s/_APPVERSION_/${APPBUNDLEVERSION}/g" ${APPBUNDLECONTENTS}/Info.plist
+    podman run --rm \
+           -v "${APPBUNDLECONTENTS}":/app_bundle_contents \
+           docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION} \
+           sh -c "perl -pi -e 's/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g' /app_bundle_contents/Info.plist && perl -pi -e 's/_APPVERSION_/${APPBUNDLEVERSION}/g' /app_bundle_contents/Info.plist"
 
     cp -r ${APPBUNDLE} ${APPDMGDIR}/
     ln -s /Applications ${APPDMGDIR}/

@@ -1,3 +1,17 @@
 FROM docker.io/joseluisq/rust-linux-darwin-builder:1.72.0
 
-RUN rustup target add aarch64-apple-darwin
+LABEL maintainer="Yves Zoundi, Rimero Solutions Inc."
+LABEL org.opencontainers.image.title="Mac OS support builder image"
+LABEL org.opencontainers.image.description="Docker image for Mac OS builds with Rust support"
+LABEL org.opencontainers.image.authors="Yves Zoundi"
+LABEL org.opencontainers.image.vendor="Rimero Solutions Inc."
+LABEL org.opencontainers.image.documentation="https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/support"
+LABEL org.opencontainers.image.licenses="GPLv3"
+LABEL org.opencontainers.image.url="https://github.com/rimerosolutions/entrusted/tree/main/ci_cd/support"
+LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrusted.git"
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install  --no-install-recommends -y \
+    imagemagick icnsutils \
+    && apt-get clean \
+    && rustup target add aarch64-apple-darwin

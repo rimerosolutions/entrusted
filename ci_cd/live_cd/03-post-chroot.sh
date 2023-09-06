@@ -105,6 +105,6 @@ podman run  \
        -v "${LIVE_BOOT_TMP_DIR}":/live_boot_tmp_dir \
        -v "${LIVE_BOOT_DIR}":/live_boot_dir \
        docker.io/uycyjnzgntrn/grub:latest \
-       /bin/sh -c "fakeroot xorriso -as mkisofs -iso-level 3 -volid 'ENTRUSTED_LIVE' -full-iso9660-filenames -J -J -joliet-long -output ${LIVE_ISO_DIR}/entrusted-${ENTRUSTED_VERSION}-livecd-${CPU_ARCH}.iso --grub2-mbr ${LIVE_BOOT_TMP_DIR}/boot_hybrid.img -partition_offset 16 --mbr-force-bootable -append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b ${LIVE_BOOT_DIR}/staging/efiboot.img -appended_part_as_gpt \-iso_mbr_part_type a2a0d0ebe5b9334487c068b6b72699c7 -eltorito-boot isolinux/bios.img -no-emul-boot -boot-load-size 4 -boot-info-table --eltorito-catalog isolinux/boot.cat --grub2-boot-info -eltorito-alt-boot -e '--interval:appended_partition_2:::' -no-emul-boot ${LIVE_BOOT_DIR}/staging"
+       /bin/sh -c "fakeroot xorriso -as mkisofs -iso-level 3 -volid 'ENTRUSTED_LIVE' -full-iso9660-filenames -J -J -joliet-long -output /live_iso_dir/entrusted-${ENTRUSTED_VERSION}-livecd-${CPU_ARCH}.iso --grub2-mbr /live_boot_tmp_dir/boot_hybrid.img -partition_offset 16 --mbr-force-bootable -append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b /live_boot_dir/staging/efiboot.img -appended_part_as_gpt \-iso_mbr_part_type a2a0d0ebe5b9334487c068b6b72699c7 -eltorito-boot isolinux/bios.img -no-emul-boot -boot-load-size 4 -boot-info-table --eltorito-catalog isolinux/boot.cat --grub2-boot-info -eltorito-alt-boot -e '--interval:appended_partition_2:::' -no-emul-boot /live_boot_dir/staging"
 
 cd $PREVIOUSDIR

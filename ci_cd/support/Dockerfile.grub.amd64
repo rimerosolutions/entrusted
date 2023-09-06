@@ -15,6 +15,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     grub-pc-bin \
     dosfstools \
     mtools \
-    xorriso fakeroot \
+    xorriso \
+    squashfs-tools \
+    fakeroot \
     grub-efi-amd64-bin \
     && apt-get clean

@@ -34,7 +34,7 @@ podman run  \
        --platform linux/${DEBIAN_ARCH} \
        -v "${LIVE_BOOT_DIR}":/liveboot \
        docker.io/uycyjnzgntrn/grub:latest \
-       mksquashfs /liveboot/chroot /liveboot/staging/live/filesystem.squashfs \
+       fakeroot mksquashfs /liveboot/chroot /liveboot/staging/live/filesystem.squashfs \
        -e boot \
        -b 1M \
        -Xdict-size 1M \
@@ -69,7 +69,7 @@ podman run  \
        --platform linux/${DEBIAN_ARCH} \
        -v "${LIVE_BOOT_DIR}/staging":/staging \
        docker.io/uycyjnzgntrn/grub:latest \
-       /bin/sh -c "dd if=/dev/zero of=/staging/efiboot.img bs=1M count=10 && mkfs.vfat /staging/efiboot.img && LC_CTYPE=C mmd -i /staging/efiboot.img EFI EFI/BOOT && LC_CTYPE=C mcopy -i /staging/efiboot.img /staging/isolinux/BOOT${BOOT_EFI_ARCH_UPPER}.efi ::EFI/BOOT/"
+       /bin/sh -c "dd if=/dev/zero of=/staging/efiboot.img bs=1M count=10 && fakeroot mkfs.vfat /staging/efiboot.img && LC_CTYPE=C mmd -i /staging/efiboot.img EFI EFI/BOOT && LC_CTYPE=C mcopy -i /staging/efiboot.img /staging/isolinux/BOOT${BOOT_EFI_ARCH_UPPER}.efi ::EFI/BOOT/"
 
 echo ">>> Creating Grub BIOS image"
 podman run  \
@@ -105,6 +105,6 @@ podman run  \
        -v "${LIVE_BOOT_TMP_DIR}":/live_boot_tmp_dir \
        -v "${LIVE_BOOT_DIR}":/live_boot_dir \
        docker.io/uycyjnzgntrn/grub:latest \
-       /bin/sh -c "xorriso -as mkisofs -iso-level 3 -volid 'ENTRUSTED_LIVE' -full-iso9660-filenames -J -J -joliet-long -output /live_iso_dir/entrusted-${ENTRUSTED_VERSION}-livecd-${CPU_ARCH}.iso --grub2-mbr /live_boot_tmp_dir/boot_hybrid.img -partition_offset 16 --mbr-force-bootable -append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b /live_boot_dir/staging/efiboot.img -appended_part_as_gpt \-iso_mbr_part_type a2a0d0ebe5b9334487c068b6b72699c7 -eltorito-boot isolinux/bios.img -no-emul-boot -boot-load-size 4 -boot-info-table --eltorito-catalog isolinux/boot.cat --grub2-boot-info -eltorito-alt-boot -e '--interval:appended_partition_2:::' -no-emul-boot /live_boot_dir/staging"
+       /bin/sh -c "fakeroot xorriso -as mkisofs -iso-level 3 -volid 'ENTRUSTED_LIVE' -full-iso9660-filenames -J -J -joliet-long -output /live_iso_dir/entrusted-${ENTRUSTED_VERSION}-livecd-${CPU_ARCH}.iso --grub2-mbr /live_boot_tmp_dir/boot_hybrid.img -partition_offset 16 --mbr-force-bootable -append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b /live_boot_dir/staging/efiboot.img -appended_part_as_gpt \-iso_mbr_part_type a2a0d0ebe5b9334487c068b6b72699c7 -eltorito-boot isolinux/bios.img -no-emul-boot -boot-load-size 4 -boot-info-table --eltorito-catalog isolinux/boot.cat --grub2-boot-info -eltorito-alt-boot -e '--interval:appended_partition_2:::' -no-emul-boot /live_boot_dir/staging"
 
 cd $PREVIOUSDIR

@@ -6,9 +6,6 @@ ENTRUSTED_ARCH=$(cat /etc/entrusted_arch | head -1)
 ENTRUSTED_USERNAME=$(cat /files/entrusted_username | head -1)
 ENTRUSTED_USERID=$(cat /files/entrusted_userid | head -1)
 
-echo ">>> Fix root filesystem permissions"
-chown root:root / /var /var/lib /var/log
-
 echo ">>> Setting up hostname"
 echo "entrusted-livecd" > /etc/hostname
 

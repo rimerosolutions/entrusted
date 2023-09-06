@@ -28,7 +28,7 @@ podman run --platform linux/${DEBIAN_ARCH} \
        --log-driver=none  \
        -v "${LIVE_BOOT_DIR}"/chroot:/chroot \
        docker.io/uycyjnzgntrn/rust-linux:${RUST_CI_VERSION} \
-       /bin/sh -c "fakeroot debootstrap --arch=${DEBIAN_ARCH} --variant=minbase bookworm /chroot https://mirror.csclub.uwaterloo.ca/debian/ || (sleep 10 && fakeroot debootstrap --arch=${DEBIAN_ARCH} --variant=minbase bookworm /chroot https://mirror.csclub.uwaterloo.ca/debian/)"
+       /bin/sh -c "debootstrap --arch=${DEBIAN_ARCH} --variant=minbase bookworm /chroot https://mirror.csclub.uwaterloo.ca/debian/ || (sleep 10 && debootstrap --arch=${DEBIAN_ARCH} --variant=minbase bookworm /chroot https://mirror.csclub.uwaterloo.ca/debian/)"
 retVal=$?
 if [ "$retVal" != "0" ]; then
 	echo "Could not bootstrap Debian installation!" && exit 1

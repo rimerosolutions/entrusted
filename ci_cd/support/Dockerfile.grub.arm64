@@ -13,7 +13,9 @@ LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrus
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
     grub-efi-arm64-bin \
-    dosfstools fakeroot \
+    dosfstools \
+    fakeroot \
+    squashfs-tools \
     mtools \
     xorriso \
     && apt-get clean

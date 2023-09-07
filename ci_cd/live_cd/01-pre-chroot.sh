@@ -23,12 +23,7 @@ test -d "${LIVE_BOOT_DIR}"  && sudo rm -rf "${LIVE_BOOT_DIR}"
 mkdir -p "${LIVE_BOOT_DIR}/chroot" && sudo chmod -R a+rw "${LIVE_BOOT_DIR}"
 
 echo ">>> Boostraping Debian installation"
-podman run --platform linux/${DEBIAN_ARCH} \
-       --rm \
-       --log-driver=none  \
-       -v "${LIVE_BOOT_DIR}"/chroot:/chroot \
-       docker.io/uycyjnzgntrn/rust-linux:${RUST_CI_VERSION} \
-       /bin/sh -c "fakeroot debootstrap --arch=${DEBIAN_ARCH} --variant=minbase bookworm /chroot https://mirror.csclub.uwaterloo.ca/debian/ || (sleep 10 && fakeroot debootstrap --arch=${DEBIAN_ARCH} --variant=minbase bookworm /chroot https://mirror.csclub.uwaterloo.ca/debian/)"
+sudo debootstrap --arch=${DEBIAN_ARCH} --variant=minbase bookworm "${LIVE_BOOT_DIR}"/chroot https://mirror.csclub.uwaterloo.ca/debian/ || (sleep 10 && sudo debootstrap --arch=${DEBIAN_ARCH} --variant=minbase bookworm "${LIVE_BOOT_DIR}"/chroot https://mirror.csclub.uwaterloo.ca/debian/)
 retVal=$?
 if [ "$retVal" != "0" ]; then
 	echo "Could not bootstrap Debian installation!" && exit 1

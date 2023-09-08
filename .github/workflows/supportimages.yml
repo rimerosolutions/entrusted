@@ -68,7 +68,7 @@ jobs:
         extra-args: |
           --format docker
   build_publish_macos_images:
-    name: BUILDER CONTAINER
+    name: BUILDER MACOS
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -78,6 +78,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y qemu-user-static podman buildah && sudo apt-get clean
         sudo rm -rf /usr/share/common-licenses /usr/share/doc-base
+        sudo apt-get remove -y --purge php8.1  dotnet-apphost-pack-6.0 dotnet-apphost-pack-7.0 dotnet-host  dotnet-hostfxr-6.0 dotnet-hostfxr-7.0 dotnet-runtime-6.0 dotnet-runtime-7.0 dotnet-runtime-deps-6.0 dotnet-runtime-deps-7.0 dotnet-sdk-6.0 dotnet-sdk-7.0 dotnet-targeting-pack
         sudo rm -rf /usr/local/share/boost
         sudo rm -rf $AGENT_TOOLSDIRECTORY
         sudo rm -rf /usr/share/doc /usr/share/java /usr/share/man /usr/share/info

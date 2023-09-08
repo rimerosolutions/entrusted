@@ -13,5 +13,4 @@ LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrus
 RUN DEBIAN_FRONTEND=noninteractive apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install  --no-install-recommends -y \
     imagemagick icnsutils \
-    && apt-get clean \
-    && rustup target add aarch64-apple-darwin
+    && apt-get clean

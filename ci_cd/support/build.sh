@@ -49,13 +49,27 @@ if [ $retVal -ne 0 ]; then
 fi
 
 # # Mac OS
-buildah bud --squash --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION} -f Dockerfile.macos.amd64 .
+podman rmi --force docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION}-amd64
+podman rmi --force docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION}-arm64
+podman rmi --force docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION}
 
+buildah manifest create docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION}
+
+buildah bud --squash --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION}-amd64 -f Dockerfile.macos
 retVal=$?
 if [ $retVal -ne 0 ]; then
-	echo "Failed to build rust-macos container image"
+	echo "Failed to build macos base container image for amd64"
   exit 1
 fi
+buildah manifest add docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION} docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION}-amd64
+
+buildah bud --squash --platform=linux/arm64/v8 --format docker -t docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION}-arm64 -f Dockerfile.macos
+retVal=$?
+if [ $retVal -ne 0 ]; then
+	echo "Failed to build macos base container image for arm64"
+  exit 1
+fi
+buildah manifest add docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION} docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION}-arm64
 
 # # Linux for amd64 and arm64
 podman rmi --force docker.io/uycyjnzgntrn/rust-linux:${RUST_CI_VERSION}-amd64

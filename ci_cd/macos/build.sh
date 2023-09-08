@@ -20,15 +20,15 @@ for CPU_ARCH in $CPU_ARCHS ; do
     ADDITIONAL_PARAMS=""
     RUSTFLAGS_PARAMS="RUSTFLAGS='-C target-feature=+crt-static'"
     EXPORT_PARAMS="export CARGO_NET_GIT_FETCH_WITH_CLI=true; export CARGO_NET_RETRY=10; export CXX=/usr/local/osxcross/target/bin/o64-clang++; export CC=/usr/local/osxcross/target/bin/o64-clang;"
-    STRIP_COMMAND="x86_64-apple-darwin21.4-strip"
+    STRIP_COMMAND="x86_64-apple-darwin22.4-strip"
 
     if [ ${CPU_ARCH} != "amd64" ]
     then
         RUST_TARGET="aarch64-apple-darwin"
         EXPORT_PARAMS="export CARGO_NET_GIT_FETCH_WITH_CLI=true; export CARGO_NET_RETRY=10; export CC=oa64-clang; export CXX=oa64-clang++;"    
-        ADDITIONAL_PARAMS="CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER=arm64-apple-darwin21.4-clang LIBZ_SYS_STATIC=1"
+        ADDITIONAL_PARAMS="CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER=arm64-apple-darwin22.4-clang LIBZ_SYS_STATIC=1"
         BUILD_PREAMBLE="rustup target add aarch64-apple-darwin"
-        STRIP_COMMAND="arm64-apple-darwin21.4-strip"
+        STRIP_COMMAND="arm64-apple-darwin22.4-strip"
     fi
 
     mkdir -p ${ARTIFACTSDIR}
@@ -82,8 +82,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
     mkdir -p ${APPBUNDLE}/Contents/Resources
     mkdir -p ${APPBUNDLETMP}    
 
-    podman run --rm -v "${PROJECTDIR}":/projectdir -v "${APPBUNDLETMP}":/app_bundle_dir docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION} sh -c "convert /project_dir/images/${APPNAME}_icon.png /app_bundle_dir/${APPNAME}_icon.jpg && convert -scale 16x16 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg /app_bundle_dir/${APPNAME}_16_16.png && convert -scale 32x32 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg  /app_bundle_dir/${APPNAME}_32_32.png && convert -scale 128x128 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg /app_bundle_dir/${APPNAME}_128_128.png && convert -scale 256x256  -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg  /app_bundle_dir/${APPNAME}_256_256.png && convert -scale 512x512 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg /app_bundle_dir/${APPNAME}_512_512.png && png2icns ${APPBUNDLERESOURCES}/${APPNAME}.icns /app_bundle_dir/${APPNAME}_16_16.png /app_bundle_dir/${APPNAME}_32_32.png /app_bundle_dir/${APPNAME}_128_128.png /app_bundle_dir/${APPNAME}_256_256.png /app_bundle_dir/${APPNAME}_512_512.png" || (sleep 10 && podman run --rm \
-           -v "${PROJECTDIR}":/projectdir -v "${APPBUNDLETMP}":/app_bundle_dir docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION} sh -c "convert /project_dir/images/${APPNAME}_icon.png /app_bundle_dir/${APPNAME}_icon.jpg && convert -scale 16x16 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg /app_bundle_dir/${APPNAME}_16_16.png && convert -scale 32x32 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg  /app_bundle_dir/${APPNAME}_32_32.png && convert -scale 128x128 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg /app_bundle_dir/${APPNAME}_128_128.png && convert -scale 256x256  -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg  /app_bundle_dir/${APPNAME}_256_256.png && convert -scale 512x512 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg /app_bundle_dir/${APPNAME}_512_512.png && png2icns ${APPBUNDLERESOURCES}/${APPNAME}.icns /app_bundle_dir/${APPNAME}_16_16.png /app_bundle_dir/${APPNAME}_32_32.png /app_bundle_dir/${APPNAME}_128_128.png /app_bundle_dir/${APPNAME}_256_256.png /app_bundle_dir/${APPNAME}_512_512.png")
+    podman run --rm -v "${PROJECTDIR}":/projectdir -v "${APPBUNDLETMP}":/app_bundle_dir docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION} sh -c "convert /project_dir/images/${APPNAME}_icon.png /app_bundle_dir/${APPNAME}_icon.jpg && convert -scale 16x16 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg /app_bundle_dir/${APPNAME}_16_16.png && convert -scale 32x32 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg  /app_bundle_dir/${APPNAME}_32_32.png && convert -scale 128x128 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg /app_bundle_dir/${APPNAME}_128_128.png && convert -scale 256x256  -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg  /app_bundle_dir/${APPNAME}_256_256.png && convert -scale 512x512 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg /app_bundle_dir/${APPNAME}_512_512.png && png2icns ${APPBUNDLERESOURCES}/${APPNAME}.icns /app_bundle_dir/${APPNAME}_16_16.png /app_bundle_dir/${APPNAME}_32_32.png /app_bundle_dir/${APPNAME}_128_128.png /app_bundle_dir/${APPNAME}_256_256.png /app_bundle_dir/${APPNAME}_512_512.png" || (sleep 10 && podman run --rm -v "${PROJECTDIR}":/projectdir -v "${APPBUNDLETMP}":/app_bundle_dir docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION} sh -c "convert /project_dir/images/${APPNAME}_icon.png /app_bundle_dir/${APPNAME}_icon.jpg && convert -scale 16x16 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg /app_bundle_dir/${APPNAME}_16_16.png && convert -scale 32x32 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg  /app_bundle_dir/${APPNAME}_32_32.png && convert -scale 128x128 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg /app_bundle_dir/${APPNAME}_128_128.png && convert -scale 256x256  -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg  /app_bundle_dir/${APPNAME}_256_256.png && convert -scale 512x512 -depth 8 /app_bundle_dir/${APPNAME}_icon.jpg /app_bundle_dir/${APPNAME}_512_512.png && png2icns ${APPBUNDLERESOURCES}/${APPNAME}.icns /app_bundle_dir/${APPNAME}_16_16.png /app_bundle_dir/${APPNAME}_32_32.png /app_bundle_dir/${APPNAME}_128_128.png /app_bundle_dir/${APPNAME}_256_256.png /app_bundle_dir/${APPNAME}_512_512.png")
 
     rm -rf ${APPBUNDLETMP}
     

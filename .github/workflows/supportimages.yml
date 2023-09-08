@@ -7,6 +7,7 @@ env:
   IMAGE_REGISTRY: "docker.io"
   RUST_CI_VERSION: "1.72.0"
   DEBIAN_VERSION: "bookworm"
+  TMPDIR: "/tmp"
 
 jobs:
   build_publish_grub_image:

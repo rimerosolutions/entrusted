@@ -35,7 +35,7 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
         extra-args: |
-          --format docker  
+          --format docker
   build_publish_windows_images:
     name: BUILDER WINDOWS
     runs-on: ubuntu-latest
@@ -56,7 +56,7 @@ jobs:
         containerfiles: |
           ci_cd/support/Dockerfile.windows.amd64
         extra-args: |
-          --squash 
+          --squash
     - name: Publish Windows builder image
       uses: redhat-actions/push-to-registry@v2
       with:
@@ -101,13 +101,13 @@ jobs:
     - name: Publish macos builder image
       uses: redhat-actions/push-to-registry@v2
       with:
-        image: debian
+        image: rust-macos
         tags: ${{ env.RUST_CI_VERSION }}
         registry: ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
         extra-args: |
-          --format docker  
+          --format docker
   build_publish_container_builder_images:
     name: BUILDER CONTAINER
     runs-on: ubuntu-latest

@@ -72,23 +72,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - name: Free Up GitHub Actions Ubuntu Runner Disk Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # This might remove tools that are actually needed, if set to "true" but frees about 6 GB
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true      
     - name: Prepare environment
       shell: bash
       run: |
         sudo apt-get update
         sudo apt-get install -y qemu-user-static podman buildah && sudo apt-get clean
-        sudo rm -rf /usr/share/common-licenses /usr/share/doc-base
-        sudo apt-get remove -y --purge php8.1  dotnet-apphost-pack-6.0 dotnet-apphost-pack-7.0 dotnet-host  dotnet-hostfxr-6.0 dotnet-hostfxr-7.0 dotnet-runtime-6.0 dotnet-runtime-7.0 dotnet-runtime-deps-6.0 dotnet-runtime-deps-7.0 dotnet-sdk-6.0 dotnet-sdk-7.0
-        sudo rm -rf /usr/local/share/boost
-        sudo rm -rf $AGENT_TOOLSDIRECTORY
-        sudo rm -rf /usr/share/doc /usr/share/java /usr/share/man /usr/share/info
-        sudo rm -rf /usr/share/icons /usr/share/applications /usr/share/pixmaps
-        find /usr -type f -name "*.png"
-        mkdir -p ~/.config/containers/
-        echo "[storage]" >> ~/.config/containers/storage.conf
-        echo "  driver = \"overlay\"" >> ~/.config/containers/storage.conf        
-        echo "TMPDIR=${HOME}/tmpdir" >> $GITHUB_ENV
-        mkdir -p ${HOME}/tmpdir
     - name: Build container builder image
       uses: redhat-actions/buildah-build@v2
       with:

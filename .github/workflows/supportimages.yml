@@ -7,7 +7,6 @@ env:
   IMAGE_REGISTRY: "docker.io"
   RUST_CI_VERSION: "1.72.0"
   DEBIAN_VERSION: "bookworm"
-  TMPDIR: "/tmp"
 
 jobs:
   build_publish_grub_image:
@@ -88,7 +87,8 @@ jobs:
         mkdir -p ~/.config/containers/
         echo "[storage]" >> ~/.config/containers/storage.conf
         echo "  driver = \"overlay\"" >> ~/.config/containers/storage.conf        
-        df -h
+        echo "TMPDIR=${HOME}/tmpdir" >> $GITHUB_ENV
+        mkdir -p ${HOME}/tmpdir
     - name: Build container builder image
       uses: redhat-actions/buildah-build@v2
       with:

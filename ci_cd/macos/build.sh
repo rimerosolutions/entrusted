@@ -25,7 +25,6 @@ for CPU_ARCH in $CPU_ARCHS ; do
     then
         RUST_TARGET="aarch64-apple-darwin"
         LINUX_ARCH="arm64"
-        RUSTFLAGS_PARAMS="RUSTFLAGS='-C target-feature=+crt-static'"
         ADDITIONAL_PARAMS="LIBZ_SYS_STATIC=1 CC=oa64-clang CXX=oa64-clang++ CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER=arm64e-apple-darwin22.4-clang "
     fi
 

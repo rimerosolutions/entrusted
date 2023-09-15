@@ -99,6 +99,7 @@ fn crt_executable_find(exe_name: &str) -> Option<PathBuf> {
                     if let Some(bundle_url) = CFURL::from_path(pp, true) {
                         if let Some(bundle) = CFBundle::new(bundle_url) {
                             if let (Some(bp), Some(rp)) = (bundle.path(), bundle.resources_path()) {
+                                // check for Appname.App/Resources/bin/exe_name
                                 let rt_path = bp.join(rp).join(&exec_rel_path);
 
                                 if rt_path.exists() {

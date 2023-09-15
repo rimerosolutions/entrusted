@@ -3101,7 +3101,6 @@ pub fn open_document(url: &str,  content_type: &str, trans: &l10n::Translations)
         applications_folders.push("/usr/local/share/applications".to_string());
         applications_folders.push("/var/lib/snapd/desktop/applications".to_string());
 
-
         for applications_folder in applications_folders {
             if opt_cmd_open.is_some() {
                 break;

@@ -26,14 +26,11 @@ LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrus
 # Minimal runtime dependencies
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
-    libleptonica-dev \
     libtesseract-dev \
     libreoffice-writer \
     libreoffice-draw \
     libreoffice-impress \
     libreoffice-calc \
-    libpoppler-dev \
-    libcairo2-dev \
     tesseract-ocr-all \
     fonts-dejavu \
     libpoppler-glib-dev \

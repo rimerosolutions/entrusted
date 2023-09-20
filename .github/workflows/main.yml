@@ -77,7 +77,7 @@ jobs:
         olddir=$(pwd)
         mkdir -p artifacts/entrusted-${APPVERSION}-macos-amd64 artifacts/appbundle artifacts/dmg artifacts/tmp artifacts/all
 
-        CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --features=gui --manifest-path app/entrusted_client/Cargo.toml
+        CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 cargo build --release --features=gui --manifest-path app/entrusted_client/Cargo.toml
         strip app/entrusted_client/target/release/entrusted-gui
         strip app/entrusted_client/target/release/entrusted-cli        
         cp app/entrusted_client/target/release/entrusted-gui artifacts/entrusted-${APPVERSION}-macos-amd64/
@@ -156,7 +156,7 @@ jobs:
           olddir=$(pwd)
           mkdir -p artifacts/entrusted-${APPVERSION}-macos-aarch64 artifacts/appbundle artifacts/dmg artifacts/tmp artifacts/all
 
-          CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target=aarch64-apple-darwin --features=gui --manifest-path app/entrusted_client/Cargo.toml
+          CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 cargo build --release --target=aarch64-apple-darwin --features=gui --manifest-path app/entrusted_client/Cargo.toml
           strip app/entrusted_client/target/aarch64-apple-darwin/release/entrusted-cli
           strip app/entrusted_client/target/aarch64-apple-darwin/release/entrusted-gui
           cp app/entrusted_client/target/aarch64-apple-darwin/release/entrusted-gui artifacts/entrusted-${APPVERSION}-macos-aarch64/

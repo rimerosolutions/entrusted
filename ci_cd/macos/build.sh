@@ -18,7 +18,6 @@ for CPU_ARCH in $CPU_ARCHS ; do
     RUST_TARGET="x86_64-apple-darwin"
     LINUX_ARCH="amd64"
     ADDITIONAL_PARAMS="CC=x86_64-apple-darwin22.4-clang CXX=x86_64-apple-darwin22.4-clang++ "
-    RUSTFLAGS_PARAMS="RUSTFLAGS='-C target-feature=+crt-static'"
     EXPORT_PARAMS="export CARGO_NET_GIT_FETCH_WITH_CLI=true; export CARGO_NET_RETRY=10;"
 
     if [ ${CPU_ARCH} != "amd64" ]
@@ -39,7 +38,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
 
     echo "Building all Mac OS binaries for ${CPU_ARCH}"
 
-    podman run --rm --volume "${PROJECTDIR}":/root/src --platform "linux/${LINUX_ARCH}" --workdir /root/src docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION} sh -c "${EXPORT_PARAMS} ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --features=gui --target ${RUST_TARGET} --manifest-path /root/src/entrusted_client/Cargo.toml && ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --target ${RUST_TARGET} --manifest-path /root/src/entrusted_webserver/Cargo.toml && ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --target ${RUST_TARGET} --manifest-path /root/src/entrusted_webclient/Cargo.toml" || (sleep 10 && podman run --rm --volume "${PROJECTDIR}":/root/src --platform "linux/${LINUX_ARCH}" --workdir /root/src docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION} sh -c "${EXPORT_PARAMS} ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --features=gui --target ${RUST_TARGET} --manifest-path /root/src/entrusted_client/Cargo.toml && ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --target ${RUST_TARGET} --manifest-path /root/src/entrusted_webserver/Cargo.toml && ${ADDITIONAL_PARAMS} ${RUSTFLAGS_PARAMS} cargo build --release --target ${RUST_TARGET} --manifest-path /root/src/entrusted_webclient/Cargo.toml")
+    podman run --rm --volume "${PROJECTDIR}":/root/src --platform "linux/${LINUX_ARCH}" --workdir /root/src docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION} sh -c "${EXPORT_PARAMS} ${ADDITIONAL_PARAMS}  cargo build --release --features=gui --target ${RUST_TARGET} --manifest-path /root/src/entrusted_client/Cargo.toml && ${ADDITIONAL_PARAMS}  cargo build --release --target ${RUST_TARGET} --manifest-path /root/src/entrusted_webserver/Cargo.toml && ${ADDITIONAL_PARAMS}  cargo build --release --target ${RUST_TARGET} --manifest-path /root/src/entrusted_webclient/Cargo.toml" || (sleep 10 && podman run --rm --volume "${PROJECTDIR}":/root/src --platform "linux/${LINUX_ARCH}" --workdir /root/src docker.io/uycyjnzgntrn/rust-macos:${RUST_CI_VERSION} sh -c "${EXPORT_PARAMS} ${ADDITIONAL_PARAMS}  cargo build --release --features=gui --target ${RUST_TARGET} --manifest-path /root/src/entrusted_client/Cargo.toml && ${ADDITIONAL_PARAMS}  cargo build --release --target ${RUST_TARGET} --manifest-path /root/src/entrusted_webserver/Cargo.toml && ${ADDITIONAL_PARAMS}  cargo build --release --target ${RUST_TARGET} --manifest-path /root/src/entrusted_webclient/Cargo.toml")
     
     retVal=$?
     if [ $retVal -ne 0 ]; then

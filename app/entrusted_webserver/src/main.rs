@@ -115,9 +115,10 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .into());
         }
 
-        match server::serve(host, port, ci_image_name, l10n.clone()).await {
-            Ok(_)   => Ok(()),
-            Err(ex) => Err(ex),
+        if let Err(ex) = server::serve(host, port, ci_image_name, l10n.clone()).await {
+            Err(ex)
+        } else {
+            Ok(())
         }
     } else {
         Err(l10n.gettext("Runtime error, missing parameters!").into())

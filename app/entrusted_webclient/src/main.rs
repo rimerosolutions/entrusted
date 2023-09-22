@@ -93,6 +93,7 @@ fn load_config <T> () -> Result<T, Box<dyn Error>> where T: Default + Deserializ
             if config_path.exists() {
                 let ret: Result<T, Box<dyn Error>> = {
                     let config_appdata = fs::read_to_string(&config_path)?;
+
                     match toml::from_str(&config_appdata) {
                         Ok(v)   => Ok(v),
                         Err(ex) => Err(ex.into())

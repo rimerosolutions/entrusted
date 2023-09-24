@@ -67,4 +67,6 @@ RUN mkdir -p /tmp/support \
     && cd / \
     && rm -rf /tmp/support
 
+RUN useradd -ms /bin/dash entrusted
 
+USER entrusted

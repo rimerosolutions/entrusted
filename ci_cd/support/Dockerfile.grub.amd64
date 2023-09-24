@@ -20,3 +20,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     fakeroot \
     grub-efi-amd64-bin \
     && apt-get clean
+
+RUN useradd -ms /bin/dash entrusted
+
+USER entrusted

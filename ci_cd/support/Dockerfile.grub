@@ -12,12 +12,13 @@ LABEL org.opencontainers.image.source="https://github.com/rimerosolutions/entrus
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
-    grub-efi-arm64-bin \
+    grub-pc-bin \
     dosfstools \
-    fakeroot \
-    squashfs-tools \
     mtools \
     xorriso \
+    squashfs-tools \
+    fakeroot \
+    grub-efi \
     && apt-get clean
 
 RUN useradd -ms /bin/dash entrusted

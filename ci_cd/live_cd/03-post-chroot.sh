@@ -13,6 +13,7 @@ EFI_ARCH="x86_64"
 BOOT_EFI_ARCH="x64"
 BOOT_EFI_ARCH_UPPER="X64"
 CPU_ARCH="amd64"
+GRUB_CONTAINER_IMAGE_VERSION="2.06"
 
 if [ "${DEBIAN_ARCH}" != "amd64" ]
 then
@@ -49,7 +50,7 @@ cp "${ROOT_SCRIPTS_DIR}"/post_chroot_files/home/entrusted/LIVE_BOOT/staging/isol
 podman run  \
        --platform linux/${DEBIAN_ARCH} \
        -v "${LIVE_BOOT_DIR}/staging/isolinux":/ISOLINUX \
-       docker.io/uycyjnzgntrn/grub:latest \
+       docker.io/uycyjnzgntrn/grub:${GRUB_CONTAINER_IMAGE_VERSION} \
        grub-mkstandalone \
        --format=${EFI_ARCH}-efi \
        --output=/ISOLINUX/BOOT${BOOT_EFI_ARCH_UPPER}.efi \
@@ -70,7 +71,7 @@ echo ">>> Creating Grub BIOS image"
 podman run  \
        --platform linux/amd64 \
        -v "${LIVE_BOOT_DIR}/staging/isolinux":/ISOLINUX \
-       docker.io/uycyjnzgntrn/grub:latest \
+       docker.io/uycyjnzgntrn/grub:${GRUB_CONTAINER_IMAGE_VERSION} \
        grub-mkstandalone \
        --format=i386-pc \
        --output="/ISOLINUX/core.img" \
@@ -84,14 +85,14 @@ echo ">>> Combine bootable Grub cdboot.img"
 podman run  \
        --platform linux/amd64 \
        -v "${LIVE_BOOT_DIR}/staging/isolinux":/ISOLINUX \
-       docker.io/uycyjnzgntrn/grub:latest \
+       docker.io/uycyjnzgntrn/grub:${GRUB_CONTAINER_IMAGE_VERSION} \
        sh -c "cat /usr/lib/grub/i386-pc/cdboot.img /ISOLINUX/core.img > /ISOLINUX/bios.img"
 
 echo ">>> Creating Live CD ISO image"
 podman run  \
        --platform linux/amd64 \
        -v "${LIVE_BOOT_TMP_DIR}":/MYTMP \
-       docker.io/uycyjnzgntrn/grub:latest \
+       docker.io/uycyjnzgntrn/grub:${GRUB_CONTAINER_IMAGE_VERSION} \
        sh -c "cp /usr/lib/grub/i386-pc/boot_hybrid.img /MYTMP"
 
 xorriso -as mkisofs \

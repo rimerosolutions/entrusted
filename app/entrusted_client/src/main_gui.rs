@@ -3210,7 +3210,7 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
             }
 
             for app_dir in apps_dir.iter() {
-                let mut desktop_entry_path = PathBuf::from(app_dir.clone());
+                let mut desktop_entry_path = PathBuf::from(app_dir);
                 desktop_entry_path.push(desktop_entry);
 
                 if desktop_entry_path.exists() {

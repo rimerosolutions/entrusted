@@ -10,7 +10,7 @@ env:
   GRUB_VERSION: "2.06"
 
 jobs:
-  build_publish_grub_builder_images:
+  build_publish_grub_image:
     name: BUILDER GRUB
     runs-on: ubuntu-latest
     steps:
@@ -18,21 +18,16 @@ jobs:
     - name: Prepare environment
       shell: bash
       run: |
-        sudo apt-get update
-        sudo apt-get install -y qemu-user-static podman buildah && sudo apt-get clean
-    - name: Build grub builder image
-      uses: redhat-actions/buildah-build@v2
-      with:
-        archs: amd64, arm64
-        image: ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/grub
-        tags: ${{ env.GRUB_VERSION }}
-        oci: false
-        context: ci_cd/support
-        containerfiles: |
-          ci_cd/support/Dockerfile.grub
-        extra-args: |
-          --squash
-    - name: Publish alpine builder image
+        sudo apt install -y qemu-user-static podman buildah
+    - name: Build Linux builder images
+      shell: bash
+      run: |
+        cd ${{ github.workspace }}/ci_cd/support && buildah manifest create docker.io/uycyjnzgntrn/grub:${{ env.GRUB_VERSION }}
+        cd ${{ github.workspace }}/ci_cd/support && buildah bud --squash --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/grub:${{ env.GRUB_VERSION }}-amd64 -f Dockerfile.grub.amd64 .
+        buildah manifest add docker.io/uycyjnzgntrn/grub:${{ env.GRUB_VERSION }} docker.io/uycyjnzgntrn/grub:${{ env.GRUB_VERSION }}-amd64
+        cd ${{ github.workspace }}/ci_cd/support && buildah bud --squash --platform=linux/arm64 --format docker -t docker.io/uycyjnzgntrn/grub:${{ env.GRUB_VERSION }}-arm64 -f Dockerfile.grub.arm64 .
+        buildah manifest add docker.io/uycyjnzgntrn/grub:${{ env.GRUB_VERSION }} docker.io/uycyjnzgntrn/grub:${{ env.GRUB_VERSION }}-arm64
+    - name: Publish Linux image
       uses: redhat-actions/push-to-registry@v2
       with:
         image: grub
@@ -41,7 +36,7 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
         extra-args: |
-          --format docker
+          --format docker  
   build_publish_windows_images:
     name: BUILDER WINDOWS
     runs-on: ubuntu-latest

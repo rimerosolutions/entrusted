@@ -16,19 +16,20 @@ podman rmi --force docker.io/uycyjnzgntrn/grub:${GRUB_VERSION}
 
 buildah manifest create docker.io/uycyjnzgntrn/grub:${GRUB_VERSION}
 
-buildah bud --squash --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/grub:${GRUB_VERSION}-amd64 -f Dockerfile.grub .
+buildah bud --squash --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/grub:${GRUB_VERSION}-amd64 -f Dockerfile.grub.amd64 .
 retVal=$?
 if [ $retVal -ne 0 ]; then
-	echo "Failed to build grub container image for amd64"
-  exit 1
+    echo "Failure to create grub container image for amd64"
+    exit 1
 fi
 buildah manifest add docker.io/uycyjnzgntrn/grub:${GRUB_VERSION} docker.io/uycyjnzgntrn/grub:${GRUB_VERSION}-amd64
 
-buildah bud --squash --platform=linux/arm64/v8 --format docker -t docker.io/uycyjnzgntrn/grub:${GRUB_VERSION}-arm64 -f Dockerfile.grub .
+
+buildah bud --squash --platform=linux/arm64 --format docker -t docker.io/uycyjnzgntrn/grub:${GRUB_VERSION}-arm64 -f Dockerfile.grub.arm64 .
 retVal=$?
 if [ $retVal -ne 0 ]; then
-	echo "Failed to build grub container image for arm64"
-  exit 1
+    echo "Failure to create grub container image for arm64"
+    exit 1
 fi
 buildah manifest add docker.io/uycyjnzgntrn/grub:${GRUB_VERSION} docker.io/uycyjnzgntrn/grub:${GRUB_VERSION}-arm64
 

@@ -6,7 +6,7 @@ BuildArch: _CPU_ARCH_
 License: GPL v3
 Source: _RPMBUILD_SOURCE_
 BuildRoot: _RPMBUILD_BUILDROOT_
-Requires: (docker or docker-ce or podman), fuse
+Requires: (docker or docker-ce or podman)
 
 %description
 Conversion of potentially suspicious documents to trusted PDFs files

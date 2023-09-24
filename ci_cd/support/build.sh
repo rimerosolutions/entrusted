@@ -4,6 +4,7 @@ PREVIOUSDIR="$(echo $PWD)"
 ROOT_SCRIPTDIR="$(realpath $(dirname "$0"))"
 DEBIAN_VERSION="bookworm"
 RUST_CI_VERSION="1.72.0"
+ALPINE_VERSION="3.18.3"
 
 cd ${ROOT_SCRIPTDIR}
 
@@ -116,5 +117,28 @@ if [ $retVal -ne 0 ]; then
   exit 1
 fi
 buildah manifest add docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}-tesseract5 docker.io/uycyjnzgntrn/debian:${DEBIAN_VERSION}-rust-${RUST_CI_VERSION}-arm64-tesseract5
+
+# # Processing alpine-based container for amd64 and arm64
+podman rmi --force docker.io/uycyjnzgntrn/alpine:${ALPINE_VERSION}-amd64
+podman rmi --force docker.io/uycyjnzgntrn/alpine:${ALPINE_VERSION}-arm64
+podman rmi --force docker.io/uycyjnzgntrn/alpine:${ALPINE_VERSION}
+
+buildah manifest create docker.io/uycyjnzgntrn/alpine:${ALPINE_VERSION}
+
+buildah bud --squash --platform=linux/amd64 --format docker -t docker.io/uycyjnzgntrn/alpine:${ALPINE_VERSION}-amd64 -f Dockerfile.alpine .
+retVal=$?
+if [ $retVal -ne 0 ]; then
+	echo "Failed to build alpine base container image for amd64"
+  exit 1
+fi
+buildah manifest add docker.io/uycyjnzgntrn/alpine:${ALPINE_VERSION} docker.io/uycyjnzgntrn/alpine:${ALPINE_VERSION}-amd64
+
+buildah bud --squash --platform=linux/arm64/v8 --format docker -t docker.io/uycyjnzgntrn/alpine:${ALPINE_VERSION}-arm64 -f Dockerfile.alpine .
+retVal=$?
+if [ $retVal -ne 0 ]; then
+	echo "Failed to build alpine base container image for arm64"
+  exit 1
+fi
+buildah manifest add docker.io/uycyjnzgntrn/alpine:${ALPINE_VERSION} docker.io/uycyjnzgntrn/alpine:${ALPINE_VERSION}-arm64
 
 cd ${PREVIOUSDIR}

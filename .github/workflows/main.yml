@@ -8,266 +8,268 @@ env:
   ALPINE_VERSION: 3.18.3
 
 jobs:
-  amd64_windows:
-    name: AMD64 Windows
-    runs-on: ubuntu-latest
-    container:
-      image: uycyjnzgntrn/rust-windows:1.72.0
-    steps:
-    - uses: actions/checkout@v3
-    - name: Build
-      shell: bash
-      run: |
-        APPVERSION=$(grep "^version" app/entrusted_client/Cargo.toml | cut -d'=' -f2 | xargs)
-        echo "entrusted_version=$APPVERSION" >> $GITHUB_ENV
+  # amd64_windows:
+  #   name: AMD64 Windows
+  #   runs-on: ubuntu-latest
+  #   container:
+  #     image: uycyjnzgntrn/rust-windows:1.72.0
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Build
+  #     shell: bash
+  #     run: |
+  #       APPVERSION=$(grep "^version" app/entrusted_client/Cargo.toml | cut -d'=' -f2 | xargs)
+  #       echo "entrusted_version=$APPVERSION" >> $GITHUB_ENV
 
-        mkdir -p artifacts/entrusted-${APPVERSION}-windows-amd64 artifacts/installer artifacts/all
+  #       mkdir -p artifacts/entrusted-${APPVERSION}-windows-amd64 artifacts/installer artifacts/all
 
-        CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --features=gui,fltk/fltk-bundled --target x86_64-pc-windows-gnu --manifest-path app/entrusted_client/Cargo.toml
-        x86_64-w64-mingw32-strip app/entrusted_client/target/x86_64-pc-windows-gnu/release/entrusted-cli.exe
-        x86_64-w64-mingw32-strip app/entrusted_client/target/x86_64-pc-windows-gnu/release/entrusted-gui.exe
-        cp app/entrusted_client/target/x86_64-pc-windows-gnu/release/*.exe artifacts/entrusted-${APPVERSION}-windows-amd64
-        rm -rf app/entrusted_client/target
+  #       CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --features=gui,fltk/fltk-bundled --target x86_64-pc-windows-gnu --manifest-path app/entrusted_client/Cargo.toml
+  #       x86_64-w64-mingw32-strip app/entrusted_client/target/x86_64-pc-windows-gnu/release/entrusted-cli.exe
+  #       x86_64-w64-mingw32-strip app/entrusted_client/target/x86_64-pc-windows-gnu/release/entrusted-gui.exe
+  #       cp app/entrusted_client/target/x86_64-pc-windows-gnu/release/*.exe artifacts/entrusted-${APPVERSION}-windows-amd64
+  #       rm -rf app/entrusted_client/target
 
-        CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --manifest-path app/entrusted_webserver/Cargo.toml
-        x86_64-w64-mingw32-strip  app/entrusted_webserver/target/x86_64-pc-windows-gnu/release/entrusted-webserver.exe
-        cp app/entrusted_webserver/target/x86_64-pc-windows-gnu/release/*.exe artifacts/entrusted-${APPVERSION}-windows-amd64/
-        rm -rf app/entrusted_webserver/target
+  #       CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --manifest-path app/entrusted_webserver/Cargo.toml
+  #       x86_64-w64-mingw32-strip  app/entrusted_webserver/target/x86_64-pc-windows-gnu/release/entrusted-webserver.exe
+  #       cp app/entrusted_webserver/target/x86_64-pc-windows-gnu/release/*.exe artifacts/entrusted-${APPVERSION}-windows-amd64/
+  #       rm -rf app/entrusted_webserver/target
 
-        CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --manifest-path app/entrusted_webclient/Cargo.toml
-        x86_64-w64-mingw32-strip  app/entrusted_webclient/target/x86_64-pc-windows-gnu/release/entrusted-webclient.exe
-        cp app/entrusted_webclient/target/x86_64-pc-windows-gnu/release/*.exe artifacts/entrusted-${APPVERSION}-windows-amd64/
-        rm -rf app/entrusted_webclient/target
+  #       CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu --manifest-path app/entrusted_webclient/Cargo.toml
+  #       x86_64-w64-mingw32-strip  app/entrusted_webclient/target/x86_64-pc-windows-gnu/release/entrusted-webclient.exe
+  #       cp app/entrusted_webclient/target/x86_64-pc-windows-gnu/release/*.exe artifacts/entrusted-${APPVERSION}-windows-amd64/
+  #       rm -rf app/entrusted_webclient/target
 
-        cp ci_cd/windows/release_README.txt ./artifacts/entrusted-${APPVERSION}-windows-amd64/README.txt
-        cp LICENSE ./artifacts/entrusted-${APPVERSION}-windows-amd64/LICENSE.txt
+  #       cp ci_cd/windows/release_README.txt ./artifacts/entrusted-${APPVERSION}-windows-amd64/README.txt
+  #       cp LICENSE ./artifacts/entrusted-${APPVERSION}-windows-amd64/LICENSE.txt
 
-        cp ci_cd/windows/installer.nsi ./artifacts/installer/
-        cp LICENSE ./artifacts/installer/LICENSE.txt
-        cp ci_cd/windows/release_README.txt ./artifacts/installer/README.txt
-        cp artifacts/entrusted-${APPVERSION}-windows-amd64/entrusted-cli.exe ./artifacts/installer/
-        cp artifacts/entrusted-${APPVERSION}-windows-amd64/entrusted-gui.exe ./artifacts/installer/
-        cd artifacts && zip -r entrusted-${APPVERSION}-windows-amd64.zip entrusted-${APPVERSION}-windows-amd64 && mv *.zip ./all && cd -
+  #       cp ci_cd/windows/installer.nsi ./artifacts/installer/
+  #       cp LICENSE ./artifacts/installer/LICENSE.txt
+  #       cp ci_cd/windows/release_README.txt ./artifacts/installer/README.txt
+  #       cp artifacts/entrusted-${APPVERSION}-windows-amd64/entrusted-cli.exe ./artifacts/installer/
+  #       cp artifacts/entrusted-${APPVERSION}-windows-amd64/entrusted-gui.exe ./artifacts/installer/
+  #       cd artifacts && zip -r entrusted-${APPVERSION}-windows-amd64.zip entrusted-${APPVERSION}-windows-amd64 && mv *.zip ./all && cd -
 
-        perl -pi -e "s/_APPVERSION_/${APPVERSION}/g" ./artifacts/installer/installer.nsi
-        cd artifacts/installer && makensis -V4 installer.nsi && cd -
-        cp artifacts/installer/entrusted-${APPVERSION}-windows-amd64.exe ./artifacts/all
-    - name: Upload portable installation
-      uses: actions/upload-artifact@v3
-      with:
-        name: entrusted-windows-amd64-all
-        path: ${{ github.workspace }}/artifacts/all
-  amd64_macos:
-    name: AMD64 Mac OS
-    runs-on: macos-12
-    steps:
-    - uses: actions/checkout@v3
-    - name: Build
-      shell: bash
-      run: |
-        brew install libicns imagemagick
+  #       perl -pi -e "s/_APPVERSION_/${APPVERSION}/g" ./artifacts/installer/installer.nsi
+  #       cd artifacts/installer && makensis -V4 installer.nsi && cd -
+  #       cp artifacts/installer/entrusted-${APPVERSION}-windows-amd64.exe ./artifacts/all
+  #   - name: Upload portable installation
+  #     uses: actions/upload-artifact@v3
+  #     with:
+  #       name: entrusted-windows-amd64-all
+  #       path: ${{ github.workspace }}/artifacts/all
+  # amd64_macos:
+  #   name: AMD64 Mac OS
+  #   runs-on: macos-12
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Build
+  #     shell: bash
+  #     run: |
+  #       brew install libicns imagemagick
 
-        APPVERSION=$(grep "^version" app/entrusted_client/Cargo.toml | cut -d'=' -f2 | xargs)
-        echo "entrusted_version=$APPVERSION" >> $GITHUB_ENV
-        olddir=$(pwd)
-        mkdir -p artifacts/entrusted-${APPVERSION}-macos-amd64 artifacts/appbundle artifacts/dmg artifacts/tmp artifacts/all
+  #       APPVERSION=$(grep "^version" app/entrusted_client/Cargo.toml | cut -d'=' -f2 | xargs)
+  #       echo "entrusted_version=$APPVERSION" >> $GITHUB_ENV
+  #       olddir=$(pwd)
+  #       mkdir -p artifacts/entrusted-${APPVERSION}-macos-amd64 artifacts/appbundle artifacts/dmg artifacts/tmp artifacts/all
 
-        CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 cargo build --release --features=gui,fltk/fltk-bundled --manifest-path app/entrusted_client/Cargo.toml
-        strip app/entrusted_client/target/release/entrusted-gui
-        strip app/entrusted_client/target/release/entrusted-cli
-        cp app/entrusted_client/target/release/entrusted-gui artifacts/entrusted-${APPVERSION}-macos-amd64/
-        cp app/entrusted_client/target/release/entrusted-cli artifacts/entrusted-${APPVERSION}-macos-amd64/
-        rm -rf app/entrusted_client/target
+  #       CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 cargo build --release --features=gui,fltk/fltk-bundled --manifest-path app/entrusted_client/Cargo.toml
+  #       strip app/entrusted_client/target/release/entrusted-gui
+  #       strip app/entrusted_client/target/release/entrusted-cli
+  #       cp app/entrusted_client/target/release/entrusted-gui artifacts/entrusted-${APPVERSION}-macos-amd64/
+  #       cp app/entrusted_client/target/release/entrusted-cli artifacts/entrusted-${APPVERSION}-macos-amd64/
+  #       rm -rf app/entrusted_client/target
 
-        CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --manifest-path app/entrusted_webserver/Cargo.toml
-        strip app/entrusted_webserver/target/release/entrusted-webserver
-        cp app/entrusted_webserver/target/release/entrusted-webserver artifacts/entrusted-${APPVERSION}-macos-amd64/
-        rm -rf app/entrusted_webserver/target
+  #       CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --manifest-path app/entrusted_webserver/Cargo.toml
+  #       strip app/entrusted_webserver/target/release/entrusted-webserver
+  #       cp app/entrusted_webserver/target/release/entrusted-webserver artifacts/entrusted-${APPVERSION}-macos-amd64/
+  #       rm -rf app/entrusted_webserver/target
 
-        CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --manifest-path app/entrusted_webclient/Cargo.toml
-        strip app/entrusted_webclient/target/release/entrusted-webclient
-        cp app/entrusted_webclient/target/release/entrusted-webclient artifacts/entrusted-${APPVERSION}-macos-amd64/
-        rm -rf app/entrusted_webclient/target
+  #       CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --manifest-path app/entrusted_webclient/Cargo.toml
+  #       strip app/entrusted_webclient/target/release/entrusted-webclient
+  #       cp app/entrusted_webclient/target/release/entrusted-webclient artifacts/entrusted-${APPVERSION}-macos-amd64/
+  #       rm -rf app/entrusted_webclient/target
 
-        cp ci_cd/macos/release_README.txt artifacts/entrusted-${APPVERSION}-macos-amd64/README.txt
+  #       cp ci_cd/macos/release_README.txt artifacts/entrusted-${APPVERSION}-macos-amd64/README.txt
 
-        mkdir -p ./artifacts/appbundle/Entrusted.app/Contents/MacOS
-        mkdir -p ./artifacts/appbundle/Entrusted.app/Contents/Resources
-        cp ci_cd/macos/macos/Info.plist ci_cd/macos/macos/PkgInfo ./artifacts/appbundle/Entrusted.app/Contents/
-        cp artifacts/entrusted-${APPVERSION}-macos-amd64/entrusted-cli ./artifacts/appbundle/Entrusted.app/Contents/MacOS
-        mv artifacts/entrusted-${APPVERSION}-macos-amd64/entrusted-gui ./artifacts/appbundle/Entrusted.app/Contents/MacOS/Entrusted
-        APPBUNDLECOMPANY="Rimero Solutions Inc"
-        APPBUNDLEVERSION=${APPVERSION}
-        perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ./artifacts/appbundle/Entrusted.app/Contents/Info.plist
-        perl -pi -e "s/_APPVERSION_/${APPBUNDLEVERSION}/g"   ./artifacts/appbundle/Entrusted.app/Contents/Info.plist
-        cp app/images/Entrusted_icon.png ./artifacts/tmp/
-        mkdir ./artifacts/tmp/Entrusted.iconset
+  #       mkdir -p ./artifacts/appbundle/Entrusted.app/Contents/MacOS
+  #       mkdir -p ./artifacts/appbundle/Entrusted.app/Contents/Resources
+  #       cp ci_cd/macos/macos/Info.plist ci_cd/macos/macos/PkgInfo ./artifacts/appbundle/Entrusted.app/Contents/
+  #       cp artifacts/entrusted-${APPVERSION}-macos-amd64/entrusted-cli ./artifacts/appbundle/Entrusted.app/Contents/MacOS
+  #       mv artifacts/entrusted-${APPVERSION}-macos-amd64/entrusted-gui ./artifacts/appbundle/Entrusted.app/Contents/MacOS/Entrusted
+  #       APPBUNDLECOMPANY="Rimero Solutions Inc"
+  #       APPBUNDLEVERSION=${APPVERSION}
+  #       perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ./artifacts/appbundle/Entrusted.app/Contents/Info.plist
+  #       perl -pi -e "s/_APPVERSION_/${APPBUNDLEVERSION}/g"   ./artifacts/appbundle/Entrusted.app/Contents/Info.plist
+  #       cp app/images/Entrusted_icon.png ./artifacts/tmp/
+  #       mkdir ./artifacts/tmp/Entrusted.iconset
 
-        convert ./artifacts/tmp/Entrusted_icon.png ./artifacts/tmp/Entrusted_icon.jpg
-        convert -scale 16x16     ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_16x16.png
-        convert -scale 32x32     ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_32x32.png
-        convert -scale 128x128   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_128x128.png
-        convert -scale 256x256   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_256x256.png
-        convert -scale 512x512   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_512x512.png
+  #       convert ./artifacts/tmp/Entrusted_icon.png ./artifacts/tmp/Entrusted_icon.jpg
+  #       convert -scale 16x16     ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_16x16.png
+  #       convert -scale 32x32     ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_32x32.png
+  #       convert -scale 128x128   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_128x128.png
+  #       convert -scale 256x256   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_256x256.png
+  #       convert -scale 512x512   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_512x512.png
 
-        png2icns ./artifacts/appbundle/Entrusted.app/Contents/Resources/Entrusted.icns  ./artifacts/tmp/Entrusted.iconset/icon_16x16.png ./artifacts/tmp/Entrusted.iconset/icon_32x32.png ./artifacts/tmp/Entrusted.iconset/icon_128x128.png ./artifacts/tmp/Entrusted.iconset/icon_256x256.png ./artifacts/tmp/Entrusted.iconset/icon_512x512.png
+  #       png2icns ./artifacts/appbundle/Entrusted.app/Contents/Resources/Entrusted.icns  ./artifacts/tmp/Entrusted.iconset/icon_16x16.png ./artifacts/tmp/Entrusted.iconset/icon_32x32.png ./artifacts/tmp/Entrusted.iconset/icon_128x128.png ./artifacts/tmp/Entrusted.iconset/icon_256x256.png ./artifacts/tmp/Entrusted.iconset/icon_512x512.png
 
-        cp -r ./artifacts/appbundle/Entrusted.app ./artifacts/entrusted-${APPVERSION}-macos-amd64/
+  #       cp -r ./artifacts/appbundle/Entrusted.app ./artifacts/entrusted-${APPVERSION}-macos-amd64/
 
-        cp -r ./artifacts/appbundle/Entrusted.app ./artifacts/dmg/
-        ln -s /Applications ./artifacts/dmg/
+  #       cp -r ./artifacts/appbundle/Entrusted.app ./artifacts/dmg/
+  #       ln -s /Applications ./artifacts/dmg/
 
-        hdiutil create -volname "Entrusted" -srcfolder ${olddir}/artifacts/dmg -ov -format UDBZ -fs hfs+ ./artifacts/dmg/entrusted-${APPVERSION}-macos-amd64.dmg
+  #       hdiutil create -volname "Entrusted" -srcfolder ${olddir}/artifacts/dmg -ov -format UDBZ -fs hfs+ ./artifacts/dmg/entrusted-${APPVERSION}-macos-amd64.dmg
 
-        cp artifacts/dmg/*.dmg artifacts/all/
+  #       cp artifacts/dmg/*.dmg artifacts/all/
 
-        cd artifacts && zip -r entrusted-${APPVERSION}-macos-amd64.zip entrusted-${APPVERSION}-macos-amd64 && mv *.zip ./all && cd -
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: entrusted-macos-amd64-all
-        path: ${{ github.workspace }}/artifacts/all
-  aarch64_macos:
-    name: AARCH64 Mac OS
-    runs-on: macos-12
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          target: aarch64-apple-darwin
-          toolchain: stable
-      - name: Build
-        shell: bash
-        run: |
-          brew install libicns imagemagick
+  #       cd artifacts && zip -r entrusted-${APPVERSION}-macos-amd64.zip entrusted-${APPVERSION}-macos-amd64 && mv *.zip ./all && cd -
+  #   - name: Upload a Build Artifact
+  #     uses: actions/upload-artifact@v3
+  #     with:
+  #       name: entrusted-macos-amd64-all
+  #       path: ${{ github.workspace }}/artifacts/all
+  # aarch64_macos:
+  #   name: AARCH64 Mac OS
+  #   runs-on: macos-12
+  #   defaults:
+  #     run:
+  #       shell: bash
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Install toolchain
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         profile: minimal
+  #         target: aarch64-apple-darwin
+  #         toolchain: stable
+  #     - name: Build
+  #       shell: bash
+  #       run: |
+  #         brew install libicns imagemagick
 
-          APPVERSION=$(grep "^version" app/entrusted_client/Cargo.toml | cut -d'=' -f2 | xargs)
-          echo "entrusted_version=$APPVERSION" >> $GITHUB_ENV
-          olddir=$(pwd)
-          mkdir -p artifacts/entrusted-${APPVERSION}-macos-aarch64 artifacts/appbundle artifacts/dmg artifacts/tmp artifacts/all
+  #         APPVERSION=$(grep "^version" app/entrusted_client/Cargo.toml | cut -d'=' -f2 | xargs)
+  #         echo "entrusted_version=$APPVERSION" >> $GITHUB_ENV
+  #         olddir=$(pwd)
+  #         mkdir -p artifacts/entrusted-${APPVERSION}-macos-aarch64 artifacts/appbundle artifacts/dmg artifacts/tmp artifacts/all
 
-          CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 cargo build --release --target=aarch64-apple-darwin --features=gui,fltk/fltk-bundled --manifest-path app/entrusted_client/Cargo.toml
-          cp app/entrusted_client/target/aarch64-apple-darwin/release/entrusted-gui artifacts/entrusted-${APPVERSION}-macos-aarch64/
-          cp app/entrusted_client/target/aarch64-apple-darwin/release/entrusted-cli artifacts/entrusted-${APPVERSION}-macos-aarch64/
-          rm -rf app/entrusted_client/target
+  #         CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 cargo build --release --target=aarch64-apple-darwin --features=gui,fltk/fltk-bundled --manifest-path app/entrusted_client/Cargo.toml
+  #         cp app/entrusted_client/target/aarch64-apple-darwin/release/entrusted-gui artifacts/entrusted-${APPVERSION}-macos-aarch64/
+  #         cp app/entrusted_client/target/aarch64-apple-darwin/release/entrusted-cli artifacts/entrusted-${APPVERSION}-macos-aarch64/
+  #         rm -rf app/entrusted_client/target
 
-          CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target=aarch64-apple-darwin --manifest-path app/entrusted_webserver/Cargo.toml
-          cp app/entrusted_webserver/target/aarch64-apple-darwin/release/entrusted-webserver artifacts/entrusted-${APPVERSION}-macos-aarch64/
-          rm -rf app/entrusted_webserver/target
+  #         CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target=aarch64-apple-darwin --manifest-path app/entrusted_webserver/Cargo.toml
+  #         cp app/entrusted_webserver/target/aarch64-apple-darwin/release/entrusted-webserver artifacts/entrusted-${APPVERSION}-macos-aarch64/
+  #         rm -rf app/entrusted_webserver/target
 
-          CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target=aarch64-apple-darwin --manifest-path app/entrusted_webclient/Cargo.toml
-          cp app/entrusted_webclient/target/aarch64-apple-darwin/release/entrusted-webclient artifacts/entrusted-${APPVERSION}-macos-aarch64/
-          rm -rf app/entrusted_webclient/target
+  #         CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target=aarch64-apple-darwin --manifest-path app/entrusted_webclient/Cargo.toml
+  #         cp app/entrusted_webclient/target/aarch64-apple-darwin/release/entrusted-webclient artifacts/entrusted-${APPVERSION}-macos-aarch64/
+  #         rm -rf app/entrusted_webclient/target
 
-          cp ci_cd/macos/release_README.txt artifacts/entrusted-${APPVERSION}-macos-aarch64/README.txt
+  #         cp ci_cd/macos/release_README.txt artifacts/entrusted-${APPVERSION}-macos-aarch64/README.txt
 
-          mkdir -p ./artifacts/appbundle/Entrusted.app/Contents/MacOS
-          mkdir -p ./artifacts/appbundle/Entrusted.app/Contents/Resources
-          cp ci_cd/macos/macos/Info.plist ci_cd/macos/macos/PkgInfo ./artifacts/appbundle/Entrusted.app/Contents/
-          cp artifacts/entrusted-${APPVERSION}-macos-aarch64/entrusted-cli ./artifacts/appbundle/Entrusted.app/Contents/MacOS
-          mv artifacts/entrusted-${APPVERSION}-macos-aarch64/entrusted-gui ./artifacts/appbundle/Entrusted.app/Contents/MacOS/Entrusted
-          APPBUNDLECOMPANY="Rimero Solutions Inc"
-          APPBUNDLEVERSION=${APPVERSION}
-          perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ./artifacts/appbundle/Entrusted.app/Contents/Info.plist
-          perl -pi -e "s/_APPVERSION_/${APPBUNDLEVERSION}/g"   ./artifacts/appbundle/Entrusted.app/Contents/Info.plist
-          cp app/images/Entrusted_icon.png ./artifacts/tmp/
-          mkdir ./artifacts/tmp/Entrusted.iconset
+  #         mkdir -p ./artifacts/appbundle/Entrusted.app/Contents/MacOS
+  #         mkdir -p ./artifacts/appbundle/Entrusted.app/Contents/Resources
+  #         cp ci_cd/macos/macos/Info.plist ci_cd/macos/macos/PkgInfo ./artifacts/appbundle/Entrusted.app/Contents/
+  #         cp artifacts/entrusted-${APPVERSION}-macos-aarch64/entrusted-cli ./artifacts/appbundle/Entrusted.app/Contents/MacOS
+  #         mv artifacts/entrusted-${APPVERSION}-macos-aarch64/entrusted-gui ./artifacts/appbundle/Entrusted.app/Contents/MacOS/Entrusted
+  #         APPBUNDLECOMPANY="Rimero Solutions Inc"
+  #         APPBUNDLEVERSION=${APPVERSION}
+  #         perl -pi -e "s/_COMPANY_NAME_/${APPBUNDLECOMPANY}/g" ./artifacts/appbundle/Entrusted.app/Contents/Info.plist
+  #         perl -pi -e "s/_APPVERSION_/${APPBUNDLEVERSION}/g"   ./artifacts/appbundle/Entrusted.app/Contents/Info.plist
+  #         cp app/images/Entrusted_icon.png ./artifacts/tmp/
+  #         mkdir ./artifacts/tmp/Entrusted.iconset
 
-          convert ./artifacts/tmp/Entrusted_icon.png ./artifacts/tmp/Entrusted_icon.jpg
-          convert -scale 16x16     ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_16x16.png
-          convert -scale 32x32     ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_32x32.png
-          convert -scale 128x128   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_128x128.png
-          convert -scale 256x256   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_256x256.png
-          convert -scale 512x512   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_512x512.png
+  #         convert ./artifacts/tmp/Entrusted_icon.png ./artifacts/tmp/Entrusted_icon.jpg
+  #         convert -scale 16x16     ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_16x16.png
+  #         convert -scale 32x32     ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_32x32.png
+  #         convert -scale 128x128   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_128x128.png
+  #         convert -scale 256x256   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_256x256.png
+  #         convert -scale 512x512   ./artifacts/tmp/Entrusted_icon.jpg ./artifacts/tmp/Entrusted.iconset/icon_512x512.png
 
-          png2icns ./artifacts/appbundle/Entrusted.app/Contents/Resources/Entrusted.icns  ./artifacts/tmp/Entrusted.iconset/icon_16x16.png ./artifacts/tmp/Entrusted.iconset/icon_32x32.png ./artifacts/tmp/Entrusted.iconset/icon_128x128.png ./artifacts/tmp/Entrusted.iconset/icon_256x256.png ./artifacts/tmp/Entrusted.iconset/icon_512x512.png
+  #         png2icns ./artifacts/appbundle/Entrusted.app/Contents/Resources/Entrusted.icns  ./artifacts/tmp/Entrusted.iconset/icon_16x16.png ./artifacts/tmp/Entrusted.iconset/icon_32x32.png ./artifacts/tmp/Entrusted.iconset/icon_128x128.png ./artifacts/tmp/Entrusted.iconset/icon_256x256.png ./artifacts/tmp/Entrusted.iconset/icon_512x512.png
 
-          cp -r ./artifacts/appbundle/Entrusted.app ./artifacts/entrusted-${APPVERSION}-macos-aarch64/
+  #         cp -r ./artifacts/appbundle/Entrusted.app ./artifacts/entrusted-${APPVERSION}-macos-aarch64/
 
-          cp -r ./artifacts/appbundle/Entrusted.app ./artifacts/dmg/
-          ln -s /Applications ./artifacts/dmg/
+  #         cp -r ./artifacts/appbundle/Entrusted.app ./artifacts/dmg/
+  #         ln -s /Applications ./artifacts/dmg/
 
-          hdiutil create -volname "Entrusted" -srcfolder ${olddir}/artifacts/dmg -ov -format UDBZ -fs hfs+ ./artifacts/dmg/entrusted-${APPVERSION}-macos-aarch64.dmg
+  #         hdiutil create -volname "Entrusted" -srcfolder ${olddir}/artifacts/dmg -ov -format UDBZ -fs hfs+ ./artifacts/dmg/entrusted-${APPVERSION}-macos-aarch64.dmg
 
-          cp artifacts/dmg/*.dmg artifacts/all/
+  #         cp artifacts/dmg/*.dmg artifacts/all/
 
-          cd artifacts && zip -r entrusted-${APPVERSION}-macos-aarch64.zip entrusted-${APPVERSION}-macos-aarch64 && mv *.zip ./all && cd -
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: entrusted-macos-aarch64-all
-          path: ${{ github.workspace }}/artifacts/all
-  amd64_linux:
-    name: AMD64 Linux
-    runs-on: ubuntu-latest
-    container:
-      image: docker.io/uycyjnzgntrn/rust-linux:1.72.0
-      options: "--platform linux/amd64"
-    steps:
-    - uses: actions/checkout@v3
-    - name: Build
-      shell: bash
-      run: |
-        APPVERSION=$(grep "^version" app/entrusted_client/Cargo.toml | cut -d'=' -f2 | xargs)
-        echo "entrusted_version=$APPVERSION" >> $GITHUB_ENV
+  #         cd artifacts && zip -r entrusted-${APPVERSION}-macos-aarch64.zip entrusted-${APPVERSION}-macos-aarch64 && mv *.zip ./all && cd -
+  #     - name: Upload a Build Artifact
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: entrusted-macos-aarch64-all
+  #         path: ${{ github.workspace }}/artifacts/all
+  # amd64_linux:
+  #   name: AMD64 Linux
+  #   runs-on: ubuntu-latest
+  #   container:
+  #     image: docker.io/uycyjnzgntrn/rust-linux:1.72.0
+  #     options: "--platform linux/amd64"
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Build
+  #     shell: bash
+  #     run: |
+  #       APPVERSION=$(grep "^version" app/entrusted_client/Cargo.toml | cut -d'=' -f2 | xargs)
+  #       echo "entrusted_version=$APPVERSION" >> $GITHUB_ENV
 
-        olddir=$(pwd)
+  #       olddir=$(pwd)
 
-        mkdir -p artifacts/entrusted-${APPVERSION}-linux-musl-amd64 artifacts/entrusted-${APPVERSION}-linux-glibc-amd64 artifacts/all
+  #       mkdir -p artifacts/entrusted-${APPVERSION}-linux-musl-amd64 artifacts/entrusted-${APPVERSION}-linux-glibc-amd64 artifacts/all
 
-        CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path app/entrusted_webclient/Cargo.toml
-        strip app/entrusted_webclient/target/x86_64-unknown-linux-musl/release/entrusted-webclient
-        cp app/entrusted_webclient/target/x86_64-unknown-linux-musl/release/entrusted-webclient artifacts/entrusted-${APPVERSION}-linux-glibc-amd64/
-        cp app/entrusted_webclient/target/x86_64-unknown-linux-musl/release/entrusted-webclient artifacts/entrusted-${APPVERSION}-linux-musl-amd64/
-        rm -rf app/entrusted_webclient/target
+  #       CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path app/entrusted_webclient/Cargo.toml
+  #       strip app/entrusted_webclient/target/x86_64-unknown-linux-musl/release/entrusted-webclient
+  #       cp app/entrusted_webclient/target/x86_64-unknown-linux-musl/release/entrusted-webclient artifacts/entrusted-${APPVERSION}-linux-glibc-amd64/
+  #       cp app/entrusted_webclient/target/x86_64-unknown-linux-musl/release/entrusted-webclient artifacts/entrusted-${APPVERSION}-linux-musl-amd64/
+  #       rm -rf app/entrusted_webclient/target
 
-        CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path app/entrusted_webserver/Cargo.toml
-        strip app/entrusted_webserver/target/x86_64-unknown-linux-musl/release/entrusted-webserver
-        cp app/entrusted_webserver/target/x86_64-unknown-linux-musl/release/entrusted-webserver artifacts/entrusted-${APPVERSION}-linux-glibc-amd64/
-        cp app/entrusted_webserver/target/x86_64-unknown-linux-musl/release/entrusted-webserver artifacts/entrusted-${APPVERSION}-linux-musl-amd64/
-        rm -rf app/entrusted_webserver/target
+  #       CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path app/entrusted_webserver/Cargo.toml
+  #       strip app/entrusted_webserver/target/x86_64-unknown-linux-musl/release/entrusted-webserver
+  #       cp app/entrusted_webserver/target/x86_64-unknown-linux-musl/release/entrusted-webserver artifacts/entrusted-${APPVERSION}-linux-glibc-amd64/
+  #       cp app/entrusted_webserver/target/x86_64-unknown-linux-musl/release/entrusted-webserver artifacts/entrusted-${APPVERSION}-linux-musl-amd64/
+  #       rm -rf app/entrusted_webserver/target
 
-        CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path app/entrusted_client/Cargo.toml
-        strip app/entrusted_client/target/x86_64-unknown-linux-musl/release/entrusted-cli
-        cp app/entrusted_client/target/x86_64-unknown-linux-musl/release/entrusted-cli artifacts/entrusted-${APPVERSION}-linux-glibc-amd64/
-        cp app/entrusted_client/target/x86_64-unknown-linux-musl/release/entrusted-cli artifacts/entrusted-${APPVERSION}-linux-musl-amd64/
-        rm -rf app/entrusted_client/target
+  #       CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-unknown-linux-musl --manifest-path app/entrusted_client/Cargo.toml
+  #       strip app/entrusted_client/target/x86_64-unknown-linux-musl/release/entrusted-cli
+  #       cp app/entrusted_client/target/x86_64-unknown-linux-musl/release/entrusted-cli artifacts/entrusted-${APPVERSION}-linux-glibc-amd64/
+  #       cp app/entrusted_client/target/x86_64-unknown-linux-musl/release/entrusted-cli artifacts/entrusted-${APPVERSION}-linux-musl-amd64/
+  #       rm -rf app/entrusted_client/target
 
-        CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 cargo build --release --manifest-path app/entrusted_client/Cargo.toml --target x86_64-unknown-linux-gnu --features=gui,fltk/use-wayland,fltk/fltk-bundled --bin entrusted-gui
-        strip app/entrusted_client/target/x86_64-unknown-linux-gnu/release/entrusted-gui
-        cp app/entrusted_client/target/x86_64-unknown-linux-gnu/release/entrusted-gui artifacts/entrusted-${APPVERSION}-linux-glibc-amd64/
-        rm -rf app/entrusted_client/target
+  #       CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 cargo build --release --manifest-path app/entrusted_client/Cargo.toml --target x86_64-unknown-linux-gnu --features=gui,fltk/use-wayland,fltk/fltk-bundled --bin entrusted-gui
+  #       strip app/entrusted_client/target/x86_64-unknown-linux-gnu/release/entrusted-gui
+  #       cp app/entrusted_client/target/x86_64-unknown-linux-gnu/release/entrusted-gui artifacts/entrusted-${APPVERSION}-linux-glibc-amd64/
+  #       rm -rf app/entrusted_client/target
 
-        docker run --platform linux/amd64  -v $(pwd):/src docker.io/io/uycyjnzgntrn/alpine:${{ env.ALPINE_VERSION }} /bin/sh -c "cargo clean cargo build --release --manifest-path /src/app/entrusted_client/Cargo.toml && CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 cargo build --release --manifest-path /src/app/entrusted_client/Cargo.toml --features=gui,fltk/use-wayland,fltk/fltk-shared --bin entrusted-gui"
-        strip app/entrusted_client/target/release/entrusted-gui
-        cp app/entrusted_client/target/release/entrusted-gui artifacts/entrusted-${APPVERSION}-linux-musl-amd64/
-        rm -rf app/entrusted_client/target
+  #       docker run --platform linux/amd64  -v $(pwd):/src docker.io/io/uycyjnzgntrn/alpine:${{ env.ALPINE_VERSION }} /bin/sh -c "cargo clean cargo build --release --manifest-path /src/app/entrusted_client/Cargo.toml && CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 cargo build --release --manifest-path /src/app/entrusted_client/Cargo.toml --features=gui,fltk/use-wayland,fltk/fltk-shared --bin entrusted-gui"
+  #       strip app/entrusted_client/target/release/entrusted-gui
+  #       cp app/entrusted_client/target/release/entrusted-gui artifacts/entrusted-${APPVERSION}-linux-musl-amd64/
+  #       rm -rf app/entrusted_client/target
 
-        cd artifacts && tar cvf entrusted-${APPVERSION}-linux-glibc-amd64.tar entrusted-${APPVERSION}-linux-glibc-amd64 && cd -
-        cd artifacts && tar cvf entrusted-${APPVERSION}-linux-musl-amd64.tar entrusted-${APPVERSION}-linux-musl-amd64 && cd -
+  #       cd artifacts && tar cvf entrusted-${APPVERSION}-linux-glibc-amd64.tar entrusted-${APPVERSION}-linux-glibc-amd64 && cd -
+  #       cd artifacts && tar cvf entrusted-${APPVERSION}-linux-musl-amd64.tar entrusted-${APPVERSION}-linux-musl-amd64 && cd -
 
-        ./ci_cd/linux/redhat.sh ${APPVERSION} ${olddir}/artifacts/entrusted-${APPVERSION}-linux-glibc-amd64.rpm ${olddir}/app/images ${olddir}/artifacts/entrusted-${APPVERSION}-linux-glibc-amd64 x86_64
-        ./ci_cd/linux/redhat.sh ${APPVERSION} ${olddir}/artifacts/entrusted-${APPVERSION}-linux-musl-amd64.rpm ${olddir}/app/images ${olddir}/artifacts/entrusted-${APPVERSION}-linux-musl-amd64 x86_64
+  #       ./ci_cd/linux/redhat.sh ${APPVERSION} ${olddir}/artifacts/entrusted-${APPVERSION}-linux-glibc-amd64.rpm ${olddir}/app/images ${olddir}/artifacts/entrusted-${APPVERSION}-linux-glibc-amd64 x86_64
+  #       ./ci_cd/linux/redhat.sh ${APPVERSION} ${olddir}/artifacts/entrusted-${APPVERSION}-linux-musl-amd64.rpm ${olddir}/app/images ${olddir}/artifacts/entrusted-${APPVERSION}-linux-musl-amd64 x86_64
 
-        ./ci_cd/linux/debian.sh ${APPVERSION} ${olddir}/artifacts/entrusted-${APPVERSION}-linux-glibc-amd64.deb ${olddir}/app/images ${olddir}/artifacts/entrusted-${APPVERSION}-linux-glibc-amd64 amd64        
-        ./ci_cd/linux/debian.sh ${APPVERSION} ${olddir}/artifacts/entrusted-${APPVERSION}-linux-musl-amd64.deb ${olddir}/app/images ${olddir}/artifacts/entrusted-${APPVERSION}-linux-musl-amd64 amd64
+  #       ./ci_cd/linux/debian.sh ${APPVERSION} ${olddir}/artifacts/entrusted-${APPVERSION}-linux-glibc-amd64.deb ${olddir}/app/images ${olddir}/artifacts/entrusted-${APPVERSION}-linux-glibc-amd64 amd64        
+  #       ./ci_cd/linux/debian.sh ${APPVERSION} ${olddir}/artifacts/entrusted-${APPVERSION}-linux-musl-amd64.deb ${olddir}/app/images ${olddir}/artifacts/entrusted-${APPVERSION}-linux-musl-amd64 amd64
 
-        cp artifacts/*.rpm artifacts/*.deb artifacts/*.tar ./artifacts/all
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: entrusted-linux-amd64-all
-        path: ${{ github.workspace }}/artifacts/all
+  #       cp artifacts/*.rpm artifacts/*.deb artifacts/*.tar ./artifacts/all
+  #   - name: Upload a Build Artifact
+  #     uses: actions/upload-artifact@v3
+  #     with:
+  #       name: entrusted-linux-amd64-all
+  #       path: ${{ github.workspace }}/artifacts/all
   aarch64_linux:
     name: AARCH64 Linux
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - name: Use Docker in rootless mode.
+      uses: ScribeMD/rootless-docker@0.2.2
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
     - name: Build

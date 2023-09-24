@@ -1,4 +1,4 @@
-ROM docker.io/debian:bookworm-slim
+FROM docker.io/debian:bookworm-slim
 
 LABEL maintainer="Yves Zoundi, Rimero Solutions Inc."
 LABEL org.opencontainers.image.title="Grub docker image"

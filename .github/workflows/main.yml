@@ -13,8 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: uycyjnzgntrn/rust-windows:1.72.0
-      volumes:
-        - ${{ github.workspace }}:/src
     steps:
     - uses: actions/checkout@v3
     - name: Build
@@ -210,8 +208,6 @@ jobs:
     container:
       image: docker.io/uycyjnzgntrn/rust-linux:1.72.0
       options: "--platform linux/amd64"
-      volumes:
-        - ${{ github.workspace }}:/src
     steps:
     - uses: actions/checkout@v3
     - name: Build

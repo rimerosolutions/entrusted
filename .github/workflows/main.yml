@@ -16,10 +16,6 @@ jobs:
       volumes:
         - ${{ github.workspace }}:/src
     steps:
-    - name: Install software dependencies
-      shell: bash
-      run: |
-        apt update && apt install -y nsis nsis-pluginapi zip
     - uses: actions/checkout@v3
     - name: Build
       shell: bash

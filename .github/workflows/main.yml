@@ -268,10 +268,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Use Docker in rootless mode.
-      uses: ScribeMD/rootless-docker@0.2.2
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
+    - name: Use Docker in rootless mode.
+      uses: ScribeMD/rootless-docker@0.2.2
     - name: Build
       shell: bash
       run: |

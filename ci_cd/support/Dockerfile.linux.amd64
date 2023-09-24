@@ -50,12 +50,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
 
 RUN rustup target add x86_64-unknown-linux-musl; rustup target add x86_64-unknown-linux-gnu;
 
-RUN mkdir -p /tmp/support \
-    && cd /tmp/support \
-    && wget -c https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage \
-    && chmod a+x linuxdeploy*.AppImage \
-    && mv linuxdeploy*.AppImage /usr/bin/linuxdeploy
-
 RUN useradd -ms /bin/dash entrusted
 
 USER entrusted

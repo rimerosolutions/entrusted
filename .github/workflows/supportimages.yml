@@ -8,6 +8,7 @@ env:
   RUST_CI_VERSION: "1.72.0"
   DEBIAN_VERSION: "bookworm"
   GRUB_VERSION: "2.06"
+  ALPINE_VERSION: "3.18.3"
 
 jobs:
   build_publish_grub_image:

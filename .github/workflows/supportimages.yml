@@ -50,7 +50,7 @@ jobs:
     - name: Build Windows builder image
       uses: redhat-actions/buildah-build@v2
       with:
-        archs: amd64
+        platforms: linux/amd64
         image: ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/rust-windows
         tags: ${{ env.RUST_CI_VERSION }}
         oci: false
@@ -91,7 +91,7 @@ jobs:
     - name: Build container builder image
       uses: redhat-actions/buildah-build@v2
       with:
-        archs: amd64, arm64
+        platforms: linux/amd64, linux/arm64/v8
         image: ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/rust-macos
         tags: ${{ env.RUST_CI_VERSION }}
         oci: false
@@ -120,14 +120,18 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y qemu-user-static podman buildah && sudo apt-get clean
-    - name: Build alpine builder images
-      shell: bash
-      run: |
-        cd ${{ github.workspace }}/ci_cd/support && buildah manifest create ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/alpine:${{ env.ALPINE_VERSION }}
-        cd ${{ github.workspace }}/ci_cd/support && buildah bud --squash --platform=linux/amd64 --format docker -t ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/alpine:${{ env.ALPINE_VERSION }}-amd64 -f Dockerfile.alpine
-        buildah manifest add ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/alpine:${{ env.ALPINE_VERSION }} ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/alpine:${{ env.ALPINE_VERSION }}-amd64
-        cd ${{ github.workspace }}/ci_cd/support && buildah bud --squash --platform=linux/arm64/v8 --format docker -t ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/alpine:${{ env.ALPINE_VERSION }}-arm64 -f Dockerfile.alpine
-        buildah manifest add ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/alpine:${{ env.ALPINE_VERSION }} ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/alpine:${{ env.ALPINE_VERSION }}-arm64
+    - name: Build alpine builder image
+      uses: redhat-actions/buildah-build@v2
+      with:
+        platforms: linux/amd64, linux/arm64/v8
+        image: ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/alpine
+        tags: ${{ env.ALPINE_VERSION }}
+        oci: false
+        context: ci_cd/support
+        containerfiles: |
+          ci_cd/support/Dockerfile.alpine
+        extra-args: |
+          --squash
     - name: Publish alpine builder image
       uses: redhat-actions/push-to-registry@v2
       with:
@@ -151,7 +155,7 @@ jobs:
     - name: Build container builder image
       uses: redhat-actions/buildah-build@v2
       with:
-        archs: amd64, arm64
+        platforms: linux/amd64, linux/arm64/v8
         image: ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/debian
         tags: ${{ env.DEBIAN_VERSION }}-rust-${{ env.RUST_CI_VERSION }}-tesseract5
         oci: false

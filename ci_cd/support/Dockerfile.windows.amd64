@@ -4,9 +4,4 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update  \
     && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y  \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y g++-mingw-w64-x86-64 binutils-mingw-w64-x86-64 nsis nsis-pluginapi zip \
     && DEBIAN_FRONTEND=noninteractive apt-get clean \
-    && rustup target add x86_64-pc-windows-gnu \
-    && useradd -ms /bin/dash entrusted
-
-USER entrusted
-
-
+    && rustup target add x86_64-pc-windows-gnu 

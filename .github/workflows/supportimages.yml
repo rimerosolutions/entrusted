@@ -37,7 +37,7 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
         extra-args: |
-          --format docker  
+          --format docker
   build_publish_windows_images:
     name: BUILDER WINDOWS
     runs-on: ubuntu-latest
@@ -120,7 +120,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y qemu-user-static podman buildah && sudo apt-get clean
-    - name: Build alpine builder image
+    - name: Build container builder image
       uses: redhat-actions/buildah-build@v2
       with:
         archs: amd64, arm64
@@ -141,7 +141,7 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
         extra-args: |
-          --format docker          
+          --format docker
   build_publish_container_builder_images:
     name: BUILDER CONTAINER
     runs-on: ubuntu-latest

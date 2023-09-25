@@ -25,7 +25,8 @@ RUN apk add rust \
     mesa-egl \
     mesa-dev \
     dbus-dev \
-    curl \
-    && adduser -s /bin/sh -D entrusted
+    curl
+
+RUN adduser -s /bin/sh -D entrusted
 
 USER entrusted

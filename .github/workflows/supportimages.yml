@@ -123,7 +123,7 @@ jobs:
     - name: Build container builder image
       uses: redhat-actions/buildah-build@v2
       with:
-        archs: amd64, arm64/v8
+        archs: amd64, arm64
         image: ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/alpine
         tags: ${{ env.ALPINE_VERSION }}
         oci: false
@@ -131,7 +131,7 @@ jobs:
         containerfiles: |
           ci_cd/support/Dockerfile.alpine
         extra-args: |
-          --squash
+          --squash --variant v8
     - name: Publish alpine builder image
       uses: redhat-actions/push-to-registry@v2
       with:

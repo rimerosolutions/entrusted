@@ -105,7 +105,8 @@ xorriso -as mkisofs \
         -partition_offset 16 \
         --mbr-force-bootable \
         -append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b ${LIVE_BOOT_DIR}/staging/efiboot.img \
-        -appended_part_as_gpt \-iso_mbr_part_type a2a0d0ebe5b9334487c068b6b72699c7 \
+        -appended_part_as_gpt \
+        -iso_mbr_part_type a2a0d0ebe5b9334487c068b6b72699c7 \
         -eltorito-boot isolinux/bios.img \
         -no-emul-boot \
         -boot-load-size 4 \

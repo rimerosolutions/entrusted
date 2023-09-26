@@ -232,7 +232,8 @@ jobs:
         cp artifacts/entrusted-${APPVERSION}-linux-glibc-amd64/entrusted-cli       artifacts/entrusted-${APPVERSION}-linux-musl-amd64/
         cp artifacts/entrusted-${APPVERSION}-linux-glibc-amd64/entrusted-webserver artifacts/entrusted-${APPVERSION}-linux-musl-amd64/
         cp artifacts/entrusted-${APPVERSION}-linux-glibc-amd64/entrusted-webclient artifacts/entrusted-${APPVERSION}-linux-musl-amd64/
-        rm -rf app/entrusted_client/target
+
+        sudo rm -rf app/entrusted_client/target
 
         podman run --platform linux/amd64  -v $(pwd):/src docker.io/uycyjnzgntrn/rust-linux:${{ env.RUST_CI_VERSION }} /bin/sh -c "cd /src/artifacts && tar cvf entrusted-${APPVERSION}-linux-musl-amd64.tar entrusted-${APPVERSION}-linux-musl-amd64 && /src/ci_cd/linux/redhat.sh ${APPVERSION} /src/artifacts/entrusted-${APPVERSION}-linux-musl-amd64.rpm /src/app/images /src/artifacts/entrusted-${APPVERSION}-linux-musl-amd64 amd64 && /src/ci_cd/linux/debian.sh ${APPVERSION} /src/artifacts/entrusted-${APPVERSION}-linux-musl-amd64.deb /src/app/images /src/artifacts/entrusted-${APPVERSION}-linux-musl-amd64 amd64 && cp /src/artifacts/*.rpm /src/artifacts/*.deb /src/artifacts/*.tar /src/artifacts/all;"
     - name: Upload a Build Artifact
@@ -267,7 +268,8 @@ jobs:
         cp artifacts/entrusted-${APPVERSION}-linux-glibc-aarch64/entrusted-cli       artifacts/entrusted-${APPVERSION}-linux-musl-aarch64/
         cp artifacts/entrusted-${APPVERSION}-linux-glibc-aarch64/entrusted-webserver artifacts/entrusted-${APPVERSION}-linux-musl-aarch64/
         cp artifacts/entrusted-${APPVERSION}-linux-glibc-aarch64/entrusted-webclient artifacts/entrusted-${APPVERSION}-linux-musl-aarch64/
-        rm -rf app/entrusted_client/target
+
+        sudo rm -rf app/entrusted_client/target
 
         podman run --platform linux/arm64  -v $(pwd):/src docker.io/uycyjnzgntrn/rust-linux:${{ env.RUST_CI_VERSION }} /bin/sh -c "cd /src/artifacts && tar cvf entrusted-${APPVERSION}-linux-musl-aarch64.tar entrusted-${APPVERSION}-linux-musl-aarch64 && /src/ci_cd/linux/redhat.sh ${APPVERSION} /src/artifacts/entrusted-${APPVERSION}-linux-musl-aarch64.rpm /src/app/images /src/artifacts/entrusted-${APPVERSION}-linux-musl-aarch64 aarch64 && /src/ci_cd/linux/debian.sh ${APPVERSION} /src/artifacts/entrusted-${APPVERSION}-linux-musl-aarch64.deb /src/app/images /src/artifacts/entrusted-${APPVERSION}-linux-musl-aarch64 arm64 && cp /src/artifacts/*.rpm /src/artifacts/*.deb /src/artifacts/*.tar /src/artifacts/all;"
     - name: Upload a Build Artifact

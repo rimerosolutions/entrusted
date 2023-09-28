@@ -226,7 +226,7 @@ jobs:
 
         sudo rm -rf ${{ github.workspace }}/app/entrusted_client/target
         
-        podman run --platform linux/amd64  -v $(pwd):/src docker.io/uycyjnzgntrn/alpine:${{ env.ALPINE_VERSION }} /bin/sh -c "CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 CFLTK_BUNDLE_URL='https://github.com/yveszoundi/cfltk-musl-lib/releases/download/${{ env.CFLTK_VERSION}}/lib_x86_64-alpine-linux-musl.tar.gz' cargo build --release --manifest-path /src/app/entrusted_client/Cargo.toml --features=gui,fltk/use-wayland,fltk/fltk-bundled --bin entrusted-gui"
+        podman run --platform linux/amd64  -v $(pwd):/src docker.io/uycyjnzgntrn/alpine:${{ env.ALPINE_VERSION }} /bin/sh -c "CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 CFLTK_BUNDLE_URL='https://github.com/yveszoundi/cfltk-alpine-musl-bundle/releases/download/${{ env.CFLTK_VERSION}}/lib_x86_64-alpine-linux-musl.tar.gz' cargo build --release --manifest-path /src/app/entrusted_client/Cargo.toml --features=gui,fltk/use-wayland,fltk/fltk-bundled --bin entrusted-gui"
         strip app/entrusted_client/target/release/entrusted-gui
         cp app/entrusted_client/target/release/entrusted-gui                       artifacts/entrusted-${APPVERSION}-linux-musl-amd64/
         cp artifacts/entrusted-${APPVERSION}-linux-glibc-amd64/entrusted-cli       artifacts/entrusted-${APPVERSION}-linux-musl-amd64/
@@ -262,7 +262,7 @@ jobs:
 
         sudo rm -rf ${{ github.workspace }}/app/entrusted_client/target
 
-        podman run --platform linux/arm64  -v $(pwd):/src docker.io/uycyjnzgntrn/alpine:${{ env.ALPINE_VERSION }} /bin/sh -c "CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 CFLTK_BUNDLE_URL='https://github.com/yveszoundi/cfltk-musl-lib/releases/download/${{ env.CFLTK_VERSION}}/lib_aarch64-alpine-linux-musl.tar.gz' cargo build --release --manifest-path /src/app/entrusted_client/Cargo.toml --features=gui,fltk/use-wayland,fltk/fltk-bundled --bin entrusted-gui"
+        podman run --platform linux/arm64  -v $(pwd):/src docker.io/uycyjnzgntrn/alpine:${{ env.ALPINE_VERSION }} /bin/sh -c "CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_NET_RETRY=10 CFLTK_BUNDLE_URL='https://github.com/yveszoundi/cfltk-alpine-musl-bundle/releases/download/${{ env.CFLTK_VERSION}}/lib_aarch64-alpine-linux-musl.tar.gz' cargo build --release --manifest-path /src/app/entrusted_client/Cargo.toml --features=gui,fltk/use-wayland,fltk/fltk-bundled --bin entrusted-gui"
         
         cp app/entrusted_client/target/release/entrusted-gui                         artifacts/entrusted-${APPVERSION}-linux-musl-aarch64/
         cp artifacts/entrusted-${APPVERSION}-linux-glibc-aarch64/entrusted-cli       artifacts/entrusted-${APPVERSION}-linux-musl-aarch64/

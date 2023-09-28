@@ -24,7 +24,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
     RUST_TARGET_NOTSTATIC="x86_64-unknown-linux-gnu"
     DEB_ARCH="amd64"
     RPM_ARCH="x86_64"
-    CFLTK_BUNDLE_URL="https://github.com/yveszoundi/cfltk-musl-lib/releases/download/${CFLTK_VERSION}/lib_x86_64-alpine-linux-musl.tar.gz"
+    CFLTK_BUNDLE_URL="https://github.com/yveszoundi/cfltk-alpine-musl-bundle/releases/download/${CFLTK_VERSION}/lib_x86_64-alpine-linux-musl.tar.gz"
 
     if [ ${CPU_ARCH} != "amd64" ]
     then
@@ -32,7 +32,7 @@ for CPU_ARCH in $CPU_ARCHS ; do
         RUST_TARGET_NOTSTATIC="aarch64-unknown-linux-gnu"
         DEB_ARCH="arm64"
         RPM_ARCH="aarch64"
-        CFLTK_BUNDLE_URL="https://github.com/yveszoundi/cfltk-musl-lib/releases/download/${CFLTK_VERSION}/lib_aarch64-alpine-linux-musl.tar.gz"
+        CFLTK_BUNDLE_URL="https://github.com/yveszoundi/cfltk-alpine-musl-bundle/releases/download/${CFLTK_VERSION}/lib_aarch64-alpine-linux-musl.tar.gz"
     fi
 
     test -d ${PROJECTDIR}/entrusted_container/target && rm -rf ${PROJECTDIR}/entrusted_container/target

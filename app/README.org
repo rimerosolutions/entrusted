@@ -1,10 +1,10 @@
 #+TITLE: entrusted/app README
 
-This folder contains all the software components of the application (written in the [[https://www.rust-lang.org/][Rust]]).
+This folder contains all the software components of the application (written in [[https://www.rust-lang.org/][Rust]]).
 
 * Components
 
-Most users will interact with only the Desktop user interface (=entrusted_client= component).
+Most users will only interact with the Desktop user interface (=entrusted_client= component).
 
 |---------------------+-----------------------------------------------|
 | Component           | Purpose                                       |

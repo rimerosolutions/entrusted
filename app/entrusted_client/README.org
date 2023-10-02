@@ -29,9 +29,9 @@ The CLI can be convenient for "terminal warriors" or to supplement shell scripts
 
 Please checkout [[https://github.com/rimerosolutions/entrusted/wiki/Build-Instructions][the build instructions on the wiki]] for more information (software dependencies).
 
-On Linux, You'll need to have xorg and libxcb dev libraries (=-dev= or =-devel= packages accordingly to your Linux distribution).
+On Linux, You'll need to have =xorg= and =libxcb= dev libraries (=-dev= or =-devel= packages accordingly to your Linux distribution).
 
-At the root of this project, open a command prompt and type =cargo build --features=gui=.
+At the root of this project, open a command prompt and type =cargo build --features=gui,fltk/fltk-bundled=.
 
 
 * How to run this?
@@ -47,6 +47,8 @@ At the root of this project, open a command prompt and type =cargo build --featu
 In the example below, a suspicious PDF file is converted to a searchable PDF ([[https://en.wikipedia.org/wiki/Optical_character_recognition][OCR]]), instead of just PDF images (=ocr-lang= parameter).
 - /OCR/ is a time consuming task in comparison to just generating PDF images for pages of the original input.
 - You only want /OCR/ if you need to be able to select or search text in the resulting PDF
+  - It increases significantly processing time
+  - It leverages the [[https://github.com/tesseract-ocr/tesseract][tesseract OCR engine]] behind the scenes
 
 *** Basic usage
 

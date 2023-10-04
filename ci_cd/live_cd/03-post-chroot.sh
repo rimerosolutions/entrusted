@@ -40,7 +40,7 @@ sudo mksquashfs "${LIVE_BOOT_DIR}"/chroot "${LIVE_BOOT_DIR}"/staging/live/filesy
 
 echo ">>> Copying Live CD kernel, initrd"
 mkdir -p "${LIVE_BOOT_DIR}"/staging/isolinux
-cp "${LIVE_BOOT_DIR}"/chroot/boot/vmlinuz-* "${LIVE_BOOT_DIR}"/staging/live/vmlinuz
+cp "${LIVE_BOOT_DIR}"/chroot/boot/vmlinuz-*    "${LIVE_BOOT_DIR}"/staging/live/vmlinuz
 cp "${LIVE_BOOT_DIR}"/chroot/boot/initrd.img-* "${LIVE_BOOT_DIR}"/staging/live/initrd
 
 

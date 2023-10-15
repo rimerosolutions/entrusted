@@ -1,5 +1,7 @@
 #+TITLE: entrusted/ci_cd/live_cd
 
+*Note*: The Live CD local build is only tested under an Ubuntu virtual machine.
+
 * Overview
 
 The live CD is based on [[https://www.debian.org/][Debian GNU/Linux]] and aims to provide a convenient way to run =Entrusted=.

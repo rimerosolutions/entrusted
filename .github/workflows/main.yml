@@ -6,7 +6,7 @@ on: workflow_dispatch
 env:
   RUST_CI_VERSION: 1.72.0
   ALPINE_VERSION: 3.18.3
-  CFLTK_VERSION: 1.4.13
+  CFLTK_VERSION: 1.4.14
 
 jobs:
   amd64_windows:

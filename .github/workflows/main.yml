@@ -15,7 +15,7 @@ jobs:
     container:
       image: uycyjnzgntrn/rust-windows:1.72.0
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Build
       shell: bash
       run: |
@@ -63,7 +63,7 @@ jobs:
     name: AMD64 Mac OS
     runs-on: macos-12
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Build
       shell: bash
       run: |
@@ -137,7 +137,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -209,7 +209,7 @@ jobs:
     name: AMD64 Linux
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Prepare environment
       shell: bash
       run: |
@@ -245,7 +245,7 @@ jobs:
     name: AARCH64 Linux
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Prepare environment
       shell: bash
       run: |

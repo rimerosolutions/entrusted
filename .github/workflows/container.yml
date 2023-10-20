@@ -11,13 +11,15 @@ jobs:
     name: CONTAINER MULTI-ARCH
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Prepare environment
       shell: bash
       run: |
         APPVERSION=$(grep "^version" app/entrusted_client/Cargo.toml | cut -d'=' -f2 | xargs)
         echo "entrusted_version=$APPVERSION" >> $GITHUB_ENV
-        sudo apt install -y qemu-user-static
+        sudo apt-get update
+        sudo apt-get install -y qemu-user-static
+        sudo apt-get clean
     - name: Build image
       uses: redhat-actions/buildah-build@v2
       with:

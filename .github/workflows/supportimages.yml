@@ -131,7 +131,7 @@ jobs:
         push: true
         builder: ${{ steps.buildx.outputs.name }}
         context: ${{ github.workspace }}/ci_cd/support
-        file: ./Dockerfile.alpine
+        file: ${{ github.workspace }}/ci_cd/support/Dockerfile.alpine
         platforms: linux/amd64, linux/arm64/v8
         tags: ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/alpine:${{ env.ALPINE_VERSION }}
   build_publish_container_builder_images:

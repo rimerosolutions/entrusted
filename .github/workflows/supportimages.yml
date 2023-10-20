@@ -21,7 +21,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y qemu-user-static podman buildah
-        sudo apt-ge clean
+        sudo apt-get clean
     - name: Build Linux builder images
       shell: bash
       run: |

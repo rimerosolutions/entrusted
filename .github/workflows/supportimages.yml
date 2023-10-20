@@ -15,7 +15,7 @@ jobs:
     name: BUILDER GRUB
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Prepare environment
       shell: bash
       run: |
@@ -42,7 +42,7 @@ jobs:
     name: BUILDER WINDOWS
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Prepare environment
       shell: bash
       run: |
@@ -73,7 +73,7 @@ jobs:
     name: BUILDER MACOS
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Free space
       uses: jlumbroso/free-disk-space@main
       with:
@@ -114,39 +114,31 @@ jobs:
     name: BUILDER ALPINE
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Prepare environment
-      shell: bash
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y qemu-user-static podman buildah && sudo apt-get clean
-    - name: Build alpine builder image
-      uses: redhat-actions/buildah-build@v2
+    - uses: actions/checkout@v4
+    - name: Setup qemu
+      uses: docker/setup-qemu-action@v3
+    - name: Set up docker buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
       with:
-        platforms: linux/amd64, linux/arm64/v8
-        image: ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/alpine
-        tags: ${{ env.ALPINE_VERSION }}
-        oci: false
-        context: ci_cd/support
-        containerfiles: |
-          ci_cd/support/Dockerfile.alpine
-        extra-args: |
-          --squash
-    - name: Publish alpine builder image
-      uses: redhat-actions/push-to-registry@v2
-      with:
-        image: alpine
-        tags: ${{ env.ALPINE_VERSION }}
-        registry: ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-        extra-args: |
-          --format docker
+    - name: Build and push Alpine builder image
+      uses: docker/build-push-action@v5
+      with:
+        push: true
+        builder: ${{ steps.buildx.outputs.name }}
+        context: ${{ github.workspace }}/ci_cd/support
+        file: ./Dockerfile.alpine
+        platforms: linux/amd64, linux/arm64/v8
+        tags: ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/alpine:${{ env.ALPINE_VERSION }}
   build_publish_container_builder_images:
     name: BUILDER CONTAINER
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Prepare environment
       shell: bash
       run: |
@@ -155,7 +147,7 @@ jobs:
     - name: Build container builder image
       uses: redhat-actions/buildah-build@v2
       with:
-        platforms: linux/amd64, linux/arm64/v8
+        platforms: linux/amd64,linux/arm64/v8
         image: ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/debian
         tags: ${{ env.DEBIAN_VERSION }}-rust-${{ env.RUST_CI_VERSION }}-tesseract5
         oci: false
@@ -178,7 +170,7 @@ jobs:
     name: BUILDER LINUX
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Prepare environment
       shell: bash
       run: |

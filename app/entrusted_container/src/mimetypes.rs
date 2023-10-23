@@ -32,37 +32,23 @@ pub fn detect_from_path<'a> (path: PathBuf) -> Result<Option<&'a str>, Box<dyn E
     Ok(None)
 }
 
-fn bytes_range(data: &[u8], lo: usize, hi: usize) -> Vec<u8> {
-    let mut ret = Vec::with_capacity(hi - lo);
-
-    for item in data.iter().skip(lo).take(hi) {
-        ret.push(*item);
-    }
-
-    ret
-}
-
-fn hex_encode_upper(data: &[u8]) -> String {
-    let mut hex_vec = String::with_capacity(data.len() * 2);
-
-    for item in data {
-        let hex = format!("{:02X}", item);
-        hex_vec.push_str(&hex);
-    }
-
-    hex_vec
-}
-
-fn byte_range_matches(data: &[u8], lo: usize, hi: usize, sig: &str) -> bool {
+fn byte_range_matches(data: &[u8], lo: usize, hi: usize, sig_expected_raw: &str) -> bool {
     if data.len() < hi {
         return false;
     }
 
-    let file_sig = bytes_range(data, lo, hi);
-    let hex_file_sig = hex_encode_upper(&file_sig);
-    let sig_trimmed = sig.replace(' ', "");
+    let mut sig_actual = String::with_capacity((hi - lo) * 2);
+    let mut idx = lo;
 
-    hex_file_sig == sig_trimmed
+    while idx < hi {
+        let hex = format!("{:02X}", data[idx]);
+        sig_actual.push_str(&hex);
+        idx += 1;
+    }    
+    
+    let sig_expected = sig_expected_raw.replace(' ', "");
+
+    sig_actual == sig_expected
 }
 
 fn is_zip(data: &[u8]) -> bool {

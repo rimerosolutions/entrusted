@@ -17,14 +17,14 @@ mkdir -p ${BUILDTOPDIR}/${BUILDFOLDERNAME}/DEBIAN
 mkdir -p ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/bin
 mkdir -p ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/applications
 mkdir -p ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/doc/${APPNAME}
-mkdir -p ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/icons
+mkdir -p ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/pixmaps
 mkdir -p ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/man/man1
 
 cp -f ${SCRIPTDIR}/packaging/debian_spec ${BUILDTOPDIR}/${BUILDFOLDERNAME}/DEBIAN/control
 cp -f ${LINUX_ARTIFACTSDIR}/entrusted-cli ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/bin/
 cp -f ${LINUX_ARTIFACTSDIR}/entrusted-gui ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/bin/entrusted-gui
 cp -f ${SCRIPTDIR}/xdg/*.desktop ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/applications/
-cp -f ${IMAGES_PROJECTDIR}/Entrusted_icon.png ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/icons/entrusted-gui.png
+cp -f ${IMAGES_PROJECTDIR}/Entrusted_icon.png ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/pixmaps/entrusted-gui.png
 cp -f ${SCRIPTDIR}/doc/copyright ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/doc/${APPNAME}/
 cp -f ${SCRIPTDIR}/doc/changelog ${BUILDTOPDIR}/${BUILDFOLDERNAME}/usr/share/doc/${APPNAME}/changelog
 

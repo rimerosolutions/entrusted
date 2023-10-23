@@ -1,5 +1,12 @@
 #+TITLE: CHANGELOG
 
+* entrusted 0.3.2 (Unreleased)
+
+The main objective is build improvements and foundational work.
+
+- Build and releases support for musl-libc systems (Alpine, Linux distributions with =musl-libc= flavors such as =Gentoo= and =Void Linux=).
+- Drop Linux AppImage format
+
 * entrusted 0.3.1
 
 The main objective is to start generating all releases artifacts from the GitHub infrastructure going forward.

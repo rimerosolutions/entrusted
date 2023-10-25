@@ -1,6 +1,6 @@
 #+TITLE: entrusted/ci_cd/live_cd
 
-*Note*: The Live CD local build is only tested under an Ubuntu virtual machine.
+*Note*: The Live CD build on a local machine is *only* tested under an Ubuntu virtual machine.
 
 * Overview
 

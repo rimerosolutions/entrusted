@@ -18,6 +18,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
     wget \
     cmake \
     fakeroot \
+    fakechroot \
     debootstrap \
     libpango1.0-dev \
     libxft-dev  \

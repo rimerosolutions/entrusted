@@ -4,11 +4,7 @@ use std::process::Stdio;
 use tokio::process::{Child, Command};
 
 pub fn exe_find(exe_name: &str) -> Option<PathBuf> {
-    if let Ok(path_location) = which::which(exe_name) {
-        Some(path_location)
-    } else {
-        None
-    }
+    which::which(exe_name).ok()
 }
 
 #[cfg(not(target_os = "windows"))]

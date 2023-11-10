@@ -124,7 +124,6 @@ async fn uitranslations(headers: HeaderMap, uri: Uri) -> Result<Json<model::Tran
     };
 
     let json_data = uil10n::ui_translation_for(langid);
-
     let translation_response_ret: serde_json::Result<model::TranslationResponse> = serde_json::from_slice(&json_data);
 
     match translation_response_ret {
@@ -304,7 +303,7 @@ async fn downloads(
 
     let file_loc = env::temp_dir()
         .join(config::PROGRAM_GROUP)
-        .join(fileid.clone());
+        .join(&fileid);
 
     if !file_loc.exists() {
         Err(AppError::NotFound(problem_not_found(l10n_ref.gettext("Resource not found"), &uri)))
@@ -544,7 +543,6 @@ impl IntoResponse for AppError {
 
         let json = problem.json_bytes();
         let length = json.len() as u64;
-
         let mut response = (status, json).into_response();
 
         *response.status_mut() = status;

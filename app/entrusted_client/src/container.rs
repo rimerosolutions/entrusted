@@ -297,7 +297,7 @@ impl <'a> SanitizerRt for ContainerizedSanitizerRt<'a>  {
             }
 
             if output_path.exists() {
-                if let Err(ex) = fs::remove_file(output_path.clone()) {
+                if let Err(ex) = fs::remove_file(&output_path) {
                     eprintln!("{}", trans.gettext_fmt("Cannot remove output file: {0}. {1}.", vec![&output_path.display().to_string(), &ex.to_string()]));
                 }
             }
@@ -514,7 +514,7 @@ impl LogPrinter for PlainLogPrinter {
 }
 
 impl LogPrinter for JsonLogPrinter {
-    fn print(&self, percent_complete: usize, data: String) -> String{
+    fn print(&self, percent_complete: usize, data: String) -> String {
         let log_msg = &common::LogMessage {
             percent_complete, data
         };

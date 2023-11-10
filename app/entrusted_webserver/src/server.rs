@@ -260,7 +260,7 @@ async fn downloads(
     let mut fileid = String::new();
     let mut filename = String::new();
     let mut request_err_found = true;
-    let request_id_bytes_ret = bs58::decode(request_id.clone()).into_vec();
+    let request_id_bytes_ret = bs58::decode(&request_id).into_vec();
 
     match request_id_bytes_ret {
         Ok(request_id_inner_bytes) => {
@@ -643,7 +643,7 @@ pub async fn save_file(
         fs::create_dir_all(&tmpdir)?;
     }
 
-    let filepath = tmpdir.join(format!("{}.{}", &file_uuid, fileext));
+    let filepath = tmpdir.join(format!("{}.{}", file_uuid, fileext));
     let mut f = fs::File::create(&filepath)?;
     f.write_all(&buf)?;
 

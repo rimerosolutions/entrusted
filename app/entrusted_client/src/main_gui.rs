@@ -92,7 +92,6 @@ struct FileListRow {
 }
 
 impl FileListRow {
-
     pub fn set_viewer_app(&mut self, viewer_app: String) {
         self.viewer_app_option.replace(Some(viewer_app));
     }
@@ -145,18 +144,18 @@ impl HyperLink {
 
         container.draw({
             move |wid| {
-
                 let (lw, lh) = draw::measure(&wid.label(), true);
                 let old_color = draw::get_color();
+
                 let line_color = if wid.active() {
                     wid.label_color()
                 } else {
                     wid.label_color().inactive()
                 };
+
                 draw::set_draw_color(line_color);
                 draw::draw_line(wid.x() + 3, wid.y() + lh/2 + wid.h() / 2, wid.x() + lw + 2, wid.y() + lh/2 + wid.h() / 2);
                 draw::set_draw_color(old_color);
-
             }
         });
 
@@ -553,14 +552,12 @@ impl FileListWidget {
                             let cc_width = (col_widths[i] - WIDGET_GAP/2) / 2;
                             let mut startx = wid.x();
 
-
                             for j in 0..gg.children() {
                                 if let Some(mut cc) = gg.child(j) {
                                     cc.resize(startx, cc.y(), cc_width, wid.h());
                                     startx += cc_width + (WIDGET_GAP/2);
                                 }
                             }
-
                         }
                     }
                 }
@@ -2942,7 +2939,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 },
                 common::AppEvent::ConversionStartEvent(row_idx) => {
                     filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_INPROGRESS, FILELIST_ROW_COLOR_INPROGRESS);
-                    let mut row_ypos = filelist_widget.ypos(row_idx);
+                    let mut row_ypos  = filelist_widget.ypos(row_idx);
                     let scroll_height = filelist_scroll.h();
 
                     if row_ypos > (filelist_scroll.yposition()) {
@@ -3431,8 +3428,7 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
                                             None
                                         };
 
-                                        if let Some(active_key) = current_key {
-                                            
+                                        if let Some(active_key) = current_key {                                            
                                             if let Some(active_key_value) = bundle_dict.find(&active_key)
                                                 .and_then(|value_ref| value_ref.downcast::<CFString>())
                                                 .map(|value| value.to_string()) {
@@ -3442,9 +3438,7 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
                                                     app_name.push_str(&active_key_value);
                                                 }
                                         } else if let Some(basename_ostr) = std::path::Path::new(&app_url).file_stem() {
-                                            if let Some(basename) = &basename_ostr.to_str() {
-                                                
-                                                
+                                            if let Some(basename) = &basename_ostr.to_str() {                                                
                                                 let implied_app_name = percent_decode(basename.as_bytes());
 
                                                 if let Ok(r_app_name_decoded)= implied_app_name.decode_utf8() {

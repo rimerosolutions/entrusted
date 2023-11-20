@@ -259,9 +259,9 @@ pub fn default_output_path(input: PathBuf, file_suffix: String) -> Result<PathBu
 }
 
 pub fn update_check(trans: &l10n::Translations) -> Result<Option<ReleaseInfo>, Box<dyn Error>> {
-    let releases_url = "https://api.github.com/repos/rimerosolutions/entrusted/releases/latest";
+    const RELEASES_URL: &str = "https://api.github.com/repos/rimerosolutions/entrusted/releases/latest";
 
-    let response = minreq::get(releases_url)
+    let response = minreq::get(RELEASES_URL)
         .with_header("User-Agent", "Entrusted Updates Checks")
         .with_header("Accept", "application/json")
         .send()?;

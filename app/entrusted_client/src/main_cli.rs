@@ -333,12 +333,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    let exit_code = {
-        if let Ok(exec_result) = exec_handle.join() {
-            i32::from(exec_result.is_some())
-        } else {
-            1
-        }
+    let exit_code = if let Ok(exec_result) = exec_handle.join() {
+        i32::from(exec_result.is_some())
+    } else {
+        1
     };
 
     std::process::exit(exit_code);

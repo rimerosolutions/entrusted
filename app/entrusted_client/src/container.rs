@@ -219,9 +219,11 @@ impl <'a> SanitizerRt for ContainerizedSanitizerRt<'a>  {
         #[cfg(not(target_os = "windows"))] {
             use std::ffi::CString;
             let path_safe_string = dz_tmp_safe.display().to_string();
-            let path_safe_cstring = CString::new(path_safe_string).unwrap();
-            let path_safe = path_safe_cstring.as_bytes().as_ptr() as *mut std::os::raw::c_char;
-            let _ = unsafe { libc::chmod (path_safe, 0o777) };
+
+            if let Ok(path_safe_cstring) = CString::new(path_safe_string) {
+                let path_safe = path_safe_cstring.as_bytes().as_ptr() as *mut std::os::raw::c_char;
+                let _ = unsafe { libc::chmod (path_safe, 0o777) };
+            }
         }
 
         let safedir_volume = format!("{}:/safezone:Z", dz_tmp_safe.display());

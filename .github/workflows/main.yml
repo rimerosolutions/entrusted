@@ -142,7 +142,7 @@ jobs:
         uses: ructions/toolchain@v1
         with:
           profile: minimal
-          targets: aarch64-apple-darwin
+          target: aarch64-apple-darwin
           toolchain: stable
       - name: Build
         shell: bash

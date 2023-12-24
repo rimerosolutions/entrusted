@@ -139,10 +139,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install toolchain
-        uses: actions-rs/toolchain@v1
+        uses: ructions/toolchain@v1
         with:
           profile: minimal
-          target: aarch64-apple-darwin
+          targets: aarch64-apple-darwin
           toolchain: stable
       - name: Build
         shell: bash

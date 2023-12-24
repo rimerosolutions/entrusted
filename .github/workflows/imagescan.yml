@@ -29,7 +29,7 @@ jobs:
         mkdir -p logs
         podman run docker.io/aquasec/trivy image ${{ env.IMAGE_REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_REPOSITORY }}:${{ inputs.imageTag }} > ./logs/${{ env.IMAGE_REPOSITORY }}_${{ inputs.imageTag }}.$(date +'%Y%m%d').log
     - name: Upload logs
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: trivy-logs
         path: ${{ github.workspace }}/logs

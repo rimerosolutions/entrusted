@@ -1,2 +1,2 @@
-#!/bin/bash
-runsc --ignore-cgroups --network none --TESTONLY-unsafe-nonroot "$@"
+#!/bin/dash
+runsc  --ignore-cgroups --network none -debug "$@"

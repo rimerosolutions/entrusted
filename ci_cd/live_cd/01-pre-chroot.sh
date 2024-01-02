@@ -16,6 +16,7 @@ VERSION_KERNEL_DEBLIVE_SMALLSERVER="6.6.9"
 THIS_SCRIPTS_DIR="$(realpath $(dirname "$0"))"
 PROJECTDIR="$(realpath ${THIS_SCRIPTS_DIR}/../../app)"
 VERSION_HARDENED_MALLOC="TQ2A.230505.002.2023060700"
+VERSION_GVISOR="20231218.0"
 RUST_CI_VERSION="1.72.0"
 
 echo ">>> Creating LIVE_BOOT folder"
@@ -65,7 +66,7 @@ podman run --platform linux/${DEBIAN_ARCH} \
        --log-driver=none  \
        -v "${LIVE_BOOT_TMP_DIR}":/live_boot_tmp_dir \
        docker.io/uycyjnzgntrn/rust-linux:${RUST_CI_VERSION} \
-       /bin/sh -c "test -d /live_boot_tmp_dir/gvisor && rm -rf /live_boot_tmp_dir/gvisor; mkdir -p /live_boot_tmp_dir/gvisor && wget -P /live_boot_tmp_dir/gvisor https://storage.googleapis.com/gvisor/releases/release/latest/${UNAME_ARCH}/runsc https://storage.googleapis.com/gvisor/releases/release/latest/${UNAME_ARCH}/containerd-shim-runsc-v1 && chmod +x /live_boot_tmp_dir/gvisor/*"
+       /bin/sh -c "test -d /live_boot_tmp_dir/gvisor && rm -rf /live_boot_tmp_dir/gvisor; mkdir -p /live_boot_tmp_dir/gvisor && wget -P /live_boot_tmp_dir/gvisor https://storage.googleapis.com/gvisor/releases/release/${VERSION_GVISOR}/${UNAME_ARCH}/runsc https://storage.googleapis.com/gvisor/releases/release/${VERSION_GVISOR}/${UNAME_ARCH}/containerd-shim-runsc-v1 && chmod +x /live_boot_tmp_dir/gvisor/*"
 retVal=$?
 if [ "$retVal" != "0" ]; then
 	echo "Could not download gvisor!" && exit 1

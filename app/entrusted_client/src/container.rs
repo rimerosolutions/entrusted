@@ -210,9 +210,7 @@ impl <'a> SanitizerRt for ContainerizedSanitizerRt<'a>  {
         // TODO dynamic naming for couple of folders overall
         // This is needed for parallel conversion and not overwritting files among other things
         let request_id = Uuid::new_v4().to_string();
-        let mut dz_tmp_safe:PathBuf = dz_tmp.clone();
-        dz_tmp_safe.push("safe");
-        dz_tmp_safe.push(request_id);
+        let dz_tmp_safe:PathBuf = dz_tmp.join("safe").join(request_id);
         mkdirp(&dz_tmp_safe, trans.clone())?;
 
         // Mitigate volume permissions issues with Docker under Linux
@@ -306,8 +304,7 @@ impl <'a> SanitizerRt for ContainerizedSanitizerRt<'a>  {
 
             // In the case of a container crash, the output file will not be present...
             // This should be handled upstream by capturing proper exit codes of the sanitization process
-            let mut container_output_file_path = dz_tmp_safe.clone();
-            container_output_file_path.push("safe-output-compressed.pdf");
+            let container_output_file_path = dz_tmp_safe.join("safe-output-compressed.pdf");
 
             if !container_output_file_path.exists() {
                 let msg_info = trans.gettext("Potential sanitization process crash detected, the sanitized PDF result was not created.");

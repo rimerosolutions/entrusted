@@ -210,7 +210,7 @@ fn selected_ocr_langcodes(ocr_languages_by_lang: &HashMap<String, &str>, drop_do
     let mut ret: Vec<String> = Vec::new();
 
     if drop_down.selected_text().is_none() {
-        return ret
+        return ret;
     } else {
         for i in 0..drop_down.size() {
             if drop_down.selected(i) {

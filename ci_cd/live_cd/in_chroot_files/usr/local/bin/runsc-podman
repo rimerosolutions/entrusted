@@ -1,2 +1,2 @@
 #!/bin/dash
-runsc  --ignore-cgroups --network none -debug "$@"
+runsc --ignore-cgroups --network none "$@"

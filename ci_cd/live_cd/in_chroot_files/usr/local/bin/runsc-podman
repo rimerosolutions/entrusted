@@ -1,2 +1,2 @@
-#!/bin/dash
+#!/usr/bin/env sh
 runsc --ignore-cgroups --network none "$@"

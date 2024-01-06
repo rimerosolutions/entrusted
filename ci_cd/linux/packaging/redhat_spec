@@ -7,7 +7,7 @@ License: GPL v3
 Source: _RPMBUILD_SOURCE_
 BuildRoot: _RPMBUILD_BUILDROOT_
 Requires: glibc >= 2.34
-Requires: cairo >= 1.18
+Requires: cairo >= 1.6
 Requires: fontconfig >= 2.12.6
 Requires: libgcc >= 4.2
 Requires: glib2 >= 2.12.0

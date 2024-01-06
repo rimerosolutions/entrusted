@@ -30,7 +30,9 @@ Package names may by slightly different for your Linux distribution.
 
 - "entrusted-gui" is the graphical user interface (GUI)
 - "entrusted-cli" is the command-line user interface (CLI)
-- "entrusted-webserver" is a program that provides a shared service for document conversions, it has a minimal Web interface
+- "entrusted-webserver" is a program that provides a shared service for document conversions
+  - It has a minimal Web interface running by default on port 13000
+  - It assumes that the entrusted-cli binary is added to your PATH variable
 - "entrusted-webclient" is a program that communicates with "entrusted-webserver" via HTTP
 
 * References

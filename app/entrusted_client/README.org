@@ -31,7 +31,7 @@ Please checkout [[https://github.com/rimerosolutions/entrusted/wiki/Build-Instru
 
 On Linux, You'll need to have =xorg= and =libxcb= dev libraries (=-dev= or =-devel= packages accordingly to your Linux distribution).
 
-At the root of this project, open a command prompt and type =cargo build --features=gui,fltk/fltk-bundled=.
+At the root of this project, open a command prompt and type =cargo build --features=gui,fltk/fltk-bundled,fltk/use-wayland=.
 
 
 * How to run this?

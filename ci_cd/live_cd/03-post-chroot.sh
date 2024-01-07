@@ -43,7 +43,6 @@ mkdir -p "${LIVE_BOOT_DIR}"/staging/isolinux
 cp "${LIVE_BOOT_DIR}"/chroot/boot/vmlinuz-*    "${LIVE_BOOT_DIR}"/staging/live/vmlinuz
 cp "${LIVE_BOOT_DIR}"/chroot/boot/initrd.img-* "${LIVE_BOOT_DIR}"/staging/live/initrd
 
-
 echo ">>> Creating EFI bootable components"
 cp "${ROOT_SCRIPTS_DIR}"/post_chroot_files/home/entrusted/LIVE_BOOT/staging/isolinux/grub.cfg "${LIVE_BOOT_DIR}"/staging/isolinux/
 

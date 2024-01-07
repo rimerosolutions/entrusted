@@ -2,10 +2,9 @@ entrusted (0.3.2) stable; urgency=medium
 
   * Upgrade libraries dependencies
   * Remove AppImage format for the GUI, thus any fuse related dependencies
-  * Introduce fine-grained seccomp security profile for container sandbox
   * Leverage rust 1.72.0 during the build process
 
- -- Yves Zoundi <yves_zoundi@hotmail.com>  Mon, 8 Aug 2023 16:38:25 -0400
+ -- Yves Zoundi <yves_zoundi@hotmail.com>  Sun, 14 Jan 2024 16:38:25 -0400
 
 entrusted (0.3.1) stable; urgency=medium
 

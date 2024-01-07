@@ -3,6 +3,9 @@ use std::error::Error;
 use std::path::PathBuf;
 use std::fs;
 
+// Ideally this code should be replaced by a robust enough mime-detection library
+// The 'mime-detection library' should be able to "reliably" perform mime-detection from bytes.
+
 #[allow(clippy::unused_io_amount)]    
 pub fn detect_from_path<'a> (path: PathBuf) -> Result<Option<&'a str>, Box<dyn Error>> {
     let mut data = [0u8; 8];

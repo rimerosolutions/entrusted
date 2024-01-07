@@ -60,33 +60,39 @@ There are three user interfaces ([[./app/entrusted_client][Desktop and Command-L
 ** Downloads
 
 Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releases page]] for downloads (64-bit: [[https://en.wikipedia.org/wiki/X86-64][amd64/x86_64]] and [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]]).
-- =aarch64= (=arm64=) builds are not yet available for Windows
+- =aarch64= (i.e., =arm64=) builds are not yet available for Windows
+- For Linux, when in doubt, pick the =glibc= file, unless you're sure about your system
+  - You cannot expect a binary built with [[https://musl.libc.org/][musl libc]] to run with [[https://www.gnu.org/software/libc/][gnu libc]]
+  - Most of Linux distributions use =glibc= as C implementation library ([[https://ubuntu.com/][Ubuntu]], [[https://fedoraproject.org/][Fedora]], etc.) 
+  - [[https://www.alpinelinux.org/][Alpine Linux]] uses =musl=. Some distributions provide a =musl= flavor ([[https://voidlinux.org/][Void Linux]], [[https://www.gentoo.org/][Gentoo]], etc.)  
 - Ignore any warnings about trusting the application under Windows or Mac OS, the binaries are not signed
   - [[https://support.apple.com/en-ca/guide/mac-help/mh40616/mac][Notes for Mac OS]]
   - Notes for Windows: Click "Ignore" or "Run", if you get a warning dialog.
     
 
-|-----------+------------------------------------------+-----------------------------------------------|
-| "System"  | Artifact                                 | Description                                   |
-|-----------+------------------------------------------+-----------------------------------------------|
-| =Linux=   | =entrusted-<version>-linux-amd64.deb=    | Desktop and CLI clients (Debian-Like distros) |
-|           | =entrusted-<version>-linux-amd64.rpm=    | Desktop and CLI clients (Redhat-Like distros) |
-|           | =entrusted-<version>-linux-amd64.tar=    | Archive with all programs                     |
-|           | =entrusted-<version>-linux-aarch64.deb=  | Desktop and CLI clients (Debian-Like distros) |
-|           | =entrusted-<version>-linux-aarch64.rpm=  | Desktop and CLI clients (Redhat-Like distros) |
-|           | =entrusted-<version>-linux-aarch64.tar=  | Archive with all programs                     |
-|-----------+------------------------------------------+-----------------------------------------------|
-| =Mac OS=  | =entrusted-<version>-macos-amd64.dmg=    | Installer with the Desktop and CLI clients    |
-|           | =entrusted-<version>-macos-amd64.zip=    | Archive with all programs                     |
-|           | =entrusted-<version>-macos-aarch64.dmg=  | Installer with the Desktop and CLI clients    |
-|           | =entrusted-<version>-macos-aarch64.zip=  | Archive with all programs                     |
-|-----------+------------------------------------------+-----------------------------------------------|
-| =Windows= | =entrusted-<version>-windows-amd64.exe=  | Installer with the Desktop and CLI clients    |
-|           | =entrusted-<version>-windows-amd64.zip=  | Archive with all programs                     |
-|-----------+------------------------------------------+-----------------------------------------------|
-| =Live CD= | =entrusted-<version>-livecd-amd64.iso=   | Web interface Live CD for virtual machines    |
-|           | =entrusted-<version>-livecd-aarch64.iso= | Web interface Live CD for virtual machines    |
-|-----------+------------------------------------------+-----------------------------------------------|
+|-----------+-----------------------------------------------+-----------------------------------------------|
+| "System"  | Artifact                                      | Description                                   |
+|-----------+-----------------------------------------------+-----------------------------------------------|
+| =Linux=   | =entrusted-<version>-linux-amd64-glibc.deb=   | Desktop and CLI clients (Debian-Like distros) |
+|           | =entrusted-<version>-linux-amd64-glibc.rpm=   | Desktop and CLI clients (Redhat-Like distros) |
+|           | =entrusted-<version>-linux-amd64-glibc.tar=   | Archive with all programs                     |
+|           | =entrusted-<version>-linux-amd64-musl.tar=    | Archive with all programs (musl libc)                    |
+|           | =entrusted-<version>-linux-aarch64-glibc.deb= | Desktop and CLI clients (Debian-Like distros) |
+|           | =entrusted-<version>-linux-aarch64-glibc.rpm= | Desktop and CLI clients (Redhat-Like distros) |
+|           | =entrusted-<version>-linux-aarch64-glibc.tar= | Archive with all programs                     |
+|           | =entrusted-<version>-linux-aarch64-musl.tar=  | Archive with all programs (musl libc)         |
+|-----------+-----------------------------------------------+-----------------------------------------------|
+| =Mac OS=  | =entrusted-<version>-macos-amd64.dmg=         | Installer with the Desktop and CLI clients    |
+|           | =entrusted-<version>-macos-amd64.zip=         | Archive with all programs                     |
+|           | =entrusted-<version>-macos-aarch64.dmg=       | Installer with the Desktop and CLI clients    |
+|           | =entrusted-<version>-macos-aarch64.zip=       | Archive with all programs                     |
+|-----------+-----------------------------------------------+-----------------------------------------------|
+| =Windows= | =entrusted-<version>-windows-amd64.exe=       | Installer with the Desktop and CLI clients    |
+|           | =entrusted-<version>-windows-amd64.zip=       | Archive with all programs                     |
+|-----------+-----------------------------------------------+-----------------------------------------------|
+| =Live CD= | =entrusted-<version>-livecd-amd64.iso=        | Web interface Live CD for virtual machines    |
+|           | =entrusted-<version>-livecd-aarch64.iso=      | Web interface Live CD for virtual machines    |
+|-----------+-----------------------------------------------+-----------------------------------------------|
 
 * What is required?
 

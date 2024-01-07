@@ -2,10 +2,10 @@
 
 * entrusted 0.3.2 (Unreleased)
 
-The main objective is  [[https://musl.libc.org/][musl-libc]] support and build/packaging improvements.
+The main objective is [[https://musl.libc.org/][musl-libc]] support and build/packaging improvements.
 - Linux
-  - Provide binaries for for [[https://musl.libc.org/][musl-libc]] systems ([[https://www.alpinelinux.org/][Alpine Linux]] and others)
-  - Drop Linux [[https://appimage.org/][AppImage]] format
+  - Provide binaries for [[https://musl.libc.org/][musl-libc]] systems ([[https://www.alpinelinux.org/][Alpine Linux]] and others)
+  - Drop Linux [[https://appimage.org/][AppImage]] format for the Desktop graphical user interface (GUI)
   - Make GUI dependencies more explicit (packaging improvements and documentation)
 - Live CD
   - Update [[https://github.com/google/gvisor][gVisor]] to a recent point-release ([[https://github.com/google/gvisor/releases/tag/release-20231218.0][20231218.0]])

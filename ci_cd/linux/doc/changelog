@@ -1,8 +1,7 @@
 entrusted (0.3.2) stable; urgency=medium
 
-  * Upgrade libraries dependencies
   * Remove AppImage format for the GUI, thus any fuse related dependencies
-  * Leverage rust 1.72.0 during the build process
+  * Upgrade libraries dependencies and update packaging process
 
  -- Yves Zoundi <yves_zoundi@hotmail.com>  Sun, 14 Jan 2024 16:38:25 -0400
 

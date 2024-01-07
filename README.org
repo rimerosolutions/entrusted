@@ -76,7 +76,7 @@ Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releas
 | =Linux=   | =entrusted-<version>-linux-amd64-glibc.deb=   | Desktop and CLI clients (Debian-Like distros) |
 |           | =entrusted-<version>-linux-amd64-glibc.rpm=   | Desktop and CLI clients (Redhat-Like distros) |
 |           | =entrusted-<version>-linux-amd64-glibc.tar=   | Archive with all programs                     |
-|           | =entrusted-<version>-linux-amd64-musl.tar=    | Archive with all programs (musl libc)                    |
+|           | =entrusted-<version>-linux-amd64-musl.tar=    | Archive with all programs (musl libc)         |
 |           | =entrusted-<version>-linux-aarch64-glibc.deb= | Desktop and CLI clients (Debian-Like distros) |
 |           | =entrusted-<version>-linux-aarch64-glibc.rpm= | Desktop and CLI clients (Redhat-Like distros) |
 |           | =entrusted-<version>-linux-aarch64-glibc.tar= | Archive with all programs                     |

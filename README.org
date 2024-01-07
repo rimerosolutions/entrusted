@@ -55,7 +55,7 @@ There are three user interfaces ([[./app/entrusted_client][Desktop and Command-L
   - You can run the live CD with tools such as [[https://www.qemu.org/][QEMU]], [[https://www.virtualbox.org/wiki/Downloads][VirtualBox]], [[https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v][Hyper-V]], [[https://www.vmware.com/nl/products/workstation-player.html][VmWare]], [[https://www.parallels.com/][Parallels]], etc.
   - The Web interface can be accessed at the address =http://localhost:13000=
   - Replace =localhost= by the IP address of your virtual machine in the above-mentioned link
-  - You *might need to map or forward* port =13000= depending on your virtualization solution network settings.
+  - You [[https://github.com/rimerosolutions/entrusted/wiki/Live-CD-%E2%80%90-Port-Mapping-%E2%80%90-User-Interface-Access][might need to map or forward]] port =13000= depending on your virtualization solution network settings.
 
 ** Downloads
 

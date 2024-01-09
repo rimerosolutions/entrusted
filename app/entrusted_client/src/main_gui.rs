@@ -2491,6 +2491,33 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
     });
+    
+    let mut autoconvert = false;
+    let args: Vec<String> = env::args().skip(1).collect();
+
+    if !args.is_empty() {
+        for arg in args.iter() {
+            let input_path = PathBuf::from(&arg);
+
+            if input_path.exists() {
+                filelist_widget.add_file(input_path);
+                autoconvert = true;
+            }
+        }
+    }
+
+    wind.end();
+    wind.show();
+
+    let _ = tabconvert_button.take_focus();
+
+    if autoconvert {
+        app::add_timeout3(0.2, {
+            let mut convert_button = convert_button.clone();
+            move |_| {
+                convert_button.do_callback();
+            }});
+    }
 
     wind.handle({
         let mut top_group_ref = top_group.clone();
@@ -2775,34 +2802,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
     });
-
-    let mut autoconvert = false;
-    let args: Vec<String> = env::args().skip(1).collect();
-
-    if !args.is_empty() {
-        for arg in args.iter() {
-            let input_path = PathBuf::from(&arg);
-
-            if input_path.exists() {
-                filelist_widget.add_file(input_path);
-                autoconvert = true;
-            }
-        }
-    }
-
-    wind.end();
-    wind.show();
+    
     wind.resize(wind.x(), wind.y(), wind.w(), wind.h());
-
-    let _ = tabconvert_button.take_focus();
-
-    if autoconvert {
-        app::add_timeout3(0.2, {
-            let mut convert_button = convert_button.clone();
-            move |_| {
-                convert_button.do_callback();
-            }});
-    }
 
     while app.wait() {
         #[cfg(target_os = "macos")] {

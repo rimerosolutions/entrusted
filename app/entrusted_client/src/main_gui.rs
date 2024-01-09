@@ -1070,6 +1070,11 @@ impl FileListWidget {
                         text_buffer.set_text(&logs);
                         textdisplay_cmdlog.set_buffer(text_buffer);
 
+                        dialog.end();
+                        dialog.make_modal(true);
+                        dialog.make_resizable(true);
+                        dialog.show();
+
                         dialog.handle({
                             move |wid, ev| match ev {
                                 enums::Event::Resize => {
@@ -1081,11 +1086,6 @@ impl FileListWidget {
                                 _ => false
                             }
                         });
-
-                        dialog.end();
-                        dialog.make_modal(true);
-                        dialog.make_resizable(true);
-                        dialog.show();
 
                         while dialog.shown() {
                             app::wait();

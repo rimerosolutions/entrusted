@@ -45,6 +45,7 @@ percent-encoding = "2.1.0"
 fltk = { version = "1.4.20", optional = true }
 
 [target.'cfg(target_os = "windows")'.dependencies]
+winapi = "0.2.8"
 winreg = "0.10.1"
 dunce = "1.0.3"
 fltk = { version = "1.4.20", optional = true }

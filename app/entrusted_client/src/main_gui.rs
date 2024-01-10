@@ -2964,55 +2964,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-#[cfg(target_os = "windows")]
-pub fn open_pdffile(cmd: String, input: PathBuf, _: &l10n::Translations) -> Result<(), Box<dyn Error>> {
-    use std::os::windows::process::CommandExt;
-    match Command::new(cmd).arg(input).creation_flags(0x08000000).spawn() {
-        Ok(_)   => Ok(()),
-        Err(ex) => Err(ex.into()),
-    }
-}
-
-#[cfg(not(any(target_os = "windows", target_os = "macos")))]
-pub fn open_pdffile(cmd: String, input: PathBuf, _: &l10n::Translations) -> Result<(), Box<dyn Error>> {
-    match Command::new(cmd).arg(input).spawn() {
-        Ok(_)   => Ok(()),
-        Err(ex) => Err(ex.into()),
-    }
-}
-
-#[cfg(target_os = "macos")]
-pub fn open_pdffile(cmd: String, input: PathBuf, trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {
-    let p = std::path::Path::new(&cmd);
-
-    if p.exists() && p.is_dir() {
-        match common::executable_find("open") {
-            Some(open_cmd) => match Command::new(open_cmd).arg("-a").arg(cmd).arg(input).spawn() {
-                Ok(mut child_proc) => {
-                    match child_proc.wait() {
-                        Ok(exit_status) => {
-                            if exit_status.success() {
-                                Ok(())
-                            } else {
-                                Err(trans.gettext("Could not open PDF file!").into())
-                            }
-                        },
-                        Err(ex) => Err(ex.into())
-                    }
-                },
-                Err(ex) => Err(ex.into()),
-            },
-            None => Err(trans.gettext("Could not find 'open' command in 'PATH' environment variable!").into()),
-        }
-    } else {
-        if let Err(ex) = Command::new(cmd).arg(input).spawn() {
-            return Err(ex.into());
-        }
-
-        Ok(())
-    }
-}
-
 #[cfg(target_os = "macos")]
 pub fn open_document(url: &str, _: &str, trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {
     if let Some(cmd_open) = common::executable_find("open") {
@@ -3026,17 +2977,41 @@ pub fn open_document(url: &str, _: &str, trans: &l10n::Translations) -> Result<(
 }
 
 #[cfg(target_os = "windows")]
-pub fn open_document(url: &str, _: &str,  _: &l10n::Translations) -> Result<(), Box<dyn Error>> {
-    use std::os::windows::process::CommandExt;
-    match Command::new("cmd")
-        .arg("/c")
-        .arg("start")
-        .arg(url)
-        .creation_flags(0x08000000)
-        .spawn() {
-            Ok(_)   => Ok(()),
-            Err(ex) => Err(ex.into()),
-        }
+pub fn open_document(url: &str, content_type: &str,  trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {
+    extern "system" {
+        pub fn ShellExecuteW(hwnd: winapi::HWND,
+                             lpOperation: winapi::LPCWSTR,
+                             lpFile: winapi::LPCWSTR,
+                             lpParameters: winapi::LPCWSTR,
+                             lpDirectory: winapi::LPCWSTR,
+                             nShowCmd: winapi::c_int)
+                             -> winapi::HINSTANCE;
+    }
+
+    const SW_SHOW: winapi::c_int = 5;    
+
+    fn str_to_utf16(s: &str) -> Vec<u16> {
+        use std::os::windows::ffi::OsStrExt;
+        let v = std::ffi::OsStr::new(s);
+        v.encode_wide().chain(std::iter::once(0)).collect()
+    }
+    
+    let path = str_to_utf16(url);
+    let operation = str_to_utf16("open");
+    let result = unsafe {
+        ShellExecuteW(std::ptr::null_mut(),
+                      operation.as_ptr(),
+                      path.as_ptr(),
+                      std::ptr::null(),
+                      std::ptr::null(),
+                      SW_SHOW)
+    };
+
+    if result as usize > 32 {
+        Ok(())
+    } else {
+        Err(trans.gettext_fmt("Cannot find default application for content type: {0}", vec![content_type]).into())
+    }
 }
 
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]

@@ -62,7 +62,7 @@ There are three user interfaces ([[./app/entrusted_client][Desktop and Command-L
 Please visit the [[https://github.com/rimerosolutions/entrusted/releases][releases page]] for downloads (64-bit: [[https://en.wikipedia.org/wiki/X86-64][amd64/x86_64]] and [[https://en.wikipedia.org/wiki/AArch64][aarch64/arm64]]).
 - =aarch64= (i.e., =arm64=) builds are not yet available for Windows
 - For Linux, when in doubt, pick the =glibc= file, unless you're sure about your system
-  - You cannot expect a binary built with [[https://musl.libc.org/][musl libc]] to run with [[https://www.gnu.org/software/libc/][gnu libc]]
+  - You cannot expect a binary built with [[https://musl.libc.org/][musl libc]] to run with [[https://www.gnu.org/software/libc/][gnu libc]] (unless statically linked)
   - Most of Linux distributions use =glibc= as C implementation library ([[https://ubuntu.com/][Ubuntu]], [[https://fedoraproject.org/][Fedora]], etc.) 
   - [[https://www.alpinelinux.org/][Alpine Linux]] uses =musl=. Some distributions provide a =musl= flavor ([[https://voidlinux.org/][Void Linux]], [[https://www.gentoo.org/][Gentoo]], etc.)  
 - Ignore any warnings about trusting the application under Windows or Mac OS, the binaries are not signed

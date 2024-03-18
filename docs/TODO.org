@@ -1,12 +1,11 @@
 #+TITLE: TODO
 
-* Milestone: Musl builds and flatpak mostly? [0%]
+* Milestone: Improved packaging [100%]
 
-- [ ] Cleanup Linux dependencies and potentially remove AppImage integration (used in Linux GUI)
-- [ ] Create [[https://musl.libc.org/][Musl]] compatible release binaries
-- [ ] Provide [[https://flatpak.org/][Flatpak]] binaries??
-- [ ] Simplify local builds pipeline
-- [ ] Improve documentation  
+- [X] Cleanup Linux dependencies and potentially remove AppImage integration (used in Linux GUI)
+- [X] Create [[https://musl.libc.org/][Musl]] compatible release binaries
+- [X] Simplify local builds pipeline
+- [X] Improve documentation  
 
 * Milestone: From local CI/CD pipelines to GitHub Actions [100%]
 

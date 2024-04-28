@@ -9,6 +9,10 @@ This module provides the document sanitization logic running inside a "sandbox" 
 
 [[./images/architecture.png]]
 
+Some rules/constraints are applied to container sandbox invocation process.
+
+[[./images/sandboxing.png]]
+
 * What is required?
 
 This module is deployed as a container image (/Docker/ or /Podman/ or /Lima/), published on [[https://hub.docker.com/r/uycyjnzgntrn/entrusted_container][Docker Hub]].

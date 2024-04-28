@@ -7,9 +7,11 @@ This module provides the document sanitization logic running inside a "sandbox" 
 - There's a small series of transformations leading to the generation of a trusted PDF document (optionally with full-text search support, if [[https://en.wikipedia.org/wiki/Optical_character_recognition][OCR]] was requested)
 - There is no command-line invocation of external programs within the container
 
+** Sanitization process overview
+
 [[./images/architecture.png]]
 
-Some rules/constraints are applied to container sandbox invocation process.
+** Sanitization process constraints
 
 [[./images/sandboxing.png]]
 

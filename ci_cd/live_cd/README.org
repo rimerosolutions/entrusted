@@ -27,7 +27,7 @@ By default, the live CD allocates =75%= of the assigned RAM as free disk space.
   
 ** Build steps
 
-The steps below have been tested on [[https://www.debian.org/][Debian]] 11 (/bullseye/) and [[https://ubuntu.com/][Ubuntu]] 22.04 (/jammy/).
+The steps below have been tested on [[https://www.debian.org/][Debian]] 11+ (/bullseye/) and [[https://ubuntu.com/][Ubuntu]] 22.04 (/jammy/).
 - Clone the =entrusted= git repository from GitHub
 - Run the =build.sh= script in this directory: =chmod +x build.sh && ./build.sh=
 - The resulting ISO image will be available at =$ROOT_PROJECT_FOLDER/artifacts=

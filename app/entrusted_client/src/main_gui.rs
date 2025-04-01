@@ -3355,11 +3355,11 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
     use core_foundation::string::{
         kCFStringEncodingUTF8, CFStringCreateWithCString, CFStringGetCStringPtr, CFStringRef,
     };
-    use core_foundation::url::{CFURLCopyPath, CFURLRef};
+    use core_foundation::url::{CFURLCopyFileSystemPath, kCFURLPOSIXPathStyle, CFURLRef};
     use core_services::{
         kLSRolesAll, LSCopyAllRoleHandlersForContentType, LSCopyApplicationURLsForBundleIdentifier,
     };
-    use percent_encoding::percent_decode;
+
     use std::ffi::{CStr, CString};
 
     let content_type = "com.adobe.pdf";
@@ -3381,51 +3381,45 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
 
                     for j in 0..app_count {
                         let cf_ref = CFArrayGetValueAtIndex(apps, j) as CFURLRef;
-                        let cf_path = CFURLCopyPath(cf_ref);
+                        let cf_path = CFURLCopyFileSystemPath(cf_ref, kCFURLPOSIXPathStyle);
                         let cf_ptr = CFStringGetCStringPtr(cf_path, kCFStringEncodingUTF8);
                         let c_str = CStr::from_ptr(cf_ptr);
                         let mut app_name = String::new();
 
-                        if let Ok(app_url) = c_str.to_str() {
-                            if let Ok(app_url_decoded) = percent_decode(app_url.as_bytes()).decode_utf8() {
-                                let app_path = app_url_decoded.to_string();
+                        if let Ok(app_url) = c_str.to_str() {                            
+                            let app_path = app_url.to_string();
 
-                                if let Some(bundle_url) = CFURL::from_path(&app_path, true) {
-                                    if let Some(bundle) = CFBundle::new(bundle_url) {
-                                        let bundle_dict = bundle.info_dictionary();
-                                        let bundle_key_display_name = CFString::new("CFBundleDisplayName");
-                                        let bundle_key_name = CFString::new("CFBundleName");
+                            if let Some(bundle_url) = CFURL::from_path(&app_url, true) {
+                                if let Some(bundle) = CFBundle::new(bundle_url) {
+                                    let bundle_dict = bundle.info_dictionary();
+                                    let bundle_key_display_name = CFString::new("CFBundleDisplayName");
+                                    let bundle_key_name = CFString::new("CFBundleName");
 
-                                        let current_key = if bundle_dict.contains_key(&bundle_key_display_name) {
-                                            Some(bundle_key_display_name)
-                                        } else if bundle_dict.contains_key(&bundle_key_display_name) {
-                                            Some(bundle_key_name)
-                                        } else {
-                                            None
-                                        };
+                                    let current_key = if bundle_dict.contains_key(&bundle_key_display_name) {
+                                        Some(bundle_key_display_name)
+                                    } else if bundle_dict.contains_key(&bundle_key_display_name) {
+                                        Some(bundle_key_name)
+                                    } else {
+                                        None
+                                    };
 
-                                        if let Some(active_key) = current_key {                                            
-                                            if let Some(active_key_value) = bundle_dict.find(&active_key)
-                                                .and_then(|value_ref| value_ref.downcast::<CFString>())
-                                                .map(|value| value.to_string()) {
-                                                    if &active_key_value == "Entrusted" {
-                                                        continue;
-                                                    }
-                                                    app_name.push_str(&active_key_value);
+                                    if let Some(active_key) = current_key {                                            
+                                        if let Some(active_key_value) = bundle_dict.find(&active_key)
+                                            .and_then(|value_ref| value_ref.downcast::<CFString>())
+                                            .map(|value| value.to_string()) {
+                                                if &active_key_value == "Entrusted" {
+                                                    continue;
                                                 }
-                                        } else if let Some(basename_ostr) = std::path::Path::new(&app_url).file_stem() {
-                                            if let Some(basename) = &basename_ostr.to_str() {                                                
-                                                let implied_app_name = percent_decode(basename.as_bytes());
-
-                                                if let Ok(r_app_name_decoded)= implied_app_name.decode_utf8() {
-                                                    app_name.push_str(&r_app_name_decoded);
-                                                }
+                                                app_name.push_str(&active_key_value);
                                             }
+                                    } else if let Some(basename_ostr) = std::path::Path::new(&app_url).file_stem() {
+                                        if let Some(basename) = &basename_ostr.to_str() {
+                                            app_name.push_str(basename);
                                         }
+                                    }
 
-                                        if !app_name.is_empty() {
-                                            ret.insert(app_name, app_path);
-                                        }
+                                    if !app_name.is_empty() {
+                                        ret.insert(app_name, app_path);
                                     }
                                 }
                             }

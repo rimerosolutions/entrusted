@@ -41,8 +41,7 @@ fltk = { version = "1.5.3", optional = true }
 [target.'cfg(target_os = "macos")'.dependencies]
 core-services = "0.2.0"
 core-foundation = "0.9.3"
-percent-encoding = "2.1.0"
-fltk = { version = "1.5.3", optional = true, features = ["fltk-bundled"] }
+fltk = { version = "1.5.3", optional = true }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 winapi = "0.2.8"

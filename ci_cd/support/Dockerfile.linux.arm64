@@ -1,4 +1,4 @@
-FROM docker.io/rust:1.72.0-bookworm
+FROM docker.io/rust:1.84.1-bookworm
 
 LABEL maintainer="Yves Zoundi, Rimero Solutions Inc."
 LABEL org.opencontainers.image.title="Rust builder image"

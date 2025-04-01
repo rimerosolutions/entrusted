@@ -9,7 +9,7 @@ CPU_ARCHS="amd64 aarch64"
 ENTRUSTED_VERSION="${APPVERSION}"
 CONTAINER_USER_NAME="entrusted"
 CONTAINER_USER_ID="1024"
-RUST_CI_VERSION="1.72.0"
+RUST_CI_VERSION="1.84.1"
 
 echo "Install required packages"
 sudo apt update && sudo apt install -y \

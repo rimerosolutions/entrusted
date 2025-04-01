@@ -533,7 +533,6 @@ enum AppError {
 }
 
 impl IntoResponse for AppError {
-    // TODO response format based on accept headers: text or json
     fn into_response(self) -> axum::response::Response {
         let (status, problem) = match self {
             AppError::NotFound(reason)            => (StatusCode::NOT_FOUND, reason),

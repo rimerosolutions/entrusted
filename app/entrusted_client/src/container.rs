@@ -46,8 +46,8 @@ fn cleanup_dir(dir: &PathBuf) -> Result<(), Box<dyn Error>> {
 }
 
 trait SanitizerRt {
-    fn install(&self, convert_options: common::ConvertOptions, tx: Box<dyn common::EventSender>, printer: Box<dyn LogPrinter>,  trans: l10n::Translations) -> Result<(), Box<dyn Error>>;
-    fn process(&self, input_path: PathBuf, output_path: PathBuf, convert_options: common::ConvertOptions, tx: Box<dyn common::EventSender>, printer: Box<dyn LogPrinter>,  trans: l10n::Translations) -> Result<(), Box<dyn Error>>;
+    fn install(&self, convert_options: common::ConvertOptions, tx: Box<dyn common::EventSender>, printer: &dyn Fn(usize, String) -> String,  trans: l10n::Translations) -> Result<(), Box<dyn Error>>;
+    fn process(&self, input_path: PathBuf, output_path: PathBuf, convert_options: common::ConvertOptions, tx: Box<dyn common::EventSender>, printer: &dyn Fn(usize, String) -> String,  trans: l10n::Translations) -> Result<(), Box<dyn Error>>;
 }
 
 struct ContainerizedSanitizerRt<'a>  {
@@ -75,11 +75,11 @@ impl <'a>NativeSanitizerRt<'a> {
 }
 
 impl <'a> SanitizerRt for NativeSanitizerRt<'a> {
-    fn install(&self, _: common::ConvertOptions, _: Box<dyn common::EventSender>, _: Box<dyn LogPrinter>, _: l10n::Translations) -> Result<(), Box<dyn Error>> {
+    fn install(&self, _: common::ConvertOptions, _: Box<dyn common::EventSender>, _: &dyn Fn(usize, String) -> String, _: l10n::Translations) -> Result<(), Box<dyn Error>> {
         Ok(())
     }
 
-    fn process(&self, input_path: PathBuf, output_path: PathBuf, convert_options: common::ConvertOptions, tx: Box<dyn common::EventSender>, printer: Box<dyn LogPrinter>, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
+    fn process(&self, input_path: PathBuf, output_path: PathBuf, convert_options: common::ConvertOptions, tx: Box<dyn common::EventSender>, printer: &dyn Fn(usize, String) -> String, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
         let mut success = false;
         let mut err_msg = String::new();
         let mut env_vars = HashMap::new();
@@ -104,7 +104,7 @@ impl <'a> SanitizerRt for NativeSanitizerRt<'a> {
             "--log-format".to_string(), convert_options.log_format,
         ]);
 
-        if exec_crt_command(trans.gettext("Starting document processing"), self.container_program.clone(), env_vars, convert_args, tx.clone_box(), true, printer.clone_box(), trans.clone()).is_ok() {
+        if exec_crt_command(trans.gettext("Starting document processing"), self.container_program.clone(), env_vars, convert_args, tx.clone_box(), true, printer, trans.clone()).is_ok() {
             let atime = FileTime::now();
             let output_file = fs::File::open(&output_path)?;
 
@@ -125,27 +125,27 @@ impl <'a> SanitizerRt for NativeSanitizerRt<'a> {
 }
 
 impl <'a> SanitizerRt for ContainerizedSanitizerRt<'a>  {
-    fn install(&self, convert_options: common::ConvertOptions, tx: Box<dyn common::EventSender>, printer: Box<dyn LogPrinter>,  trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
+    fn install(&self, convert_options: common::ConvertOptions, tx: Box<dyn common::EventSender>, printer: &dyn Fn(usize, String) -> String,  trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
         let mut ensure_image_args = vec!["inspect".to_string(), convert_options.container_image_name.to_owned()];
 
         let env_vars = HashMap::new();
 
-        if let Err(ex) = exec_crt_command(trans.gettext("Checking if container image exists"), self.container_program.clone(), env_vars.clone(), ensure_image_args, tx.clone_box(), false, printer.clone_box(), trans.clone()) {
-            tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, trans.gettext_fmt("The container image was not found. {0}", vec![&ex.to_string()]))))?;
+        if let Err(ex) = exec_crt_command(trans.gettext("Checking if container image exists"), self.container_program.clone(), env_vars.clone(), ensure_image_args, tx.clone_box(), false, printer, trans.clone()) {
+            tx.send(common::AppEvent::ConversionProgressEvent(printer(1, trans.gettext_fmt("The container image was not found. {0}", vec![&ex.to_string()]))))?;
             ensure_image_args = vec!["pull".to_string(), convert_options.container_image_name];
 
-            if let Err(exe) = exec_crt_command(trans.gettext("Please wait, downloading sandbox image (roughly 600 MB)"), self.container_program.clone(), env_vars, ensure_image_args, tx.clone_box(), false, printer.clone_box(), trans.clone()) {
-                tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, trans.gettext("Couldn't download container image!"))))?;
+            if let Err(exe) = exec_crt_command(trans.gettext("Please wait, downloading sandbox image (roughly 600 MB)"), self.container_program.clone(), env_vars, ensure_image_args, tx.clone_box(), false, printer, trans.clone()) {
+                tx.send(common::AppEvent::ConversionProgressEvent(printer(100, trans.gettext("Couldn't download container image!"))))?;
                 return Err(exe);
             }
 
-            tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext("Container image download completed..."))))?;
+            tx.send(common::AppEvent::ConversionProgressEvent(printer(5, trans.gettext("Container image download completed..."))))?;
         }
 
         Ok(())
     }
 
-    fn process(&self, input_path: PathBuf, output_path: PathBuf, convert_options: common::ConvertOptions, tx: Box<dyn common::EventSender>, printer: Box<dyn LogPrinter>,  trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
+    fn process(&self, input_path: PathBuf, output_path: PathBuf, convert_options: common::ConvertOptions, tx: Box<dyn common::EventSender>, printer: &dyn Fn(usize, String) -> String,  trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
         let mut success = false;
         let mut err_msg = String::new();
         let container_rt = self.container_program.clone();
@@ -190,17 +190,17 @@ impl <'a> SanitizerRt for ContainerizedSanitizerRt<'a>  {
                 match f_ret {
                     Ok(mut f) => {
                         if let Err(ex) = f.write_all(seccomp_profile_data) {
-                            tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
+                            tx.send(common::AppEvent::ConversionProgressEvent(printer(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
                             return Err(ex.into());
                         }
 
                         if let Err(ex) = f.sync_all() {
-                            tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
+                            tx.send(common::AppEvent::ConversionProgressEvent(printer(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
                             return Err(ex.into());
                         }
                     },
                     Err(ex) => {
-                        tx.send(common::AppEvent::ConversionProgressEvent(printer.print(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
+                        tx.send(common::AppEvent::ConversionProgressEvent(printer(5, trans.gettext_fmt("Could not save security profile to {0}. {1}.", vec![&seccomp_profile_pathbuf.display().to_string(), &ex.to_string()]))))?;
                         return Err(ex.into());
                     }
                 }
@@ -290,7 +290,7 @@ impl <'a> SanitizerRt for ContainerizedSanitizerRt<'a>  {
 
         let env_vars = HashMap::new();
 
-        if exec_crt_command(trans.gettext("Starting document processing"), self.container_program.clone(), env_vars, convert_args, tx.clone_box(), true, printer.clone_box(), trans.clone()).is_ok() {
+        if exec_crt_command(trans.gettext("Starting document processing"), self.container_program.clone(), env_vars, convert_args, tx.clone_box(), true, printer, trans.clone()).is_ok() {
             // Delete file temporarily copied to a "well-known" mounted path for Lima
             if !tmp_input_loc.is_empty() {
                 let _ = fs::remove_file(tmp_input_loc);
@@ -321,7 +321,7 @@ impl <'a> SanitizerRt for ContainerizedSanitizerRt<'a>  {
                 let _ = filetime::set_file_handle_times(&output_file, Some(atime), Some(atime));
 
                 if let Err(ex) = cleanup_dir(&dz_tmp_safe) {
-                    tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, trans.gettext_fmt("Failed to cleanup temporary folder: {0}. {1}.", vec![&dz_tmp.clone().display().to_string(), &ex.to_string()]))))?;
+                    tx.send(common::AppEvent::ConversionProgressEvent(printer(100, trans.gettext_fmt("Failed to cleanup temporary folder: {0}. {1}.", vec![&dz_tmp.clone().display().to_string(), &ex.to_string()]))))?;
                 }
 
                 success = true;
@@ -403,7 +403,7 @@ fn spawn_command(cmd: &str, env_vars: HashMap<String, String>, cmd_args: Vec<Str
         .spawn()
 }
 
-fn exec_crt_command (cmd_desc: String, container_program: common::ContainerProgram, env_vars: HashMap<String, String>, args: Vec<String>, tx: Box<dyn common::EventSender>, capture_output: bool, printer: Box<dyn LogPrinter>, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
+fn exec_crt_command (cmd_desc: String, container_program: common::ContainerProgram, env_vars: HashMap<String, String>, args: Vec<String>, tx: Box<dyn common::EventSender>, capture_output: bool, printer: &dyn Fn(usize, String) -> String, trans: l10n::Translations) -> Result<(), Box<dyn Error>> {
     let rt_path = container_program.exec_path;
     let sub_commands = container_program.sub_commands.iter().map(|i| i.to_string());
     let rt_executable: &str = &rt_path.display().to_string();
@@ -424,8 +424,8 @@ fn exec_crt_command (cmd_desc: String, container_program: common::ContainerProgr
 
     let masked_cmd = cmd_masked.join(" ");
 
-    tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, trans.gettext_fmt("Running command: {0}", vec![&format!("{} {}", rt_executable, masked_cmd)]))))?;
-    tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, cmd_desc)))?;
+    tx.send(common::AppEvent::ConversionProgressEvent(printer(1, trans.gettext_fmt("Running command: {0}", vec![&format!("{} {}", rt_executable, masked_cmd)]))))?;
+    tx.send(common::AppEvent::ConversionProgressEvent(printer(1, cmd_desc)))?;
 
     let mut cmd = spawn_command(rt_executable, env_vars, cmd)?;
 
@@ -484,45 +484,15 @@ fn exec_crt_command (cmd_desc: String, container_program: common::ContainerProgr
 
 }
 
-trait LogPrinter: Send + Sync {
-    fn print(&self, percent_complete: usize, data: String) -> String;
-
-    fn clone_box(&self) -> Box<dyn LogPrinter>;
-}
-
-impl Clone for Box<dyn LogPrinter> {
-    fn clone(&self) -> Box<dyn LogPrinter> {
-        self.clone_box()
-    }
-}
-
-#[derive(Debug, Copy, Clone)]
-struct PlainLogPrinter;
-
-#[derive(Debug, Copy, Clone)]
-struct JsonLogPrinter;
-
-impl LogPrinter for PlainLogPrinter {
-    fn print(&self, percent_complete: usize, data: String) -> String {
+fn print_progress_plain(percent_complete: usize, data: String) -> String {
         format!("{}% {}", percent_complete, data)
-    }
-
-    fn clone_box(&self) -> Box<dyn LogPrinter> {
-        Box::new(*self)
-    }
 }
 
-impl LogPrinter for JsonLogPrinter {
-    fn print(&self, percent_complete: usize, data: String) -> String {
+fn print_progress_json(percent_complete: usize, data: String) -> String {
         let log_msg = &common::LogMessage {
             percent_complete, data
         };
         serde_json::to_string(log_msg).unwrap()
-    }
-
-    fn clone_box(&self) -> Box<dyn LogPrinter> {
-        Box::new(*self)
-    }
 }
 
 // TODO abstractions: Runtime Mode: InProc(NATIVE or CONTAINERIZED) or Remoting
@@ -535,13 +505,13 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         return Err(trans.gettext_fmt("The selected file does not exists: {0}!", vec![&input_path.display().to_string()]).into());
     }
 
-    let printer: Box<dyn LogPrinter> = if convert_options.log_format == *"plain" {
-        Box::new(PlainLogPrinter)
+    let printer: &dyn Fn(usize, String) -> String = if convert_options.log_format == *"plain" {
+        &print_progress_plain
     } else {
-        Box::new(JsonLogPrinter)
+        &print_progress_json
     };
 
-    tx.send(common::AppEvent::ConversionProgressEvent(printer.print(1, format!("{} {}", trans.gettext("Converting"), input_path.display()))))?;
+    tx.send(common::AppEvent::ConversionProgressEvent(printer(1, format!("{} {}", trans.gettext("Converting"), input_path.display()))))?;
 
     let mut success = false;
     let mut err_msg = String::new();
@@ -556,11 +526,11 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
         };
 
         // Check if we're ready to sanitize any document
-        rt.install(convert_options.clone(), tx.clone_box(), printer.clone_box(), trans.clone())?;
+        rt.install(convert_options.clone(), tx.clone_box(), printer, trans.clone())?;
 
-        if let Err(ex) = rt.process(input_path, output_path, convert_options, tx.clone_box(), printer.clone_box(), trans) {
+        if let Err(ex) = rt.process(input_path, output_path, convert_options, tx.clone_box(), printer, trans) {
             err_msg.push_str(&ex.to_string());
-            tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, err_msg.clone())))?;
+            tx.send(common::AppEvent::ConversionProgressEvent(printer(100, err_msg.clone())))?;
         } else {
             success = true;
         }
@@ -576,7 +546,7 @@ pub fn convert(input_path: PathBuf, output_path: PathBuf, convert_options: commo
             err_msg.push_str(&trans.gettext("Please install Docker or Podman, and make sure that it's running."));
         }
 
-        tx.send(common::AppEvent::ConversionProgressEvent(printer.print(100, err_msg.clone())))?;
+        tx.send(common::AppEvent::ConversionProgressEvent(printer(100, err_msg.clone())))?;
     }
 
     if success {

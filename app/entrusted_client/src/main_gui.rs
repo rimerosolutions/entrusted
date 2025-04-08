@@ -7,7 +7,6 @@ use std::env;
 use std::error::Error;
 use std::ops::{Deref, DerefMut};
 use std::path::PathBuf;
-use std::process::Command;
 use std::rc::Rc;
 use std::sync::atomic::{AtomicBool, Ordering, AtomicI32};
 use std::sync::mpsc;
@@ -516,7 +515,7 @@ impl FileListWidget {
     pub fn resize(&mut self, x: i32, y: i32, w: i32, _: i32) {
         self.container.resize(x, y, w, self.container.h());
         let (width_password, width_output_file, width_checkbox, width_progressbar, width_status, width_logs) = filelist_column_widths(w);
-        let col_widths = [
+        let col_widths =[
             width_password, width_output_file, width_checkbox, width_progressbar, width_status, width_logs
         ];
 
@@ -549,13 +548,13 @@ impl FileListWidget {
                         }
                     } else if i == col_count - 1 {
                         if let Some(gg) = wid.as_group() {
-                            let cc_width = (col_widths[i] - WIDGET_GAP / 2) / 2;
+                            let cc_width = (col_widths[i] - WIDGET_GAP/2) / 2;
                             let mut startx = wid.x();
 
                             for j in 0..gg.children() {
                                 if let Some(mut cc) = gg.child(j) {
                                     cc.resize(startx, cc.y(), cc_width, wid.h());
-                                    startx += cc_width + (WIDGET_GAP / 2);
+                                    startx += cc_width + (WIDGET_GAP/2);
                                 }
                             }
                         }
@@ -660,7 +659,9 @@ impl FileListWidget {
 
     pub fn add_file(&mut self, path: PathBuf) {
         let trans = &self.trans;
+
         let ww = self.container.w();
+
         let (width_password, width_output_file, width_checkbox, width_progressbar, width_status, width_logs) = filelist_column_widths(ww);
 
         let mut row = group::Pack::default()
@@ -2965,7 +2966,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 #[cfg(target_os = "macos")]
 pub fn open_document(url: &str, _: &str, trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {
     if let Some(cmd_open) = common::executable_find("open") {
-        match Command::new(cmd_open).arg(url).spawn() {
+        match std::process::Command::new(cmd_open).arg(url).spawn() {
             Ok(_)   => Ok(()),
             Err(ex) => Err(ex.into()),
         }
@@ -2974,91 +2975,45 @@ pub fn open_document(url: &str, _: &str, trans: &l10n::Translations) -> Result<(
     }
 }
 
-#[cfg(target_os = "windows")] {
-    use winapi::shared::minwindef::DWORD;
-    
-    use winapi::shared {
-        ERROR_PATH_NOT_FOUND, ERROR_BAD_FORMAT, 
-    }
+#[cfg(target_os = "windows")]
+extern "system" {
+    pub fn ShellExecuteW(hwnd: winapi::shared::windef::HWND,
+                         lpOperation: winapi::um::winnt::LPCWSTR,
+                         lpFile: winapi::um::winnt::LPCWSTR,
+                         lpParameters: winapi::um::winnt::LPCWSTR,
+                         lpDirectory: winapi::um::winnt::LPCWSTR,
+                         nShowCmd: winapi::ctypes::c_int)
+                         -> winapi::shared::minwindef::HINSTANCE;
+}
 
-    use winapi::um::shellapi:: {
-        SE_ERR_SHARE, SE_ERR_PNF, SE_ERR_OOM, SE_ERR_NOASSOC, SE_ERR_FNF, SE_ERR_ACCESSDENIED
-    }
-    
-    extern "system" {
-            pub fn ShellExecuteW(hwnd: winapi::HWND,
-                                 lpOperation: winapi::LPCWSTR,
-                                 lpFile: winapi::LPCWSTR,
-                                 lpParameters: winapi::LPCWSTR,
-                                 lpDirectory: winapi::LPCWSTR,
-                                 nShowCmd: winapi::c_int)
-                                 -> winapi::HINSTANCE;
-        }
+#[cfg(target_os = "windows")]
+const SW_SHOW: winapi::ctypes::c_int = 5;
 
-    const SW_SHOW: winapi::c_int = 5;
+#[cfg(target_os = "windows")]
+fn str_to_utf16(s: &str) -> Vec<u16> {
+    use std::os::windows::ffi::OsStrExt;
+    let v = std::ffi::OsStr::new(s);
+    v.encode_wide().chain(std::iter::once(0)).collect()
+}
 
-    #[inline]
-    fn str_to_utf16(s: &str) -> Vec<u16> {
-            use std::os::windows::ffi::OsStrExt;
-            let v = std::ffi::OsStr::new(s);
-            v.encode_wide().chain(std::iter::once(0)).collect()
-    }
+#[cfg(target_os = "windows")]
+pub fn open_document(url: &str, content_type: &str,  trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {    
+    let path = str_to_utf16(url);
+    let operation = str_to_utf16("open");
+    let result = unsafe {
+        ShellExecuteW(std::ptr::null_mut(),
+                      operation.as_ptr(),
+                      path.as_ptr(),
+                      std::ptr::null(),
+                      std::ptr::null(),
+                      SW_SHOW)
+    };
 
-    // TODO update gettext translations
-    fn win_error_msg(err_code: DWORD) -> &str {
-        match (err_code) {
-            ERROR_PATH_NOT_FOUND | SE_ERR_FNF | SE_ERR_PNF => "Executable path not found",
-            ERROR_BAD_FORMAT                               => "Wrong executable format",
-            SE_ERR_SHARE                                   => "File is being used by other application",
-            SE_ERR_NOASSOC                                 => "No program associated to the given file or URI",
-            SE_ERR_ACCESSDENIED                            => "Access denied to the given file or URI",
-            SE_ERR_OOM                                     => "Not enough memory available to perform this operation",
-            _                                              => "Could not launch program"                
-        }
-    }
-    
-    pub fn open_document(url: &str, content_type: &str,  trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {        
-        let path = str_to_utf16(url);
-        let operation = str_to_utf16("open");
-        let result = unsafe {
-            ShellExecuteW(std::ptr::null_mut(),
-                          operation.as_ptr(),
-                          path.as_ptr(),
-                          std::ptr::null(),
-                          std::ptr::null(),
-                          SW_SHOW)
-        };
-
-        if result as usize > 32 {
-            Ok(())
-        } else {
-            Err(trans.gettext(win_error_msg(result, trans)).into())
-        }
-    }
-
-    #[cfg(target_os = "windows")]
-    pub fn pdf_open_with(cmd: String, input: PathBuf, trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {        
-        let cmd_path = str_to_utf16(cmd);    
-
-        if let Some(args_string) = cwd.into_os_string().into_string() {        
-            let cmd_args = str_to_utf16(&args_string);
-            let result = unsafe {
-                ShellExecuteW(std::ptr::null_mut(),
-                              std::ptr::null_mut(),
-                              path.as_ptr(),
-                              cmd_args,
-                              std::ptr::null(),
-                              SW_SHOW)
-            };
-
-            if result as usize > 32 {
-                Ok(())
-            } else {
-                Err(trans.gettext(win_error_msg(result, trans)).into())
-            }
-        } else {
-            Err(trans.gettext("Could not run program").into())
-        }
+    if result as usize > 32 {
+        Ok(())
+    } else {
+        ifhandle_win_err
+        Err(trans.gettext_fmt("Cannot open default application for content type: {0}", vec![content_type]).into())
     }
 }
 
@@ -3199,7 +3154,7 @@ pub fn open_document(url: &str,  content_type: &str, trans: &l10n::Translations)
             arguments.push_str(url);
         }
 
-        match Command::new("/bin/sh").arg("-c").arg(arguments).spawn() {
+        match std::process::Command::new("/bin/sh").arg("-c").arg(arguments).spawn() {
             Ok(_)   => Ok(()),
             Err(ex) => Err(ex.into()),
         }
@@ -3481,10 +3436,31 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
     ret
 }
 
+#[cfg(target_os = "windows")]
+pub fn pdf_open_with(cmd: String, input: PathBuf, _: &l10n::Translations) -> Result<(), Box<dyn Error>> {
+    let path = str_to_utf16(url);
+    let input_string = input.display().to_string();
+    let args = str_to_utf16(&input_string);
+    let result = unsafe {
+        ShellExecuteW(std::ptr::null_mut(),
+                      std::ptr::null_mut(),
+                      path.as_ptr(),
+                      args.as_ptr(),
+                      std::ptr::null(),
+                      SW_SHOW)
+    };
+
+    if result as usize > 32 {
+        Ok(())
+    } else {
+        let path_string = input.display().to_string();
+        Err(trans.gettext_fmt("Cannot open PDF document at {0}.", vec![&path_string]).into())
+    }
+}
 
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]
 pub fn pdf_open_with(cmd: String, input: PathBuf, _: &l10n::Translations) -> Result<(), Box<dyn Error>> {
-    match Command::new(cmd).arg(input).spawn() {
+    match std::process::Command::new(cmd).arg(input).spawn() {
         Ok(_)   => Ok(()),
         Err(ex) => Err(ex.into()),
     }
@@ -3496,7 +3472,7 @@ pub fn pdf_open_with(cmd: String, input: PathBuf, trans: &l10n::Translations) ->
 
     if p.exists() && p.is_dir() {
         match common::executable_find("open") {
-            Some(open_cmd) => match Command::new(open_cmd).arg("-a").arg(cmd).arg(input).spawn() {
+            Some(open_cmd) => match std::process::Command::new(open_cmd).arg("-a").arg(cmd).arg(input).spawn() {
                 Ok(mut child_proc) => {
                     match child_proc.wait() {
                         Ok(exit_status) => {
@@ -3514,7 +3490,7 @@ pub fn pdf_open_with(cmd: String, input: PathBuf, trans: &l10n::Translations) ->
             None => Err(trans.gettext("Could not find 'open' command in 'PATH' environment variable!").into()),
         }
     } else {
-        if let Err(ex) = Command::new(cmd).arg(input).spawn() {
+        if let Err(ex) = std::process::Command::new(cmd).arg(input).spawn() {
             return Err(ex.into());
         }
 

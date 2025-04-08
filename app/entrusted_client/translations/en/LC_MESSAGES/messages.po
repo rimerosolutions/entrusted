@@ -18,7 +18,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
-msgid "Cannot find default application for content type: {0}"
+msgid "Cannot open PDF document at {0}."
+msgstr ""
+
+msgid "Cannot open default application for content type: {0}"
 msgstr ""
 
 msgid "Couldn't open PDF file in default application! {0}."

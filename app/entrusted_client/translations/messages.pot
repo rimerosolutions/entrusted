@@ -30,7 +30,10 @@ msgstr ""
 #~ "MIME-Version: 1.0\n"
 #~ "Content-Type: text/plain; charset=UTF-8"
 
-msgid "Cannot find default application for content type: {0}"
+msgid "Cannot open PDF document at {0}."
+msgstr ""
+
+msgid "Cannot open default application for content type: {0}"
 msgstr ""
 
 msgid "Couldn't open PDF file in default application! {0}."

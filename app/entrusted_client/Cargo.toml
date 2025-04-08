@@ -44,7 +44,7 @@ core-foundation = "0.9.3"
 fltk = { version = "1.5.3", optional = true }
 
 [target.'cfg(target_os = "windows")'.dependencies]
-winapi = "0.2.8"
+winapi = { version = "0.3.9", features=["shellapi"] }
 winreg = "0.10.1"
 dunce = "1.0.3"
 fltk = { version = "1.5.3", optional = true }

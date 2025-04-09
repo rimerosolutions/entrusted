@@ -12,11 +12,11 @@ use std::io::{BufReader, Cursor, Seek, Write};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
-use libreoffice_rs::{Office, LibreOfficeKitOptionalFeatures, urls};
+use libreofficekit::{Office, OfficeOptionalFeatures, CallbackType, DocUrl};
 use once_cell::sync::OnceCell;
 use file_format::FileFormat;
 use entrusted_l10n as l10n;
+use std::rc::Rc;
 
 const LOG_FORMAT_PLAIN: &str = "plain";
 const LOG_FORMAT_JSON: &str = "json";
@@ -372,53 +372,57 @@ fn input_as_pdf_to_pathbuf_uri(logger: &dyn ConversionLogger, _: &ProgressRange,
                         DEFAULT_DIR_LIBREOFFICE_PROGRAM.to_string()
                     };
 
-                    let mut office = Office::new(&libreoffice_program_dir)?;
-                    let input_uri = urls::local_into_abs(new_input_path.display().to_string())?;
-                    let password_was_set = AtomicBool::new(false);
-                    let failed_password_input = Arc::new(AtomicBool::new(false));
+                    let office = Office::new(&libreoffice_program_dir)?;
+                    let input_uri = DocUrl::from_absolute_path(new_input_path.display().to_string())?;
+                    let needs_password = Rc::new(AtomicBool::new(false));
 
                     if let Some(passwd) = opt_passwd {
-                        if let Err(ex) = office.set_optional_features([LibreOfficeKitOptionalFeatures::LOK_FEATURE_DOCUMENT_PASSWORD]) {
+                        if let Err(ex) = office.set_optional_features(OfficeOptionalFeatures::DOCUMENT_PASSWORD) {
                             return Err(l10n.gettext_fmt("Failed to enable password-protected Office document features! {0}", vec![&ex.to_string()]).into());
                         }
 
                         if let Err(ex) = office.register_callback({
-                            let mut office = office.clone();
-                            let failed_password_input = failed_password_input.clone();
+                            let needs_password = needs_password.clone();
                             let input_uri = input_uri.clone();
 
-                            move |_, _| {
-                                if !password_was_set.load(Ordering::Acquire) {
-                                    let _ = office.set_document_password(input_uri.clone(), &passwd);
-                                    password_was_set.store(true, Ordering::Release);
-                                } else if !failed_password_input.load(Ordering::Acquire) {
-                                    failed_password_input.store(true, Ordering::Release);
-                                    let _ = office.unset_document_password(input_uri.clone());
-                                }
+                            move |office, ty, _| {
+                                if let CallbackType::DocumentPassword = ty {
+                                    if needs_password.swap(true, Ordering::SeqCst) {
+                                        let _ = office.set_document_password(&input_uri, None);
+                                        return;
+                                    }
+
+                                    
+                                    let _ = office.set_document_password(&input_uri, Some(&passwd));
                             }
+                        }
                         }) {
                             return Err(l10n.gettext_fmt("Failed to handle password-protected Office document features! {0}", vec![&ex.to_string()]).into());
                         }
                     }
 
-                    let res_document_saved: Result<(), Box<dyn Error>> = match office.document_load(input_uri) {
+                    let res_document_saved: Result<(), Box<dyn Error>> = match office.document_load(&input_uri) {
                         Ok(mut doc) => {
-                            if doc.save_as(&filename_pdf, "pdf", None) {
-                                Ok(())
-                            } else {
-                                Err(l10n.gettext_fmt("Could not save document as PDF: {0}", vec![&office.get_error()]).into())
-                            }
+                            match DocUrl::from_absolute_path(&filename_pdf) {
+                                Err(ex) => {
+                                    let msg = ex.to_string();
+                                    Err(l10n.gettext_fmt("Could not save document as PDF: {0}", vec![&msg]).into())
+                                }
+                                Ok(doc_url) => {
+                                    if let Err(ex) = doc.save_as(&doc_url, "pdf", None) {
+                                        let msg = ex.to_string();
+                                        Err(l10n.gettext_fmt("Could not save document as PDF: {0}", vec![&msg]).into())
+                                    } else {
+                                        Ok(())
+                                    }
+                            }                                
+                        }
                         },
-                        Err(ex) =>  {
-                            let err_reason = if failed_password_input.load(Ordering::Relaxed) {
-                                l10n.gettext("Password input failed!")
-                            } else {
-                                ex.to_string()
-                            };
-
-                            Err(err_reason.into())
+                        Err(ex) =>  {                            
+                            Err(ex.to_string().into())
                         }
                     };
+
 
                     if let Err(ex) = res_document_saved {
                         return Err(l10n.gettext_fmt("Could not export input document as PDF! {0}", vec![&ex.to_string()]).into());

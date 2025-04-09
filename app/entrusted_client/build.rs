@@ -12,7 +12,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         if input.exists() {
             println!("cargo:info=Processing translation PO file: {}", &input.display());
-
             let output = path.join("LC_MESSAGES").join("messages.mo");
             let catalog_ret = po_file::parse(Path::new(&input));
 
@@ -31,7 +30,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     if let Ok(target_sys) = std::env::var("CARGO_CFG_TARGET_OS") {
         if target_sys == "windows" {
-            embed_resource::compile("icon.rc", embed_resource::NONE);
+            if let embed_resource::CompilationResult::Failed(msg) = embed_resource::compile("icon.rc", embed_resource::NONE) {
+		return Err(format!("Cannot embed icon in Windows executable.\n{}", msg.into_owned()).into());
+	    }
         }
     }
 

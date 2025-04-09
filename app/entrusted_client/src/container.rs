@@ -2,7 +2,6 @@ use std::error::Error;
 use std::fs;
 use std::io;
 use std::process::Child;
-use filetime::FileTime;
 use std::path::PathBuf;
 use std::collections::HashMap;
 use std::env;
@@ -11,7 +10,7 @@ use std::io::{BufReader, BufRead, Read};
 use std::thread::JoinHandle;
 use std::thread;
 use uuid::Uuid;
-
+use std::time::SystemTime;
 use entrusted_l10n as l10n;
 use crate::common;
 
@@ -46,8 +45,17 @@ fn cleanup_dir(dir: &PathBuf) -> Result<(), Box<dyn Error>> {
 }
 
 trait SanitizerRt {
-    fn install(&self, convert_options: common::ConvertOptions, tx: Box<dyn common::EventSender>, printer: &dyn Fn(usize, String) -> String,  trans: l10n::Translations) -> Result<(), Box<dyn Error>>;
-    fn process(&self, input_path: PathBuf, output_path: PathBuf, convert_options: common::ConvertOptions, tx: Box<dyn common::EventSender>, printer: &dyn Fn(usize, String) -> String,  trans: l10n::Translations) -> Result<(), Box<dyn Error>>;
+    fn install(&self, convert_options: common::ConvertOptions,
+	       tx: Box<dyn common::EventSender>,
+	       printer: &dyn Fn(usize, String) -> String,
+	       trans: l10n::Translations) -> Result<(), Box<dyn Error>>;
+    
+    fn process(&self, input_path: PathBuf,
+	       output_path: PathBuf,
+	       convert_options: common::ConvertOptions,
+	       tx: Box<dyn common::EventSender>,
+	       printer: &dyn Fn(usize, String) -> String,
+	       trans: l10n::Translations) -> Result<(), Box<dyn Error>>;
 }
 
 struct ContainerizedSanitizerRt<'a>  {
@@ -75,7 +83,11 @@ impl <'a>NativeSanitizerRt<'a> {
 }
 
 impl <'a> SanitizerRt for NativeSanitizerRt<'a> {
-    fn install(&self, _: common::ConvertOptions, _: Box<dyn common::EventSender>, _: &dyn Fn(usize, String) -> String, _: l10n::Translations) -> Result<(), Box<dyn Error>> {
+    fn install(&self,
+	       _: common::ConvertOptions,
+	       _: Box<dyn common::EventSender>,
+	       _: &dyn Fn(usize, String) -> String,
+	       _: l10n::Translations) -> Result<(), Box<dyn Error>> {
         Ok(())
     }
 
@@ -105,11 +117,12 @@ impl <'a> SanitizerRt for NativeSanitizerRt<'a> {
         ]);
 
         if exec_crt_command(trans.gettext("Starting document processing"), self.container_program.clone(), env_vars, convert_args, tx.clone_box(), true, printer, trans.clone()).is_ok() {
-            let atime = FileTime::now();
+	    let now = SystemTime::now();
+	    let atime = fs::FileTimes::new().set_accessed(now).set_modified(now);
             let output_file = fs::File::open(&output_path)?;
 
             // This seems to fail on Microsoft Windows with permission denied errors
-            let _ = filetime::set_file_handle_times(&output_file, Some(atime), Some(atime));
+            let _ = output_file.set_times(atime);
 
             success = true;
         } else {
@@ -310,15 +323,15 @@ impl <'a> SanitizerRt for ContainerizedSanitizerRt<'a>  {
                 let msg_info = trans.gettext("Potential sanitization process crash detected, the sanitized PDF result was not created.");
                 err_msg.push_str(&msg_info);
             } else {
-                let atime = FileTime::now();
-
                 fs::copy(&container_output_file_path, &output_path)?;
                 fs::remove_file(container_output_file_path)?;
 
                 let output_file = fs::File::open(&output_path)?;
-
+                let now = SystemTime::now();
+		let atime = fs::FileTimes::new().set_accessed(now).set_modified(now);
+		
                 // This seems to fail on Microsoft Windows with permission denied errors
-                let _ = filetime::set_file_handle_times(&output_file, Some(atime), Some(atime));
+                let _ = output_file.set_times(atime);
 
                 if let Err(ex) = cleanup_dir(&dz_tmp_safe) {
                     tx.send(common::AppEvent::ConversionProgressEvent(printer(100, trans.gettext_fmt("Failed to cleanup temporary folder: {0}. {1}.", vec![&dz_tmp.clone().display().to_string(), &ex.to_string()]))))?;

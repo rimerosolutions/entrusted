@@ -18,6 +18,30 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
+msgid "The system is running out of memory"
+msgstr ""
+
+msgid "Program not found"
+msgstr ""
+
+msgid "Bad executable file format"
+msgstr ""
+
+msgid "File access denied"
+msgstr ""
+
+msgid "File not found"
+msgstr ""
+
+msgid "No application associated to the given file or URL"
+msgstr ""
+
+msgid "Not enough memory to complete this operation"
+msgstr ""
+
+msgid "Sharing violation, the file might be used by another program"
+msgstr ""
+
 msgid "Cannot open PDF document at {0}."
 msgstr ""
 

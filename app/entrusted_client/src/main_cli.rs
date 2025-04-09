@@ -295,7 +295,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let (exec_handle, rx) = {
         let (tx, rx) = mpsc::channel::<common::AppEvent>();
-
         let exec_handle = thread::spawn({
             move || {
                 let convert_options = common::ConvertOptions::new(container_image_name, common::LOG_FORMAT_JSON.to_string(), image_quality, ocr_lang, opt_passwd, !seccomp_profile_disabled);

@@ -825,7 +825,6 @@ impl FileListWidget {
 
                     accept_button.set_callback({
                         let mut win = win.clone();
-
                         let opt_output_file = opt_output_file.clone();
 
                         move |_| {
@@ -1548,6 +1547,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
     ocrlang_pack.end();
+
     // User settings - Open PDF result with a given application
     let mut openwith_pack = group::Pack::default()
         .with_size(570, 40)
@@ -2976,6 +2976,21 @@ pub fn open_document(url: &str, _: &str, trans: &l10n::Translations) -> Result<(
 }
 
 #[cfg(target_os = "windows")]
+fn err_code_msg(error_code: usize, trans: &l10n::Translations, default_message: String) -> String {
+    match error_code {
+	0  => trans.gettext("The system is running out of memory"),
+        3  => trans.gettext("Program not found"),                                             // ERROR_PATH_NOT_FOUND
+	11 => trans.gettext("Bad executable file format"),                                    // ERROR_BAD_FORMAT
+        5  => trans.gettext("File access denied"),                                            // SE_ERR_ACCESSDENIED
+	2  => trans.gettext("File not found"),                                                // SE_ERR_FNF
+        31 => trans.gettext("No application associated to the given file or URL"),            // SE_ERR_NOASSOC
+	8  => trans.gettext("Not enough memory to complete this operation"),                  // SE_ERR_OOM
+        26  => trans.gettext("Sharing violation, the file might be used by another program"), // SE_ERR_SHARE
+	_ => default_message
+    }
+}
+
+#[cfg(target_os = "windows")]
 extern "system" {
     pub fn ShellExecuteW(hwnd: winapi::shared::windef::HWND,
                          lpOperation: winapi::um::winnt::LPCWSTR,
@@ -3012,8 +3027,8 @@ pub fn open_document(url: &str, content_type: &str,  trans: &l10n::Translations)
     if result as usize > 32 {
         Ok(())
     } else {
-        ifhandle_win_err
-        Err(trans.gettext_fmt("Cannot open default application for content type: {0}", vec![content_type]).into())
+	let default_msg = trans.gettext_fmt("Cannot open default application for content type: {0}", vec![content_type]);
+	Err(err_code_msg(result as usize, trans, default_msg).into())        
     }
 }
 
@@ -3321,14 +3336,14 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
                     let human_value = format!("{}", value);
                     let human_val: Vec<&str> = human_value.split("\"").collect();
 
-                    // "C:\ Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe" "%1"
+                    // Example: "C:\ Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe" "%1"
                     if human_val.len() > 3 {
-                        let human_app_path_with_trailing_backlash = human_val[2];
+                        let human_app_path_with_trailing_backslash = human_val[2];
 
-                        if human_app_path_with_trailing_backlash.ends_with("\\") {
-                            let path_len = human_app_path_with_trailing_backlash.len() - 1;
+                        if human_app_path_with_trailing_backslash.ends_with("\\") {
+                            let path_len = human_app_path_with_trailing_backslash.len() - 1;
                             let updated_path =
-                                human_app_path_with_trailing_backlash[..path_len].to_string();
+                                human_app_path_with_trailing_backslash[..path_len].to_string();
 
                             if PathBuf::from(&updated_path).exists() {
                                 let new_name_copy = new_name.clone();
@@ -3437,8 +3452,8 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
 }
 
 #[cfg(target_os = "windows")]
-pub fn pdf_open_with(cmd: String, input: PathBuf, _: &l10n::Translations) -> Result<(), Box<dyn Error>> {
-    let path = str_to_utf16(url);
+pub fn pdf_open_with(cmd: String, input: PathBuf, trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {
+    let path = str_to_utf16(&cmd);
     let input_string = input.display().to_string();
     let args = str_to_utf16(&input_string);
     let result = unsafe {
@@ -3454,7 +3469,8 @@ pub fn pdf_open_with(cmd: String, input: PathBuf, _: &l10n::Translations) -> Res
         Ok(())
     } else {
         let path_string = input.display().to_string();
-        Err(trans.gettext_fmt("Cannot open PDF document at {0}.", vec![&path_string]).into())
+	let default_msg = trans.gettext_fmt("Cannot open PDF document at {0}.", vec![&path_string]);
+	Err(err_code_msg(result as usize, trans, default_msg).into())        
     }
 }
 

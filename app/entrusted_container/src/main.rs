@@ -15,10 +15,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use libreoffice_rs::{Office, LibreOfficeKitOptionalFeatures, urls};
 use once_cell::sync::OnceCell;
-
+use file_format::FileFormat;
 use entrusted_l10n as l10n;
-
-mod mimetypes;
 
 const LOG_FORMAT_PLAIN: &str = "plain";
 const LOG_FORMAT_JSON: &str = "json";
@@ -332,70 +330,13 @@ fn move_file_to_dir(logger: &dyn ConversionLogger, progress_range: &ProgressRang
 }
 
 fn input_as_pdf_to_pathbuf_uri(logger: &dyn ConversionLogger, _: &ProgressRange, raw_input_path: PathBuf, opt_passwd: Option<String>, l10n: l10n::Translations) -> Result<PathBuf, Box<dyn Error>> {
-    let conversion_by_mimetype: HashMap<&str, ConversionType> = [
-        ("application/pdf", ConversionType::None),
-        (
-            "application/rtf",
-            ConversionType::LibreOffice("rtf"),
-        ),
-        (
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            ConversionType::LibreOffice("docx"),
-        ),
-        (
-            "application/vnd.ms-word.document.macroEnabled.12",
-            ConversionType::LibreOffice("docm"),
-        ),
-        (
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            ConversionType::LibreOffice("xlsx"),
-        ),
-        (
-            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            ConversionType::LibreOffice("pptx"),
-        ),
-        ("application/msword", ConversionType::LibreOffice("doc")),
-        (
-            "application/vnd.ms-excel",
-            ConversionType::LibreOffice("xls"),
-        ),
-        (
-            "application/vnd.ms-powerpoint",
-            ConversionType::LibreOffice("ppt"),
-        ),
-        (
-            "application/vnd.oasis.opendocument.text",
-            ConversionType::LibreOffice("odt"),
-        ),
-        (
-            "application/vnd.oasis.opendocument.graphics",
-            ConversionType::LibreOffice("odg"),
-        ),
-
-        (
-            "application/vnd.oasis.opendocument.presentation",
-            ConversionType::LibreOffice("odp"),
-        ),
-        (
-            "application/vnd.oasis.opendocument.spreadsheet",
-            ConversionType::LibreOffice("ods"),
-        ),
-        ("image/jpeg",   ConversionType::Convert),
-        ("image/gif",    ConversionType::Convert),
-        ("image/png",    ConversionType::Convert),
-        ("image/tiff",   ConversionType::Convert),
-        ("image/x-tiff", ConversionType::Convert),
-    ]
-        .iter()
-        .cloned()
-        .collect();
-
     if !raw_input_path.exists() {
         return Err(l10n.gettext_fmt("Cannot find file at {0}", vec![&raw_input_path.display().to_string()]).into());
     }
 
-    if let Some(mime_type) = mimetypes::detect_from_path(raw_input_path.clone())? {
-        if let Some(conversion_type) = conversion_by_mimetype.get(mime_type) {
+    let file_format = FileFormat::from_file(&raw_input_path)?;
+
+    if let Some(mime_type) = file_format.short_name() {
             if let Some(parent_dir) = raw_input_path.parent() {
                 let filename_pdf: String = {
                     if let Some(basename) = raw_input_path.file_stem().and_then(|i| i.to_str()) {
@@ -406,27 +347,27 @@ fn input_as_pdf_to_pathbuf_uri(logger: &dyn ConversionLogger, _: &ProgressRange,
                     }
                 };
 
-                match conversion_type {
-                    ConversionType::None => {
+                match mime_type {
+                    "PDF" => {
                         logger.log(5, l10n.gettext_fmt("Copying PDF input to {0}", vec![&filename_pdf]));
                         fs::copy(raw_input_path, &filename_pdf)?;
                     }
-                    ConversionType::Convert => {
+                    "PNG" | "JPG" | "GIF" || "TIFF" => {
                         logger.log(5, l10n.gettext("Converting input image to PDF"));
 
                         let img_format = match mime_type {
-                            "image/png"    => Ok(image::ImageFormat::Png),
-                            "image/jpeg"   => Ok(image::ImageFormat::Jpeg),
-                            "image/gif"    => Ok(image::ImageFormat::Gif),
-                            "image/tiff"   => Ok(image::ImageFormat::Tiff),
-                            "image/x-tiff" => Ok(image::ImageFormat::Tiff),
-                            unknown_img_t  => Err(l10n.gettext_fmt("Unsupported image type {0}", vec![unknown_img_t])),
+                            "PNG"         => Ok(image::ImageFormat::Png),
+                            "JPG"         => Ok(image::ImageFormat::Jpeg),
+                            "GIF"         => Ok(image::ImageFormat::Gif),
+                            "TIFF"        => Ok(image::ImageFormat::Tiff),
+                            unknown_img_t => Err(l10n.gettext_fmt("Unsupported image type {0}", vec![unknown_img_t])),
                         }?;
 
                         img_to_pdf(img_format, raw_input_path, PathBuf::from(&filename_pdf))?;
                     }
-                    ConversionType::LibreOffice(fileext) => {
+                    "DOC" | "DOCX" | "ODG" | "ODP" | "ODS" | "ODT" | "PPT" | "PPTX" | "RTF" | "XLS" | "XLSX" => {
                         logger.log(5, l10n.gettext("Converting to PDF using LibreOffice"));
+                        let fileext = mime_type.to_lowercase();
                         let new_input_loc = format!("/tmp/input.{}", fileext);
                         let new_input_path = Path::new(&new_input_loc);
                         fs::copy(raw_input_path, new_input_path)?;
@@ -495,9 +436,7 @@ fn input_as_pdf_to_pathbuf_uri(logger: &dyn ConversionLogger, _: &ProgressRange,
             } else {
                 Err(l10n.gettext("Cannot find input parent directory!").into())
             }
-        } else {
-            Err(l10n.gettext_fmt("Unsupported mime type: {0}", vec![mime_type]).into())
-        }
+        
     } else {
         Err(l10n.gettext("Mime type error! Does the input have a 'known' file extension?").into())
     }
@@ -505,16 +444,10 @@ fn input_as_pdf_to_pathbuf_uri(logger: &dyn ConversionLogger, _: &ProgressRange,
 
 #[inline]
 fn elapsed_time_string(millis: u128, l10n: l10n::Translations) -> String {
-    let mut diff = millis;
-    let secs_in_millis = 1000;
-    let mins_in_millis = secs_in_millis * 60;
-    let hrs_in_millis = mins_in_millis * 60;
-    let hours = diff / hrs_in_millis;
-    diff %= hrs_in_millis;
-    let minutes = diff / mins_in_millis;
-    diff %= mins_in_millis;
-    let seconds = diff / secs_in_millis;
-
+    let seconds = millis / 1000;
+    let minutes = millis / (60 * 1000);
+    let hours   = millis / (60 * 60 * 1000);
+    
     format!("{} {} {}",
             l10n.ngettext("hour",   "hours",   hours   as u64),
             l10n.ngettext("minute", "minutes", minutes as u64),

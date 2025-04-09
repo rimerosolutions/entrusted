@@ -48,23 +48,15 @@ macro_rules! incl_gettext_files {
                 ret.insert($x, data);
             )*
 
-                ret
+            ret
         }
     };
-}
-
-#[derive(Clone, Debug)]
-enum ConversionType {
-    None,
-    LibreOffice(&'static str), // file_extension
-    Convert,
 }
 
 struct TessSettings<'a> {
     lang: &'a str,     // tesseract lang code
     data_dir: &'a str, // tesseract tessdata folder
 }
-
 
 fn default_visual_quality_to_str() -> &'static str {
     INSTANCE_DEFAULT_VISUAL_QUALITY.get().expect("INSTANCE_VISUAL_QUALITY value not set!")
@@ -102,12 +94,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let help_log_format = l10n.gettext("Log format (json or plain)");
 
     let cmd_help_template = l10n.gettext(&format!("{}\n{}\n{}\n\n{}\n\n{}\n{}",
-                                                  "{bin} {version}",
-                                                  "{author}",
-                                                  "{about}",
-                                                  "Usage: {usage}",
-                                                  "Options:",
-                                                  "{options}"));
+        "{bin} {version}",
+        "{author}",
+        "{about}",
+        "Usage: {usage}",
+        "Options:",
+        "{options}"));
 
     INSTANCE_DEFAULT_VISUAL_QUALITY.set(IMAGE_QUALITY_CHOICES[IMAGE_QUALITY_CHOICE_DEFAULT_INDEX].to_string())?;
 
@@ -193,9 +185,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     } else {
         None
     };
-    
+
     let doc_uuid     = Uuid::new_v4().to_string();
-    let tmp_dir      = env::temp_dir();    
+    let tmp_dir      = env::temp_dir();
     let root_tmp_dir = tmp_dir.join(&doc_uuid);
 
     let logger: Box<dyn ConversionLogger> = match log_format.as_str() {
@@ -204,7 +196,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         },
         _ => Box::new(PlainConversionLogger)
     };
-    
+
     let ctx = ExecCtx {
         root_tmp_dir,
         doc_uuid,
@@ -216,7 +208,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         l10n: l10n.clone(),
         logger: logger.clone_box()
     };
-    
+
     let mut exit_code = 0;
     let msg: String = if let Err(ex) = execute(ctx) {
         exit_code = 1;
@@ -243,7 +235,7 @@ fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
     };
     let doc_uuid = ctx.doc_uuid;
     let l10n = ctx.l10n;
-    
+
     let logger: Box<dyn ConversionLogger> = ctx.logger;
 
     let root_tmp_dir     = ctx.root_tmp_dir;
@@ -254,7 +246,7 @@ fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
 
     if let Err(ex) = fs::create_dir_all(&root_tmp_dir) {
         return Err(l10n.gettext_fmt("Cannot temporary folder: {0}! Error: {1}", vec![&root_tmp_dir.display().to_string(), &ex.to_string()]).into());
-    }    
+    }
 
     // step 1 (0%-20%)
     let mut progress_range = ProgressRange::new(0, 20);
@@ -337,106 +329,110 @@ fn input_as_pdf_to_pathbuf_uri(logger: &dyn ConversionLogger, _: &ProgressRange,
     let file_format = FileFormat::from_file(&raw_input_path)?;
 
     if let Some(mime_type) = file_format.short_name() {
-            if let Some(parent_dir) = raw_input_path.parent() {
-                let filename_pdf: String = {
-                    if let Some(basename) = raw_input_path.file_stem().and_then(|i| i.to_str()) {
-                        let input_name = format!("{}_input.pdf", basename);
-                        parent_dir.join(input_name.as_str()).display().to_string()
-                    } else {
-                        return Err(l10n.gettext_fmt("Could not determine basename for file {0}", vec![&raw_input_path.display().to_string()]).into());
-                    }
-                };
-
-                match mime_type {
-                    "PDF" => {
-                        logger.log(5, l10n.gettext_fmt("Copying PDF input to {0}", vec![&filename_pdf]));
-                        fs::copy(raw_input_path, &filename_pdf)?;
-                    }
-                    "PNG" | "JPG" | "GIF" || "TIFF" => {
-                        logger.log(5, l10n.gettext("Converting input image to PDF"));
-
-                        let img_format = match mime_type {
-                            "PNG"         => Ok(image::ImageFormat::Png),
-                            "JPG"         => Ok(image::ImageFormat::Jpeg),
-                            "GIF"         => Ok(image::ImageFormat::Gif),
-                            "TIFF"        => Ok(image::ImageFormat::Tiff),
-                            unknown_img_t => Err(l10n.gettext_fmt("Unsupported image type {0}", vec![unknown_img_t])),
-                        }?;
-
-                        img_to_pdf(img_format, raw_input_path, PathBuf::from(&filename_pdf))?;
-                    }
-                    "DOC" | "DOCX" | "ODG" | "ODP" | "ODS" | "ODT" | "PPT" | "PPTX" | "RTF" | "XLS" | "XLSX" => {
-                        logger.log(5, l10n.gettext("Converting to PDF using LibreOffice"));
-                        let fileext = mime_type.to_lowercase();
-                        let new_input_loc = format!("/tmp/input.{}", fileext);
-                        let new_input_path = Path::new(&new_input_loc);
-                        fs::copy(raw_input_path, new_input_path)?;
-
-                        let libreoffice_program_dir = if let Ok(env_libreoffice_program_dir) = env::var(ENV_VAR_ENTRUSTED_LIBREOFFICE_PROGRAM_DIR) {
-                            env_libreoffice_program_dir
-                        } else {
-                            DEFAULT_DIR_LIBREOFFICE_PROGRAM.to_string()
-                        };
-
-                        let mut office = Office::new(&libreoffice_program_dir)?;
-                        let input_uri = urls::local_into_abs(new_input_path.display().to_string())?;
-                        let password_was_set = AtomicBool::new(false);
-                        let failed_password_input = Arc::new(AtomicBool::new(false));
-
-                        if let Some(passwd) = opt_passwd {
-                            if let Err(ex) = office.set_optional_features([LibreOfficeKitOptionalFeatures::LOK_FEATURE_DOCUMENT_PASSWORD]) {
-                                return Err(l10n.gettext_fmt("Failed to enable password-protected Office document features! {0}", vec![&ex.to_string()]).into());
-                            }
-
-                            if let Err(ex) = office.register_callback({
-                                let mut office = office.clone();
-                                let failed_password_input = failed_password_input.clone();
-                                let input_uri = input_uri.clone();
-
-                                move |_, _| {
-                                    if !password_was_set.load(Ordering::Acquire) {
-                                        let _ = office.set_document_password(input_uri.clone(), &passwd);
-                                        password_was_set.store(true, Ordering::Release);
-                                    } else if !failed_password_input.load(Ordering::Acquire) {
-                                        failed_password_input.store(true, Ordering::Release);
-                                        let _ = office.unset_document_password(input_uri.clone());
-                                    }
-                                }
-                            }) {
-                                return Err(l10n.gettext_fmt("Failed to handle password-protected Office document features! {0}", vec![&ex.to_string()]).into());
-                            }
-                        }
-
-                        let res_document_saved: Result<(), Box<dyn Error>> = match office.document_load(input_uri) {
-                            Ok(mut doc) => {
-                                if doc.save_as(&filename_pdf, "pdf", None) {
-                                    Ok(())
-                                } else {
-                                    Err(l10n.gettext_fmt("Could not save document as PDF: {0}", vec![&office.get_error()]).into())
-                                }
-                            },
-                            Err(ex) =>  {
-                                let err_reason = if failed_password_input.load(Ordering::Relaxed) {
-                                    l10n.gettext("Password input failed!")
-                                } else {
-                                    ex.to_string()
-                                };
-
-                                Err(err_reason.into())
-                            }
-                        };
-
-                        if let Err(ex) = res_document_saved {
-                            return Err(l10n.gettext_fmt("Could not export input document as PDF! {0}", vec![&ex.to_string()]).into());
-                        }
-                    }
+        if let Some(parent_dir) = raw_input_path.parent() {
+            let filename_pdf: String = {
+                if let Some(basename) = raw_input_path.file_stem().and_then(|i| i.to_str()) {
+                    let input_name = format!("{}_input.pdf", basename);
+                    parent_dir.join(input_name.as_str()).display().to_string()
+                } else {
+                    return Err(l10n.gettext_fmt("Could not determine basename for file {0}", vec![&raw_input_path.display().to_string()]).into());
                 }
+            };
 
-                Ok(PathBuf::from(format!("file://{}", filename_pdf)))
-            } else {
-                Err(l10n.gettext("Cannot find input parent directory!").into())
+            match mime_type {
+                "PDF" => {
+                    logger.log(5, l10n.gettext_fmt("Copying PDF input to {0}", vec![&filename_pdf]));
+                    fs::copy(raw_input_path, &filename_pdf)?;
+                },
+                "PNG" | "JPG" | "GIF" | "TIFF" => {
+                    logger.log(5, l10n.gettext("Converting input image to PDF"));
+
+                    let mut img_format = image::ImageFormat::Png;
+
+                    if mime_type == "JPG"{
+                        img_format = image::ImageFormat::Jpeg;
+                    } else if mime_type == "GIF" {
+                        img_format = image::ImageFormat::Gif;
+                    } else if mime_type == "TIFF" {
+                        img_format = image::ImageFormat::Tiff;
+                    }
+
+                    img_to_pdf(img_format, raw_input_path, PathBuf::from(&filename_pdf))?;
+                },
+                "DOC" | "DOCX" | "ODG" | "ODP" | "ODS" | "ODT" | "PPT" | "PPTX" | "RTF" | "XLS" | "XLSX" => {
+                    logger.log(5, l10n.gettext("Converting to PDF using LibreOffice"));
+                    let fileext = mime_type.to_lowercase();
+                    let new_input_loc = format!("/tmp/input.{}", fileext);
+                    let new_input_path = Path::new(&new_input_loc);
+                    fs::copy(raw_input_path, new_input_path)?;
+
+                    let libreoffice_program_dir = if let Ok(env_libreoffice_program_dir) = env::var(ENV_VAR_ENTRUSTED_LIBREOFFICE_PROGRAM_DIR) {
+                        env_libreoffice_program_dir
+                    } else {
+                        DEFAULT_DIR_LIBREOFFICE_PROGRAM.to_string()
+                    };
+
+                    let mut office = Office::new(&libreoffice_program_dir)?;
+                    let input_uri = urls::local_into_abs(new_input_path.display().to_string())?;
+                    let password_was_set = AtomicBool::new(false);
+                    let failed_password_input = Arc::new(AtomicBool::new(false));
+
+                    if let Some(passwd) = opt_passwd {
+                        if let Err(ex) = office.set_optional_features([LibreOfficeKitOptionalFeatures::LOK_FEATURE_DOCUMENT_PASSWORD]) {
+                            return Err(l10n.gettext_fmt("Failed to enable password-protected Office document features! {0}", vec![&ex.to_string()]).into());
+                        }
+
+                        if let Err(ex) = office.register_callback({
+                            let mut office = office.clone();
+                            let failed_password_input = failed_password_input.clone();
+                            let input_uri = input_uri.clone();
+
+                            move |_, _| {
+                                if !password_was_set.load(Ordering::Acquire) {
+                                    let _ = office.set_document_password(input_uri.clone(), &passwd);
+                                    password_was_set.store(true, Ordering::Release);
+                                } else if !failed_password_input.load(Ordering::Acquire) {
+                                    failed_password_input.store(true, Ordering::Release);
+                                    let _ = office.unset_document_password(input_uri.clone());
+                                }
+                            }
+                        }) {
+                            return Err(l10n.gettext_fmt("Failed to handle password-protected Office document features! {0}", vec![&ex.to_string()]).into());
+                        }
+                    }
+
+                    let res_document_saved: Result<(), Box<dyn Error>> = match office.document_load(input_uri) {
+                        Ok(mut doc) => {
+                            if doc.save_as(&filename_pdf, "pdf", None) {
+                                Ok(())
+                            } else {
+                                Err(l10n.gettext_fmt("Could not save document as PDF: {0}", vec![&office.get_error()]).into())
+                            }
+                        },
+                        Err(ex) =>  {
+                            let err_reason = if failed_password_input.load(Ordering::Relaxed) {
+                                l10n.gettext("Password input failed!")
+                            } else {
+                                ex.to_string()
+                            };
+
+                            Err(err_reason.into())
+                        }
+                    };
+
+                    if let Err(ex) = res_document_saved {
+                        return Err(l10n.gettext_fmt("Could not export input document as PDF! {0}", vec![&ex.to_string()]).into());
+                    }
+                },
+                &_ => {
+                    return Err(l10n.gettext("Mime type error! Does the input have a 'known' file extension?").into());
+                }
             }
-        
+            
+            Ok(PathBuf::from(format!("file://{}", filename_pdf)))
+        } else {
+            Err(l10n.gettext("Cannot find input parent directory!").into())
+        }
     } else {
         Err(l10n.gettext("Mime type error! Does the input have a 'known' file extension?").into())
     }
@@ -447,11 +443,11 @@ fn elapsed_time_string(millis: u128, l10n: l10n::Translations) -> String {
     let seconds = millis / 1000;
     let minutes = millis / (60 * 1000);
     let hours   = millis / (60 * 60 * 1000);
-    
+
     format!("{} {} {}",
-            l10n.ngettext("hour",   "hours",   hours   as u64),
-            l10n.ngettext("minute", "minutes", minutes as u64),
-            l10n.ngettext("second", "seconds", seconds as u64))
+        l10n.ngettext("hour",   "hours",   hours   as u64),
+        l10n.ngettext("minute", "minutes", minutes as u64),
+        l10n.ngettext("second", "seconds", seconds as u64))
 }
 
 fn ocr_imgs_to_pdf(
@@ -622,8 +618,8 @@ fn split_pdf_pages_into_images(logger: &dyn ConversionLogger, progress_range: &P
     let mut progress_value: usize = progress_range.min;
 
     logger.log(progress_value, l10n.ngettext("Extract PDF file into one image",
-                                             "Extract PDF file into few images",
-                                             page_count as u64));
+        "Extract PDF file into few images",
+        page_count as u64));
 
     let antialias_setting = cairo::Antialias::Fast;
     let mut font_options = cairo::FontOptions::new()?;
@@ -686,9 +682,9 @@ fn scaling_data(size_current: (f64, f64), size_target: (f64, f64)) -> (f64, (f64
 
 fn pdf_combine_pdfs(logger: &dyn ConversionLogger, progress_range: &ProgressRange, page_count: usize, input_dir_path: PathBuf, output_path: PathBuf, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
     logger.log(progress_range.min,
-               l10n.ngettext("Combining one PDF document",
-                             "Combining few PDF documents",
-                             page_count as u64));
+        l10n.ngettext("Combining one PDF document",
+            "Combining few PDF documents",
+            page_count as u64));
 
     let mut documents: Vec<lopdf::Document> = Vec::with_capacity(page_count);
 
@@ -898,8 +894,8 @@ fn imgs_to_pdf(logger: &dyn ConversionLogger, progress_range: &ProgressRange, pa
     let mut progress_value: usize = progress_range.min;
 
     logger.log(progress_value, l10n.ngettext("Saving one PNG image to PDF",
-                                             "Saving few PNG images to PDF",
-                                             page_count as u64));
+        "Saving few PNG images to PDF",
+        page_count as u64));
 
     for i in 0..page_count {
         let idx = i + 1;

@@ -386,11 +386,11 @@ async fn convert_file (
         .await?
         .bytes()
         .await?;
-
+    
     let output_path = if let Some(output_path_value) = output_path_opt {
         output_path_value
     } else if let Some(filename_noext) = input_path.file_stem().and_then(|i| i.to_str()) {
-            output_dir.join([filename_noext.to_string(), "-".to_string(), conversion_options.file_suffix, ".pdf".to_string()].concat())
+        output_dir.join([filename_noext.to_string(), "-".to_string(), conversion_options.file_suffix, ".pdf".to_string()].concat())
     } else {
         return Err(l10n.gettext("Could not determine input file base name!").into());
     };

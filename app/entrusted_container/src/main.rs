@@ -1,7 +1,8 @@
 use clap::{Command, Arg, builder::PossibleValue};
 use std::env;
 use mupdf::{Image, Colorspace, ImageFormat, Matrix, Document };
-use mupdf::pdf:: { PdfDocument, PdfWriteOptions };
+use mupdf::pdf:: {PdfDocument, PdfWriteOptions};
+use mupdf::pdf::document::Encryption;
 use mupdf::document_writer::DocumentWriter;
 use uuid::Uuid;
 use std::collections::HashMap;
@@ -340,13 +341,13 @@ fn input_as_pdf_to_pathbuf_uri(target_dpi: f32, log_fn: &dyn Fn(usize, String), 
                         let mut ret_doc = PdfDocument::open(&path_loc)?;
 
                         if ret_doc.needs_password()? {
-                            ret_doc.authenticate(&passwd)?;
-                            // TODO can't we just remove the password with DocumentWriterOptions??
-                            // ret_doc.save_with_options(filename, options_that_remove_password)?;
-                            ret_doc = ret_doc.convert_to_pdf(0, ret_doc.page_count()?, 0)?;
+                            ret_doc.authenticate(&passwd)?;                            
+                            let mut binding = PdfWriteOptions::default();
+                            let options = binding.set_pretty(false).set_encryption(Encryption::None).set_compress(true).set_garbage_level(4);                            
+                            ret_doc.save_with_options(&filename_pdf, *options)?;
+                        } else {
+                            fs::copy(raw_input_path, &filename_pdf)?;
                         }
-
-                        ret_doc.save(&filename_pdf)?;
                     } else {
                         fs::copy(raw_input_path, &filename_pdf)?;
                     }                    

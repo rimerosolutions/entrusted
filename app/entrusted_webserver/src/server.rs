@@ -93,7 +93,8 @@ pub async fn serve(
         Some(socket_addr) => {
             tracing::info!("{}: {}", trans.gettext("Using address"), &socket_addr);
 
-            match axum::Server::bind(&socket_addr).serve(app.into_make_service()).await {
+            let listener = tokio::net::TcpListener::bind(&socket_addr).await?;
+            match axum::serve(listener, app).await {
                 Ok(_)   => Ok(()),
                 Err(ex) => Err(ex.into()),
             }

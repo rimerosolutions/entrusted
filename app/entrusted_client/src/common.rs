@@ -286,7 +286,7 @@ pub fn update_check(trans: &l10n::Translations) -> Result<Option<ReleaseInfo>, B
                 Err(trans.gettext("Could not read latest release version!").into())
             }
         } else {
-            Err(trans.gettext("Could not current software version!").into())
+            Err(trans.gettext("Could not read current software version!").into())
         }
     }
 }

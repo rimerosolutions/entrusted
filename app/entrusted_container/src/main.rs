@@ -481,7 +481,7 @@ fn ocr_imgs_to_pdf(
     Ok(())
 }
 
-fn tesseract_init(ocr_lang: &str, tessdata_dir: &str) -> *mut tesseract_plumbing::tesseract_sys::TessBaseAPI {
+fn tesseract_init(ocr_lang: &str, tessdata_dir: &str) -> *mut tesseract_sys::TessBaseAPI {
     let c_lang = CString::new(ocr_lang).unwrap();
     let lang = c_lang.as_bytes().as_ptr() as *mut std::os::raw::c_char;
 
@@ -495,23 +495,23 @@ fn tesseract_init(ocr_lang: &str, tessdata_dir: &str) -> *mut tesseract_plumbing
     let user_defined_dpi_var_value = c_user_defined_dpi_var_value.as_bytes().as_ptr() as *mut std::os::raw::c_char;
 
     unsafe {
-        let api = tesseract_plumbing::tesseract_sys::TessBaseAPICreate();
-        tesseract_plumbing::tesseract_sys::TessBaseAPIInit3(api, datapath, lang);
-        tesseract_plumbing::tesseract_sys::TessBaseAPISetVariable(api, user_defined_dpi_var_name, user_defined_dpi_var_value);
+        let api = tesseract_sys::TessBaseAPICreate();
+        tesseract_sys::TessBaseAPIInit3(api, datapath, lang);
+        tesseract_sys::TessBaseAPISetVariable(api, user_defined_dpi_var_name, user_defined_dpi_var_value);
 
         api
     }
 }
 
-fn tesseract_delete(api: *mut tesseract_plumbing::tesseract_sys::TessBaseAPI) {
+fn tesseract_delete(api: *mut tesseract_sys::TessBaseAPI) {
     unsafe {
-        tesseract_plumbing::tesseract_sys::TessBaseAPIEnd(api);
-        tesseract_plumbing::tesseract_sys::TessBaseAPIDelete(api);
+        tesseract_sys::TessBaseAPIEnd(api);
+        tesseract_sys::TessBaseAPIDelete(api);
     }
 }
 
 fn ocr_img_to_pdf(
-    api: *mut tesseract_plumbing::tesseract_sys::TessBaseAPI,
+    api: *mut tesseract_sys::TessBaseAPI,
     input_path: PathBuf,
     output_path: PathBuf,
 ) -> Result<(), Box<dyn Error>> {
@@ -527,28 +527,27 @@ fn ocr_img_to_pdf(
     let do_not_care = CString::new("").unwrap().as_bytes().as_ptr() as *mut std::os::raw::c_char;
 
     unsafe {
-        tesseract_plumbing::tesseract_sys::TessBaseAPISetInputName(api, input_name);
-        tesseract_plumbing::tesseract_sys::TessBaseAPISetOutputName(api, outputbase);
+        tesseract_sys::TessBaseAPISetInputName(api, input_name);
+        tesseract_sys::TessBaseAPISetOutputName(api, outputbase);
 
-        let renderer = tesseract_plumbing::tesseract_sys::TessPDFRendererCreate(
+        let renderer = tesseract_sys::TessPDFRendererCreate(
             outputbase,
-            tesseract_plumbing::tesseract_sys::TessBaseAPIGetDatapath(api),
+            tesseract_sys::TessBaseAPIGetDatapath(api),
             0,
         );
 
         if !renderer.is_null() {
-            let pix_path = c_inputname.as_c_str();
-            let pix = tesseract_plumbing::leptonica_plumbing::Pix::read(pix_path)?;
-            let lpix = *pix.as_ref();
+            let pix_path = c_inputname.as_ptr() as *mut std::os::raw::c_char;
+            let lpix = leptonica_sys::pixRead(pix_path);
 
-            tesseract_plumbing::tesseract_sys::TessResultRendererBeginDocument(renderer, do_not_care);
-            tesseract_plumbing::tesseract_sys::TessBaseAPIProcessPage(api, lpix, 1, inputname, do_not_care, 0, renderer);
-            tesseract_plumbing::tesseract_sys::TessResultRendererEndDocument(renderer);
+            tesseract_sys::TessResultRendererBeginDocument(renderer, do_not_care);
+            tesseract_sys::TessBaseAPIProcessPage(api, lpix, 1, inputname, do_not_care, 0, renderer);
+            tesseract_sys::TessResultRendererEndDocument(renderer);
 
-            lpix.drop_in_place();
+            leptonica_sys::pixFreeData(lpix);
         }
 
-        tesseract_plumbing::tesseract_sys::TessDeleteResultRenderer(renderer);
+        tesseract_sys::TessDeleteResultRenderer(renderer);
     }
 
     Ok(())

@@ -1,4 +1,4 @@
-use polib::{mo_file, po_file};
+use polib::mo_file;
 use std::error::Error;
 use std::path::Path;
 use std::fs;
@@ -13,26 +13,18 @@ fn main() -> Result<(), Box<dyn Error>> {
         if input.exists() {
             println!("cargo:info=Processing translation PO file: {}", &input.display());
             let output = path.join("LC_MESSAGES").join("messages.mo");
-            let catalog_ret = po_file::parse(Path::new(&input));
 
-            match catalog_ret {
-                Ok(catalog) => {
-                    if let Err(ex) = mo_file::write(&catalog, Path::new(&output)) {
-                        return Err(format!("Failed to compile MO file for {}.\n{}", &input.display(), ex).into());
-                    }
-                },
-                Err(ex) => {
-                    return Err(format!("Failed to parse PO file {}.\n{}", &input.display(), ex).into());
-                }
-            }
+            if let Err(ex) = mo_file::compile_from_po(&input, Path::new(&output)) {
+                return Err(format!("Failed to compile MO file for {}.\n{}", &input.display(), ex).into());
+            }            
         }
     }
 
     if let Ok(target_sys) = std::env::var("CARGO_CFG_TARGET_OS") {
         if target_sys == "windows" {
             if let embed_resource::CompilationResult::Failed(msg) = embed_resource::compile("icon.rc", embed_resource::NONE) {
-		return Err(format!("Cannot embed icon in Windows executable.\n{}", msg.into_owned()).into());
-	    }
+		        return Err(format!("Cannot embed icon in Windows executable.\n{}", msg.into_owned()).into());
+	        }
         }
     }
 

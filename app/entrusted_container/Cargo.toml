@@ -26,6 +26,9 @@ entrusted_l10n = { path = "../entrusted_l10n" }
 libreofficekit = { git = "https:/github.com/jacobtread/libreofficekit", rev="43c79eb" }
 mupdf = { git = "https://github.com/itsjunetime/mupdf-rs", branch="june/mupdf_1_25" }
 
+[target.'cfg(target_os = "windows")'.dependencies]
+dunce = "1.0.3"
+
 [build-dependencies]
 polib = "0.2.0"
 

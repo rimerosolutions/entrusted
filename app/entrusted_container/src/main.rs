@@ -12,7 +12,7 @@ use std::ffi::CString;
 use std::fs;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-use std::time::Instant;
+use std::time::{Instant, SystemTime, UNIX_EPOCH};
 use std::sync::atomic::{AtomicBool, Ordering};
 use libreofficekit::{Office, OfficeOptionalFeatures, CallbackType, DocUrl};
 use once_cell::sync::OnceCell;
@@ -112,15 +112,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         .arg(
             Arg::new("input-filename")
                 .long("input-filename")
-                .help(help_input_filename)
-                .required(false)
-                .default_value("/tmp/input_file")
+                .help(&help_input_filename)
+                .required(true)
         ).arg(
             Arg::new("output-filename")
                 .long("output-filename")
-                .help(help_output_filename)
-                .required(false)
-                .default_value("/safezone/safe-output-compressed.pdf")
+                .help(&help_output_filename)
+                .required(true)
         ).arg(
             Arg::new("ocr-lang")
                 .long("ocr-lang")
@@ -152,15 +150,33 @@ fn main() -> Result<(), Box<dyn Error>> {
     let run_matches = app.get_matches();
 
     let input_path = if let Some(v) = run_matches.get_one::<String>("input-filename") {
-        PathBuf::from(v)
+        let src_path = {
+            #[cfg(not(target_os = "windows"))] {
+                std::fs::canonicalize(v)?
+            }
+            #[cfg(target_os = "windows")] {
+                dunce::canonicalize(v)?
+            }
+        };
+
+        src_path
     } else {
-        PathBuf::from("/tmp/input_file")
+        return Err(help_input_filename.into());
     };
 
     let output_path = if let Some(v) = run_matches.get_one::<String>("output-filename") {
-        PathBuf::from(v)
+        let src_path = {
+            #[cfg(not(target_os = "windows"))] {
+                std::fs::canonicalize(v)?
+            }
+            #[cfg(target_os = "windows")] {
+                dunce::canonicalize(v)?
+            }
+        };
+
+        src_path
     } else {
-        PathBuf::from("/safezone/safe-output-compressed.pdf")
+        return Err(help_output_filename.into());
     };
 
     let ocr_lang = run_matches.get_one::<String>("ocr-lang").cloned();
@@ -251,7 +267,7 @@ fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
 
     // step 1 (0%-20%)
     let mut progress_range = ProgressRange::new(0, 20);
-    let input_file_path = input_as_pdf_to_pathbuf_uri(target_dpi, &*logger, &progress_range, raw_input_path, document_password.clone(), l10n.clone())?;
+    let input_file_path = input_as_pdf_to_pathbuf_uri(root_tmp_dir.clone(), target_dpi, &*logger, &progress_range, raw_input_path, document_password.clone(), l10n.clone())?;
 
     let doc = PdfDocument::open(&input_file_path)?;
     let page_count = doc.page_count()? as usize;
@@ -314,7 +330,7 @@ fn move_file_to_dir(log_fn: &dyn Fn(usize, String), progress_range: &ProgressRan
     Ok(())
 }
 
-fn input_as_pdf_to_pathbuf_uri(target_dpi: f32, log_fn: &dyn Fn(usize, String), _: &ProgressRange, raw_input_path: PathBuf, opt_passwd: Option<String>, l10n: l10n::Translations) -> Result<String, Box<dyn Error>> {
+fn input_as_pdf_to_pathbuf_uri(root_tmp_dir: PathBuf, target_dpi: f32, log_fn: &dyn Fn(usize, String), _: &ProgressRange, raw_input_path: PathBuf, opt_passwd: Option<String>, l10n: l10n::Translations) -> Result<String, Box<dyn Error>> {
     if !raw_input_path.exists() {
         return Err(l10n.gettext_fmt("Cannot find file at {0}", vec![&raw_input_path.display().to_string()]).into());
     }
@@ -352,14 +368,16 @@ fn input_as_pdf_to_pathbuf_uri(target_dpi: f32, log_fn: &dyn Fn(usize, String), 
                         fs::copy(raw_input_path, &filename_pdf)?;
                     }                    
                 },
-                "BMP" | "PNM" | "PNG" | "JPG" | "GIF" | "TIFF" => {
+                "BMP" | "PNM" | "PNG" | "JPEG" | "GIF" | "TIFF" => {
                     log_fn(5, l10n.gettext("Converting input image to PDF"));
                     img_to_pdf(target_dpi, raw_input_path, PathBuf::from(&filename_pdf))?;
                 },
                 "DOC" | "DOCX" | "ODG" | "ODP" | "ODS" | "ODT" | "PPT" | "PPTX" | "RTF" | "XLS" | "XLSX" => {
                     log_fn(5, l10n.gettext("Converting to PDF using LibreOffice"));
                     let fileext = mime_type.to_lowercase();
-                    let new_input_loc = format!("/tmp/input.{}", fileext);
+                    // Avoid file type detection issues by copying original file to a temporary file with the detected file type extension
+                    let now =  SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
+                    let new_input_loc = root_tmp_dir.join(format!("{}.{}", now, fileext));
                     let new_input_path = Path::new(&new_input_loc);
                     fs::copy(raw_input_path, new_input_path)?;
 
@@ -369,7 +387,7 @@ fn input_as_pdf_to_pathbuf_uri(target_dpi: f32, log_fn: &dyn Fn(usize, String), 
                         DEFAULT_DIR_LIBREOFFICE_PROGRAM.to_string()
                     };
 
-                    let office = Office::new(&libreoffice_program_dir)?;
+                    let office = Office::new(&libreoffice_program_dir)?;                    
                     let input_uri = DocUrl::from_absolute_path(new_input_path.display().to_string())?;
                     let needs_password = Rc::new(AtomicBool::new(false));
 
@@ -420,6 +438,9 @@ fn input_as_pdf_to_pathbuf_uri(target_dpi: f32, log_fn: &dyn Fn(usize, String), 
                         }
                     };
 
+                    if fs::remove_file(&new_input_loc).is_err() {
+                        return Err(l10n.gettext_fmt("Failed to remove file from {0}.", vec![&new_input_loc.display().to_string()]).into());
+                    }
 
                     if let Err(ex) = res_document_saved {
                         return Err(l10n.gettext_fmt("Could not export input document as PDF! {0}", vec![&ex.to_string()]).into());
@@ -694,7 +715,7 @@ fn img_to_pdf(target_dpi: f32, src_path: PathBuf, dest_path: PathBuf) -> Result<
     let dest_string = dest_path.display().to_string();
     let doc = Document::open(&path_string)?;
     let img = Image::from_file(&path_string)?;
-    let options = format!("resolution={},height={},compress=true", target_dpi as i32, img.height());
+    let options = format!("resolution={},height={},compress=true,garbage=compact", target_dpi as i32, img.height());
 
     let mut writer = DocumentWriter::new(
         &dest_string,

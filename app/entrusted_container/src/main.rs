@@ -377,7 +377,7 @@ fn input_as_pdf_to_pathbuf_uri(root_tmp_dir: PathBuf, target_dpi: f32, log_fn: &
                     let fileext = mime_type.to_lowercase();
                     // Avoid file type detection issues by copying original file to a temporary file with the detected file type extension
                     let now =  SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
-                    let new_input_loc = root_tmp_dir.join(format!("{}.{}", now, fileext));
+                    let new_input_loc = root_tmp_dir.join(format!("entrusted-{}.{}", now, fileext));
                     let new_input_path = Path::new(&new_input_loc);
                     fs::copy(raw_input_path, new_input_path)?;
 

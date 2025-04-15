@@ -2161,7 +2161,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                             thread::yield_now();
                         }
 
-
                         if app::lock().is_ok() {
                             app::awake();
                             app::unlock();
@@ -2705,7 +2704,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 let ocw = wid.w() - (WIDGET_GAP * 3) - ocrlang_checkbutton.w();
                 let och = wid.h() - (WIDGET_GAP * 8) - (30 * 7);
-
                 
                 ociimage_checkbutton_ref.resize(
                     ocrlang_checkbutton_ref.x(),
@@ -2978,15 +2976,15 @@ pub fn open_document(url: &str, _: &str, trans: &l10n::Translations) -> Result<(
 #[cfg(target_os = "windows")]
 fn err_code_msg(error_code: usize, trans: &l10n::Translations, default_message: String) -> String {
     match error_code {
-	0  => trans.gettext("The system is running out of memory"),
+	    0  => trans.gettext("The system is running out of memory"),
         3  => trans.gettext("Program not found"),                                             // ERROR_PATH_NOT_FOUND
-	11 => trans.gettext("Bad executable file format"),                                    // ERROR_BAD_FORMAT
+	    11 => trans.gettext("Bad executable file format"),                                    // ERROR_BAD_FORMAT
         5  => trans.gettext("File access denied"),                                            // SE_ERR_ACCESSDENIED
-	2  => trans.gettext("File not found"),                                                // SE_ERR_FNF
+	    2  => trans.gettext("File not found"),                                                // SE_ERR_FNF
         31 => trans.gettext("No application associated to the given file or URL"),            // SE_ERR_NOASSOC
-	8  => trans.gettext("Not enough memory to complete this operation"),                  // SE_ERR_OOM
-        26  => trans.gettext("Sharing violation, the file might be used by another program"), // SE_ERR_SHARE
-	_ => default_message
+	    8  => trans.gettext("Not enough memory to complete this operation"),                  // SE_ERR_OOM
+        26 => trans.gettext("Sharing violation, the file might be used by another program"),  // SE_ERR_SHARE
+	    _  => default_message
     }
 }
 
@@ -3027,8 +3025,8 @@ pub fn open_document(url: &str, content_type: &str,  trans: &l10n::Translations)
     if result as usize > 32 {
         Ok(())
     } else {
-	let default_msg = trans.gettext_fmt("Cannot open default application for content type: {0}", vec![content_type]);
-	Err(err_code_msg(result as usize, trans, default_msg).into())        
+	    let default_msg = trans.gettext_fmt("Cannot open default application for content type: {0}", vec![content_type]);
+	    Err(err_code_msg(result as usize, trans, default_msg).into())        
     }
 }
 

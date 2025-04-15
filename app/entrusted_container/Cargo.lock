@@ -1001,7 +1001,7 @@ dependencies = [
 [[package]]
 name = "mupdf"
 version = "0.4.4"
-source = "git+https://github.com/itsjunetime/mupdf-rs?branch=june%2Fmupdf_1_25#4a1d0740da26db0036cce5dd170e1274a92fd0e8"
+source = "git+https://github.com/itsjunetime/mupdf-rs?rev=4a1d074#4a1d0740da26db0036cce5dd170e1274a92fd0e8"
 dependencies = [
  "bitflags 2.9.0",
  "font-kit",
@@ -1014,7 +1014,7 @@ dependencies = [
 [[package]]
 name = "mupdf-sys"
 version = "0.4.4"
-source = "git+https://github.com/itsjunetime/mupdf-rs?branch=june%2Fmupdf_1_25#4a1d0740da26db0036cce5dd170e1274a92fd0e8"
+source = "git+https://github.com/itsjunetime/mupdf-rs?rev=4a1d074#4a1d0740da26db0036cce5dd170e1274a92fd0e8"
 dependencies = [
  "bindgen 0.71.1",
  "cc",

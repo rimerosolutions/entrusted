@@ -1,23 +1,36 @@
+extern crate clap;
+extern crate mupdf;
+extern crate serde;
+extern crate libreofficekit;
+extern crate once_cell;
+
 use clap::{Command, Arg, builder::PossibleValue};
-use std::env;
-use mupdf::{Image, Colorspace, ImageFormat, Matrix, Document };
+
+use mupdf::{Colorspace, ImageFormat, Matrix, Document };
 use mupdf::pdf:: {PdfDocument, PdfWriteOptions};
 use mupdf::pdf::document::Encryption;
 use mupdf::document_writer::DocumentWriter;
-use uuid::Uuid;
-use std::collections::HashMap;
-use std::error::Error;
 
+use uuid::Uuid;
+
+use std::collections::HashMap;
+use std::env;
+use std::error::Error;
 use std::fs;
-use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-use std::time::{Instant, SystemTime, UNIX_EPOCH};
-use std::sync::atomic::{AtomicBool, Ordering};
-use libreofficekit::{Office, OfficeOptionalFeatures, CallbackType, DocUrl};
-use once_cell::sync::OnceCell;
-use file_format::FileFormat;
-use entrusted_l10n as l10n;
 use std::rc::Rc;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::{Instant, SystemTime, UNIX_EPOCH};
+
+use serde::{Deserialize, Serialize};
+
+use libreofficekit::{Office, OfficeOptionalFeatures, CallbackType, DocUrl};
+
+use once_cell::sync::OnceCell;
+
+use file_format::FileFormat;
+
+use entrusted_l10n as l10n;
 
 const LOG_FORMAT_PLAIN: &str = "plain";
 const LOG_FORMAT_JSON: &str  = "json";
@@ -32,9 +45,8 @@ const ENV_VAR_ENTRUSTED_TESSERACT_TESSDATA_DIR: &str  = "ENTRUSTED_TESSERACT_TES
 const ENV_VAR_ENTRUSTED_LIBREOFFICE_PROGRAM_DIR: &str = "ENTRUSTED_LIBREOFFICE_PROGRAM_DIR";
 const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str              = "ENTRUSTED_DOC_PASSWD";
 
-// TODO review this in the context of mupdf in comparison to old code with poppler
-// We probably need to bring back image scaling logic while extracting PDF pages into images
 // See https://www.a4-size.com/a4-size-in-pixels/?size=a4&unit=px&ppi=150
+// A4 150PPI/DPI
 const TARGET_DPI_LOW: f32    = 72.0;
 const TARGET_DPI_MEDIUM: f32 = 150.0;
 const TARGET_DPI_HIGH: f32   = 300.0;
@@ -74,41 +86,32 @@ struct ExecCtx {
     ocr_lang: Option<String>,
     doc_passwd: Option<String>,
     l10n: l10n::Translations,
-    logger: &'static dyn Fn(usize, String),
+    log_fn: &'static dyn Fn(usize, String),
 }
 
 fn doc_to_pdf(
-    log_fn: &dyn Fn(usize, String),
-    progress_range: &ProgressRange,
     i: usize,
-    page_count: usize,
     ocr_settings: Option<TessSettings>,
     doc: &Document,
-    output_path: PathBuf,
-    l10n: l10n::Translations
+    output_path: PathBuf
 ) -> Result<(), Box<dyn Error>> {
-
     let dest = output_path.join(format!("page-{}.pdf", i)).display().to_string();
-    
-    let (mut writer, options) = {
+
+    let mut writer = {
         if let Some(tess_settings) = ocr_settings {
             let ret_options = format!("ocr-language={},compression=flate,ocr-datadir={}", tess_settings.lang, tess_settings.data_dir);
-            let mut ret_writer = DocumentWriter::new_pdfocr_writer(&dest, &ret_options)?;
-            (ret_writer, ret_options)
+            DocumentWriter::new_pdfocr_writer(&dest, &ret_options)?
         } else {
             let ret_options = "compress,garbage=deduplicte".to_string();
-            let mut ret_writer = DocumentWriter::new(&dest, "pdf", &ret_options)?;
-            (ret_writer, ret_options)
+            DocumentWriter::new(&dest, "pdf", &ret_options)?
         }
     };
-    
+
     let page = doc.load_page(0)?;
     let mediabox = page.bounds()?;
     let device = writer.begin_page(mediabox)?;
     page.run(&device, &Matrix::IDENTITY)?;
     writer.end_page(device)?;
-
-    println!("XXX doc to PDF for page: {}, file created =>{}, {}", i, std::fs::metadata(&dest).is_ok(), &dest);
 
     Ok(())
 }
@@ -189,28 +192,19 @@ fn main() -> Result<(), Box<dyn Error>> {
     let run_matches = app.get_matches();
 
     let input_path = if let Some(v) = run_matches.get_one::<String>("input-filename") {
-        println!("File input is: {}", &v);
-        let src_path = {
-            #[cfg(not(target_os = "windows"))] {
-                std::fs::canonicalize(v)?
-            }
-            #[cfg(target_os = "windows")] {
-                dunce::canonicalize(v)?
-            }
-        };
+        #[cfg(not(target_os = "windows"))] {
+            std::fs::canonicalize(v)?
+        }
 
-        src_path
+        #[cfg(target_os = "windows")] {
+            dunce::canonicalize(v)?                
+        }
     } else {
-        println!("NO FILE????");
         return Err(help_input_filename.into());
     };
 
     let output_path = if let Some(v) = run_matches.get_one::<String>("output-filename") {
-        let src_path = {
-            PathBuf::from(v)
-        };
-
-        src_path
+       PathBuf::from(v)
     } else {
         return Err(help_output_filename.into());
     };
@@ -259,7 +253,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         ocr_lang,
         doc_passwd,
         l10n: l10n.clone(),
-        logger: log_fn
+        log_fn
     };
 
     let mut exit_code = 0;
@@ -289,7 +283,7 @@ fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
     let doc_uuid = ctx.doc_uuid;
     let l10n = ctx.l10n;
 
-    let logger = ctx.logger;
+    let log_fn = ctx.log_fn;
 
     let root_tmp_dir     = ctx.root_tmp_dir;
     let raw_input_path   = ctx.input_path;
@@ -303,19 +297,19 @@ fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
 
     // step 1 (0%-20%)
     let mut progress_range = ProgressRange::new(0, 20);
-    let input_file_path = input_as_pdf_to_pathbuf_uri(root_tmp_dir.clone(), target_dpi, &*logger, &progress_range, raw_input_path, document_password.clone(), l10n.clone())?;
+    let input_file_path = input_as_pdf_to_pathbuf_uri(root_tmp_dir.clone(), target_dpi, log_fn, &progress_range, raw_input_path, document_password.clone(), l10n.clone())?;
 
     let doc = PdfDocument::open(&input_file_path)?;
     let page_count = doc.page_count()? as usize;
 
-    // step 2 (20%-45%)
-    progress_range.update(20, 45);
-    
+    // step 2 (20%-90%)
+    progress_range.update(20, 90);
+    let mut progress_value: usize = progress_range.min;
+    log_fn(progress_value, l10n.ngettext("Extract PDF file into one image",
+                                         "Extract PDF file into few images",
+                                         page_count as u64));
 
-    // step 3 (45%-90%)
-    progress_range.update(45, 90);
-
-    let ocr_settings = if let Some(v) = ctx.ocr_lang {
+    let (template_img_to_pdf, ocr_settings) = if let Some(v) = ctx.ocr_lang {
         let ocr_lang_text = v.as_str();
         let selected_langcodes: Vec<&str> = ocr_lang_text.split('+').collect();
 
@@ -336,24 +330,32 @@ fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
             data_dir: provided_tessdata_dir.clone()
         };
 
-        Some(tess_settings)
+        ("Performing OCR on page {0}", Some(tess_settings))
     } else {
-        None
+        ("Saving PNG image {0} to PDF", None)
     };
 
-    println!("XXX we've got {} pages!!", page_count);
+    let progress_delta = progress_range.delta();
+
     for i in 0..page_count {
-        let doc_img = page_to_pixmap(&*logger, &progress_range, i, page_count, &doc, target_dpi, output_dir_path.clone(), l10n.clone())?;
-        doc_to_pdf(&*logger, &progress_range, i, page_count, ocr_settings.clone(), &doc_img, output_dir_path.clone(), l10n.clone())?;
+        let page_num = i + 1;
+        progress_value = progress_range.min + (page_num * progress_delta / page_count);
+        let page_num_text = page_num.to_string();
+
+        log_fn(progress_value, l10n.gettext_fmt("Extracting page {0} into a PNG image", vec![&page_num_text]));
+        let doc_img = page_to_pixmap(i, &doc, target_dpi)?;
+
+        log_fn(progress_value, l10n.gettext_fmt(template_img_to_pdf, vec![&page_num_text]));
+        doc_to_pdf(i, ocr_settings.clone(), &doc_img, output_dir_path.clone())?;
     }
 
     // step 4 (90%-98%)
-    //progress_range.update(90, 98);
-    merge_pdfs(&*logger, &progress_range, page_count, output_dir_path, output_file_path.clone(), l10n.clone())?;
+    progress_range.update(90, 98);
+    merge_pdfs(log_fn, &progress_range, page_count, output_dir_path, output_file_path.clone(), l10n.clone())?;
 
     // step 5 (98%-98%)
     progress_range.update(98, 98);
-    move_file_to_dir(&*logger, &progress_range, output_file_path, safe_dir_path, l10n)
+    move_file_to_dir(log_fn, &progress_range, output_file_path, safe_dir_path, l10n)
 }
 
 fn move_file_to_dir(log_fn: &dyn Fn(usize, String), progress_range: &ProgressRange, src_file_path: PathBuf, dest_dir_path: PathBuf, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {
@@ -372,7 +374,7 @@ fn move_file_to_dir(log_fn: &dyn Fn(usize, String), progress_range: &ProgressRan
     Ok(())
 }
 
-fn input_as_pdf_to_pathbuf_uri(root_tmp_dir: PathBuf, target_dpi: f32, log_fn: &dyn Fn(usize, String), _: &ProgressRange, raw_input_path: PathBuf, opt_passwd: Option<String>, l10n: l10n::Translations) -> Result<String, Box<dyn Error>> {
+fn input_as_pdf_to_pathbuf_uri(root_tmp_dir: PathBuf, _: f32, log_fn: &dyn Fn(usize, String), _: &ProgressRange, raw_input_path: PathBuf, opt_passwd: Option<String>, l10n: l10n::Translations) -> Result<String, Box<dyn Error>> {
     if !raw_input_path.exists() {
         return Err(l10n.gettext_fmt("Cannot find file at {0}", vec![&raw_input_path.display().to_string()]).into());
     }
@@ -399,16 +401,16 @@ fn input_as_pdf_to_pathbuf_uri(root_tmp_dir: PathBuf, target_dpi: f32, log_fn: &
                         let mut ret_doc = PdfDocument::open(&path_loc)?;
 
                         if ret_doc.needs_password()? {
-                            ret_doc.authenticate(&passwd)?;                            
+                            ret_doc.authenticate(&passwd)?;
                             let mut binding = PdfWriteOptions::default();
-                            let options = binding.set_pretty(false).set_encryption(Encryption::None).set_compress(true).set_garbage_level(4);                            
+                            let options = binding.set_pretty(false).set_encryption(Encryption::None).set_compress(true).set_garbage_level(4);
                             ret_doc.save_with_options(&filename_pdf, *options)?;
                         } else {
                             fs::copy(raw_input_path, &filename_pdf)?;
                         }
                     } else {
                         fs::copy(raw_input_path, &filename_pdf)?;
-                    }                    
+                    }
                 },
                 "BMP" | "PNM" | "PNG" | "JPEG" | "GIF" | "TIFF" => {
                     log_fn(5, l10n.gettext("Converting input image to PDF"));
@@ -429,7 +431,7 @@ fn input_as_pdf_to_pathbuf_uri(root_tmp_dir: PathBuf, target_dpi: f32, log_fn: &
                         DEFAULT_DIR_LIBREOFFICE_PROGRAM.to_string()
                     };
 
-                    let office = Office::new(&libreoffice_program_dir)?;                    
+                    let office = Office::new(&libreoffice_program_dir)?;
                     let input_uri = DocUrl::from_absolute_path(new_input_path.display().to_string())?;
                     let needs_password = Rc::new(AtomicBool::new(false));
 
@@ -449,7 +451,7 @@ fn input_as_pdf_to_pathbuf_uri(root_tmp_dir: PathBuf, target_dpi: f32, log_fn: &
                                         return;
                                     }
 
-                                    
+
                                     let _ = office.set_document_password(&input_uri, Some(&passwd));
                                 }
                             }
@@ -472,10 +474,10 @@ fn input_as_pdf_to_pathbuf_uri(root_tmp_dir: PathBuf, target_dpi: f32, log_fn: &
                                     } else {
                                         Ok(())
                                     }
-                                }                                
+                                }
                             }
                         },
-                        Err(ex) =>  {                            
+                        Err(ex) =>  {
                             Err(ex.to_string().into())
                         }
                     };
@@ -492,7 +494,7 @@ fn input_as_pdf_to_pathbuf_uri(root_tmp_dir: PathBuf, target_dpi: f32, log_fn: &
                     return Err(l10n.gettext("Mime type error! Does the input have a 'known' file extension?").into());
                 }
             }
-            
+
             Ok(filename_pdf)
         } else {
             Err(l10n.gettext("Cannot find input parent directory!").into())
@@ -553,19 +555,15 @@ impl ProgressRange {
     }
 }
 
-fn page_to_pixmap(log_fn: &dyn Fn(usize, String), progress_range: &ProgressRange, i: usize, page_count: usize, doc: &PdfDocument, target_dpi: f32, dest_folder: PathBuf, l10n: l10n::Translations) -> Result<Document, Box<dyn Error>> {
-    let j = i as i32;
-    let idx = (i + 1) as usize;
-    let idx_text = idx.to_string();
-    
-    let page = doc.load_page(j)?;
+fn page_to_pixmap(i: usize, doc: &PdfDocument, target_dpi: f32) -> Result<Document, Box<dyn Error>> {
+    let page = doc.load_page(i as i32)?;
     let matrix = Matrix::new_scale(target_dpi/72.0, target_dpi/72.0);
+
     let pixmap = page.to_pixmap(&matrix, &Colorspace::device_rgb(), 0.0, true)?;
     let mut w: Vec<u8> = vec![];
     pixmap.write_to(&mut w, ImageFormat::PNG)?;
 
     let newdoc = Document::from_bytes(&w, "png")?;
-
 
     Ok(newdoc)
 }
@@ -576,20 +574,21 @@ fn merge_pdfs(log_fn: &dyn Fn(usize, String), progress_range: &ProgressRange, pa
                          "Combining few PDF documents",
                          page_count as u64));
 
-    let step_count = 7;
-    let mut step_num = 1;
     let progress_delta = progress_range.delta();
 
-    // step 1/7
-    let mut progress_value = progress_range.min + (step_num * progress_delta / step_count);
+    let mut progress_value = progress_range.min;
     log_fn(progress_value, l10n.gettext("Collecting PDF pages"));
 
     let mut output_doc = PdfDocument::new();
     let mut c = 0;
-    
+
     for i in 0..page_count {
+        let idx = i + 1;
+        progress_value = progress_range.min + (idx * progress_delta / page_count);
+        let idx_text = idx.to_string();
+        log_fn(progress_value, l10n.gettext_fmt("Combining page {0} into final PDF", vec![&idx_text]));
+
         let src_path = input_dir_path.join(format!("page-{}.pdf", i ));
-        println!("Combining page : {} for path {}", i, &src_path.display());
         let src_location = src_path.display().to_string();
         let src_doc = PdfDocument::open(&src_location)?;
 
@@ -601,11 +600,8 @@ fn merge_pdfs(log_fn: &dyn Fn(usize, String), progress_range: &ProgressRange, pa
         }
     }
 
-    // step 7/7 Save the merged PDF
-    step_num += 1;
-    progress_value = progress_range.min + (step_num * progress_delta / step_count);
     log_fn(progress_value, l10n.gettext("Saving PDF"));
-    
+
     let mut binding = PdfWriteOptions::default();
     let options = binding.set_pretty(false).set_compress(true).set_garbage_level(4);
 
@@ -626,7 +622,7 @@ fn img_to_pdf(src_path: PathBuf, dest_path: PathBuf) -> Result<(), Box<dyn Error
     let path_string = src_path.display().to_string();
     let dest_string = dest_path.display().to_string();
     let doc = Document::open(&path_string)?;
-    let options = "compress,garbage".to_string();
+    let options = "compress=yes,compress-images=yes,clean=yes,sanitize=yes,garbage=yes".to_string();
     let mut writer = DocumentWriter::new(&dest_string, "pdf", &options)?;
 
     for i in 0..doc.page_count()? {

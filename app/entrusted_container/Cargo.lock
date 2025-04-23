@@ -425,7 +425,6 @@ dependencies = [
  "image",
  "libreofficekit",
  "mupdf",
- "once_cell",
  "polib",
  "serde",
  "serde_json",
@@ -790,9 +789,9 @@ checksum = "7943c866cc5cd64cbc25b2e01621d07fa8eb2a1a23160ee81ce38704e97b8ecf"
 
 [[package]]
 name = "itertools"
-version = "0.13.0"
+version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
+checksum = "ba291022dbbd398a455acf126c1e341954079855bc60dfdda641363bd6922569"
 dependencies = [
  "either",
 ]
@@ -935,7 +934,7 @@ dependencies = [
 [[package]]
 name = "mupdf"
 version = "0.4.4"
-source = "git+https://github.com/rimerosolutions/mupdf-rs?rev=d9b1de0#d9b1de0d11b12429deacb1e70041d469bb296262"
+source = "git+https://github.com/rimerosolutions/mupdf-rs?rev=c55740a#c55740afdc2c917ab5293374f92cc60cd46a8cc3"
 dependencies = [
  "bitflags 2.9.0",
  "font-kit",
@@ -948,7 +947,7 @@ dependencies = [
 [[package]]
 name = "mupdf-sys"
 version = "0.4.4"
-source = "git+https://github.com/rimerosolutions/mupdf-rs?rev=d9b1de0#d9b1de0d11b12429deacb1e70041d469bb296262"
+source = "git+https://github.com/rimerosolutions/mupdf-rs?rev=c55740a#c55740afdc2c917ab5293374f92cc60cd46a8cc3"
 dependencies = [
  "bindgen",
  "cc",

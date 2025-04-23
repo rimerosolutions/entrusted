@@ -2,9 +2,8 @@ extern crate clap;
 extern crate mupdf;
 extern crate serde;
 extern crate libreofficekit;
-extern crate once_cell;
 
-use clap::{Command, Arg, builder::PossibleValue};
+use clap::{ArgMatches, Arg, builder::PossibleValue};
 
 use mupdf::{Colorspace, ImageFormat, Matrix, Document };
 use mupdf::pdf:: {PdfDocument, PdfWriteOptions};
@@ -25,8 +24,6 @@ use std::time::{Instant, SystemTime, UNIX_EPOCH};
 use serde::{Deserialize, Serialize};
 
 use libreofficekit::{Office, OfficeOptionalFeatures, CallbackType, DocUrl};
-
-use once_cell::sync::OnceCell;
 
 use file_format::FileFormat;
 
@@ -51,7 +48,7 @@ const TARGET_DPI_LOW: f32    = 72.0;
 const TARGET_DPI_MEDIUM: f32 = 150.0;
 const TARGET_DPI_HIGH: f32   = 300.0;
 
-static INSTANCE_DEFAULT_VISUAL_QUALITY: OnceCell<String> = OnceCell::new();
+const DEFAULT_VISUAL_QUALITY: &str = IMAGE_QUALITY_CHOICES[IMAGE_QUALITY_CHOICE_DEFAULT_INDEX];
 
 macro_rules! incl_gettext_files {
     ( $( $x:expr ),* ) => {
@@ -73,10 +70,6 @@ struct TessSettings {
     data_dir: String, // tesseract tessdata folder
 }
 
-fn default_visual_quality_to_str() -> &'static str {
-    INSTANCE_DEFAULT_VISUAL_QUALITY.get().expect("INSTANCE_VISUAL_QUALITY value not set!")
-}
-
 struct ExecCtx {
     doc_uuid: String,
     root_tmp_dir: PathBuf,
@@ -87,33 +80,6 @@ struct ExecCtx {
     doc_passwd: Option<String>,
     l10n: l10n::Translations,
     log_fn: &'static dyn Fn(usize, String),
-}
-
-fn doc_to_pdf(
-    i: usize,
-    ocr_settings: Option<TessSettings>,
-    doc: &Document,
-    output_path: PathBuf
-) -> Result<(), Box<dyn Error>> {
-    let dest = output_path.join(format!("page-{}.pdf", i)).display().to_string();
-
-    let mut writer = {
-        if let Some(tess_settings) = ocr_settings {
-            let ret_options = format!("ocr-language={},compression=flate,ocr-datadir={}", tess_settings.lang, tess_settings.data_dir);
-            DocumentWriter::new_pdfocr_writer(&dest, &ret_options)?
-        } else {
-            let ret_options = "compress,garbage=deduplicte".to_string();
-            DocumentWriter::new(&dest, "pdf", &ret_options)?
-        }
-    };
-
-    let page = doc.load_page(0)?;
-    let mediabox = page.bounds()?;
-    let device = writer.begin_page(mediabox)?;
-    page.run(&device, &Matrix::IDENTITY)?;
-    writer.end_page(device)?;
-
-    Ok(())
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -128,7 +94,92 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let l10n = l10n::new_translations(locale);
+    let run_matches = cli_args_build(&l10n);    
+    let ctx = cli_args_parse(&run_matches, &l10n)?;
 
+    let log_fn = ctx.log_fn;
+
+    let (msg, exit_code) = if let Err(ex) = execute(ctx) {
+        (l10n.gettext_fmt("Conversion failed with reason: {0}", vec![&ex.to_string()]), 1)
+    } else {
+        (l10n.gettext("Conversion succeeded!"), 0)
+    };
+
+    log_fn(99, msg);
+    let millis = timer.elapsed().as_millis();
+    log_fn(100, format!("{}: {}", l10n.gettext("Elapsed time"), elapsed_time_string(millis, l10n)));
+
+    std::process::exit(exit_code);
+}
+
+fn cli_args_parse(run_matches: &ArgMatches, l10n: &l10n::Translations) -> Result<ExecCtx, Box<dyn Error>> {
+    let input_path = if let Some(v) = run_matches.get_one::<String>("input-filename") {
+        #[cfg(not(target_os = "windows"))] {
+            std::fs::canonicalize(v)?
+        }
+
+        #[cfg(target_os = "windows")] {
+            dunce::canonicalize(v)?                
+        }
+    } else {
+        panic!("Programming error: The input file name is required!");
+    };
+
+    let output_path = if let Some(v) = run_matches.get_one::<String>("output-filename") {
+        PathBuf::from(v)
+    } else {
+        panic!("Programming error: The output file name is required!");
+    };
+
+    let ocr_lang = run_matches.get_one::<String>("ocr-lang").cloned();
+
+    let visual_quality = if let Some(v) = run_matches.get_one::<String>("visual-quality") {
+        v.clone()
+    } else {
+        DEFAULT_VISUAL_QUALITY.to_string()
+    };
+
+    let log_format = if let Some(v) = run_matches.get_one::<String>("log-format") {
+        v.clone()
+    } else {
+        LOG_FORMAT_JSON.to_string()
+    };
+
+    let doc_passwd = if let Ok(v) = env::var(ENV_VAR_ENTRUSTED_DOC_PASSWD) {
+        if !v.is_empty() {
+            Some(v)
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    let doc_uuid     = Uuid::new_v4().to_string();
+    let tmp_dir      = env::temp_dir();
+    let root_tmp_dir = tmp_dir.join(&doc_uuid);
+
+    let log_fn: &dyn Fn(usize, String) = match log_format.as_str() {
+        "json" => {
+            &log_json
+        },
+        _ => &log_plain
+    };
+
+    Ok(ExecCtx {
+        root_tmp_dir,
+        doc_uuid,
+        input_path,
+        output_path,
+        visual_quality,
+        ocr_lang,
+        doc_passwd,
+        l10n: l10n.clone(),
+        log_fn
+    })    
+}
+
+fn cli_args_build(l10n: &l10n::Translations) -> ArgMatches {
     let help_input_filename = l10n.gettext("Input filename");
     let help_output_filename = l10n.gettext("Optional output filename defaulting to <filename>-entrusted.pdf.");
     let help_visual_quality = l10n.gettext("PDF result visual quality");
@@ -144,9 +195,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         "Options:",
         "{options}"));
 
-    INSTANCE_DEFAULT_VISUAL_QUALITY.set(IMAGE_QUALITY_CHOICES[IMAGE_QUALITY_CHOICE_DEFAULT_INDEX].to_string())?;
-
-    let app = Command::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
+    let app = clap::Command::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
         .help_template(cmd_help_template)
         .author(option_env!("CARGO_PKG_AUTHORS").unwrap_or("Unknown"))
@@ -185,91 +234,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                     PossibleValue::new(IMAGE_QUALITY_CHOICES[1]),
                     PossibleValue::new(IMAGE_QUALITY_CHOICES[2]),
                 ])
-                .default_value(default_visual_quality_to_str())
+                .default_value(DEFAULT_VISUAL_QUALITY)
                 .required(false)
         );
 
-    let run_matches = app.get_matches();
-
-    let input_path = if let Some(v) = run_matches.get_one::<String>("input-filename") {
-        #[cfg(not(target_os = "windows"))] {
-            std::fs::canonicalize(v)?
-        }
-
-        #[cfg(target_os = "windows")] {
-            dunce::canonicalize(v)?                
-        }
-    } else {
-        return Err(help_input_filename.into());
-    };
-
-    let output_path = if let Some(v) = run_matches.get_one::<String>("output-filename") {
-       PathBuf::from(v)
-    } else {
-        return Err(help_output_filename.into());
-    };
-
-    let ocr_lang = run_matches.get_one::<String>("ocr-lang").cloned();
-
-    let visual_quality = if let Some(v) = run_matches.get_one::<String>("visual-quality") {
-        v.clone()
-    } else {
-        default_visual_quality_to_str().to_string()
-    };
-
-    let log_format = if let Some(v) = run_matches.get_one::<String>("log-format") {
-        v.clone()
-    } else {
-        LOG_FORMAT_JSON.to_string()
-    };
-
-    let doc_passwd = if let Ok(v) = env::var(ENV_VAR_ENTRUSTED_DOC_PASSWD) {
-        if !v.is_empty() {
-            Some(v)
-        } else {
-            None
-        }
-    } else {
-        None
-    };
-
-    let doc_uuid     = Uuid::new_v4().to_string();
-    let tmp_dir      = env::temp_dir();
-    let root_tmp_dir = tmp_dir.join(&doc_uuid);
-
-    let log_fn: &dyn Fn(usize, String) = match log_format.as_str() {
-        "json" => {
-            &log_json
-        },
-        _ => &log_plain
-    };
-
-    let ctx = ExecCtx {
-        root_tmp_dir,
-        doc_uuid,
-        input_path,
-        output_path,
-        visual_quality,
-        ocr_lang,
-        doc_passwd,
-        l10n: l10n.clone(),
-        log_fn
-    };
-
-    let mut exit_code = 0;
-    let msg: String = if let Err(ex) = execute(ctx) {
-        exit_code = 1;
-        l10n.gettext_fmt("Conversion failed with reason: {0}", vec![&ex.to_string()])
-    } else {
-        l10n.gettext("Conversion succeeded!")
-    };
-
-    log_fn(99, msg);
-
-    let millis = timer.elapsed().as_millis();
-    log_fn(100, format!("{}: {}", l10n.gettext("Elapsed time"), elapsed_time_string(millis, l10n)));
-
-    std::process::exit(exit_code);
+    app.get_matches()    
 }
 
 fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
@@ -282,7 +251,6 @@ fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
     };
     let doc_uuid = ctx.doc_uuid;
     let l10n = ctx.l10n;
-
     let log_fn = ctx.log_fn;
 
     let root_tmp_dir     = ctx.root_tmp_dir;
@@ -319,11 +287,7 @@ fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
             }
         }
 
-        let provided_tessdata_dir = if let Ok(tessdata_dir) = env::var(ENV_VAR_ENTRUSTED_TESSERACT_TESSDATA_DIR) {
-            tessdata_dir
-        } else {
-            DEFAULT_DIR_TESSERACT_TESSDATA.to_string()
-        };
+        let provided_tessdata_dir = env::var(ENV_VAR_ENTRUSTED_TESSERACT_TESSDATA_DIR).unwrap_or(DEFAULT_DIR_TESSERACT_TESSDATA.to_string());
 
         let tess_settings = TessSettings {
             lang: ocr_lang_text.to_string(),
@@ -356,6 +320,33 @@ fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
     // step 5 (98%-98%)
     progress_range.update(98, 98);
     move_file_to_dir(log_fn, &progress_range, output_file_path, safe_dir_path, l10n)
+}
+
+fn doc_to_pdf(
+    i: usize,
+    ocr_settings: Option<TessSettings>,
+    doc: &Document,
+    output_path: PathBuf
+) -> Result<(), Box<dyn Error>> {
+    let dest = output_path.join(format!("page-{}.pdf", i)).display().to_string();
+
+    let mut writer = {
+        if let Some(tess_settings) = ocr_settings {
+            let ret_options = format!("ocr-language={},compression=flate,ocr-datadir={}", tess_settings.lang, tess_settings.data_dir);
+            DocumentWriter::new_pdfocr_writer(&dest, &ret_options)?
+        } else {
+            let ret_options = "compress,garbage=deduplicte".to_string();
+            DocumentWriter::new(&dest, "pdf", &ret_options)?
+        }
+    };
+
+    let page = doc.load_page(0)?;
+    let mediabox = page.bounds()?;
+    let device = writer.begin_page(mediabox)?;
+    page.run(&device, &Matrix::IDENTITY)?;
+    writer.end_page(device)?;
+
+    Ok(())
 }
 
 fn move_file_to_dir(log_fn: &dyn Fn(usize, String), progress_range: &ProgressRange, src_file_path: PathBuf, dest_dir_path: PathBuf, l10n: l10n::Translations) -> Result<(), Box<dyn Error>> {

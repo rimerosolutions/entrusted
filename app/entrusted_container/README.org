@@ -23,6 +23,12 @@ This module is deployed as a container image (/Docker/ or /Podman/ or /Lima/), p
 
 Because of a shared library, you /MUST/ build the container image from the =entrusted/app= root folder.
 
+On Mac OS, there are potential compilation issues with the MuPDF library.
+
+#+begin_src sh
+  env MACOSX_DEPLOYMENT_TARGET=10.15 RUSTFLAGS="-lc++ -Ctarget-feature=+crt-static" cargo build
+#+end_src
+
 ** Podman
 
 #+begin_src sh

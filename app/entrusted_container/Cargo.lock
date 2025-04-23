@@ -934,7 +934,7 @@ dependencies = [
 [[package]]
 name = "mupdf"
 version = "0.4.4"
-source = "git+https://github.com/rimerosolutions/mupdf-rs?rev=c55740a#c55740afdc2c917ab5293374f92cc60cd46a8cc3"
+source = "git+https://github.com/rimerosolutions/mupdf-rs?branch=rimerosolutions%2Fpdfocr_with_mupdf_1_25#021f40a4776e68f144031e795e9c60bb35a0dd68"
 dependencies = [
  "bitflags 2.9.0",
  "font-kit",
@@ -947,7 +947,7 @@ dependencies = [
 [[package]]
 name = "mupdf-sys"
 version = "0.4.4"
-source = "git+https://github.com/rimerosolutions/mupdf-rs?rev=c55740a#c55740afdc2c917ab5293374f92cc60cd46a8cc3"
+source = "git+https://github.com/rimerosolutions/mupdf-rs?branch=rimerosolutions%2Fpdfocr_with_mupdf_1_25#021f40a4776e68f144031e795e9c60bb35a0dd68"
 dependencies = [
  "bindgen",
  "cc",

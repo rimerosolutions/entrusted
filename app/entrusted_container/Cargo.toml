@@ -21,7 +21,7 @@ serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.91"
 entrusted_l10n = { path = "../entrusted_l10n" }
 libreofficekit = { git = "https:/github.com/jacobtread/libreofficekit", rev="43c79eb" }
-mupdf = { git = "https://github.com/rimerosolutions/mupdf-rs", rev="c55740a", default-features = false, features = ["js", "xps", "svg", "cbz", "img", "html", "epub", "system-fonts", "tesseract"] }
+mupdf = { git = "https://github.com/rimerosolutions/mupdf-rs", branch = "rimerosolutions/pdfocr_with_mupdf_1_25" }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 dunce = "1.0.3"

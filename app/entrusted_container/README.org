@@ -25,20 +25,26 @@ Because of a shared library, you /MUST/ build the container image from the =entr
 
 On Mac OS, there are potential compilation issues with the MuPDF library.
 
+** Mac OS
 #+begin_src sh
   env MACOSX_DEPLOYMENT_TARGET=10.15 RUSTFLAGS="-lc++ -Ctarget-feature=+crt-static" cargo build
 #+end_src
 
-** Podman
+** Windows
+
+The standard Windows command prompt is assumed, the syntax is different in Powershell for environment variables.
 
 #+begin_src sh
-  podman build -t docker.io/uycyjnzgntrn/entrusted_container:0.3.2 . -f entrusted_container/Dockerfile
+  set RUSTFLAGS=-Ctarget-feature=+crt-static
+  cargo build
 #+end_src
 
-** Docker
+** Linux
+
+TODO check if the code can be linked statically for the most part
 
 #+begin_src sh
-  docker build -t docker.io/uycyjnzgntrn/entrusted_container:0.3.2 . -f entrusted_container/Dockerfile
+  cargo build
 #+end_src
 
 * How to publish to Docker Hub?

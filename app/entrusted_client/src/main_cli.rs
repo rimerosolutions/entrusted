@@ -9,7 +9,6 @@ use std::thread;
 use indicatif::ProgressBar;
 
 use std::collections::HashMap;
-use once_cell::sync::OnceCell;
 use entrusted_l10n as l10n;
 
 mod common;
@@ -17,12 +16,6 @@ mod config;
 mod container;
 
 const LOG_FORMAT_PLAIN: &str = "plain";
-
-// Annoying changes in the 'clap' dependency translating into this kind of stuff...
-// Reference: https://github.com/clap-rs/clap/discussions/4252
-static INSTANCE_DEFAULT_CONTAINER_IMAGE: OnceCell<String> = OnceCell::new();
-static INSTANCE_DEFAULT_FILE_SUFFIX: OnceCell<String> = OnceCell::new();
-static INSTANCE_DEFAULT_VISUAL_QUALITY: OnceCell<String> = OnceCell::new();
 
 #[derive(Clone)]
 struct CliEventSender {
@@ -39,18 +32,6 @@ impl common::EventSender for CliEventSender {
     }
 }
 
-fn default_container_image_to_str() -> &'static str {
-    INSTANCE_DEFAULT_CONTAINER_IMAGE.get().expect("INSTANCE_DEFAULT_CONTAINER_IMAGE value not set!")
-}
-
-fn default_file_suffix_to_str() -> &'static str {
-    INSTANCE_DEFAULT_FILE_SUFFIX.get().expect("INSTANCE_DEFAULT_FILE_SUFFIX value not set!")
-}
-
-fn default_visual_quality_to_str() -> &'static str {
-    INSTANCE_DEFAULT_VISUAL_QUALITY.get().expect("INSTANCE_VISUAL_QUALITY value not set!")
-}
-
 fn main() -> Result<(), Box<dyn Error>> {
     l10n::load_translations(incl_gettext_files!("en", "fr"));
 
@@ -63,12 +44,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     let trans = l10n::new_translations(locale);
     let app_config_ret = config::load_config();
     let app_config: config::AppConfig = app_config_ret.unwrap_or_default();
-
-    let default_container_image_name = if let Some(img_name) = app_config.container_image_name.clone() {
-        img_name
-    } else {
-        config::default_container_image_name()
-    };
 
     let help_output_filename = trans.gettext("Optional output filename defaulting to <filename>-entrusted.pdf.");
     let help_ocr_lang = trans.gettext("Optional language for OCR (i.e. 'eng' for English)");
@@ -88,9 +63,14 @@ fn main() -> Result<(), Box<dyn Error>> {
                                                    "Options:",
                                                    "{options}"));
 
-    INSTANCE_DEFAULT_CONTAINER_IMAGE.set(default_container_image_name)?;
-    INSTANCE_DEFAULT_FILE_SUFFIX.set(app_config.file_suffix.clone().unwrap())?;
-    INSTANCE_DEFAULT_VISUAL_QUALITY.set(app_config.visual_quality.clone().unwrap_or_else(|| common::IMAGE_QUALITY_CHOICES[common::IMAGE_QUALITY_CHOICE_DEFAULT_INDEX].to_string()))?;
+    let default_file_suffix = app_config.file_suffix.clone().unwrap();
+    let default_container_image_name = if let Some(img_name) = app_config.container_image_name.clone() {
+        img_name
+    } else {
+        config::default_container_image_name()
+    };
+    let default_visual_quality = app_config.visual_quality.clone().unwrap_or_else(|| common::IMAGE_QUALITY_CHOICES[common::IMAGE_QUALITY_CHOICE_DEFAULT_INDEX].to_string());
+    
 
     let app = Command::new(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"))
         .version(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"))
@@ -122,7 +102,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             Arg::new("container-image-name")
                 .long("container-image-name")
                 .help(help_container_image_name)
-                .default_value(default_container_image_to_str())
+                .default_value(default_container_image_name)
                 .required(false)
         ).arg(
             Arg::new("log-format")
@@ -138,7 +118,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             Arg::new("file-suffix")
                 .long("file-suffix")
                 .help(help_file_suffix)
-                .default_value(default_file_suffix_to_str())
+                .default_value(default_file_suffix)
                 .required(false)
         ).arg(
             Arg::new("visual-quality")
@@ -150,7 +130,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     PossibleValue::new(common::IMAGE_QUALITY_CHOICES[1]),
                     PossibleValue::new(common::IMAGE_QUALITY_CHOICES[2]),
                 ])
-                .default_value(default_visual_quality_to_str())
+                .default_value(default_visual_quality)
         ).arg(
             Arg::new("passwd-prompt")
                 .long("passwd-prompt")

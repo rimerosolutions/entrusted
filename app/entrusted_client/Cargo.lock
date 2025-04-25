@@ -514,7 +514,6 @@ dependencies = [
  "indicatif",
  "libc",
  "minreq",
- "once_cell",
  "polib",
  "rpassword",
  "semver",
@@ -534,7 +533,6 @@ dependencies = [
  "fluent-langneg",
  "gettext",
  "locale_config",
- "once_cell",
  "unic-langid",
 ]
 

@@ -1,18 +1,21 @@
-use once_cell::sync::Lazy;
 use fluent_langneg::negotiate_languages;
 use fluent_langneg::NegotiationStrategy;
 use fluent_langneg::convert_vec_str_to_langids_lossy;
+
 use unic_langid::LanguageIdentifier;
+
 use std::collections::HashMap;
 use std::io::Cursor;
-use std::sync::Mutex;
+use std::sync::{LazyLock, Mutex};
+
 use locale_config;
+
 use gettext::Catalog;
 
 pub const DEFAULT_LANGID: &str = "en";
 pub const ENV_VAR_ENTRUSTED_LANGID: &str = "ENTRUSTED_LANGID";
 
-static CATALOG_PER_LOCALE: Lazy<Mutex<HashMap<String, Catalog>>> = Lazy::new(|| {
+static CATALOG_PER_LOCALE: LazyLock<Mutex<HashMap<String, Catalog>>> = LazyLock::new(|| {
     Mutex::new(HashMap::with_capacity(2))
 });
 

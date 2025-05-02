@@ -524,6 +524,7 @@ dependencies = [
  "which",
  "winapi",
  "winreg 0.55.0",
+ "xdg-utils",
 ]
 
 [[package]]
@@ -560,9 +561,9 @@ dependencies = [
 
 [[package]]
 name = "fltk"
-version = "1.5.7"
+version = "1.5.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3930b72d58dea94d9903c5c733f10876f99415455c17d3219d525aef64920d25"
+checksum = "c77506d5be52962133581eec64190107802362acfa8c99a956592bd653b5a45c"
 dependencies = [
  "bitflags",
  "crossbeam-channel",
@@ -574,9 +575,9 @@ dependencies = [
 
 [[package]]
 name = "fltk-sys"
-version = "1.5.7"
+version = "1.5.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3476b9c80f5fbaccbd38215d71a687fe0cbc333186e57c5b41e01d1c15045832"
+checksum = "7d3f2875cca090974dc0858cd78dcabfd74bd808f1f813b2ff469bdda413f22a"
 dependencies = [
  "cmake",
  "cmk",
@@ -2050,3 +2051,9 @@ checksum = "6f42320e61fe2cfd34354ecb597f86f413484a798ba44a8ca1165c58d42da6c1"
 dependencies = [
  "bitflags",
 ]
+
+[[package]]
+name = "xdg-utils"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db9fefe62d5969721e2cfc529e6a760901cc0da422b6d67e7bfd18e69490dba6"

@@ -3366,6 +3366,7 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
 pub fn list_apps_for_pdfs() -> HashMap<String, String> {
     use core_foundation::array::{CFArrayGetCount, CFArrayGetValueAtIndex};
     use core_foundation::url::CFURL;
+    use core_foundation::base::CFRelease;
     use core_foundation::bundle::CFBundle;
     use core_services::CFString;
     use core_foundation::string::{
@@ -3440,6 +3441,8 @@ pub fn list_apps_for_pdfs() -> HashMap<String, String> {
                                 }
                             }
                         }
+
+                        CFRelease(cf_ref as *mut _);
                     }
                 }
             }
@@ -3467,8 +3470,8 @@ pub fn pdf_open_with(cmd: String, input: PathBuf, trans: &l10n::Translations) ->
         Ok(())
     } else {
         let path_string = input.display().to_string();
-	let default_msg = trans.gettext_fmt("Cannot open PDF document at {0}.", vec![&path_string]);
-	Err(err_code_msg(result as usize, trans, default_msg).into())        
+	    let default_msg = trans.gettext_fmt("Cannot open PDF document at {0}.", vec![&path_string]);
+	    Err(err_code_msg(result as usize, trans, default_msg).into())        
     }
 }
 

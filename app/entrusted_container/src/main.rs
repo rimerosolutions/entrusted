@@ -550,7 +550,7 @@ fn page_to_pixmap(i: usize, doc: &PdfDocument, target_dpi: f32) -> Result<Docume
     let page = doc.load_page(i as i32)?;
     let matrix = Matrix::new_scale(target_dpi/72.0, target_dpi/72.0);
 
-    let pixmap = page.to_pixmap(&matrix, &Colorspace::device_rgb(), 0.0, true)?;
+    let pixmap = page.to_pixmap(&matrix, &Colorspace::device_rgb(), false, true)?;
     let mut w: Vec<u8> = vec![];
     pixmap.write_to(&mut w, ImageFormat::PNG)?;
 

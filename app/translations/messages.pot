@@ -1,0 +1,899 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#~ # SOME DESCRIPTIVE TITLE.
+#~ # Copyright (C) YEAR Free Software Foundation, Inc.
+#~ # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#~ #
+#~ #, fuzzy
+#~ msgid ""
+#~ msgstr ""
+#~ "Project-Id-Version: entrusted_client \n"
+#~ "Report-Msgid-Bugs-To: yves_zoundi@hotmail.com\n"
+#~ "POT-Creation-Date: 2022-06-11 11:15-0500\n"
+#~ "POT-Revision-Date: 2022-06-11 11:15-0500\n"
+#~ "Last-Translator: Yves Zoundi <yves_zoundi@hotmail.com>\n"
+#~ "Language-Team: Yves Zoundi <yves_zoundi@hotmail.com>\n"
+#~ "Language:\n"
+#~ "MIME-Version: 1.0\n"
+#~ "Content-Type: text/plain; charset=UTF-8"
+
+msgid "The system is running out of memory"
+msgstr ""
+
+msgid "Program not found"
+msgstr ""
+
+msgid "Bad executable file format"
+msgstr ""
+
+msgid "File access denied"
+msgstr ""
+
+msgid "File not found"
+msgstr ""
+
+msgid "No application associated to the given file or URL"
+msgstr ""
+
+msgid "Not enough memory to complete this operation"
+msgstr ""
+
+msgid "Sharing violation, the file might be used by another program"
+msgstr ""
+
+msgid "Cannot open PDF document at {0}."
+msgstr ""
+
+msgid "Cannot open default application for content type: {0}"
+msgstr ""
+
+msgid "Couldn't open PDF file in default application! {0}."
+msgstr ""
+
+msgid "Open"
+msgstr ""
+
+msgid "Potentially sacrifice visual quality for processing time (quick preview first, etc.)"
+msgstr ""
+
+msgid "Custom hardening for sandbox container image"
+msgstr ""
+
+msgid "The conversion was cancelled!"
+msgstr ""
+
+msgid "Try cancelling remaining conversions as soon as possible"
+msgstr ""
+
+msgid "Custom PDF result visual quality"
+msgstr ""
+
+msgid "low"
+msgstr ""
+
+msgid "medium"
+msgstr ""
+
+msgid "high"
+msgstr ""
+
+msgid ""
+"{bin} {version}\n"
+"{author}\n"
+"{about}\n\n"
+"Usage: {usage}\n\n"
+"Options:\n"
+"{options}"
+msgstr ""
+
+msgid "Potential sanitization process crash detected, the sanitized PDF result was not created."
+msgstr ""
+
+msgid "Cannot remove output file: {0}. {1}."
+msgstr ""
+
+msgid "Could not open PDF file!"
+msgstr ""
+
+msgid "Yes"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid "Really close"
+msgstr ""
+
+msgid "Overall progress"
+msgstr ""
+
+msgid "Could not find 'open' command in 'PATH' environment variable!"
+msgstr ""
+
+msgid "Version {0} is out!"
+msgstr ""
+
+msgid "Please get the new version!"
+msgstr ""
+
+msgid "All files failed to process"
+msgstr ""
+
+msgid "One file failed to process"
+msgid_plural "Multiple files failed to process"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+msgid "Could not open URL: {0}, {1}"
+msgstr ""
+
+msgid "Check for updates"
+msgstr ""
+
+msgid "Version {0} is out!\nPlease visit {1}"
+msgstr ""
+
+msgid "Could not check for updates, please try later.\n{0}"
+msgstr ""
+
+msgid "No updates available at this time!"
+msgstr ""
+
+msgid "Could not read latest software version!"
+msgstr ""
+
+msgid "Could not read current software version!"
+msgstr ""
+
+msgid "Help"
+msgstr ""
+
+msgid ""
+"The program requires a container solution: \n"
+"- Docker (Windows, Linux, Mac OS)\n"
+"- or Podman (Linux)"
+msgstr ""
+
+msgid ""
+"Supported document types: \n"
+"- Images (.jpg, .jpeg, .gif, .png, .tif, .tiff)\n"
+"- Document Graphics (.odg)\n"
+"- Text Documents (.rtf, .doc, .docx, .odt)\n"
+"- Spreadsheets (.xls, .xlsx, .ods)\n"
+"- Presentations (.ppt, .pptx, .odp)\n"
+"- PDF files (.pdf)"
+msgstr ""
+
+msgid "For more information, please visit:"
+msgstr ""
+
+msgid "Select"
+msgstr ""
+
+msgid "Reset"
+msgstr ""
+
+msgid "Custom output file"
+msgstr ""
+
+msgid "Failed to read password!"
+msgstr ""
+
+msgid "Please enter the password for the document"
+msgstr ""
+
+msgid "Prompt for document password"
+msgstr ""
+
+msgid "Accept"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Set document password"
+msgstr ""
+
+msgid "Set document password (empty for none)"
+msgstr ""
+
+msgid "Running command: {0}"
+msgstr ""
+
+msgid "No container runtime executable found!"
+msgstr ""
+
+msgid "About"
+msgstr ""
+
+msgid "Copyright {0} {1}"
+msgstr ""
+
+msgid "Version"
+msgstr "Version"
+
+msgid "Logs"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "Settings"
+msgstr ""
+
+msgid "Convert"
+msgstr ""
+
+msgid "Custom file suffix"
+msgstr ""
+
+msgid "The safe PDF will be named <input>-<suffix>.pdf by default."
+msgstr ""
+
+msgid "Enable full-text search? In:"
+msgstr ""
+
+msgid "OCR (Optical character recognition) will be applied."
+msgstr ""
+
+msgid "Open resulting PDF with"
+msgstr ""
+
+msgid "Automatically open resulting PDFs with a given program."
+msgstr ""
+
+msgid "You can also paste the path to a PDF viewer"
+msgstr ""
+
+msgid "Browse for PDF viewer program"
+msgstr ""
+
+msgid "Custom container image"
+msgstr ""
+
+msgid "Expert option for sandbox solution"
+msgstr ""
+
+msgid "Save current settings as defaults"
+msgstr ""
+
+msgid "Drop 'potentially suspicious' file(s) here"
+msgstr ""
+
+msgid "or"
+msgstr ""
+
+msgid "Click here to select file(s)"
+msgstr ""
+
+msgid "Select all"
+msgstr ""
+
+msgid "Deselect all"
+msgstr ""
+
+msgid "Delete selection"
+msgstr ""
+
+msgid "Convert document(s)"
+msgstr ""
+
+msgid "File name"
+msgstr ""
+
+msgid "Progress(%)"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Messages"
+msgstr ""
+
+msgid "Select PDF viewer program"
+msgstr ""
+
+msgid "Select 'potentially suspicious' file(s)"
+msgstr ""
+
+msgid "Could not open PDF result!"
+msgstr ""
+
+msgid "Could not run PDF viewer!"
+msgstr ""
+
+msgid "English"
+msgstr ""
+
+msgid "Optional output filename defaulting to <filename>-entrusted.pdf."
+msgstr ""
+
+msgid "Optional language for OCR (i.e. 'eng' for English)"
+msgstr ""
+
+msgid "Input filename"
+msgstr ""
+
+msgid "Optional custom container image name"
+msgstr ""
+
+msgid "Log format (json or plain)"
+msgstr ""
+
+msgid "Default file suffix (entrusted)"
+msgstr ""
+
+msgid "The selected file does not exists! {0}"
+msgstr ""
+
+msgid "Converting"
+msgstr ""
+
+msgid "Cannot create directory"
+msgstr ""
+
+msgid "Checking if container image exists"
+msgstr ""
+
+msgid "The container image was not found. {0}."
+msgstr ""
+
+msgid "Starting document processing"
+msgstr ""
+
+msgid "Please wait, downloading sandbox image (roughly 600 MB)"
+msgstr ""
+
+msgid "Couldn't download container image!"
+msgstr ""
+
+msgid "Container image download completed..."
+msgstr ""
+
+msgid "Failed to cleanup temporary folder: {0}. {1}."
+msgstr ""
+
+msgid "Command output capture failed!"
+msgstr ""
+
+msgid "Command failed!"
+msgstr ""
+
+msgid "Conversion failed!"
+msgstr ""
+
+msgid "Container process terminated abruptly potentially due to memory usage. Are PDF pages too big? Try increasing the container engine memory allocation?"
+msgstr ""
+
+msgid "Container process terminated abruptly potentially due to a memory access fault. Please report the issue at https://github.com/rimerosolutions/entrusted/issues"
+msgstr ""
+
+msgid "Could not save container security profile to {0}. {1}."
+msgstr ""
+
+msgid "Please install Docker and make sure that it's running."
+msgstr ""
+
+msgid "Please install Docker Desktop and make sure that it's running."
+msgstr ""
+
+msgid "Please install Docker or Podman, and make sure that it's running."
+msgstr ""
+
+msgid "Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English."
+msgstr ""
+
+msgid "Afrikaans"
+msgstr ""
+
+msgid "Albanian"
+msgstr ""
+
+msgid "Amharic"
+msgstr ""
+
+msgid "Arabic"
+msgstr ""
+
+msgid "Arabic script"
+msgstr ""
+
+msgid "Armenian"
+msgstr ""
+
+msgid "Armenian script"
+msgstr ""
+
+msgid "Assamese"
+msgstr ""
+
+msgid "Azerbaijani"
+msgstr ""
+
+msgid "Azerbaijani (Cyrillic)"
+msgstr ""
+
+msgid "Basque"
+msgstr ""
+
+msgid "Belarusian"
+msgstr ""
+
+msgid "Bengali"
+msgstr ""
+
+msgid "Bengali script"
+msgstr ""
+
+msgid "Bosnian"
+msgstr ""
+
+msgid "Breton"
+msgstr ""
+
+msgid "Bulgarian"
+msgstr ""
+
+msgid "Burmese"
+msgstr ""
+
+msgid "Canadian Aboriginal script"
+msgstr ""
+
+msgid "Catalan"
+msgstr ""
+
+msgid "Cebuano"
+msgstr ""
+
+msgid "Cherokee"
+msgstr ""
+
+msgid "Cherokee script"
+msgstr ""
+
+msgid "Chinese - Simplified"
+msgstr ""
+
+msgid "Chinese - Simplified (vertical)"
+msgstr ""
+
+msgid "Chinese - Traditional"
+msgstr ""
+
+msgid "Chinese - Traditional (vertical)"
+msgstr ""
+
+msgid "Corsican"
+msgstr ""
+
+msgid "Croatian"
+msgstr ""
+
+msgid "Cyrillic script"
+msgstr ""
+
+msgid "Czech"
+msgstr ""
+
+msgid "Danish"
+msgstr ""
+
+msgid "Devanagari script"
+msgstr ""
+
+msgid "Divehi"
+msgstr ""
+
+msgid "Dutch"
+msgstr ""
+
+msgid "Dzongkha"
+msgstr ""
+
+msgid "English"
+msgstr ""
+
+msgid "English, Middle (1100-1500)"
+msgstr ""
+
+msgid "Esperanto"
+msgstr ""
+
+msgid "Estonian"
+msgstr ""
+
+msgid "Ethiopic script"
+msgstr ""
+
+msgid "Faroese"
+msgstr ""
+
+msgid "Filipino"
+msgstr ""
+
+msgid "Finnish"
+msgstr ""
+
+msgid "Fraktur script"
+msgstr ""
+
+msgid "Frankish"
+msgstr ""
+
+msgid "French"
+msgstr ""
+
+msgid "French, Middle (ca.1400-1600)"
+msgstr ""
+
+msgid "Frisian (Western)"
+msgstr ""
+
+msgid "Gaelic (Scots)"
+msgstr ""
+
+msgid "Galician"
+msgstr ""
+
+msgid "Georgian"
+msgstr ""
+
+msgid "Georgian script"
+msgstr ""
+
+msgid "German"
+msgstr ""
+
+msgid "Greek"
+msgstr ""
+
+msgid "Greek script"
+msgstr ""
+
+msgid "Gujarati"
+msgstr ""
+
+msgid "Gujarati script"
+msgstr ""
+
+msgid "Gurmukhi script"
+msgstr ""
+
+msgid "Hangul script"
+msgstr ""
+
+msgid "Hangul (vertical) script"
+msgstr ""
+
+msgid "Han - Simplified script"
+msgstr ""
+
+msgid "Han - Simplified (vertical) script"
+msgstr ""
+
+msgid "Han - Traditional script"
+msgstr ""
+
+msgid "Han - Traditional (vertical) script"
+msgstr ""
+
+msgid "Hatian"
+msgstr ""
+
+msgid "Hebrew"
+msgstr ""
+
+msgid "Hebrew script"
+msgstr ""
+
+msgid "Hindi"
+msgstr ""
+
+msgid "Hungarian"
+msgstr ""
+
+msgid "Icelandic"
+msgstr ""
+
+msgid "Indonesian"
+msgstr ""
+
+msgid "Inuktitut"
+msgstr ""
+
+msgid "Irish"
+msgstr ""
+
+msgid "Italian"
+msgstr ""
+
+msgid "Italian - Old"
+msgstr ""
+
+msgid "Japanese"
+msgstr ""
+
+msgid "Japanese script"
+msgstr ""
+
+msgid "Japanese (vertical)"
+msgstr ""
+
+msgid "Japanese (vertical) script"
+msgstr ""
+
+msgid "Javanese"
+msgstr ""
+
+msgid "Kannada"
+msgstr ""
+
+msgid "Kannada script"
+msgstr ""
+
+msgid "Kazakh"
+msgstr ""
+
+msgid "Khmer"
+msgstr ""
+
+msgid "Khmer script"
+msgstr ""
+
+msgid "Korean"
+msgstr ""
+
+msgid "Korean (vertical)"
+msgstr ""
+
+msgid "Kurdish (Arabic)"
+msgstr ""
+
+msgid "Kyrgyz"
+msgstr ""
+
+msgid "Lao"
+msgstr ""
+
+msgid "Lao script"
+msgstr ""
+
+msgid "Latin"
+msgstr ""
+
+msgid "Latin script"
+msgstr ""
+
+msgid "Latvian"
+msgstr ""
+
+msgid "Lithuanian"
+msgstr ""
+
+msgid "Luxembourgish"
+msgstr ""
+
+msgid "Macedonian"
+msgstr ""
+
+msgid "Malayalam"
+msgstr ""
+
+msgid "Malayalam script"
+msgstr ""
+
+msgid "Malay"
+msgstr ""
+
+msgid "Maltese"
+msgstr ""
+
+msgid "Maori"
+msgstr ""
+
+msgid "Marathi"
+msgstr ""
+
+msgid "Mongolian"
+msgstr ""
+
+msgid "Myanmar script"
+msgstr ""
+
+msgid "Nepali"
+msgstr ""
+
+msgid "Norwegian"
+msgstr ""
+
+msgid "Occitan (post 1500)"
+msgstr ""
+
+msgid "Old Georgian"
+msgstr ""
+
+msgid "Oriya (Odia) script"
+msgstr ""
+
+msgid "Oriya"
+msgstr ""
+
+msgid "Pashto"
+msgstr ""
+
+msgid "Persian"
+msgstr ""
+
+msgid "Polish"
+msgstr ""
+
+msgid "Portuguese"
+msgstr ""
+
+msgid "Punjabi"
+msgstr ""
+
+msgid "Quechua"
+msgstr ""
+
+msgid "Romanian"
+msgstr ""
+
+msgid "Russian"
+msgstr ""
+
+msgid "Sanskrit"
+msgstr ""
+
+msgid "script and orientation"
+msgstr ""
+
+msgid "Serbian (Latin)"
+msgstr ""
+
+msgid "Serbian"
+msgstr ""
+
+msgid "Sindhi"
+msgstr ""
+
+msgid "Sinhala script"
+msgstr ""
+
+msgid "Sinhala"
+msgstr ""
+
+msgid "Slovakian"
+msgstr ""
+
+msgid "Slovenian"
+msgstr ""
+
+msgid "Spanish, Castilian - Old"
+msgstr ""
+
+msgid "Spanish"
+msgstr ""
+
+msgid "Sundanese"
+msgstr ""
+
+msgid "Swahili"
+msgstr ""
+
+msgid "Swedish"
+msgstr ""
+
+msgid "Syriac script"
+msgstr ""
+
+msgid "Syriac"
+msgstr ""
+
+msgid "Tajik"
+msgstr ""
+
+msgid "Tamil script"
+msgstr ""
+
+msgid "Tamil"
+msgstr ""
+
+msgid "Tatar"
+msgstr ""
+
+msgid "Telugu script"
+msgstr ""
+
+msgid "Telugu"
+msgstr ""
+
+msgid "Thaana script"
+msgstr ""
+
+msgid "Thai script"
+msgstr ""
+
+msgid "Thai"
+msgstr ""
+
+msgid "Tibetan script"
+msgstr ""
+
+msgid "Tibetan Standard"
+msgstr ""
+
+msgid "Tigrinya"
+msgstr ""
+
+msgid "Tonga"
+msgstr ""
+
+msgid "Turkish"
+msgstr ""
+
+msgid "Ukrainian"
+msgstr ""
+
+msgid "Urdu"
+msgstr ""
+
+msgid "Uyghur"
+msgstr ""
+
+msgid "Uzbek (Cyrillic)"
+msgstr ""
+
+msgid "Uzbek"
+msgstr ""
+
+msgid "Vietnamese script"
+msgstr ""
+
+msgid "Vietnamese"
+msgstr ""
+
+msgid "Welsh"
+msgstr ""
+
+msgid "Yiddish"
+msgstr ""
+
+msgid "Yoruba"
+msgstr ""
+
+msgid "hour"
+msgid_plural "hours"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+msgid "minute"
+msgid_plural "minutes"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+msgid "second"
+msgid_plural "seconds"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+msgid "Elapsed time"
+msgstr ""

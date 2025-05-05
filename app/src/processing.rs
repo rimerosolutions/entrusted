@@ -103,12 +103,13 @@ pub fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
     let l10n = ctx.l10n;
     let tx = ctx.tx;
 
-    unsafe {
-        std::env::set_var(ENV_VAR_ENTRUSTED_TESSERACT_TESSDATA_DIR, r"C:\testing\tesseract");
-        std::env::set_var(ENV_VAR_ENTRUSTED_LIBREOFFICE_PROGRAM_DIR, r"C:\testing\LibreOffice\program");
-        std::env::set_var("SAL_LOG", "off");
-        std::env::set_var("SAL_NO_LOG", "true");
-    }
+    // Env variables
+    // unsafe {
+    //     std::env::set_var(ENV_VAR_ENTRUSTED_TESSERACT_TESSDATA_DIR, r"C:\testing\tesseract");
+    //     std::env::set_var(ENV_VAR_ENTRUSTED_LIBREOFFICE_PROGRAM_DIR, r"C:\testing\LibreOffice\program");
+    //     std::env::set_var("SAL_LOG", "off");
+    //     std::env::set_var("SAL_NO_LOG", "true");
+    // }
 
     let root_tmp_dir     = ctx.root_tmp_dir;
     let raw_input_path   = ctx.input_path;

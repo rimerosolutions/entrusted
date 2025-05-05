@@ -23,8 +23,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     if let Ok(target_sys) = std::env::var("CARGO_CFG_TARGET_OS") {
         if target_sys == "windows" {
             if let embed_resource::CompilationResult::Failed(msg) = embed_resource::compile("./assets/icon.rc", embed_resource::NONE) {
-		return Err(format!("Cannot embed icon in Windows executable.\n{}", msg.into_owned()).into());
-	    }
+		        return Err(format!("Cannot embed icon in Windows executable.\n{}", msg.into_owned()).into());
+	        }
         }
     }
 

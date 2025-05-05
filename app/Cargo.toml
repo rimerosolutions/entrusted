@@ -21,8 +21,7 @@ uuid = { version = "1.2.2", features = ["v4"] }
 image = { version = "0.25.6", default-features = false, features = ["gif", "jpeg", "png", "tiff", "bmp", "pnm"] }
 file-format = { version = "0.26", default-features = false, features = ["reader-cfb", "reader-pdf", "reader-txt", "reader-zip", "reader-xml"] }
 libreofficekit = { git = "https:/github.com/jacobtread/libreofficekit", rev="43c79eb" }
-#mupdf = { git = "https://github.com/yveszoundi/mupdf-rs", branch = "yveszoundi/new_pdfocr_writer" }
-mupdf = { path = "../../mupdf-rs" }
+mupdf = { git = "https://github.com/yveszoundi/mupdf-rs", branch = "yveszoundi/new_pdfocr_writer" }
 indicatif = "0.17.3"
 dirs = "6.0.0"
 toml = "0.8.20"

@@ -103,14 +103,6 @@ pub fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
     let l10n = ctx.l10n;
     let tx = ctx.tx;
 
-    // Env variables
-    // unsafe {
-    //     std::env::set_var(ENV_VAR_ENTRUSTED_TESSERACT_TESSDATA_DIR, r"C:\testing\tesseract");
-    //     std::env::set_var(ENV_VAR_ENTRUSTED_LIBREOFFICE_PROGRAM_DIR, r"C:\testing\LibreOffice\program");
-    //     std::env::set_var("SAL_LOG", "off");
-    //     std::env::set_var("SAL_NO_LOG", "true");
-    // }
-
     let root_tmp_dir     = ctx.root_tmp_dir;
     let raw_input_path   = ctx.input_path;
     let output_file_path = root_tmp_dir.join(format!("{}.pdf", doc_uuid));
@@ -132,8 +124,8 @@ pub fn execute(ctx: ExecCtx) -> Result<(), Box<dyn Error>> {
     progress_range.update(20, 90);
     let mut progress_value: usize = progress_range.min;
     progressed(&tx, progress_value, l10n.ngettext("Extract PDF file into one image",
-                                         "Extract PDF file into few images",
-                                         page_count as u64));
+                                                  "Extract PDF file into few images",
+                                                  page_count as u64));
 
     let (template_img_to_pdf, ocr_settings) = if let Some(v) = ctx.ocr_lang {
         let ocr_lang_text = v.as_str();
@@ -400,8 +392,7 @@ fn page_to_pixmap(i: usize, doc: &PdfDocument, target_dpi: f32) -> Result<Docume
     let page = doc.load_page(i as i32)?;
     let matrix = Matrix::new_scale(target_dpi/72.0, target_dpi/72.0);
 
-//    let pixmap = page.to_pixmap(&matrix, &Colorspace::device_rgb(), false, true)?;
-    let pixmap = page.to_pixmap(&matrix, &Colorspace::device_rgb(), 0.0, true)?;
+    let pixmap = page.to_pixmap(&matrix, &Colorspace::device_rgb(), false, true)?;
     let mut w: Vec<u8> = vec![];
     pixmap.write_to(&mut w, ImageFormat::PNG)?;
 

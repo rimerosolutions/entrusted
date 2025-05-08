@@ -1120,7 +1120,8 @@ dependencies = [
 
 [[package]]
 name = "mupdf"
-version = "0.4.4"
+version = "0.5.0"
+source = "git+https://github.com/yveszoundi/mupdf-rs?branch=yveszoundi%2Fnew_pdfocr_writer#597f8f6aa8f098d9ea40395a6adc2957f55cb55c"
 dependencies = [
  "bitflags 2.9.0",
  "font-kit",
@@ -1132,7 +1133,8 @@ dependencies = [
 
 [[package]]
 name = "mupdf-sys"
-version = "0.4.4"
+version = "0.5.0"
+source = "git+https://github.com/yveszoundi/mupdf-rs?branch=yveszoundi%2Fnew_pdfocr_writer#597f8f6aa8f098d9ea40395a6adc2957f55cb55c"
 dependencies = [
  "bindgen",
  "cc",

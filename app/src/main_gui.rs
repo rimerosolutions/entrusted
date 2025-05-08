@@ -2942,14 +2942,15 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 #[cfg(target_os = "macos")]
 pub fn open_document(url: &str, _: &str, trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {
-    if let Some(cmd_open) = common::executable_find("open") {
-        match std::process::Command::new(cmd_open).arg(url).spawn() {
-            Ok(_)   => Ok(()),
-            Err(ex) => Err(ex.into()),
-        }
-    } else {
-        Err(trans.gettext("Could not find 'open' command in 'PATH' environment variable!").into())
-    }
+    // if let Some(cmd_open) = common::executable_find("open") {
+    //     match std::process::Command::new(cmd_open).arg(url).spawn() {
+    //         Ok(_)   => Ok(()),
+    //         Err(ex) => Err(ex.into()),
+    //     }
+    // } else {
+    //     Err(trans.gettext("Could not find 'open' command in 'PATH' environment variable!").into())
+    // }
+    Ok(())
 }
 
 #[cfg(target_os = "windows")]
@@ -3332,32 +3333,6 @@ pub fn pdf_open_with(cmd: String, input: PathBuf, _: &l10n::Translations) -> Res
 
 #[cfg(target_os = "macos")]
 pub fn pdf_open_with(cmd: String, input: PathBuf, trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {
-    let p = std::path::Path::new(&cmd);
-
-    if p.exists() && p.is_dir() {
-        match common::executable_find("open") {
-            Some(open_cmd) => match std::process::Command::new(open_cmd).arg("-a").arg(cmd).arg(input).spawn() {
-                Ok(mut child_proc) => {
-                    match child_proc.wait() {
-                        Ok(exit_status) => {
-                            if exit_status.success() {
-                                Ok(())
-                            } else {
-                                Err(trans.gettext("Could not open PDF file!").into())
-                            }
-                        },
-                        Err(ex) => Err(ex.into())
-                    }
-                },
-                Err(ex) => Err(ex.into()),
-            },
-            None => Err(trans.gettext("Could not find 'open' command in 'PATH' environment variable!").into()),
-        }
-    } else {
-        if let Err(ex) = std::process::Command::new(cmd).arg(input).spawn() {
-            return Err(ex.into());
-        }
-
-        Ok(())
-    }
+    // TODO reimplement this
+    Ok(())
 }

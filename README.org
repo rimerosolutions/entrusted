@@ -1,5 +1,7 @@
 #+TITLE: README
 
+**This program is under rewrite for usability, coding practices and maintainability.**
+
 * What is this?
 
 ** Overview

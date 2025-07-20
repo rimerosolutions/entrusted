@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap6="http://schemas.microsoft.com/appx/manifest/uap/windows10/6" xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10" xmlns:desktop7="http://schemas.microsoft.com/appx/manifest/desktop/windows10/7" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" IgnorableNamespaces="uap uap10 desktop7 uap6 rescap">
+  <!--Package created by MSIX Packaging Tool version: 1.2024.405.0-->
+  <Identity Name="Entrusted" Publisher="CN=Rimero Solutions, O=Rimero Solutions, C=CA" Version="1.0.7.0" ProcessorArchitecture="x64" />
+  <Properties>
+    <DisplayName>Entrusted</DisplayName>
+    <PublisherDisplayName>Rimero Solutions</PublisherDisplayName>
+    <Description>Document sanitizer tool</Description>
+    <Logo>Assets\StoreLogo.png</Logo>
+    <uap10:PackageIntegrity>
+      <uap10:Content Enforcement="on" />
+    </uap10:PackageIntegrity>
+  </Properties>
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22000.1" />
+    <PackageDependency Name="Microsoft.WindowsAppRuntime.1.4" MinVersion="4000.1010.1349.0" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" />
+  </Dependencies>
+  <Applications>
+    <Application Id="ENTRUSTED" Executable="entrusted.exe" EntryPoint="windows.fullTrustApplication">
+      <uap:VisualElements BackgroundColor="transparent" DisplayName="Entrusted" Square150x150Logo="Assets\ENTRUSTED-Square150x150Logo.png" Square44x44Logo="Assets\ENTRUSTED-Square44x44Logo.png" Description="Entrusted">
+        <uap:DefaultTile Wide310x150Logo="Assets\ENTRUSTED-Wide310x150Logo.png" Square310x310Logo="Assets\ENTRUSTED-Square310x310Logo.png" Square71x71Logo="Assets\ENTRUSTED-Square71x71Logo.png" />
+      </uap:VisualElements>
+      <Extensions>
+        <desktop7:Extension Category="windows.shortcut">
+          <desktop7:Shortcut File="[{Programs}]\Entrusted\Entrusted.lnk" Icon="[{Package}]\entrusted.exe" />
+        </desktop7:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+  <Extensions>
+    <uap6:Extension Category="windows.loaderSearchPathOverride">
+      <uap6:LoaderSearchPathOverride>
+        <uap6:LoaderSearchPathEntry FolderPath="libreoffice/program" />
+      </uap6:LoaderSearchPathOverride>
+    </uap6:Extension>
+  </Extensions>
+  <Capabilities>
+    <uap:Capability Name="picturesLibrary" />
+    <rescap:Capability Name="documentsLibrary" />
+  </Capabilities>
+</Package>

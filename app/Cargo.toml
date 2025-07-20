@@ -1,17 +1,14 @@
 [package]
-name = "entrusted-client"
-version = "0.3.3"
+name = "entrusted"
+version = "1.0.0"
 edition = "2021"
-description = "Entrusted client"
+description = "A document sanitizer tool"
 keywords = ["entrusted", "client"]
 license = "GPL"
 repository = "https://github.com/rimerosolutions/entrusted"
-authors = [
-	"Yves Zoundi <yves_zoundi@hotmail.com>"
-]
+authors = [ "Yves Zoundi <yves_zoundi@hotmail.com>" ]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 clap = { version = "4.1.4", features = ["string"] }
 rpassword = "7.2.0"
@@ -19,44 +16,41 @@ serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.91"
 uuid = { version = "1.2.2", features = ["v4"] }
 image = { version = "0.25.6", default-features = false, features = ["gif", "jpeg", "png", "tiff", "bmp", "pnm"] }
-file-format = { version = "0.26", default-features = false, features = ["reader-cfb", "reader-pdf", "reader-txt", "reader-zip", "reader-xml"] }
+file-format = { version = "0.27.0", default-features = false, features = ["reader-cfb", "reader-pdf", "reader-txt", "reader-zip", "reader-xml"] }
 libreofficekit = { git = "https:/github.com/jacobtread/libreofficekit", rev="43c79eb" }
-mupdf = { git = "https://github.com/yveszoundi/mupdf-rs", branch = "yveszoundi/new_pdfocr_writer" }
-indicatif = "0.17.3"
+mupdf = { git = "https://github.com/yveszoundi/mupdf-rs/", branch="experiments", default-features = false, features = ["js", "xps", "svg", "cbz", "img", "html", "epub", "system-fonts", "tesseract"] }
+indicatif = "0.18.0"
 dirs = "6.0.0"
-toml = "0.8.20"
+toml = "0.9.0"
 locale_config = "0.3.0"
-fluent-langneg = "0.13.0"
+fluent-langneg = "0.14.1"
 unic-langid = "0.9.1"
 gettext = "0.4.0"
-minreq = { version = "2.6.0", features = ["json-using-serde", "https"] }
-semver = "1.0.16"
-libc = "0.2.139"
-
-[features]
-default = []
-gui = ["fltk"]
+dunce = "1.0.3"
+mimalloc = { version = "0.1.46", features = ["secure"] }
+eframe = { version = "0.31.1", optional = true }
+egui_table = { version = "0.3.0", optional = true }
+rfd = { version = "0.15.3", optional = true }
+raw-window-handle = {version = "0.6.2", optional = true }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 freedesktop_entry_parser = "1.3.0"
-xdg-utils="0.4.0"
-
-fltk = { version = "1.5.7", optional = true }
+xdg-utils = "0.4.0"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 core-services = "1.0.0"
 core-foundation = "0.10.0"
-fltk = { version = "1.5.7", optional = true }
 
 [target.'cfg(target_os = "windows")'.dependencies]
-winapi = { version = "0.3.9", features=["shellapi"] }
-winreg = "0.55.0"
-dunce = "1.0.3"
-fltk = { version = "1.5.7", optional = true }
+windows = { version = "0.61.1", features = ["Win32_Foundation", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging", "Foundation", "Win32_System_Diagnostics_Debug", "Win32_Globalization"] }
 
 [build-dependencies]
 embed-resource = "3.0.2"
 polib = "0.2.0"
+
+[features]
+default = []
+gui = ["eframe", "rfd", "egui_table", "raw-window-handle"]
 
 [[bin]]
 name = "entrusted-cli"
@@ -66,3 +60,10 @@ path = "src/main_cli.rs"
 name = "entrusted-gui" 
 path = "src/main_gui.rs"
 required-features = ["gui"]
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+strip = true
+panic = "abort"

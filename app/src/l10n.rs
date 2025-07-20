@@ -1,19 +1,32 @@
-use fluent_langneg::negotiate_languages;
-use fluent_langneg::NegotiationStrategy;
-use fluent_langneg::convert_vec_str_to_langids_lossy;
-
-use unic_langid::LanguageIdentifier;
-
 use std::collections::HashMap;
 use std::io::Cursor;
 use std::sync::{LazyLock, Mutex};
 
-use locale_config;
-
+use fluent_langneg::negotiate_languages;
+use fluent_langneg::NegotiationStrategy;
+use fluent_langneg::convert_vec_str_to_langids_lossy;
+use fluent_langneg::LanguageIdentifier;
 use gettext::Catalog;
 
 pub const DEFAULT_LANGID: &str = "en";
 pub const ENV_VAR_ENTRUSTED_LANGID: &str = "ENTRUSTED_LANGID";
+
+
+#[macro_export]
+macro_rules! incl_gettext_files {
+    ( $( $x:expr ),* ) => {
+        {
+            let mut ret = HashMap::with_capacity(2);
+            $(
+                let data = include_bytes!(concat!("../translations/", $x, "/LC_MESSAGES/messages.mo")).as_slice();
+                ret.insert($x, data);
+
+            )*
+
+            ret
+        }
+    };
+}
 
 static CATALOG_PER_LOCALE: LazyLock<Mutex<HashMap<String, Catalog>>> = LazyLock::new(|| {
     Mutex::new(HashMap::with_capacity(2))
@@ -44,7 +57,6 @@ pub fn load_translations(locale_data: HashMap<&str, &[u8]>) {
 
 #[derive(Clone)]
 pub struct Translations {
-    locale: String,
     catalog: Catalog,
 }
 
@@ -69,18 +81,10 @@ pub fn new_translations(requested_locale: String) -> Translations {
     let locale = negotiate_langid(requested_locale, keys);
     let catalog = catalog_per_langid[&locale].clone();
 
-    Translations {
-        locale,
-        catalog
-    }
+    Translations { catalog }
 }
 
 impl Translations {
-
-    pub fn langid(&self) -> String {
-        self.locale.clone()
-    }
-
     pub fn gettext(&self, msg: &str) -> String {
         self.catalog.gettext(msg).to_string()
     }
@@ -92,7 +96,7 @@ impl Translations {
             2 => crate::runtime_format!(self.gettext(template), params[0], params[1]),
             3 => crate::runtime_format!(self.gettext(template), params[0], params[1], params[2]),
             4 => crate::runtime_format!(self.gettext(template), params[0], params[1], params[2], params[3]),
-            _ => format!("{}", "too-many-params-4-values-max")
+            _ => "too-many-params-4-values-max".to_string()
         }
     }
 
@@ -107,11 +111,12 @@ impl Translations {
             2 => crate::runtime_format!(self.catalog.ngettext(msgid, msgid_plural, n).to_string(), n, params[0], params[1]),
             3 => crate::runtime_format!(self.catalog.ngettext(msgid, msgid_plural, n).to_string(), n, params[0], params[1], params[2]),
             4 => crate::runtime_format!(self.catalog.ngettext(msgid, msgid_plural, n).to_string(), n, params[0], params[1], params[2], params[3]),
-            _ => format!("{}", "too-many-params-4-values-max")
+            _ => "too-many-params-4-values-max".to_string()
         }
     }
 }
 
+// TODO: Does this really belong to this file?
 pub fn ocr_lang_key_by_name(trans: &Translations) -> HashMap<&'static str, String> {
     [
         ("Afrikaans", "ar"),
@@ -367,7 +372,7 @@ mod runtime_format {
             let fa = runtime_format::FormatArg {
                 format_str: AsRef::as_ref(&format_str),
                 //args: &[ $( $crate::runtime_format!(@parse_arg $e) ),* ],
-                args: crate::runtime_format!(@parse_args [] $($tail)*)
+                args: $crate::runtime_format!(@parse_args [] $($tail)*)
             };
             format!("{}", fa)
         }};

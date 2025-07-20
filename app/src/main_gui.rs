@@ -1,3338 +1,1895 @@
-#![windows_subsystem = "windows"]
+#![cfg_attr(
+    all(
+        target_os = "windows",
+        not(debug_assertions),
+    ),
+    windows_subsystem = "windows"
+)]
 
 use std::cell::RefCell;
-use std::collections::HashMap;
-use std::collections::HashSet;
-use std::env;
-use std::error::Error;
-use std::ops::{Deref, DerefMut};
-use std::path::PathBuf;
+use std::cmp::Ordering;
+use std::collections::{HashMap, HashSet};
+use std::{env, path, thread};
 use std::rc::Rc;
-use std::sync::atomic::{AtomicBool, Ordering, AtomicI32};
-use std::sync::mpsc;
-use std::sync::Arc;
-use std::thread;
+use std::sync::{mpsc, atomic, Arc};
 
-use fltk::{
-    app, browser, button, dialog, draw, enums, frame, group, input, misc, prelude::*, text, window, image, menu
-};
+use eframe::egui;
+use mimalloc::MiMalloc;
+use uuid::Uuid;
 
 mod l10n;
 mod common;
-mod processing;
+mod error;
 mod config;
-mod container;
+mod platform;
+mod processing;
+mod sanitizer;
 
-const WIDGET_GAP: i32 = 20;
-const ELLIPSIS: &str  = "...";
+use crate::common::{AppEvent, VisualQuality};
 
-const ICON_SAVE: &[u8]     = include_bytes!("../assets/Save_icon.png");
-const ICON_FRAME: &[u8]    = include_bytes!("../assets/Entrusted_icon.png");
-const ICON_PASSWORD: &[u8] = include_bytes!("../assets/Password_icon.png");
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
 
-const FILELIST_ROW_STATUS_PENDING    :&str = "Pending";
-const FILELIST_ROW_STATUS_INPROGRESS :&str = "InProgress";
-const FILELIST_ROW_STATUS_SUCCEEDED  :&str = "Succeeded";
-const FILELIST_ROW_STATUS_FAILED     :&str = "Failed";
-const FILELIST_ROW_STATUS_CANCELLED  :&str = "Cancelled";
+const VERTICAL_GAP: f32 = 10.0;
+const TABLE_COLUMN_NUMBER_MARGIN_X: i8 = 4;
+const LINE_COLOR: egui::Color32 = egui::Color32::ORANGE;
 
-const FILELIST_ROW_COLOR_PENDING: enums::Color    = enums::Color::Magenta;
-const FILELIST_ROW_COLOR_INPROGRESS: enums::Color = enums::Color::DarkYellow;
-const FILELIST_ROW_COLOR_SUCCEEDED: enums::Color  = enums::Color::DarkGreen;
-const FILELIST_ROW_COLOR_FAILED: enums::Color     = enums::Color::Red;
-const FILELIST_ROW_COLOR_CANCELLED: enums::Color  = enums::Color::from_rgb(153, 0, 0);
+const PROGRESS_VALUE_MAX: usize = 100;
 
-const TAB_COLOR_PUSHED_FOREGROUND: enums::Color = enums::Color::White;
-const TAB_COLOR_PUSHED_BACKGROUND: enums::Color = enums::Color::from_rgb(90, 90, 90);
+const ICON_LOGO: &[u8]  = include_bytes!("../assets/images/app_logo.png");
 
-const EVENT_ID_SELECTION_CHANGED: i32 = 50;
-const EVENT_ID_ALL_SELECTED: i32      = 51;
-const EVENT_ID_ALL_DESELECTED: i32    = 52;
+const HELP_DATA_FEATURES: &str = include_str!("../assets/help/features.org");
+const HELP_DATA_TOPICS: &str   = include_str!("../assets/help/topics.org");
+const HELP_DATA_USAGE: &str    = include_str!("../assets/help/usage.org");
+
+const EMPTY_STRING: String = String::new();
+
+#[derive(Clone, PartialEq, Eq)]
+struct OcrLang {
+    id: String,
+    name: String,
+}
+
+impl OcrLang {
+    fn new(id: String, name: String) -> Self {
+        Self { id, name }
+    }
+}
+
+impl Ord for OcrLang {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.name.cmp(&other.name)
+    }
+}
+
+impl PartialOrd for OcrLang {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl std::fmt::Display for OcrLang {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.name)
+    }
+}
 
 #[derive(Clone)]
 struct GuiEventSender {
-    tx: mpsc::Sender<common::AppEvent>
+    tx  : mpsc::Sender<common::AppEvent>,
+    ctx : egui::Context
 }
 
 impl common::EventSender for GuiEventSender {
     fn send(&self, evt: crate::common::AppEvent) -> Result<(), mpsc::SendError<crate::common::AppEvent>> {
-        app::sleep(0.01);
-        app::awake();
-        self.tx.send(evt)
-    }
-
-    fn clone_box(&self) -> Box<dyn common::EventSender> {
-        Box::new(self.clone())
+        self.tx.send(evt)?;
+        self.ctx.request_repaint();
+        thread::yield_now();
+        Ok(())
     }
 }
 
-#[derive(Clone)]
-struct ConversionTask {
-    input_path: PathBuf,
-    output_path: PathBuf,
-    options: common::ConvertOptions,
+#[derive(Clone, PartialEq)]
+enum UiTheme {
+    Light, Dark, System,
 }
 
-#[derive(Clone)]
-struct FileListRow {
-    container: group::Pack,
-    file: PathBuf,
-    opt_output_file: Rc<RefCell<Option<String>>>,
-    password_button: button::Button,
-    output_file_button: button::Button,
-    checkbox: button::CheckButton,
-    progressbar: misc::Progress,
-    status: frame::Frame,
-    messages: group::Pack,
-    open_link: HyperLink,
-    logs_link: HyperLink,
-    logs: Rc<RefCell<Vec<String>>>,
-    opt_passwd: Rc<RefCell<Option<String>>>,
-    viewer_app_option: Rc<RefCell<Option<String>>>
-}
-
-impl FileListRow {
-    pub fn set_viewer_app(&mut self, viewer_app: String) {
-        self.viewer_app_option.replace(Some(viewer_app));
-    }
-    
-    pub fn deactivate_controls(&mut self) {
-        self.checkbox.deactivate();
-        self.password_button.deactivate();
-        self.output_file_button.deactivate();
-    }
-
-    pub fn update_progress(&mut self, data: String, percent_complete: usize) {
-        self.progressbar.set_value(percent_complete as f64);
-        self.progressbar.set_label(&format!("{}%", percent_complete));
-        self.logs.borrow_mut().push(data);
-    }
-
-    pub fn mark_as_cancelled(&mut self) {
-        self.status.set_label_color(FILELIST_ROW_COLOR_CANCELLED);
-        self.status.set_label(FILELIST_ROW_STATUS_CANCELLED);
+impl std::fmt::Display for UiTheme {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            UiTheme::Light   => f.write_str("Light"),
+            UiTheme::Dark    => f.write_str("Dark"),
+            UiTheme::System  => f.write_str("System"),
+        }
     }
 }
 
-#[derive(Clone)]
-struct HyperLink {
-    container: frame::Frame,
-    disabled: bool,
-}
+impl From<Option<String>> for UiTheme {
+    fn from(theme_opt: Option<String>) -> Self {
+        if let Some(theme_value) = theme_opt {
+            let theme_val = theme_value.to_lowercase();
 
-impl Deref for HyperLink {
-    type Target = frame::Frame;
-
-    fn deref(&self) -> &Self::Target {
-        &self.container
-    }
-}
-
-impl DerefMut for HyperLink {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.container
-    }
-}
-
-impl HyperLink {
-    fn new(w: i32, h: i32, lbl: &str) -> Self {
-        let mut container = frame::Frame::default()
-            .with_size(w, h)
-            .with_label(lbl)
-            .with_align(enums::Align::Inside | enums::Align::Left);
-        container.set_label_color(enums::Color::Blue);
-
-        container.draw({
-            move |wid| {
-                let (lw, lh) = draw::measure(&wid.label(), true);
-                let old_color = draw::get_color();
-
-                let line_color = if wid.active() {
-                    wid.label_color()
-                } else {
-                    wid.label_color().inactive()
-                };
-
-                draw::set_draw_color(line_color);
-                draw::draw_line(wid.x() + 3, wid.y() + lh/2 + wid.h() / 2, wid.x() + lw + 2, wid.y() + lh/2 + wid.h() / 2);
-                draw::set_draw_color(old_color);
+            match theme_val.as_ref() {
+                "light" => UiTheme::Light,
+                "dark"  => UiTheme::Dark,
+                _       => UiTheme::System,
             }
-        });
+        } else {
+            UiTheme::System
+        }
+    }
+}
 
-        let disabled = false;
+impl From<UiTheme> for egui::ThemePreference {
+    fn from(val: UiTheme) -> Self {
+        match val {
+            UiTheme::Light  => egui::ThemePreference::Light,
+            UiTheme::Dark   => egui::ThemePreference::Dark,
+            UiTheme::System => egui::ThemePreference::System
+        }
+    }
+}
+
+fn move_to_screen(screen_id: ScreenId, current_state: &AppState) {
+    let mut current_screen_id = current_state.current_screen_id.borrow_mut();
+    *current_screen_id = screen_id;
+}
+
+fn capitalize_first_letter(text: &str) -> String {
+    let mut chars = text.chars();
+    let Some(first) = chars.next() else {
+        return EMPTY_STRING;
+    };
+
+    first.to_uppercase().chain(chars).collect()
+
+}
+
+fn text_width(ui: &mut egui::Ui, text: String) -> f32 {
+    let galley = ui.painter().layout_no_wrap(text, egui::FontId::default(), egui::Color32::WHITE);
+    galley.size().x * ui.ctx().pixels_per_point() + 10.0
+}
+
+fn paint_horizontal_line(ui: &mut egui::Ui, line_color: egui::Color32) {
+    let start = ui.cursor().min;
+    let end = egui::pos2(start.x + ui.available_width(), start.y);
+    ui.painter().line_segment([start, end], egui::Stroke::new(1.5, line_color));
+}
+
+fn filled_triangle(
+    ui: &egui::Ui,
+    rect: egui::Rect,
+    visuals: &egui::style::WidgetVisuals,
+    _is_open: bool,
+    _above_or_below: egui::AboveOrBelow,
+) {
+    let rect = egui::Rect::from_center_size(
+        rect.center(),
+        egui::vec2(rect.width() * 0.6, rect.height() * 0.4),
+    );
+
+    ui.painter().add(egui::Shape::convex_polygon(
+        vec![rect.left_top(), rect.right_top(), rect.center_bottom()],
+        visuals.fg_stroke.color,
+        visuals.fg_stroke,
+    ));
+}
+
+fn combine_options(global_options: &common::ConvertOptions, file_options: &FileUploadOptions) -> common::ConvertOptions {
+    let mut convert_options = global_options.clone();
+    let save_folder = &file_options.output_folder;
+
+    if !save_folder.trim().is_empty() {
+        convert_options.output_folder = Some(path::PathBuf::from(save_folder));
+    }
+
+    if !file_options.password_decrypt.trim().is_empty() {
+        convert_options.password_decrypt = Some(file_options.password_decrypt.to_string());
+    }
+
+    if !file_options.password_encrypt.trim().is_empty() {
+        convert_options.password_encrypt = Some(file_options.password_encrypt.to_string());
+    }
+
+    convert_options
+}
+
+struct App {
+    app_state: AppState,
+    navbar: Navbar,
+    screens: Vec<Box<dyn AppScreen>>
+}
+
+#[derive(Clone, PartialEq)]
+enum ModalDisplayState {
+    FileDialog, Log, ProcessingOptions, ErrorOccured, Hidden
+}
+
+#[derive(Clone)]
+struct AppState {
+    ui_theme: UiTheme,
+    sanitizer: sanitizer::Sanitizer,
+    trans: l10n::Translations,
+    current_screen_id: Rc<RefCell<ScreenId>>,
+    converting: Rc<RefCell<bool>>,
+    theme_set: Rc<RefCell<bool>>,
+    tx_gui: mpsc::Sender<GuiEvent>,
+    rx_gui: Rc<RefCell<mpsc::Receiver<GuiEvent>>>,
+    tx_proc: mpsc::Sender<AppEvent>,
+    rx_proc: Rc<RefCell<mpsc::Receiver<AppEvent>>>,
+    tx_modal: mpsc::Sender<ModalEvent>,
+    rx_modal: Rc<RefCell<mpsc::Receiver<ModalEvent>>>,
+    modal_shown: bool,
+    modal_display_state: ModalDisplayState,
+    modal_text_data: String,
+    modal_processing_data: (usize, FileUploadOptions),
+    convert_options: Rc<RefCell<common::ConvertOptions>>,
+}
+
+impl AppState {
+    fn new(convert_options: common::ConvertOptions, sanitizer: sanitizer::Sanitizer, trans: l10n::Translations, ui_theme: UiTheme) -> Self {
+        let (tx_gui,   rx_gui)   = mpsc::channel::<GuiEvent>();
+        let (tx_proc,  rx_proc)  = mpsc::channel::<AppEvent>();
+        let (tx_modal, rx_modal) = mpsc::channel::<ModalEvent>();
 
         Self {
-            container,
-            disabled
+            convert_options: Rc::new(RefCell::new(convert_options)),
+            ui_theme,
+            sanitizer,
+            trans,
+            current_screen_id: Rc::new(RefCell::new(ScreenId::Welcome)),
+            theme_set: Rc::new(RefCell::new(false)),
+            converting: Rc::new(RefCell::new(false)),
+            tx_gui,
+            rx_gui: Rc::new(RefCell::new(rx_gui)),
+            tx_proc,
+            rx_proc: Rc::new(RefCell::new(rx_proc)),
+            tx_modal,
+            rx_modal: Rc::new(RefCell::new(rx_modal)),
+            modal_shown: false,
+            modal_display_state: ModalDisplayState::Hidden,
+            modal_text_data: String::new(),
+            modal_processing_data: (0, FileUploadOptions::default()),
+        }
+    }
+}
+
+impl App {
+    fn new(ui_theme: UiTheme, app_logo: egui::TextureHandle, convert_options: common::ConvertOptions, sanitizer: sanitizer::Sanitizer, ocr_lang_initial_selection: usize, ocr_lang_codes_selections: Vec<bool>, ocr_langs: Vec<OcrLang>, trans: l10n::Translations) -> Self {
+        let app_state = AppState::new(convert_options, sanitizer, trans.clone(), ui_theme);
+        let tx_modal = app_state.tx_modal.clone();
+
+        Self {
+            app_state,
+            navbar: Navbar,
+            screens: vec![Box::new(WelcomeScreen::new(app_logo)),
+                          Box::new(UploadScreen::new(tx_modal, trans.clone())),
+                          Box::new(SettingsScreen::new(ocr_lang_initial_selection, ocr_lang_codes_selections, ocr_langs)),
+                          Box::new(DocumentationScreen::new(&trans)),]
+        }
+    }
+}
+
+struct Navbar;
+
+impl Navbar {
+    fn render(&self, _: &egui::Context, ui: &mut egui::Ui, app_state: &mut AppState, home_button_enabled: bool) {
+        let trans = &app_state.trans;
+
+        if ui.add_enabled(home_button_enabled, egui::Button::new(trans.gettext("Home"))).clicked() {
+            move_to_screen(ScreenId::Welcome, app_state);
+        }
+
+        ui.add_space(VERTICAL_GAP);
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+enum ScreenId {
+    Welcome,
+    Upload,
+    Settings,
+    Documentation,
+}
+
+trait AppScreen {
+    fn render(&mut self, ctx: &egui::Context, ui: &mut egui::Ui, app_state: &mut AppState);
+    fn id(&self) -> ScreenId;
+}
+
+struct DocumentationScreen {
+    tabs: Vec<DocumentationScreenTab>,
+    active_tab_id: Uuid
+}
+
+impl DocumentationScreen {
+    fn new(trans: &l10n::Translations) -> Self {
+        let tabs = vec![
+            DocumentationScreenTab::new(trans.gettext("Features"), org_to_layout_job(HELP_DATA_FEATURES, trans)),
+            DocumentationScreenTab::new(trans.gettext("Topics"),   org_to_layout_job(HELP_DATA_TOPICS, trans)),
+            DocumentationScreenTab::new(trans.gettext("Usage"),    org_to_layout_job(HELP_DATA_USAGE, trans)),
+        ];
+
+        let first_tab_id = tabs[0].id.clone();
+        Self { tabs, active_tab_id: first_tab_id }
+    }
+}
+
+struct DocumentationScreenTab {
+    id: Uuid,
+    title: String,
+    contents: egui::text::LayoutJob
+}
+
+fn org_to_layout_job(contents: &'static str, trans: &l10n::Translations) -> egui::text::LayoutJob {
+    let mut job = egui::text::LayoutJob::default();    
+    let font_size = 13.0;
+
+    for line in contents.lines() {
+        let mut line_data = String::with_capacity(line.len() + 1);
+
+        if line.trim().is_empty() {
+            line_data.push_str(line);
+        } else {
+            let translated_line = trans.gettext(line);
+            line_data.push_str(&translated_line);
+        }
+
+        line_data.push('\n');
+
+        if line.starts_with("*") { // Header text
+            job.append(&line_data, 0.0, egui::TextFormat {
+                font_id: egui::FontId::new(font_size, egui::FontFamily::Proportional),
+                color: LINE_COLOR,
+                ..Default::default()
+            });
+        } else {                    // Normal text
+            job.append(&line_data, 0.0, egui::TextFormat {
+                font_id: egui::FontId::new(font_size, egui::FontFamily::Proportional),
+                ..Default::default()
+            });
         }
     }
 
-    fn disable(&mut self) {
-        self.disabled = true;
-        self.container.set_label_color(enums::Color::from_rgb(82, 82, 82));
-    }
+    job
+}
 
-    fn is_disabled(&self) -> bool {
-        self.disabled
+impl DocumentationScreenTab {
+    fn new(title: String, contents: egui::text::LayoutJob) -> Self {
+        Self { id: Uuid::new_v4(), title, contents }
     }
 }
 
-fn inside_hyperlink_bounds<W: WidgetExt>(coords: (i32, i32), wid: &mut W) -> bool {
-    let (lw, lh) = draw::measure(&wid.label(), true);
-    let bounds = (wid.x(), wid.y() + wid.h() / 2 - lh/2, lw + 2, lh);
+impl AppScreen for DocumentationScreen {
+    fn render(&mut self, _: &egui::Context, ui: &mut egui::Ui, app_state: &mut AppState) {
+        let trans = &app_state.trans;
 
-    coords.0 >= bounds.0 && coords.0 <= (bounds.0 + bounds.2) && coords.1 >= bounds.1 && coords.1 <= (bounds.1 + bounds.3)
+        ui.heading(trans.gettext("Documentation"));
+        ui.add_space(VERTICAL_GAP);
+
+        ui.horizontal(|ui| {
+            for tab in &self.tabs {
+                let tab_enabled = self.active_tab_id != tab.id;
+
+                if ui.add_enabled(tab_enabled, egui::Link::new(&tab.title)).clicked() {
+                    self.active_tab_id = tab.id;
+                }
+            }
+        });
+
+        let idx = self.tabs.iter().position(|x| x.id == self.active_tab_id).unwrap_or(0);
+
+        egui::ScrollArea::both().show(ui, |ui| {
+            ui.add(egui::Label::new(self.tabs[idx].contents.clone()).wrap());
+        });
+    }
+
+    fn id(&self) -> ScreenId {
+        ScreenId::Documentation
+    }
+}
+
+#[derive(Debug, Clone)]
+struct FileUploadOptions {
+    password_decrypt: String,
+    password_encrypt: String,
+    output_folder: String,
+}
+
+impl Default for FileUploadOptions {
+    fn default() -> Self {
+        Self {
+            password_decrypt: EMPTY_STRING,
+            password_encrypt: EMPTY_STRING,
+            output_folder:    EMPTY_STRING,
+        }
+    }
 }
 
 #[derive(Clone)]
-struct FileListWidget {
-    container: group::Pack,
-    selected_indices: Rc<RefCell<Vec<usize>>>,
-    rows: Rc<RefCell<Vec<FileListRow>>>,
+struct FileUploadEntryAddFiles {
+    id: Uuid,
+    path: path::PathBuf,
+    options: FileUploadOptions,
+    selected: bool,
+}
+
+impl FileUploadEntryAddFiles {
+    fn new(path: path::PathBuf, options: FileUploadOptions) -> Self {
+        Self { path, options, id: Uuid::new_v4(), selected: false }
+    }
+}
+
+#[derive(Clone, PartialEq)]
+enum FileUploadStatus {
+    Pending, Processing, Interrupted, Succeeded, Failed
+}
+
+impl std::fmt::Display for FileUploadStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FileUploadStatus::Pending     => f.write_str("Pending"),
+            FileUploadStatus::Processing  => f.write_str("Processing"),
+            FileUploadStatus::Interrupted => f.write_str("Interrupted"),
+            FileUploadStatus::Succeeded   => f.write_str("Succeeded"),
+            FileUploadStatus::Failed      => f.write_str("Failed"),
+        }
+    }
+}
+
+#[derive(Clone)]
+struct FileUploadEntryProcessFiles {
+    id: Uuid,
+    path: path::PathBuf,
+    output: Option<path::PathBuf>,
+    options: FileUploadOptions,
+    status: FileUploadStatus
+}
+
+impl FileUploadEntryProcessFiles {
+    fn new(id: Uuid,
+           path: path::PathBuf,
+           options: FileUploadOptions) -> Self {
+        Self { id, path, output: None, options, status: FileUploadStatus::Pending }
+    }
+}
+
+#[derive(Clone)]
+enum GuiEvent {
+    ReadToUpload,
+    ReadyToProcess(Vec<FileUploadEntryAddFiles>),
+    FilesUploaded(Vec<FileUploadEntryAddFiles>),
+    FileUploadOptionsUpdated((usize, FileUploadOptions))
+}
+
+#[derive(Clone)]
+enum ModalEvent {
+    FileDialog,
+    Log(String),
+    ErrorOccured(String),
+    ProcessingOptions((usize, FileUploadOptions)),
+}
+
+trait UploadScreenDelegate {
+    fn cell_content_ui(&mut self, row_number: u64, column_number: usize, ui: &mut egui::Ui);
+    fn column_name(&mut self, column_number: usize) -> String;
+    fn render(&mut self, ctx: &egui::Context, ui: &mut egui::Ui, app_state: &mut AppState);
+    fn ack_gui_event(&mut self, ctx: &egui::Context, event: GuiEvent, app_state: &mut AppState);
+    fn ack_proc_event(&mut self, ctx: &egui::Context, event: common::AppEvent, app_state: &mut AppState);
+}
+
+struct UploadScreenAddFilesDelegate {
+    column_names: Vec<String>,
+    file_upload_entries: Vec<FileUploadEntryAddFiles>,
+    file_upload_paths: HashSet<String>,
+    tx_modal: mpsc::Sender<ModalEvent>,
+}
+
+impl UploadScreenAddFilesDelegate {
+    fn new(tx_modal: mpsc::Sender<ModalEvent>, trans: l10n::Translations) -> Self {
+        Self {
+            column_names: vec![EMPTY_STRING, trans.gettext("File name").to_string()],
+            file_upload_entries: vec![],
+            file_upload_paths: HashSet::new(),
+            tx_modal,
+        }
+    }
+
+    fn delete_selected(&mut self) {
+        let entries = &mut self.file_upload_entries;
+
+        entries.retain(|item| {
+            if item.selected {
+                let path = item.path.display().to_string();
+                self.file_upload_paths.remove(&path);
+            }
+
+            !item.selected
+        });
+    }
+
+    fn can_select_or_deselect_all(&mut self, add_selection: bool) -> bool {
+        self.file_upload_entries.iter().any(|x| x.selected != add_selection)
+    }
+
+    fn toggle_all_selections(&mut self, add_selection: bool) {
+        for item in self.file_upload_entries.iter_mut() {
+            item.selected = add_selection;
+        }
+    }
+}
+
+impl egui_table::TableDelegate for UploadScreenAddFilesDelegate {
+    fn header_cell_ui(&mut self, ui: &mut egui::Ui, cell_inf: &egui_table::HeaderCellInfo) {
+        let col_index = cell_inf.col_range.start;
+
+        egui::Frame::NONE
+            .inner_margin(egui::Margin::symmetric(TABLE_COLUMN_NUMBER_MARGIN_X, 0))
+            .show(ui, |ui| {
+                ui.label(egui::RichText::new(self.column_name(col_index)).strong());
+            });
+    }
+
+    fn cell_ui(&mut self, ui: &mut egui::Ui, cell_info: &egui_table::CellInfo) {
+        let egui_table::CellInfo { row_nr, col_nr, .. } = *cell_info;
+
+        if row_nr % 2 == 1 {
+            ui.painter().rect_filled(ui.max_rect(), 0.0, ui.visuals().faint_bg_color);
+        }
+
+        egui::Frame::NONE
+            .inner_margin(egui::Margin::symmetric(TABLE_COLUMN_NUMBER_MARGIN_X, 0))
+            .show(ui, |ui| {
+                self.cell_content_ui(row_nr, col_nr, ui);
+            });
+    }
+}
+
+impl UploadScreenDelegate for UploadScreenAddFilesDelegate {
+    fn cell_content_ui(&mut self, row_number: u64, column_number: usize, ui: &mut egui::Ui) {
+        if column_number == 0 {    // Row number
+            ui.label((row_number + 1).to_string());
+        } else {                   // File name
+            if row_number < self.file_upload_entries.len() as u64 {
+                let entry = &mut self.file_upload_entries[row_number as usize];
+                let file_name = entry.path.file_name().unwrap().to_string_lossy();
+
+                ui.horizontal(|ui| {
+                    ui.add(egui::Checkbox::without_text(&mut entry.selected));
+                    ui.add(egui::Label::new(file_name).truncate());
+                });
+            } else {
+                ui.label(EMPTY_STRING);
+            }
+        }
+    }
+
+    fn ack_proc_event(&mut self, _: &egui::Context, _: common::AppEvent, _: &mut AppState) {
+        // No processing event to handle while uploading files
+    }
+
+    fn ack_gui_event(&mut self, _: &egui::Context, event: GuiEvent, _: &mut AppState) {
+        match event {
+            GuiEvent::FilesUploaded(entries) => {
+                let existing_paths = &mut self.file_upload_paths;
+
+                for entry in entries.iter() {
+                    let entry_path = entry.path.display().to_string();
+
+                    if !existing_paths.contains(&entry_path) {
+                        self.file_upload_entries.push(entry.clone());
+                        existing_paths.insert(entry_path);
+                    }
+                }
+            },
+            GuiEvent::FileUploadOptionsUpdated((index, options)) => {
+                self.file_upload_entries[index].options = options;
+            },
+            _ => {}
+        }
+    }
+
+    fn column_name(&mut self, column_number: usize) -> String {
+        if self.file_upload_paths.is_empty() {
+            EMPTY_STRING
+        } else {
+            self.column_names[column_number].to_owned()
+        }
+    }
+
+    fn render(&mut self, ctx: &egui::Context, ui: &mut egui::Ui, app_state: &mut AppState) {
+        let tx = app_state.tx_gui.clone();
+        let tx_modal = app_state.tx_modal.clone();
+        let trans = &app_state.trans;
+
+        ui.vertical_centered(|ui| {
+            let max_width = ui.available_width();
+
+            if ui.add(egui::Button::new(trans.gettext("Click to browse files or Drag and drop files into this window.")).min_size([max_width, 40.0].into())).clicked() {
+                let ctx = ctx.clone();
+                let builder = thread::Builder::new().name("entrusted_deletedfiles_thread".into());
+
+                let _ = builder.spawn(move || {
+                    let _ = tx_modal.send(ModalEvent::FileDialog);
+                    ctx.request_repaint();
+                });
+            }
+        });
+
+        ui.add_space(VERTICAL_GAP);
+
+        let row_count = self.file_upload_entries.len() as u64;
+
+        ui.horizontal(|ui| {
+            let selection_active = self.can_select_or_deselect_all(false);
+
+            ui.vertical(|ui| {
+                if ui.add_enabled(self.can_select_or_deselect_all(true), egui::Link::new(trans.gettext("Select all"))).clicked() {
+                    self.toggle_all_selections(true);
+                }
+
+                if ui.add_enabled(selection_active, egui::Link::new(trans.gettext("Deselect all"))).clicked() {
+                    self.toggle_all_selections(false);
+                }
+            });
+
+            ui.separator();
+
+            ui.vertical(|ui| {
+                if ui.add_enabled(selection_active, egui::Link::new(trans.gettext("Remove selected"))).clicked() {
+                    self.delete_selected();
+                }
+
+                if ui.add_enabled(selection_active, egui::Link::new(trans.gettext("Configure selected"))).clicked() && row_count != 0 {
+                    if let Some(index) = self.file_upload_entries.iter().position(|x| x.selected) {
+                        let entries = &self.file_upload_entries;
+                        let tx_modal = self.tx_modal.clone();
+                        let entry = &entries[index];
+                        let options = entry.options.clone();
+                        let ctx = ctx.clone();
+                        let builder = thread::Builder::new().name("entrusted_modal_thread".into());
+
+                        let _ = builder.spawn(move || {
+                            let _ = tx_modal.send(ModalEvent::ProcessingOptions((index, options)));
+                            ctx.request_repaint();
+                        });
+                    }
+                }
+            });
+
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                if ui.add_enabled(row_count != 0, egui::Button::new(trans.gettext("Sanitize"))).clicked() {
+                    let proc_entries = self.file_upload_entries.clone();
+
+                    self.file_upload_entries.clear();
+                    self.file_upload_paths.clear();
+
+                    *app_state.converting.borrow_mut() = true;
+                    let builder = thread::Builder::new().name("entrusted_filepicker_thread".into());
+                    let ctx = ctx.clone();
+
+                    let _ = builder.spawn(move || {
+                        let _ = tx.send(GuiEvent::ReadyToProcess(proc_entries));
+                        ctx.request_repaint();
+                    });
+                }
+            });
+        });
+        ui.add_space(VERTICAL_GAP);
+
+        let document_upload_label = if row_count > 0 {
+            let row_count_string = row_count.to_string();
+            trans.gettext_fmt("Documents uploaded ({0}):", vec![&row_count_string])
+        } else {
+            EMPTY_STRING
+        };
+
+        ui.label(document_upload_label);
+        ui.add_space(VERTICAL_GAP);
+
+        let wn1 = text_width(ui, row_count.to_string());
+        let desired_w = ui.available_width() - wn1;
+
+        let table = egui_table::Table::new()
+            .id_salt("table_upload_add")
+            .num_rows(row_count)
+            .columns(vec![
+                egui_table::Column::new(wn1).resizable(false).range(wn1..=wn1),
+                egui_table::Column::new(desired_w).resizable(false).range(desired_w..=desired_w),
+            ])
+            .num_sticky_cols(1)
+            .headers([egui_table::HeaderRow::new(20.0)])
+            .auto_size_mode(egui_table::AutoSizeMode::default());
+
+        table.show(ui, self);
+    }
+}
+
+struct UploadScreenProcessFilesDelegate {
+    column_names: Vec<String>,
+    file_upload_entries: Vec<FileUploadEntryProcessFiles>,
+    file_upload_statuses: HashMap<Uuid, Vec<(usize, String)>>,
+    started: bool,
+    done: bool,
+    interrupted: bool,
+    stop_requested: Arc<atomic::AtomicBool>,
+    processed_count: Arc<atomic::AtomicUsize>,
+    tx_modal: mpsc::Sender<ModalEvent>,
+    document_processing_label: String,
     trans: l10n::Translations,
 }
 
-impl Deref for FileListWidget {
-    type Target = group::Pack;
-
-    fn deref(&self) -> &Self::Target {
-        &self.container
-    }
-}
-
-impl DerefMut for FileListWidget {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.container
-    }
-}
-
-fn selected_ocr_langcodes(ocr_languages_by_lang: &HashMap<String, &str>, drop_down: &browser::MultiBrowser) -> Vec<String> {
-    let mut ret: Vec<String> = Vec::new();
-
-    if drop_down.selected_text().is_none() {
-        return ret;
-    } else {
-        for i in 0..drop_down.size() {
-            if drop_down.selected(i) {
-                if let Some(selected_lang) = drop_down.text(i) {
-                    if let Some(langcode) = ocr_languages_by_lang.get(&selected_lang) {
-                        ret.push(langcode.to_string());
-                    }
-                }
-            }
-        }
-    }
-
-    ret
-}
-
-fn clip_text<S: Into<String>>(txt: S, max_width: i32) -> String {
-    let text = txt.into();
-    let (width, _) = draw::measure(&text, true);
-
-    if width > max_width {
-        let (mut total_width, _) = draw::measure(ELLIPSIS, true);
-        let mut tmp = [0u8; 4];
-        let mut ret = String::with_capacity(text.len());
-
-        for ch in text.chars() {
-            tmp.fill(0);
-            let ch_str = ch.encode_utf8(&mut tmp);
-            let (ch_w, _) = draw::measure(ch_str, true);
-            ret.push(ch);
-            total_width += ch_w;
-
-            if total_width > max_width {
-                ret.push_str(ELLIPSIS);
-                return ret;
-            }
-        }
-    }
-
-    text
-}
-
-fn paint_underline<W: WidgetExt>(wid: &mut W) {
-    if wid.visible() && wid.active() {
-        let (lw, _) = draw::measure(&wid.label(), true);
-        let old_color = draw::get_color();
-        draw::set_draw_color(wid.label_color());
-        draw::draw_line(wid.x() + 3, wid.y() + wid.h(), wid.x() + lw, wid.y() + wid.h());
-        draw::set_draw_color(old_color);
-    }
-}
-
-fn row_to_task(image_quality: String,  active_ocrlang_option: &Option<String>, active_file_suffix: &str, active_row: &FileListRow) -> ConversionTask {
-    let input_path = active_row.file.clone();
-
-    let output_path = if let Some(custom_output_path) = active_row.opt_output_file.borrow().clone() {
-        PathBuf::from(custom_output_path)
-    } else {
-        common::default_output_path(input_path.clone(), active_file_suffix.to_string()).unwrap()
-    };
-
-    active_row.opt_output_file.replace(Some(output_path.display().to_string()));
-
-    let opt_row_passwd = active_row.opt_passwd.borrow().clone();
-    let options = common::ConvertOptions::new(
-        image_quality,
-        active_ocrlang_option.to_owned(),
-        opt_row_passwd
-    );
-
-    ConversionTask {
-        input_path,
-        output_path,
-        options,
-    }
-}
-
-fn show_dialog_updates(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Translations) {
-    let (x, y, w, h) = parent_window_bounds;
-
-    match common::update_check(&trans) {
-        Ok(opt_new_release) => {
-            if let Some(new_release) = opt_new_release {
-                show_dialog_newrelease(parent_window_bounds, new_release, trans);
-            } else {
-                let msg  = trans.gettext("No updates available at this time!");
-                let (lbl_width, lbl_height)  = draw::measure(&msg, true);
-                dialog::alert(x +( w/2) - (lbl_width/2), y +  (h / 2) - (lbl_height / 2), &msg);
-            }
-        },
-        Err(ex) => {
-            let msg = trans.gettext_fmt("Could not check for updates, please try later.\n{0}", vec![&ex.to_string()]);
-            let (lbl_width, lbl_height)  = draw::measure(&msg, true);
-            dialog::alert(x +( w/2) - (lbl_width/2), y +  (h / 2) - (lbl_height / 2), &msg);
-        }
-    }
-}
-
-fn show_dialog_newrelease(parent_window_bounds: (i32, i32, i32, i32), release_info: common::ReleaseInfo, trans: l10n::Translations) {
-    let wind_w = 450;
-    let wind_h = 100;
-    let wind_x = parent_window_bounds.0 + (parent_window_bounds.2 / 2) - (wind_w / 2);
-    let wind_y = parent_window_bounds.1 + (parent_window_bounds.3 / 2) - (wind_h / 2);
-
-    let mut win = window::Window::default()
-        .with_size(wind_w, wind_h)
-        .with_pos(wind_x, wind_y)
-        .with_label(&trans.gettext_fmt("Version {0} is out!", vec![&release_info.tag_name]));
-
-    win.begin();
-    win.make_resizable(true);
-    win.make_modal(true);
-
-    let mut grp = group::Pack::default()
-        .with_pos(WIDGET_GAP, WIDGET_GAP / 2)
-        .with_size(wind_w - (WIDGET_GAP * 2), wind_h - (WIDGET_GAP * 2))
-        .center_of(&win)
-        .with_type(group::PackType::Vertical);
-    grp.set_spacing(WIDGET_GAP);
-
-    frame::Frame::default()
-        .with_size(350, 20)
-        .with_label(&trans.gettext("Please get the new version!"))
-        .with_align(enums::Align::Inside | enums::Align::Left);
-
-    let mut frame_website = frame::Frame::default()
-        .with_size(350, 20)
-        .with_label(&release_info.html_url)
-        .with_align(enums::Align::Inside | enums::Align::Left);
-
-    frame_website.set_label_color(enums::Color::Blue);
-
-    frame_website.draw({
-        move |wid| {
-            if wid.visible() && wid.active() {
-                let (lw, lh) = draw::measure(&wid.label(), true);
-                let old_color = draw::get_color();
-                draw::set_draw_color(wid.label_color());
-                let ypos = wid.y() + wid.h()/2 + lh/2;
-                draw::draw_line(wid.x() + 3, ypos, wid.x() + lw, ypos);
-                draw::set_draw_color(old_color);
-            }
-        }
-    });
-
-    frame_website.handle({
-        let wind_ref = win.clone();
-        let trans_ref = trans.clone();
-
-        move |wid, ev| match ev {
-            enums::Event::Push => {
-                if let Err(ex) = open_document(&wid.label(), "text/html", &trans) {
-                    let err_text = trans_ref.gettext_fmt("Could not open URL: {0}, {1}", vec![&wid.label(), &ex.to_string()]);
-                    dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, &err_text);
-                }
-
-                true
-            }
-            _ => false,
-        }
-    });
-
-    grp.end();
-    win.end();
-
-    win.show();
-
-    while win.shown() {
-        app::wait();
-    }
-}
-
-fn show_dialog_help(parent_window_bounds: (i32, i32, i32, i32), trans: l10n::Translations) {
-    let wind_w = 450;
-    let wind_h = 300;
-    let wind_x = parent_window_bounds.0 + (parent_window_bounds.2 / 2) - (wind_w / 2);
-    let wind_y = parent_window_bounds.1 + (parent_window_bounds.3 / 2) - (wind_h / 2);
-
-    let mut win = window::Window::default()
-        .with_size(wind_w, wind_h)
-        .with_pos(wind_x, wind_y)
-        .with_label(&trans.gettext("Help"));
-
-    win.begin();
-    win.make_resizable(true);
-    win.make_modal(true);
-
-    let mut grp = group::Pack::default()
-        .with_pos(WIDGET_GAP, WIDGET_GAP / 2)
-        .with_size(wind_w - (WIDGET_GAP * 2), wind_h - (WIDGET_GAP * 2))
-        .center_of(&win)
-        .with_type(group::PackType::Vertical);
-    grp.set_spacing(WIDGET_GAP / 4);
-
-    let label_container_solution = format!("{}{}{}",
-                                           "The program requires a container solution: \n",
-                                           "- Docker (Windows, Linux, Mac OS)\n",
-                                           "- or Podman (Linux)");
-
-    frame::Frame::default()
-        .with_size(350, 80)
-        .center_of(&win)
-        .with_label(&trans.gettext(&label_container_solution))
-        .with_align(enums::Align::Inside | enums::Align::Left);
-
-    let label_supported_docs = format!("Supported document types: \n- {}\n- {}\n- {}\n- {}\n- {}\n- {}",
-                                       "Images (.jpg, .jpeg, .gif, .png, .tif, .tiff)",
-                                       "Document Graphics (.odg)",
-                                       "Text Documents (.rtf, .doc, .docx, .odt)",
-                                       "Spreadsheets (.xls, .xlsx, .ods)",
-                                       "Presentations (.ppt, .pptx, .odp)",
-                                       "PDF files (.pdf)"
-    );
-
-    frame::Frame::default()
-        .with_size(350, 130)
-        .with_label(&trans.gettext(&label_supported_docs))
-        .with_align(enums::Align::Inside | enums::Align::Left);
-
-    frame::Frame::default()
-        .with_size(350, 20)
-        .with_label(&trans.gettext("For more information, please visit:"))
-        .with_align(enums::Align::Inside | enums::Align::Left);
-
-    let label_website = "https://github.com/rimerosolutions/entrusted";
-
-    let mut frame_website = frame::Frame::default()
-        .with_size(350, 20)
-        .with_label(label_website)
-        .with_align(enums::Align::Inside | enums::Align::Left);
-
-    frame_website.set_label_color(enums::Color::Blue);
-
-    frame_website.draw({
-        move |wid| {
-            if wid.visible() && wid.active() {
-                let (lw, lh) = draw::measure(&wid.label(), true);
-                let old_color = draw::get_color();
-                draw::set_draw_color(wid.label_color());
-                let ypos = wid.y() + wid.h()/2 + lh/2;
-                draw::draw_line(wid.x() + 3, ypos, wid.x() + lw, ypos);
-                draw::set_draw_color(old_color);
-            }
-        }
-    });
-
-    frame_website.handle({
-        let wind_ref = win.clone();
-
-        move |wid, ev| match ev {
-            enums::Event::Push => {
-                if let Err(ex) = open_document(&wid.label(), "text/html", &trans) {
-                    let err_text = &trans.gettext_fmt("Could not open URL: {0}, {1}", vec![&wid.label(), &ex.to_string()]);
-                    dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, err_text);
-                }
-
-                true
-            }
-            _ => false,
-        }
-    });
-
-    grp.end();
-
-    win.end();
-    win.show();
-
-    while win.shown() {
-        app::wait();
-    }
-}
-
-fn filelist_column_widths(w: i32) -> (i32, i32, i32, i32, i32, i32) {
-    let width_password    = 40;
-    let width_output_file = 40;
-    let active_w = w - width_password - width_output_file - (WIDGET_GAP * 5);
-
-    let width_checkbox    = (active_w as f64 * 0.35)  as i32;
-    let width_progressbar = (active_w as f64 * 0.20)  as i32;
-    let width_status      = (active_w as f64 * 0.20)  as i32;
-    let width_logs        = (active_w as f64 * 0.25)  as i32;
-
-    (width_output_file, width_password, width_checkbox, width_progressbar, width_status, width_logs)
-}
-
-impl FileListWidget {
-    pub fn new(translations: l10n::Translations) -> Self {
-        let mut container = group::Pack::default().with_type(group::PackType::Vertical).with_size(300, 300);
-        container.set_spacing(WIDGET_GAP);
-        container.end();
-        container.auto_layout();
-
+impl UploadScreenProcessFilesDelegate {
+    fn new(tx_modal: mpsc::Sender<ModalEvent>, trans: l10n::Translations) -> Self {
         Self {
-            container,
-            trans: translations,
-            selected_indices: Rc::new(RefCell::new(vec![])),
-            rows: Rc::new(RefCell::new(vec![])),
+            column_names: vec![EMPTY_STRING, trans.gettext("File name"), trans.gettext("Progress"), trans.gettext("Status"), trans.gettext("Result")],
+            file_upload_entries: vec![],
+            processed_count: Arc::new(atomic::AtomicUsize::new(0)),
+            started: false,
+            stop_requested: Arc::new(atomic::AtomicBool::new(false)),
+            done: false,
+            interrupted: false,
+            file_upload_statuses: HashMap::new(),
+            document_processing_label: trans.gettext("Documents processing:"),
+            tx_modal,
+            trans,
         }
     }
+}
 
-    pub fn resize(&mut self, x: i32, y: i32, w: i32, _: i32) {
-        self.container.resize(x, y, w, self.container.h());
-        let (width_password, width_output_file, width_checkbox, width_progressbar, width_status, width_logs) = filelist_column_widths(w);
-        let col_widths =[
-            width_password, width_output_file, width_checkbox, width_progressbar, width_status, width_logs
-        ];
+impl egui_table::TableDelegate for UploadScreenProcessFilesDelegate {
+    fn header_cell_ui(&mut self, ui: &mut egui::Ui, cell_inf: &egui_table::HeaderCellInfo) {
+        let col_index = cell_inf.col_range.start;
 
-        if let Ok(rows) = self.rows.try_borrow() {
-            for row in rows.iter() {
-                let mut active_row = row.clone();
-                active_row.container.resize(active_row.container.x(), active_row.container.y(), w, active_row.container.h());
-                active_row.container.redraw();
+        egui::Frame::NONE
+            .inner_margin(egui::Margin::symmetric(TABLE_COLUMN_NUMBER_MARGIN_X, 0))
+            .show(ui, |ui| {
+                ui.label(egui::RichText::new(self.column_name(col_index)).strong());
+            });
+    }
 
-                let mut col_widgets: Vec<Box<dyn WidgetExt>> = vec![
-                    Box::new(row.password_button.clone()),
-                    Box::new(row.output_file_button.clone()),
-                    Box::new(row.checkbox.clone()),
-                    Box::new(row.progressbar.clone()),
-                    Box::new(row.status.clone()),
-                    Box::new(row.messages.clone())
-                ];
+    fn cell_ui(&mut self, ui: &mut egui::Ui, cell_info: &egui_table::CellInfo) {
+        let egui_table::CellInfo { row_nr, col_nr, .. } = *cell_info;
 
-                let mut x_position = x;
-                let col_count = col_widths.len();
+        if row_nr % 2 == 1 {
+            ui.painter().rect_filled(ui.max_rect(), 0.0, ui.visuals().faint_bg_color);
+        }
 
-                for i in 0..col_count {
-                    let wid = &mut col_widgets[i];
-                    wid.resize(x_position, wid.y(), col_widths[i], wid.h());
-                    x_position = x_position + col_widths[i] + WIDGET_GAP;
+        egui::Frame::NONE
+            .inner_margin(egui::Margin::symmetric(TABLE_COLUMN_NUMBER_MARGIN_X, 0))
+            .show(ui, |ui| {
+                self.cell_content_ui(row_nr, col_nr, ui);
+            });
+    }
+}
 
-                    if i == 2 {
-                        if let Some(path_name) = row.file.file_name().and_then(|x| x.to_str()) {
-                            wid.set_label(&clip_text(path_name, width_checkbox));
-                        }
-                    } else if i == col_count - 1 {
-                        if let Some(gg) = wid.as_group() {
-                            let cc_width = (col_widths[i] - WIDGET_GAP/2) / 2;
-                            let mut startx = wid.x();
+impl UploadScreenDelegate for UploadScreenProcessFilesDelegate {
+    fn cell_content_ui(&mut self, row_number: u64, column_number: usize, ui: &mut egui::Ui) {
+        if column_number == 0 { // Row number
+            ui.label((row_number + 1).to_string());
+        } else {
+            let row_count = self.file_upload_entries.len();
 
-                            for j in 0..gg.children() {
-                                if let Some(mut cc) = gg.child(j) {
-                                    cc.resize(startx, cc.y(), cc_width, wid.h());
-                                    startx += cc_width + (WIDGET_GAP/2);
-                                }
-                            }
-                        }
+            if row_count == 0 {
+                ui.label(EMPTY_STRING);
+            } else {
+                let entry = &self.file_upload_entries[row_number as usize];
+                let doc_id = entry.id;
+                let statuses = &self.file_upload_statuses;
+
+                let (links_enabled, progress_value) = if let Some(data) = statuses.get(&doc_id) {
+                    if let Some((last_progress_value, _)) = data.last() {
+                        let links_enabled = entry.status == FileUploadStatus::Failed || entry.status == FileUploadStatus::Succeeded || entry.status == FileUploadStatus::Interrupted;
+                        let last_progress_value = (*last_progress_value as f32)/ PROGRESS_VALUE_MAX as f32;
+                        (links_enabled, last_progress_value)
+                    } else {
+                        (false, 0.0)
                     }
-                }
-            }
-        }
-    }
-
-    pub fn contains_path(&self, p: &PathBuf) -> bool {
-        self.rows
-            .borrow()
-            .iter()
-            .any(|row| *row.file == *p)
-    }
-
-    pub fn has_files(&self) -> bool {
-        !self.rows.borrow().is_empty()
-    }
-
-    fn toggle_selection(&mut self, select: bool) -> bool {
-        let mut selection_changed = false;
-
-        for row in self.rows.borrow().iter() {
-            if row.checkbox.active() && row.checkbox.is_checked() != select {
-                row.checkbox.set_checked(select);
-                selection_changed = true;
-            }
-        }
-
-        selection_changed
-    }
-
-    pub fn selected_indices(&self) -> Vec<usize> {
-        self.selected_indices
-            .borrow()
-            .iter()
-            .copied()
-            .collect()
-    }
-
-    pub fn select_all(&mut self) {
-        if self.toggle_selection(true) {
-            let row_count = self.rows.borrow().len();
-            self.selected_indices.borrow_mut().extend(0..row_count);
-            let _ = app::handle_main(EVENT_ID_SELECTION_CHANGED);
-        }
-    }
-
-    pub fn deselect_all(&mut self) {
-        if self.toggle_selection(false) {
-            self.selected_indices.borrow_mut().clear();
-            let _ = app::handle_main(EVENT_ID_SELECTION_CHANGED);
-        }
-    }
-
-    pub fn delete_all(&mut self) {
-        self.selected_indices.borrow_mut().clear();
-
-        while !self.rows.borrow().is_empty() {
-            if let Some(row) = self.rows.borrow_mut().pop() {
-                if let Some(row_parent) = row.checkbox.parent() {
-                    self.container.remove(&row_parent);
-                }
-            }
-        }
-
-        self.container.redraw();
-
-        if let Some(container_parent) = self.container.parent() {
-            let mut container_parent = container_parent;
-            container_parent.resize(container_parent.x(), container_parent.y(), container_parent.w(), container_parent.h());
-            container_parent.redraw();
-        }
-
-        let _ = app::handle_main(EVENT_ID_SELECTION_CHANGED);
-    }
-
-    pub fn delete_selection(&mut self) {
-        self.selected_indices.borrow_mut().sort();
-
-        while !self.selected_indices.borrow().is_empty() {
-            if let Some(idx) = self.selected_indices.borrow_mut().pop() {
-                let row = self.rows.borrow_mut().remove(idx);
-
-                if let Some(row_parent) = row.checkbox.parent() {
-                    self.container.remove(&row_parent);
-                }
-            }
-        }
-
-        self.container.redraw();
-
-        if let Some(container_parent) = self.container.parent() {
-            let mut container_parent = container_parent;
-            container_parent.resize(container_parent.x(), container_parent.y(), container_parent.w(), container_parent.h());
-            container_parent.redraw();
-        }
-
-        let _ = app::handle_main(EVENT_ID_SELECTION_CHANGED);
-    }
-
-    pub fn add_file(&mut self, path: PathBuf) {
-        let trans = &self.trans;
-
-        let ww = self.container.w();
-
-        let (width_password, width_output_file, width_checkbox, width_progressbar, width_status, width_logs) = filelist_column_widths(ww);
-
-        let mut row = group::Pack::default()
-            .with_size(ww, 40)
-            .with_type(group::PackType::Horizontal);
-
-        row.set_spacing(WIDGET_GAP);
-
-        let row_height: i32 = 30;
-
-        let mut password_frame =  button::Button::default().with_size(width_password, row_height);
-        if let Ok(mut img) = image::PngImage::from_data(ICON_PASSWORD) {
-            img.scale(width_password - 2, row_height - 2, true, true);
-            password_frame.set_image(Some(img));
-        }
-        password_frame.set_color(enums::Color::White);
-        password_frame.set_label_color(enums::Color::Red);
-        password_frame.set_tooltip(&trans.gettext("Set document password (empty for none)"));
-
-        let mut output_file_button = button::Button::default()
-            .with_size(width_output_file, row_height);
-        output_file_button.set_tooltip(&trans.gettext("Custom output file"));
-        if let Ok(mut img) = image::PngImage::from_data(ICON_SAVE) {
-            img.scale(width_output_file- 2, row_height - 2, true, true);
-            output_file_button.set_image(Some(img));
-        }
-
-        let path_name = path.file_name().and_then(|x| x.to_str()).unwrap().to_string();
-        let path_tooltip = path.display().to_string();
-        let mut selectrow_checkbutton = button::CheckButton::default()
-            .with_size(width_checkbox, row_height)
-            .with_label(&clip_text(path_name, width_checkbox));
-        selectrow_checkbutton.set_tooltip(&path_tooltip);
-
-        let check_buttonx2 = selectrow_checkbutton.clone();
-        let progressbar = misc::Progress::default().with_size(width_progressbar, 20).with_label("0%");
-
-        let mut status_frame = frame::Frame::default()
-            .with_size(width_status, row_height)
-            .with_label(FILELIST_ROW_STATUS_PENDING)
-            .with_align(enums::Align::Inside | enums::Align::Left);
-        status_frame.set_label_color(FILELIST_ROW_COLOR_PENDING);
-
-        let mut messages = group::Pack::default()
-            .with_size(width_logs, 40)
-            .with_type(group::PackType::Horizontal);
-        messages.set_spacing(WIDGET_GAP/2);
-
-        let mut open_link = HyperLink::new(width_logs, row_height, "");
-        open_link.deactivate();
-
-        let mut logs_link = HyperLink::new(width_logs, row_height, "");
-        logs_link.deactivate();
-
-        messages.end();
-
-        row.end();
-
-        let file_list_row = FileListRow {
-            container: row.clone(),
-            password_button: password_frame.clone(),
-            checkbox: check_buttonx2,
-            progressbar,
-            messages,
-            status: status_frame.clone(),
-            open_link: open_link.clone(),
-            logs_link: logs_link.clone(),
-            logs: Rc::new(RefCell::new(vec![])),
-            file: path.clone(),
-            output_file_button: output_file_button.clone(),
-            opt_output_file: Rc::new(RefCell::new(None)),
-            opt_passwd: Rc::new(RefCell::new(None)),
-            viewer_app_option: Rc::new(RefCell::new(None)),
-        };
-
-        output_file_button.set_callback({
-            let opt_output_file = file_list_row.opt_output_file.clone();
-            let trans = trans.clone();
-
-            move|_| {
-                if let Some(current_wind) = app::first_window() {
-                    let dialog_width  = 450;
-                    let dialog_height = 200;
-                    let dialog_xpos   = current_wind.x() + (current_wind.w() / 2) - (dialog_width  / 2);
-                    let dialog_ypos   = current_wind.y() + (current_wind.h() / 2) - (dialog_height / 2);
-                    let (button_width, button_height) = (100, 40);
-
-                    let mut win = window::Window::default()
-                        .with_size(dialog_width, dialog_height)
-                        .with_pos(dialog_xpos, dialog_ypos)
-                        .with_label(&trans.gettext("Custom output file"));
-
-                    win.make_modal(true);
-                    win.make_resizable(true);
-
-                    let mut container_pack = group::Pack::default()
-                        .with_pos(WIDGET_GAP, WIDGET_GAP)
-                        .with_type(group::PackType::Vertical)
-                        .with_size(dialog_width - (WIDGET_GAP * 2), dialog_height - (WIDGET_GAP * 2));
-                    container_pack.set_spacing(WIDGET_GAP);
-
-                    let mut buttonsfile_pack = group::Pack::default()
-                        .with_type(group::PackType::Horizontal)
-                        .with_size(dialog_width - (WIDGET_GAP * 2), button_height);
-                    buttonsfile_pack.set_spacing(WIDGET_GAP);
-
-                    let outputfile_input_rc = Rc::new(RefCell::new(input::Input::default().with_size(290, button_height)));
-                    outputfile_input_rc.borrow_mut().set_tooltip(&trans.gettext("Optional output filename defaulting to <filename>-entrusted.pdf."));
-                    if let Some(v) = opt_output_file.borrow_mut().take() {
-                        outputfile_input_rc.borrow_mut().set_value(&v);
-                    }
-
-                    let mut select_button = button::Button::default()
-                        .with_size(button_width, button_height)
-                        .with_label(&trans.gettext("Select"));
-                    buttonsfile_pack.end();
-
-                    let mut buttons_pack = group::Pack::default()
-                        .with_type(group::PackType::Horizontal)
-                        .with_size(dialog_width - (WIDGET_GAP * 2), button_height);
-                    buttons_pack.set_spacing(WIDGET_GAP);
-
-                    let mut reset_button = button::Button::default()
-                        .with_size(button_width, button_height)
-                        .with_label(&trans.gettext("Reset"));
-
-                    let mut accept_button = button::Button::default()
-                        .with_size(button_width, button_height)
-                        .with_label(&trans.gettext("Accept"));
-
-                    let mut cancel_button = button::Button::default()
-                        .with_size(button_width, button_height)
-                        .with_label(&trans.gettext("Cancel"));
-
-                    let select_pdffile_msg = trans.gettext("Custom output file");
-
-                    select_button.set_callback({
-                        let outputfile_input_rc = outputfile_input_rc.clone();
-
-                        move |_| {
-                            let mut dlg = dialog::FileDialog::new(dialog::FileDialogType::BrowseSaveFile);
-                            dlg.set_title(&select_pdffile_msg);
-                            dlg.show();
-
-                            if !dlg.filename().as_os_str().is_empty() {
-                                let path_name = dlg.filename().display().to_string();
-                                outputfile_input_rc.borrow_mut().set_value(&path_name);
-                            }
-                        }
-                    });
-
-                    reset_button.set_callback({
-                        let mut win = win.clone();
-                        let opt_output_file = opt_output_file.clone();
-
-                        move |_| {
-                            opt_output_file.replace(None);
-                            win.hide();
-                        }
-                    });
-
-                    accept_button.set_callback({
-                        let mut win = win.clone();
-                        let opt_output_file = opt_output_file.clone();
-
-                        move |_| {
-                            let output_filename = outputfile_input_rc.borrow().value();
-
-                            if !output_filename.trim().is_empty() {
-                                opt_output_file.replace(Some(output_filename));
-                            }
-
-                            win.hide();
-                        }
-                    });
-
-                    cancel_button.set_callback({
-                        let mut win = win.clone();
-
-                        move |_| {
-                            win.hide();
-                        }
-                    });
-
-                    buttons_pack.end();
-                    container_pack.end();
-
-                    win.end();
-                    win.show();
-
-                    while win.shown() {
-                        app::wait();
-                    }
-                }
-            }
-        });
-
-        fn paint_highlight<W: WidgetExt>(wid: &mut W, opt_isset: bool) {
-            if wid.active() {
-                let old_color = draw::get_color();
-
-                let current_color = if opt_isset {
-                    enums::Color::DarkRed
                 } else {
-                    enums::Color::Yellow
+                    (false, 0.0)
                 };
 
-                draw::set_draw_color(current_color);
-
-                for i in 1..3 {
-                    draw::draw_rect(wid.x() + i, wid.y() + i, wid.w() - i - i, wid.h() - i - i);
-                }
-
-                draw::set_draw_color(old_color);
-            }
-        }
-
-        output_file_button.draw({
-            let opt_current = file_list_row.opt_output_file.clone();
-
-            move |wid| {
-                paint_highlight(wid, opt_current.borrow().is_some());
-            }
-        });
-
-        let dialog_title = trans.gettext("Logs");
-        let close_button_label = trans.gettext("Close");
-
-        password_frame.draw({
-            let opt_current = file_list_row.opt_passwd.clone();
-
-            move |wid| {
-                paint_highlight(wid, opt_current.borrow().is_some());
-            }
-        });
-
-        password_frame.set_callback({
-            let active_row = file_list_row.clone();
-            let trans = trans.clone();
-
-            move |_| {
-                if let Some(current_wind) = app::first_window() {
-                    let dialog_width  = 350;
-                    let dialog_height = 200;
-                    let dialog_xpos   = current_wind.x() + (current_wind.w() / 2) - (dialog_width  / 2);
-                    let dialog_ypos   = current_wind.y() + (current_wind.h() / 2) - (dialog_height / 2);
-
-                    let (button_width, button_height) = (100, 40);
-
-                    let mut win = window::Window::default()
-                        .with_size(dialog_width, dialog_height)
-                        .with_pos(dialog_xpos, dialog_ypos)
-                        .with_label(&trans.gettext("Set document password"));
-
-                    let mut container_pack = group::Pack::default()
-                        .with_pos(WIDGET_GAP, WIDGET_GAP)
-                        .with_type(group::PackType::Vertical)
-                        .with_size(dialog_width - (WIDGET_GAP * 2), dialog_height - (WIDGET_GAP * 2));
-                    container_pack.set_spacing(WIDGET_GAP);
-
-                    let mut secret_input = input::SecretInput::default()
-                        .with_size(dialog_width - WIDGET_GAP * 2, 40);
-                    secret_input.set_tooltip(&trans.gettext("Set document password (empty for none)"));
-
-                    let opt_current_password = active_row.opt_passwd.borrow().clone();
-                    if let Some(current_password) = opt_current_password {
-                        secret_input.set_value(&current_password);
-                    }
-
-                    let mut buttons_pack = group::Pack::default()
-                        .with_size(dialog_width, WIDGET_GAP * 2)
-                        .below_of(&secret_input, WIDGET_GAP)
-                        .with_type(group::PackType::Horizontal)
-                        .with_align(enums::Align::Inside | enums::Align::Right);
-                    buttons_pack.set_spacing(WIDGET_GAP);
-
-                    let mut ok_button = button::Button::default()
-                        .with_size(button_width, button_height)
-                        .with_label(&trans.gettext("Accept"));
-
-                    let mut cancel_button = button::Button::default()
-                        .with_size(button_width, button_height)
-                        .with_label(&trans.gettext("Cancel"));
-
-                    ok_button.set_callback({
-                        let mut win = win.clone();
-                        let secret_input = secret_input.clone();
-                        let active_row = active_row.clone();
-
-                        move |_| {
-                            let input_value = secret_input.value();
-                            let new_passwd = if !input_value.is_empty() {
-                                Some(input_value)
-                            } else {
-                                None
-                            };
-                            let mut passwd_holder = active_row.opt_passwd.borrow_mut();
-                            let _ = std::mem::replace(&mut *passwd_holder, new_passwd);
-                            win.hide();
-                        }
+                if column_number == 1 {        // File name
+                    let file_name = entry.path.file_name().unwrap().to_string_lossy();
+                    ui.horizontal(|ui| {
+                        ui.add(egui::Label::new(file_name).truncate());
                     });
-
-                    cancel_button.set_callback({
-                        let mut win = win.clone();
-
-                        move |_| {
-                            win.hide();
-                        }
-                    });
-
-                    buttons_pack.end();
-                    container_pack.end();
-
-                    win.end();
-                    win.make_modal(true);
-                    win.make_resizable(true);
-                    win.show();
-
-                    while win.shown() {
-                        app::wait();
-                    }
-                }
-            }
-        });
-
-        open_link.handle({
-            let trans_ref = trans.clone();
-            let active_row = file_list_row.clone();
-
-            move |wid, ev| match ev {
-                enums::Event::Push => {
-                    if inside_hyperlink_bounds(app::event_coords(), wid) {
-                        if let Some(output_path) = active_row.opt_output_file.borrow().clone() {
-                            let opt_viewer_app = active_row.viewer_app_option.borrow().clone();                            
-
-                            if let Some(viewer_app) = opt_viewer_app {
-                                if let Err(ex) = pdf_open_with(viewer_app, PathBuf::from(&output_path), &trans_ref) {
-                                    let err_text = format!("{}\n{}.", &trans_ref.gettext("Could not open PDF file!"), ex);
-
-                                    if let Some(wind_ref) = app::first_window() {
-                                        dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, &err_text);
-                                    }
-                                }
-                            } else if let Err(ex) = open_document(&output_path, "application/pdf", &trans_ref) {
-                                let err_text = ex.to_string();
-                                let err_msg = &trans_ref.gettext_fmt("Couldn't open PDF file in default application! {0}.", vec![&err_text]);
-
-                                if let Some(wind_ref) = app::first_window() {
-                                    dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, err_msg);
-                                }
-                            }
-                        }
-                    }
-
-                    true
-                }
-                _ => false,
-            }
-        });
-
-        logs_link.handle({
-            let active_row = file_list_row.clone();
-
-            move |wid, ev| match ev {
-                enums::Event::Push => {
-                    if !inside_hyperlink_bounds(app::event_coords(), wid) {
-                        return true;
-                    }
-
-                    if let Some(top_level_wind) = app::first_window() {
-                        let wind_w = 400;
-                        let wind_h = 400;
-                        let button_width = 50;
-                        let button_height = 30;
-                        let wind_x = top_level_wind.x() + (top_level_wind.w() / 2) - (wind_w / 2);
-                        let wind_y = top_level_wind.y() + (top_level_wind.h() / 2) - (wind_h / 2);
-
-                        let mut dialog = window::Window::default()
-                            .with_size(wind_w, wind_h)
-                            .with_pos(wind_x, wind_y)
-                            .with_label(&dialog_title);
-
-                        dialog.begin();
-
-                        let mut textdisplay_cmdlog = text::TextDisplay::default()
-                            .with_type(group::PackType::Vertical)
-                            .with_size(wind_w, 350);
-                        let mut text_buffer = text::TextBuffer::default();
-                        let logs = active_row.logs.borrow().join("\n") + "\n";
-
-                        let mut log_close_button = button::Button::default()
-                            .with_pos((wind_w / 2) - (button_width / 2), 400 - button_height - (WIDGET_GAP / 2))
-                            .with_size(button_width, button_height)
-                            .with_label(&close_button_label);
-
-                        log_close_button.set_callback({
-                            let mut dialog_window = dialog.clone();
-                            move |_| {
-                                dialog_window.hide();
-                                app::awake();
-                            }
-                        });
-
-                        text_buffer.set_text(&logs);
-                        textdisplay_cmdlog.set_buffer(text_buffer);
-
-                        dialog.end();
-                        dialog.make_modal(true);
-                        dialog.make_resizable(true);
-                        dialog.show();
-
-                        dialog.handle({
-                            move |wid, ev| match ev {
-                                enums::Event::Resize => {
-                                    let x = (wid.w() / 2) - (button_width / 2);
-                                    let y = wid.h() - button_height - (WIDGET_GAP / 2);
-                                    log_close_button.resize(x, y, button_width, button_height);
-                                    true
-                                },
-                                _ => false
-                            }
-                        });
-
-                        while dialog.shown() {
-                            app::wait();
-                        }
-                    }
-
-                    true
-                },
-                _ => false
-
-            }
-        });
-
-        selectrow_checkbutton.set_callback({
-            let selfie = self.clone();
-
-            move |b| {
-                let idx = selfie.row_index(&path);
-
-                if idx != -1 {
-                    if b.is_checked() {
-                        selfie.selected_indices.borrow_mut().push(idx as usize);
-                    } else {
-                        selfie.selected_indices.borrow_mut().retain( |x| *x != idx as usize);
-                    }
-
-                    let _ = app::handle_main(EVENT_ID_SELECTION_CHANGED);
-                }
-            }
-        });
-
-        self.container.add(&row);
-        row.auto_layout();
-        self.rows.borrow_mut().push(file_list_row);
-        self.resize(self.container.x(), self.container.y(), ww, self.container.h());
-    }
-
-    fn row_index(&self, file: &PathBuf) -> i32 {
-        if let Some(pos) = self.rows.borrow().iter().position(|r| r.file == *file) {
-            pos as i32
-        } else {
-            -1
-        }
-    }
-
-    pub fn set_viewer_app(&mut self, viewer_app: String) {
-        for row in self.rows.borrow_mut().iter() {
-            let mut active_row = row.clone();
-            active_row.set_viewer_app(viewer_app.clone());
-        }
-    }
-    
-    fn deactivate_controls(&mut self) {
-        for row in self.rows.borrow_mut().iter() {
-            let mut active_row = row.clone();
-            active_row.deactivate_controls();
-        }
-    }
-
-    fn ypos(&self, row_index: usize) -> i32{
-        let mut rows = self.rows.borrow_mut();
-        let row = &mut rows[row_index];
-        row.checkbox.y()
-    }
-
-    fn update_status(&self, row_index: usize, file_status: &str, status_color: enums::Color) {
-        let mut rows = self.rows.borrow_mut();
-        let row = &mut rows[row_index];
-
-        row.status.set_label_color(status_color);
-        row.status.set_label(file_status);
-
-        if file_status == FILELIST_ROW_STATUS_SUCCEEDED || file_status == FILELIST_ROW_STATUS_FAILED {
-            row.progressbar.set_label("100%");
-            row.progressbar.set_value(100.0);
-
-            if file_status == FILELIST_ROW_STATUS_FAILED {
-                row.open_link.disable();
-            }
-
-            row.open_link.set_label(&self.trans.gettext("Open"));
-            row.logs_link.set_label(&self.trans.gettext("Logs"));
-        }
-    }
-
-    fn activate_logs_links(&self) {
-        for row in self.rows.borrow_mut().iter_mut() {
-            if !row.open_link.is_disabled() {
-                row.open_link.activate();
-            }
-
-            row.logs_link.activate();
-        }
-    }
-
-    fn mark_as_cancelled_starting_from_index(&self, completed_count: usize) {
-        let mut rows = self.rows.borrow_mut();
-
-        for row_index in completed_count..rows.len() {
-            let row = &mut rows[row_index];
-            row.mark_as_cancelled();
-        }
-    }
-
-    fn update_progress(&self, row_index: usize, data: String, percent_complete: usize) {
-        let mut rows = self.rows.borrow_mut();
-        let row = &mut rows[row_index];
-        row.update_progress(data, percent_complete);
-    }
-}
-
-fn main() -> Result<(), Box<dyn Error>> {
-    l10n::load_translations(incl_gettext_files!("en", "fr"));
-
-    let locale = if let Ok(selected_locale) = env::var(l10n::ENV_VAR_ENTRUSTED_LANGID) {
-        selected_locale
-    } else {
-        l10n::sys_locale()
-    };
-
-    let trans = l10n::new_translations(locale);
-    let trans_ref = trans.clone();
-
-    let selectfiles_dialog_title = trans.gettext("Select 'potentially suspicious' file(s)");
-    let appconfig_ret = config::load_config();
-    let appconfig: config::AppConfig = appconfig_ret.unwrap_or_default();
-
-    let current_row_idx = Arc::new(AtomicI32::new(0));
-    let converstion_stop_requested = Arc::new(AtomicBool::new(false));
-    let is_converting = Arc::new(AtomicBool::new(false));
-    let conversion_is_active = Arc::new(AtomicBool::new(false));
-
-    let app = app::App::default().with_scheme(app::Scheme::Gleam);
-    let (tx, rx) = mpsc::channel::<common::AppEvent>();
-    let (app_tx, app_rx) = app::channel::<common::AppEvent>();
-
-    #[cfg(target_os = "macos")]
-    let (_, app_rx_appleevents) = app::channel::<String>();
-
-    let wind_title = format!(
-        "{} {}",
-        option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"),
-        option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown")
-    );
-
-    let mut wind = window::Window::default()
-        .with_size(739, 560)
-        .center_screen()
-        .with_label(&wind_title);
-
-    wind.set_xclass("entrusted");
-
-    if let Ok(frame_icon) = image::PngImage::from_data(ICON_FRAME) {
-        wind.set_icon(Some(frame_icon));
-    }
-
-    wind.make_resizable(true);
-    let default_wincolor = wind.color();
-
-    let mut top_group = group::Pack::default()
-        .with_pos(20, 20)
-        .with_size(680, 25)
-        .with_type(group::PackType::Horizontal)
-        .with_align(enums::Align::Inside | enums::Align::Right);
-    top_group.set_spacing(WIDGET_GAP);
-
-    let tabs =  group::Pack::default()
-        .with_size(240, 25)
-        .with_type(group::PackType::Horizontal)
-        .with_align(enums::Align::Inside | enums::Align::Left);
-    let mut tabsettings_button = button::Button::default()
-        .with_size(120, 20)
-        .with_label(&trans.gettext("Settings"));
-    tabsettings_button.set_label_color(enums::Color::Black);
-
-    let mut tabconvert_button = button::Button::default()
-        .with_size(120, 20)
-        .with_label(&trans.gettext("Convert"));
-    tabconvert_button.set_color(TAB_COLOR_PUSHED_BACKGROUND);
-    tabconvert_button.set_label_color(TAB_COLOR_PUSHED_FOREGROUND);
-    tabs.end();
-
-    let mut helpinfo_pack = group::Pack::default()
-        .with_size(400, 20)
-        .with_type(group::PackType::Horizontal)
-        .with_align(enums::Align::Inside | enums::Align::Right);
-    helpinfo_pack.set_spacing(WIDGET_GAP/5);
-
-    let mut spacer_frame = frame::Frame::default()
-        .with_size(360 - WIDGET_GAP, 20);
-
-    let mut updatechecks_button = button::Button::default()
-        .with_size(20, 20);
-    updatechecks_button.set_tooltip(&trans_ref.gettext("Check for updates"));
-
-    let mut helpinfo_button = button::Button::default()
-        .with_size(20, 20);
-
-    helpinfo_button.draw({
-        move |wid| {
-            let old_color = draw::get_color();
-
-            let new_color = if wid.active() {
-                enums::Color::Blue
-            } else {
-                enums::Color::Blue.inactive()
-            };
-
-            draw::set_draw_color(new_color);
-            draw::draw_rect_fill(wid.x(), wid.y(), wid.w(), wid.h(), new_color);
-            draw::set_draw_color(enums::Color::White);
-
-            let margin = 4;
-
-            for i in 0..2 {
-                draw::draw_line(wid.x() + (margin * 3) - 1, wid.y() + margin + i,  wid.x() + wid.w() - margin, wid.y() + margin + i);
-            }
-
-            for i in 0..2 {
-                draw::draw_line(wid.x() + wid.w() - margin - 1 + i, wid.y() + margin,  wid.x() + wid.w() - margin - 1 + i, wid.y() + (wid.h()/3) + 1);
-            }
-
-            for i in 0..2 {
-                draw::draw_line(wid.x() + (margin * 3), wid.y() + (wid.h()/3) + i + 1,  wid.x() + wid.w() - margin, wid.y() + (wid.h()/3) + i + 1);
-            }
-
-            draw::draw_rect_fill(wid.x() + (margin * 3), wid.y() + (wid.h()/3) + 1, wid.w() - (margin * 2 * 3)-1, wid.h() / 3 - 1, enums::Color::White);
-            draw::draw_rect_fill(wid.x() + (wid.w()/2) - (wid.w() - (margin * 2 * 3))/2 , wid.y() + (wid.h()/3*2) + 2, margin+1, margin, enums::Color::White);
-            draw::set_draw_color(old_color);
-        }
-    });
-
-    updatechecks_button.draw({
-        move |wid| {
-            let old_color = draw::get_color();
-
-            let new_color = if wid.active() {
-                enums::Color::Blue
-            } else {
-                enums::Color::Blue.inactive()
-            };
-
-            draw::set_draw_color(new_color);
-            draw::draw_rect_fill(wid.x(), wid.y(), wid.w(), wid.h(), new_color);
-            draw::set_draw_color(enums::Color::White);
-
-            let margin = 4;
-            draw::draw_polygon(wid.x() + margin, wid.y() + wid.h()/3, wid.x() + (wid.w()/ 2), wid.y() + margin, wid.x() + wid.w() - margin, wid.y() + (wid.h()/3));
-            draw::draw_rect_fill(wid.x() + (margin * 3), wid.y() + (wid.h()/3), wid.w() - (margin * 2 * 3), wid.h() / 3, enums::Color::White);
-            draw::draw_line(wid.x() + margin, wid.y() + (wid.h()/3*2) + 2, wid.x() + wid.w() - margin, wid.y() + (wid.h()/3 * 2) + 2);
-
-            draw::set_draw_color(old_color);
-        }
-    });
-
-    helpinfo_button.set_tooltip(&trans_ref.gettext("Help"));
-    helpinfo_button.set_callback({
-        let wind = wind.clone();
-        let trans_ref = trans_ref.clone();
-
-        move |_| {
-            show_dialog_help((wind.x(), wind.y(), wind.w(), wind.h()), trans_ref.clone());
-        }
-    });
-
-    updatechecks_button.set_callback({
-        let wind = wind.clone();
-        let trans_ref = trans_ref.clone();
-
-        move |_| {
-            show_dialog_updates((wind.x(), wind.y(), wind.w(), wind.h()), trans_ref.clone());
-        }
-    });
-
-    helpinfo_pack.end();
-
-    top_group.end();
-
-    let settings_pack_rc = Rc::new(RefCell::new(
-        group::Pack::default()
-            .with_pos(20, 20)
-            .with_size(600, 580)
-            .below_of(&top_group, WIDGET_GAP)
-            .with_type(group::PackType::Vertical),
-    ));
-    settings_pack_rc.borrow_mut().set_spacing(WIDGET_GAP);
-
-    // User settings - PDF result file suffix
-    let mut filesuffix_pack = group::Pack::default()
-        .with_size(570, 40)
-        .with_type(group::PackType::Horizontal);
-
-    filesuffix_pack.set_spacing(WIDGET_GAP);
-    let mut filesuffix_checkbutton = button::CheckButton::default()
-        .with_size(160, 20)
-        .with_label(&trans.gettext("Custom file suffix"));
-    filesuffix_checkbutton
-        .set_tooltip(&trans.gettext("The safe PDF will be named <input>-<suffix>.pdf by default."));
-
-    if let Some(file_suffix_cfg) = appconfig.clone().file_suffix {
-        if file_suffix_cfg != config::DEFAULT_FILE_SUFFIX {
-            filesuffix_checkbutton.set_checked(true);
-        }
-    }
-
-    let filesuffix_input_rc = Rc::new(RefCell::new(input::Input::default().with_size(290, 20)));
-    filesuffix_input_rc.borrow_mut().set_value(&appconfig.clone().file_suffix.unwrap_or_else(|| config::DEFAULT_FILE_SUFFIX.to_string()));
-
-    if let Some(v) = appconfig.clone().file_suffix {
-        if v == config::DEFAULT_FILE_SUFFIX {
-            filesuffix_input_rc.borrow_mut().deactivate();
-        }
-    }
-
-    filesuffix_checkbutton.set_callback({
-        let filesuffix_input_rc_ref = filesuffix_input_rc.clone();
-
-        move|b| {
-            if b.is_checked() {
-                filesuffix_input_rc_ref.borrow_mut().activate();
-            } else {
-                filesuffix_input_rc_ref.borrow_mut().set_value(config::DEFAULT_FILE_SUFFIX);
-                filesuffix_input_rc_ref.borrow_mut().deactivate();
-            }
-        }
-    });
-
-    filesuffix_pack.end();
-
-    // User settings - Visual quality of PDF result
-    let mut result_visual_quality_pack = group::Pack::default()
-        .with_size(570, 40)
-        .with_type(group::PackType::Horizontal);
-    result_visual_quality_pack.set_spacing(WIDGET_GAP);
-    let mut result_visual_quality_checkbutton = button::CheckButton::default()
-        .with_size(100, 40)
-        .with_label(&trans.gettext("Custom PDF result visual quality"))
-        .with_align(enums::Align::Left | enums::Align::Inside);
-    result_visual_quality_checkbutton.set_tooltip("Potentially sacrifice visual quality for processing time (quick preview first, etc.)");
-    let result_visual_quality_menuchoice_rc = Rc::new(RefCell::new(
-        menu::Choice::default().with_size(240, 40),
-    ));
-
-    for item in common::IMAGE_QUALITY_CHOICES.iter() {
-        let item_translated = trans.gettext(item);
-        result_visual_quality_menuchoice_rc.borrow_mut().add_choice(&item_translated);
-    }
-
-    let visual_quality_idx = {
-        let vq = &appconfig.visual_quality;
-        let mut ret = common::IMAGE_QUALITY_CHOICE_DEFAULT_INDEX as i32;
-
-        if let Some(v) = vq {
-            for (idx, item) in common::IMAGE_QUALITY_CHOICES.iter().enumerate() {
-                if item == v {
-                    ret = idx as i32;
-                    break;
-                }
-            }
-        }
-
-        ret
-    };
-
-    result_visual_quality_menuchoice_rc.borrow_mut().set_value(visual_quality_idx);
-
-    if visual_quality_idx == common::IMAGE_QUALITY_CHOICE_DEFAULT_INDEX as i32 {
-        result_visual_quality_menuchoice_rc.borrow_mut().deactivate();
-    } else {
-        result_visual_quality_checkbutton.set_checked(true);
-    }
-
-    result_visual_quality_checkbutton.set_callback({
-        let result_visual_quality_menuchoice_rc_ref = result_visual_quality_menuchoice_rc.clone();
-
-        move |wid| {
-            if !wid.is_checked() {
-                result_visual_quality_menuchoice_rc_ref.borrow_mut().deactivate();
-                result_visual_quality_menuchoice_rc_ref.borrow_mut().set_value(common::IMAGE_QUALITY_CHOICE_DEFAULT_INDEX as i32);
-            } else {
-                result_visual_quality_menuchoice_rc_ref.borrow_mut().activate();
-            }
-        }
-    });
-
-    result_visual_quality_pack.end();
-
-    // User settings - OCR
-    let mut ocrlang_pack = group::Pack::default()
-        .with_size(570, 60)
-        .below_of(&filesuffix_pack, WIDGET_GAP)
-        .with_type(group::PackType::Horizontal);
-    ocrlang_pack.set_spacing(WIDGET_GAP);
-    let mut ocrlang_checkbutton = button::CheckButton::default()
-        .with_size(300, 20)
-        .with_label(&trans.gettext("Enable full-text search? In:"));
-    ocrlang_checkbutton.set_tooltip(
-        &trans.gettext("OCR (Optical character recognition) will be applied"),
-    );
-
-    if appconfig.ocr_lang.is_some() {
-        ocrlang_checkbutton.set_checked(true);
-    }
-
-    let ocrlang_holdbrowser_rc = Rc::new(RefCell::new(
-        browser::MultiBrowser::default().with_size(240, 60),
-    ));
-    let ocr_languages_by_name = l10n::ocr_lang_key_by_name(&trans_ref);
-    let ocr_languages_by_name_ref = ocr_languages_by_name.clone();
-    let mut ocr_languages_by_lang = HashMap::with_capacity(ocr_languages_by_name.len());
-    let mut ocr_languages: Vec<String> = Vec::with_capacity(ocr_languages_by_name.len());
-
-    for (k, v) in ocr_languages_by_name {
-        ocr_languages_by_lang.insert(v.clone(), k);
-        ocr_languages.push(v.clone());
-    }
-
-    ocr_languages.sort();
-
-    for v in ocr_languages.iter() {
-        ocrlang_holdbrowser_rc.borrow_mut().add(v);
-    }
-
-    let mut selected_ocr_languages = HashSet::new();
-
-    if let Some(cur_ocrlangcode) = appconfig.ocr_lang.clone() {
-        let selected_langcodes: Vec<&str> = cur_ocrlangcode.split('+').collect();
-
-        for selected_langcode in selected_langcodes {
-            if let Some(cur_ocrlangname) = ocr_languages_by_name_ref.get(&selected_langcode) {
-                selected_ocr_languages.insert(cur_ocrlangname.to_string());
-            }
-        }
-    }
-
-    if selected_ocr_languages.is_empty() {
-        selected_ocr_languages.insert(trans.gettext("English"));
-    }
-
-    for (i, item) in ocr_languages.iter().enumerate() {
-        if selected_ocr_languages.contains(item) {
-            let line = (i + 1) as i32;
-            ocrlang_holdbrowser_rc.borrow_mut().select(line);
-            ocrlang_holdbrowser_rc.borrow_mut().top_line(line);
-        }
-    }
-
-    if appconfig.ocr_lang.is_none() {
-        ocrlang_holdbrowser_rc.borrow_mut().deactivate();
-    }
-
-    ocrlang_checkbutton.set_callback({
-        let ocrlang_holdbrowser_rc_ref = ocrlang_holdbrowser_rc.clone();
-
-        move |b| {
-            if !b.is_checked() {
-                ocrlang_holdbrowser_rc_ref.borrow_mut().deactivate();
-            } else {
-                ocrlang_holdbrowser_rc_ref.borrow_mut().activate();
-            }
-        }
-    });
-    ocrlang_pack.end();
-
-    // User settings - Open PDF result with a given application
-    let mut openwith_pack = group::Pack::default()
-        .with_size(570, 40)
-        .with_type(group::PackType::Horizontal);
-    openwith_pack.set_spacing(WIDGET_GAP);
-    let mut openwith_checkbutton = button::CheckButton::default().with_size(295, 20).with_label(&trans.gettext("Open resulting PDF with"));
-    openwith_checkbutton.set_tooltip(&trans.gettext("Automatically open resulting PDFs with a given program."));
-
-    let pdf_apps_by_name = list_apps_for_pdfs();
-    let openwith_inputchoice_rc = Rc::new(RefCell::new(misc::InputChoice::default().with_size(240, 20)));
-    let mut pdf_viewer_app_names = Vec::with_capacity(pdf_apps_by_name.len());
-
-    for k in pdf_apps_by_name.keys() {
-        pdf_viewer_app_names.push(k.as_str());
-    }
-
-    pdf_viewer_app_names.sort();
-
-    for k in pdf_viewer_app_names.iter() {
-        openwith_inputchoice_rc.borrow_mut().add(k);
-    }
-
-    openwith_inputchoice_rc.borrow_mut().set_tooltip(&trans.gettext("You can also paste the path to a PDF viewer"));
-
-    if !pdf_apps_by_name.is_empty() {
-        let idx = if let Some(viewer_appname) = appconfig.openwith_appname.clone() {
-            if let Some(pos) = pdf_viewer_app_names.iter().position(|r| r == &viewer_appname) {
-                pos
-            } else {
-                0
-            }
-        } else {
-            0
-        };
-        openwith_inputchoice_rc.borrow_mut().set_value_index(idx as i32);
-    }
-
-    if appconfig.openwith_appname.is_none() {
-        openwith_inputchoice_rc.borrow_mut().deactivate();
-    }
-
-    let openwith_button_rc = Rc::new(RefCell::new(button::Button::default().with_size(35, 20).with_label("..")));
-    let openwith_button_tooltip = trans.gettext("Browse for PDF viewer program");
-    openwith_button_rc.borrow_mut().set_tooltip(&openwith_button_tooltip);
-
-    openwith_button_rc.borrow_mut().deactivate();
-
-    if appconfig.openwith_appname.is_some() {
-        openwith_checkbutton.set_checked(true);
-    }
-
-    openwith_checkbutton.set_callback({
-        let pdf_viewer_list_ref = openwith_inputchoice_rc.clone();
-        let openwith_button_rc_ref = openwith_button_rc.clone();
-
-        move |b| {
-            let will_be_read_only = !b.is_checked();
-            pdf_viewer_list_ref.borrow_mut().input().set_readonly(will_be_read_only);
-
-            if will_be_read_only {
-                pdf_viewer_list_ref.borrow_mut().deactivate();
-                openwith_button_rc_ref.borrow_mut().deactivate();
-            } else {
-                pdf_viewer_list_ref.borrow_mut().activate();
-                openwith_button_rc_ref.borrow_mut().activate();
-            };
-        }
-    });
-
-    openwith_button_rc.borrow_mut().set_callback({
-        let pdf_viewer_list_ref = openwith_inputchoice_rc.clone();
-
-        move |_| {
-            let mut selectpdfviewer_dialog = dialog::FileDialog::new(dialog::FileDialogType::BrowseFile);
-            selectpdfviewer_dialog.set_title(&openwith_button_tooltip);
-            selectpdfviewer_dialog.show();
-
-            let selected_filename = selectpdfviewer_dialog.filename();
-
-            if !selected_filename.as_os_str().is_empty() {
-                let path_name = selectpdfviewer_dialog.filename().display().to_string();
-                pdf_viewer_list_ref.borrow_mut().set_value(&path_name);
-            }
-        }
-    });
-
-    openwith_pack.end();
-
-    // User settings - custom container image
-    let mut ociimage_pack = group::Pack::default()
-        .with_size(550, 40)
-        .below_of(&ocrlang_pack, WIDGET_GAP)
-        .with_type(group::PackType::Horizontal);
-    ociimage_pack.set_spacing(WIDGET_GAP);
-    let mut ociimage_checkbutton = button::CheckButton::default()
-        .with_size(100, 20)
-        .with_pos(0, 0)
-        .with_align(enums::Align::Inside | enums::Align::Left);
-    ociimage_checkbutton.set_label(&trans.gettext("Custom container image"));
-    ociimage_checkbutton.set_label_color(enums::Color::Red);
-    ociimage_checkbutton.set_tooltip(&trans.gettext("Expert option for sandbox solution"));
-
-    let ociimage_text = if let Some(custom_container_image_name) = appconfig.container_image_name.clone() {
-        custom_container_image_name
-    } else {
-        config::default_container_image_name()
-    };
-
-    let ociimage_input_rc = Rc::new(RefCell::new(input::Input::default().with_size(440, 20)));
-    ociimage_input_rc.borrow_mut().set_value(&ociimage_text);
-
-    if ociimage_text != config::default_container_image_name() {
-        ociimage_checkbutton.set_checked(true);
-    } else {
-        ociimage_input_rc.borrow_mut().deactivate();
-    }
-
-    ociimage_checkbutton.set_callback({
-        let ociimage_input_rc_ref = ociimage_input_rc.clone();
-
-        move|b| {
-            if !b.is_checked() {
-                ociimage_input_rc_ref.borrow_mut().deactivate();
-                ociimage_input_rc_ref.borrow_mut().set_value(&config::default_container_image_name());
-            } else {
-                ociimage_input_rc_ref.borrow_mut().activate();
-            }
-        }
-    });
-
-    ociimage_pack.end();
-
-    // User settings - save
-    let savesettings_pack = group::Pack::default()
-        .with_size(150, 30)
-        .below_of(&ociimage_pack, WIDGET_GAP)
-        .with_type(group::PackType::Horizontal);
-    ociimage_pack.set_spacing(WIDGET_GAP);
-
-    let mut savesettings_button = button::Button::default_fill()
-        .with_size(wind.w() - (WIDGET_GAP * 2), 20)
-        .with_label(&trans.gettext("Save current settings as defaults"))
-        .with_align(enums::Align::Inside | enums::Align::Center);
-
-    savesettings_button.set_callback({
-        let result_visual_quality_menuchoice_rc_ref = result_visual_quality_menuchoice_rc.clone();
-        let ocrlang_checkbutton_ref = ocrlang_checkbutton.clone();
-        let ocrlang_holdbrowser_rc_ref = ocrlang_holdbrowser_rc.clone();
-        let filesuffix_input_rc_ref = filesuffix_input_rc.clone();
-        let filesuffix_checkbutton_ref = filesuffix_checkbutton.clone();
-        let ociimage_checkbutton_ref = ociimage_checkbutton.clone();
-        let ociimage_input_rc_ref = ociimage_input_rc.clone();
-        let ocr_languages_by_lang_ref = ocr_languages_by_lang.clone();
-        let result_visual_quality_checkbutton_ref = result_visual_quality_checkbutton.clone();
-        let openwith_checkbutton_ref = openwith_checkbutton.clone();
-        let openwith_inputchoice_rc_ref = openwith_inputchoice_rc.clone();
-        let wind_ref = wind.clone();
-
-        move|_| {
-            let mut new_appconfig = config::AppConfig::default();
-
-            if result_visual_quality_checkbutton_ref.is_checked() {
-                let image_quality_idx = result_visual_quality_menuchoice_rc_ref.borrow().value();
-
-                if image_quality_idx != common::IMAGE_QUALITY_CHOICE_DEFAULT_INDEX as i32 {
-                    let image_quality_value = common::IMAGE_QUALITY_CHOICES[image_quality_idx as usize].to_string();
-                    new_appconfig.visual_quality = Some(image_quality_value);
-                } else {
-                    new_appconfig.visual_quality = None;
-                }
-            } else {
-                new_appconfig.visual_quality = None;
-            }
-
-            if ocrlang_checkbutton_ref.is_checked() {
-                let ocrlang_dropdown = ocrlang_holdbrowser_rc_ref.borrow();
-                let selected_langcodes = selected_ocr_langcodes(&ocr_languages_by_lang_ref, &ocrlang_dropdown);
-
-                if !selected_langcodes.is_empty() {
-                    new_appconfig.ocr_lang = Some(selected_langcodes.join("+"));
-                }
-            }
-
-            if ociimage_checkbutton_ref.is_checked() {
-                let mut ociimage_text = ociimage_input_rc_ref.borrow().value();
-                ociimage_text = ociimage_text.trim().to_string();
-                if !ociimage_text.is_empty() && ociimage_text != config::default_container_image_name() {
-                    new_appconfig.container_image_name = Some(ociimage_text.trim().to_string());
-                }
-            }
-
-            if filesuffix_checkbutton_ref.is_checked() {
-                let selected_filesuffix = filesuffix_input_rc_ref.borrow().value();
-
-                if selected_filesuffix != *config::DEFAULT_FILE_SUFFIX {
-                    new_appconfig.file_suffix = Some(selected_filesuffix);
-                } else {
-                    new_appconfig.file_suffix = None;
-                }
-            } else {
-                new_appconfig.file_suffix = None;
-            }
-
-            if openwith_checkbutton_ref.is_checked() {
-                new_appconfig.openwith_appname = openwith_inputchoice_rc_ref.borrow().value();
-            }
-
-            if let Err(ex) = config::save_config(new_appconfig) {
-                let err_text = ex.to_string();
-                dialog::alert(wind_ref.x(), wind_ref.y() + wind_ref.height() / 2, &err_text);
-            }
-        }
-    });
-
-    savesettings_pack.end();
-
-    settings_pack_rc.borrow_mut().end();
-
-    let convert_pack_rc = Rc::new(RefCell::new(
-        group::Pack::default()
-            .with_pos(20, 20)
-            .with_size(680, 680)
-            .below_of(&top_group, WIDGET_GAP)
-            .with_type(group::PackType::Vertical),
-    ));
-    convert_pack_rc.borrow_mut().set_spacing(WIDGET_GAP);
-
-    let mut convert_frame = frame::Frame::default().with_size(680, 80).with_pos(10, 10);
-    convert_frame.set_frame(enums::FrameType::RFlatBox);
-    convert_frame.set_label_color(enums::Color::White);
-    convert_frame.set_label(&format!("{}\n{}\n{}",
-                                     trans.gettext("Drop 'potentially suspicious' file(s) here"),
-                                     trans.gettext("or"),
-                                     trans.gettext("Click here to select file(s)")));
-    convert_frame.set_color(enums::Color::Red);
-
-    let mut divider = frame::Frame::default_fill()
-        .with_size(wind.w(), 10);
-
-    divider.draw({
-        move |wid| {
-            let ww = wid.w() / 2;
-            let startx = wid.x() + wid.w() / 4;
-            let old_color = draw::get_color();
-            draw::set_draw_color(enums::Color::Black);
-            draw::draw_line(startx , wid.y() + 1, startx + ww, wid.y() + 1);
-            draw::set_draw_color(old_color);
-        }
-    });
-
-    let mut row_convert_button = group::Pack::default()
-        .with_size(wind.w(), 40)
-        .below_of(&divider, 0)
-        .with_type(group::PackType::Horizontal);
-    row_convert_button.set_spacing(WIDGET_GAP/2);
-
-    let mut selection_pack = group::Pack::default()
-        .with_size(150, 40)
-        .with_type(group::PackType::Vertical)
-        .below_of(&convert_frame, 30);
-    selection_pack.set_spacing(5);
-
-    let mut selectall_frame = frame::Frame::default()
-        .with_size(150, 10)
-        .with_label(&trans.gettext("Select all"))
-        .with_align(enums::Align::Inside | enums::Align::Left);
-
-    let mut deselectall_frame = frame::Frame::default()
-        .with_size(150, 10)
-        .with_label(&trans.gettext("Deselect all"))
-        .with_align(enums::Align::Inside | enums::Align::Left);
-
-    selectall_frame
-        .set_label_color(enums::Color::Blue);
-
-    selectall_frame.draw({
-        move |wid| {
-            paint_underline(wid);
-        }
-    });
-
-    deselectall_frame.draw({
-        move |wid| {
-            paint_underline(wid);
-        }
-    });
-
-    deselectall_frame.set_label_color(enums::Color::Blue);
-
-    selectall_frame.handle({
-        move |_, ev| match ev {
-            enums::Event::Push => {
-                let _ = app::handle_main(EVENT_ID_ALL_SELECTED);
-                true
-            }
-            _ => false,
-        }
-    });
-
-    deselectall_frame.handle({
-        move |_, ev| match ev {
-            enums::Event::Push => {
-                let _ = app::handle_main(EVENT_ID_ALL_DESELECTED);
-                true
-            }
-            _ => false,
-        }
-    });
-
-    selectall_frame.hide();
-    deselectall_frame.hide();
-
-    selection_pack.end();
-
-    let mut delete_button = button::Button::default()
-        .with_size(260, 20)
-        .with_label(&trans.gettext("Delete selection"));
-    delete_button.set_label_color(enums::Color::Black);
-    delete_button.set_color(enums::Color::White);
-    delete_button.deactivate();
-
-    let mut convert_button = button::Button::default()
-        .with_size(260, 20)
-        .with_label(&trans.gettext("Convert document(s)"));
-
-    convert_button.set_label_color(enums::Color::Black);
-    convert_button.set_color(enums::Color::White);
-    convert_button.deactivate();
-
-    row_convert_button.end();
-
-    let mut overall_progress_pack = group::Pack::default()
-        .with_size(wind.w(), 40)
-        .below_of(&row_convert_button, 30)
-        .with_type(group::PackType::Horizontal);
-    overall_progress_pack.set_spacing(WIDGET_GAP / 2);
-    overall_progress_pack.set_label_color(enums::Color::White);
-    overall_progress_pack.set_color(enums::Color::Black);
-
-    let mut overall_progress_frame = frame::Frame::default()
-        .with_size(120, 40)
-        .with_label(&trans.gettext("Overall progress"));
-    overall_progress_frame.set_label_color(FILELIST_ROW_COLOR_SUCCEEDED);
-    overall_progress_frame.set_frame(enums::FrameType::FlatBox);
-    overall_progress_frame.hide();
-
-    let mut cancel_tasks_button = button::Button::default()
-        .with_size(40, 40);
-    cancel_tasks_button.set_color(FILELIST_ROW_COLOR_CANCELLED);
-    cancel_tasks_button.set_tooltip(&trans.gettext("Try cancelling remaining conversions as soon as possible"));
-    cancel_tasks_button.hide();
-
-    cancel_tasks_button.set_callback({
-        let converstion_stop_requested_ref = converstion_stop_requested.clone();
-
-        move |wid| {
-            converstion_stop_requested_ref.store(true, Ordering::Relaxed);
-            wid.deactivate();
-        }
-    });
-
-    let mut overall_progress_progressbar = misc::Progress::default_fill()
-        .with_size(200, 40)
-        .with_label("Pending");
-    overall_progress_progressbar.hide();
-
-    overall_progress_pack.set_color(enums::Color::Black);
-    overall_progress_pack.end();
-
-    let mut columns_frame = frame::Frame::default().with_size(500, 40).with_pos(10, 10);
-    columns_frame.set_frame(enums::FrameType::NoBox);
-
-    let mut filelist_scroll = group::Scroll::default().with_size(580, 200);
-    let mut filelist_widget = FileListWidget::new(trans.clone());
-
-    let col_label_password   = String::new();
-    let col_label_outputfile = String::new();
-    let col_label_filename   = trans.gettext("File name");
-    let col_label_progress   = trans.gettext("Progress(%)");
-    let col_label_status     = trans.gettext("Status");
-    let col_label_message    = trans.gettext("Messages");
-
-    columns_frame.draw({
-        let filelist_widget_ref      = filelist_widget.clone();
-
-        move |wid| {
-            let file_count = filelist_widget_ref.children();
-            if file_count != 0 {
-                let w = filelist_widget_ref.container.w();
-                let (width_output_file, width_password, width_checkbox, width_progressbar, width_status, width_logs) = filelist_column_widths(w);
-
-                let column_widths = [
-                    width_output_file, width_password, width_checkbox, width_progressbar, width_status, width_logs
-                ];
-
-                let column_names = vec![
-                    col_label_password.clone(),
-                    col_label_outputfile.clone(),
-                    format!("{} [{}]", &col_label_filename, file_count),
-                    col_label_progress.clone(),
-                    col_label_status.clone(),
-                    col_label_message.clone()
-                ];
-
-                let old_color = draw::get_color();
-                let old_font = draw::font();
-                let old_font_size = app::font_size();
-
-                draw::set_font(enums::Font::HelveticaBold, old_font_size);
-                draw::set_draw_color(enums::Color::Black);
-
-                let mut column_x = column_widths[0] + column_widths[1];
-                let y = wid.y() + wid.h() / 2;
-
-                for i in 2..column_names.len() {
-                    column_x = column_x + WIDGET_GAP + column_widths[i - 1];
-                    draw::draw_text(&column_names[i], column_x, y);
-                }
-
-                draw::set_draw_color(old_color);
-                draw::set_font(old_font, old_font_size);
-            }
-        }
-    });
-
-    delete_button.set_callback({
-        let mut filelist_widget_ref = filelist_widget.clone();
-        let mut filelist_scroll_ref = filelist_scroll.clone();
-
-        move |_| {
-            filelist_widget_ref.delete_selection();
-            filelist_scroll_ref.scroll_to(0, 0);
-        }
-    });
-
-    filelist_scroll.end();
-
-    let mut messages_frame = frame::Frame::default()
-        .with_size(580, 40)
-        .with_label("   ")
-        .with_align(enums::Align::Left | enums::Align::Inside);
-
-    convert_button.set_callback({
-        let mut filelist_widget_ref = filelist_widget.clone();
-        let mut convert_frame_ref = convert_frame.clone();
-        let ocrlang_holdbrowser_rc_ref = ocrlang_holdbrowser_rc.clone();
-        let mut tabsettings_button_ref =  tabsettings_button.clone();
-        let ocrlang_checkbutton_ref = ocrlang_checkbutton.clone();
-        let ociimage_input_rc_ref = ociimage_input_rc.clone();
-        let filesuffix_input_rc_ref = filesuffix_input_rc.clone();
-        let is_converting_ref = is_converting.clone();
-        let conversion_is_active_ref = conversion_is_active.clone();
-        let mut selectall_frame_ref = selectall_frame.clone();
-        let mut deselectall_frame_ref = deselectall_frame.clone();
-        let mut filelist_scroll_ref = filelist_scroll.clone();
-        let trans_ref = trans_ref.clone();
-        let current_row_idx = current_row_idx.clone();
-        let mut updatechecks_button_ref = updatechecks_button.clone();
-        let mut helpinfo_button_ref = helpinfo_button.clone();
-        let mut overall_progress_pack_ref  = overall_progress_pack.clone();
-        let mut overall_progress_frame_ref  = overall_progress_frame.clone();
-        let mut cancel_tasks_button_ref = cancel_tasks_button.clone();
-        let mut overall_progress_progressbar_ref  = overall_progress_progressbar.clone();
-        let openwith_checkbutton_ref = openwith_checkbutton.clone();
-        let pdf_viewer_list_ref = openwith_inputchoice_rc;
-
-        move |b| {
-            b.deactivate();
-            helpinfo_button_ref.deactivate();
-            updatechecks_button_ref.deactivate();
-            tabsettings_button_ref.deactivate();
-            selectall_frame_ref.deactivate();
-            deselectall_frame_ref.deactivate();
-            selectall_frame_ref.set_label_color(enums::Color::from_rgb(82, 82, 82));
-            deselectall_frame_ref.set_label_color(enums::Color::from_rgb(82, 82, 82));
-            convert_frame_ref.deactivate();
-            is_converting_ref.store(true, Ordering::Relaxed);
-            conversion_is_active_ref.store(true, Ordering::Relaxed);
-
-            let image_quality_value_index = result_visual_quality_menuchoice_rc.borrow().value();
-            let image_quality = common::IMAGE_QUALITY_CHOICES[image_quality_value_index as usize].to_lowercase();
-
-            let opt_viewer_app = if openwith_checkbutton_ref.is_checked() {
-                let viewer_app_name = pdf_viewer_list_ref.borrow_mut().input().value();
-                if let Some(viewer_app_path) = pdf_apps_by_name.get(&viewer_app_name) {
-                    Some(viewer_app_path.clone())
-                } else {
-                    Some(viewer_app_name.trim().to_owned())
-                }
-            } else {
-                None
-            };
-            
-            let opt_ocr_lang = if ocrlang_checkbutton_ref.is_checked() {
-                let ocrlang_dropdown = ocrlang_holdbrowser_rc_ref.borrow();
-                let selected_langcodes = selected_ocr_langcodes(&ocr_languages_by_lang, &ocrlang_dropdown);
-
-                if selected_langcodes.is_empty() {
-                    None
-                } else {
-                    Some(selected_langcodes.join("+"))
-                }
-            } else {
-                None
-            };
-            
-            let mut file_suffix = filesuffix_input_rc_ref.borrow().value();
-            if file_suffix.trim().is_empty() {
-                file_suffix = appconfig.file_suffix.to_owned().unwrap_or_else(|| common::DEFAULT_FILE_SUFFIX.to_string());
-            }
-            
-            let tasks: Vec<ConversionTask> = filelist_widget_ref.rows.borrow().iter().map(|row| {                
-                row_to_task(image_quality.clone(),
-                            &opt_ocr_lang,
-                            &file_suffix,
-                            row
-                )
-            }).collect();
-
-            filelist_widget_ref.deactivate_controls();
-
-            if let Some(viewer_app) = &opt_viewer_app {
-                filelist_widget_ref.set_viewer_app(viewer_app.clone());
-            }            
-            
-            filelist_scroll_ref.scroll_to(0, 0);
-            let task_count = tasks.len();
-
-            if task_count > 1 && !overall_progress_frame_ref.visible() {
-                overall_progress_progressbar_ref.set_value(0.0);
-                overall_progress_progressbar_ref.set_label("");
-                overall_progress_frame_ref.set_label_color(FILELIST_ROW_COLOR_SUCCEEDED);
-                overall_progress_frame_ref.show();
-
-                if !cancel_tasks_button_ref.active() {
-                    cancel_tasks_button_ref.activate();
-                }
-                cancel_tasks_button_ref.show();
-
-                overall_progress_progressbar_ref.show();
-                overall_progress_pack_ref.redraw();
-            }
-
-            thread::spawn({
-                let trans_ref = trans_ref.clone();
-                let tx = tx.clone();
-                let app_rcv = app_rx.clone();
-                let current_row_idx = current_row_idx.clone();
-                let conversion_is_active_ref = conversion_is_active_ref.clone();
-                let converstion_stop_requested = converstion_stop_requested.clone();
-
-                let eventer: Box<dyn common::EventSender> = Box::new(GuiEventSender {
-                    tx
-                });
-
-                move || {
-                    let mut idx = 0;
-                    let mut move_next = true;
-                    let mut fail_count = 0;
-                    let mut completed_count = 0;
-
-                    while idx < task_count {
-                        if move_next {
-                            if converstion_stop_requested.load(Ordering::Relaxed) {
-                                converstion_stop_requested.store(false, Ordering::Relaxed);
-                                break;
+                } else if column_number == 4 { // Results
+                    ui.horizontal(|ui| {
+                        if links_enabled {
+                            let mut ui_builder = egui::UiBuilder::new();
+
+                            if entry.output.is_none() {
+                                ui_builder = ui_builder.invisible();
                             }
 
-                            let task = &tasks[idx];
-                            let input_path = task.input_path.clone();
-                            let output_path = task.output_path.clone();
-                            let convert_options = task.options.clone();
-                            move_next = false;
-
-                            let _ = eventer.send(common::AppEvent::ConversionStartEvent(idx));
-
-                            if container::convert(input_path,
-                                                  output_path.clone(),
-                                                  convert_options,
-                                                  eventer.clone_box(),
-                                                  trans_ref.clone()).is_ok() {
-                                completed_count += 1;
-                                let _ = eventer.send(common::AppEvent::ConversionSuccessEvent(idx, task_count));
-                            } else {
-                                fail_count += 1;
-                                completed_count += 1;
-                                let _ = eventer.send(common::AppEvent::ConversionFailureEvent(idx, task_count));
-                            }
-                        }
-
-                        if app_rcv.recv().is_some() {
-                            idx += 1;
-                            current_row_idx.store(idx as i32, Ordering::Relaxed);
-                            move_next = true;
-                        } else {
-                            thread::yield_now();
-                        }
-
-                        if app::lock().is_ok() {
-                            app::awake();
-                            app::unlock();
-                        }
-                    }
-
-                    current_row_idx.store(0, Ordering::Relaxed);
-                    conversion_is_active_ref.store(false, Ordering::Relaxed);
-
-                    if app::lock().is_ok() {
-                        let _ = eventer.send(common::AppEvent::AllConversionEnded(completed_count, fail_count, task_count));
-                        app::unlock();
-                    }
-                }
-            });
-        }
-
-    });
-
-
-    #[cfg(target_os = "macos")] {
-        app::raw_open_callback(Some(|s| {
-            let tx = app::Sender::<String>::get();
-            tx.send({
-                unsafe { std::ffi::CStr::from_ptr(s).to_string_lossy().to_string() }
-            });
-        }));
-
-        menu::mac_set_about({
-            let current_wind = wind.clone();
-            let trans_ref = trans_ref.clone();
-
-            move || {
-                let dialog_width = 350;
-                let dialog_height = 200;
-                let dialog_xpos = current_wind.x() + (current_wind.w() / 2) - (dialog_width / 2);
-                let dialog_ypos = current_wind.y() + (current_wind.h() / 2) - (dialog_height / 2);
-                let win_title = format!("{} {}", &trans_ref.gettext("About"),
-                                        option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"));
-
-                let mut win = window::Window::default()
-                    .with_size(dialog_width, dialog_height)
-                    .with_pos(dialog_xpos, dialog_ypos)
-                    .with_label(&win_title);
-
-                let dialog_text = format!(
-                    "{}\n{} {}\n\n{}",
-                    option_env!("CARGO_PKG_DESCRIPTION").unwrap_or("Unknown"),
-                    &trans_ref.gettext("Version"),
-                    option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown"),
-                    &trans_ref.gettext_fmt("Copyright {0} {1}", vec!["2022-2024", "Rimero Solutions Inc."])
-                );
-
-                let mut logo_frame = frame::Frame::default()
-                    .with_size(200, 50)
-                    .with_pos(dialog_width/2 - 100, WIDGET_GAP);
-
-                if let Ok(img) = image::PngImage::from_data(ICON_FRAME) {
-                    let mut img = img;
-                    img.scale(50, 50, true, true);
-                    logo_frame.set_image(Some(img));
-                }
-
-                frame::Frame::default()
-                    .with_size(200, 60)
-                    .below_of(&logo_frame, WIDGET_GAP)
-                    .with_label(&dialog_text)
-                    .with_align(enums::Align::Center | enums::Align::Inside);
-
-                win.end();
-                win.make_modal(true);
-                win.make_resizable(true);
-                win.show();
-
-                while win.shown() {
-                    app::wait();
-                }
-            }
-        });
-    }
-
-    convert_pack_rc.borrow_mut().end();
-    tabconvert_button.set_frame(enums::FrameType::DownBox);
-    tabsettings_button.set_frame(enums::FrameType::UpBox);
-    settings_pack_rc.borrow_mut().hide();
-
-    tabsettings_button.set_callback({
-        let convert_pack_rc_ref = convert_pack_rc.clone();
-        let settings_pack_rc_ref = settings_pack_rc.clone();
-        let mut tabconvert_button_ref = tabconvert_button.clone();
-        let mut filelist_scroll_ref = filelist_scroll.clone();
-        let mut savesettings_button_ref = savesettings_button.clone();
-        let mut wind_ref = wind.clone();
-
-        move |b| {
-            if !settings_pack_rc_ref.borrow().visible() {
-                b.set_color(TAB_COLOR_PUSHED_BACKGROUND);
-                b.set_label_color(TAB_COLOR_PUSHED_FOREGROUND);
-                b.set_frame(enums::FrameType::DownBox);
-
-                tabconvert_button_ref.set_color(default_wincolor);
-                tabconvert_button_ref.set_label_color(enums::Color::Black);
-                tabconvert_button_ref.set_frame(enums::FrameType::UpBox);
-
-                convert_pack_rc_ref.borrow_mut().hide();
-                settings_pack_rc_ref.borrow_mut().show();
-                savesettings_button_ref.redraw();
-                filelist_scroll_ref.redraw();
-                wind_ref.redraw();
-            }
-        }
-    });
-
-    tabconvert_button.set_callback({
-        let convert_pack_rc_ref = convert_pack_rc.clone();
-        let mut tabsettings_button_ref = tabsettings_button.clone();
-        let settings_pack_rc_ref = settings_pack_rc.clone();
-        let mut wind_ref = wind.clone();
-
-        move |b| {
-            if !convert_pack_rc_ref.borrow().visible() {
-                b.set_color(TAB_COLOR_PUSHED_BACKGROUND);
-                b.set_label_color(TAB_COLOR_PUSHED_FOREGROUND);
-                b.set_frame(enums::FrameType::DownBox);
-
-                tabsettings_button_ref.set_color(default_wincolor);
-                tabsettings_button_ref.set_label_color(enums::Color::Black);
-                tabsettings_button_ref.set_frame(enums::FrameType::UpBox);
-
-                settings_pack_rc_ref.borrow_mut().hide();
-                convert_pack_rc_ref.borrow_mut().show();
-                wind_ref.redraw();
-            }
-        }
-    });
-
-    fn add_to_conversion_queue(
-        paths: Vec<PathBuf>,
-        row_pack: &mut FileListWidget,
-        group_scroll: &mut group::Scroll,
-    ) -> bool {
-        let mut added = false;
-
-        for p in paths.iter() {
-            let path = PathBuf::from(p);
-
-            if path.exists() && !row_pack.contains_path(&path) {
-                row_pack.add_file(path);
-                added = true;
-            }
-        }
-
-        if added {
-            group_scroll.redraw();
-        }
-
-        added
-    }
-
-    convert_frame.handle({
-        let mut dnd = false;
-        let mut released = false;
-        let mut filelist_scroll_ref = filelist_scroll.clone();
-        let mut filelist_widget_ref = filelist_widget.clone();
-        let mut selection_pack_ref = selection_pack.clone();
-        let is_converting_ref = is_converting.clone();
-        let mut selectall_frame_rc_ref = selectall_frame.clone();
-        let mut deselectall_frame_rc_ref = deselectall_frame.clone();
-        let mut convert_button_ref = convert_button.clone();
-        let mut columns_frame_ref = columns_frame.clone();
-        let mut messages_frame_ref = messages_frame.clone();
-        let mut row_convert_button_ref = row_convert_button.clone();
-        let mut overall_progress_progressbar_ref = overall_progress_progressbar.clone();
-
-        move |_, ev| match ev {
-            enums::Event::DndEnter => {
-                dnd = true;
-                true
-            },
-            enums::Event::DndDrag => true,
-            enums::Event::DndRelease => {
-                released = true;
-                true
-            },
-            enums::Event::Paste => {
-                if dnd && released {
-                    let path  = app::event_text();
-                    let path  = path.trim();
-                    let path  = path.replace("file://", "");
-                    let paths = path.split('\n');
-
-                    let file_paths: Vec<PathBuf> = paths
-                        .map(PathBuf::from)
-                        .filter(|p| p.exists())
-                        .collect();
-
-                    if !file_paths.is_empty() {
-                        if is_converting_ref.load(Ordering::Relaxed) {
-                            is_converting_ref.store(false, Ordering::Relaxed);
-                            messages_frame_ref.set_label("");
-                            messages_frame_ref.set_label_color(enums::Color::Black);
-                            filelist_widget_ref.delete_all();
-                            filelist_scroll_ref.scroll_to(0, 0);
-                            filelist_scroll_ref.redraw();
-
-                            overall_progress_progressbar_ref.set_value(0.0);
-                            overall_progress_progressbar_ref.set_label(&format!("{:.0}%", 0.0));
-                        }
-
-                        if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut filelist_scroll_ref) {
-                            if !selectall_frame_rc_ref.active() {
-                                selectall_frame_rc_ref.activate();
-                                selectall_frame_rc_ref.set_label_color(enums::Color::Blue);
-                            }
-
-                            if !deselectall_frame_rc_ref.active() {
-                                deselectall_frame_rc_ref.activate();
-                                deselectall_frame_rc_ref.set_label_color(enums::Color::Blue);
-                            }
-
-                            if !convert_button_ref.active() {
-                                convert_button_ref.activate();
-                                selection_pack_ref.set_damage(true);
-                                selectall_frame_rc_ref.show();
-                                deselectall_frame_rc_ref.show();
-
-                                selection_pack_ref.resize(
-                                    selection_pack_ref.x(),
-                                    selection_pack_ref.y(),
-                                    150,
-                                    40,
-                                );
-
-                                selection_pack_ref.set_damage(true);
-                                selection_pack_ref.redraw();
-                                columns_frame_ref.redraw();
-                                row_convert_button_ref.redraw();
-                            }
-                        }
-                    }
-                }
-
-                true
-            },
-            enums::Event::Push => {
-                let mut selectfiles_filedialog = dialog::FileDialog::new(dialog::FileDialogType::BrowseMultiFile);
-                selectfiles_filedialog.set_title(&selectfiles_dialog_title);
-                selectfiles_filedialog.show();
-
-                let file_paths: Vec<PathBuf> = selectfiles_filedialog
-                    .filenames()
-                    .iter()
-                    .cloned()
-                    .filter(|p| p.exists())
-                    .collect();
-
-                if !file_paths.is_empty() {
-                    if is_converting_ref.load(Ordering::Relaxed) {
-                        is_converting_ref.store(false, Ordering::Relaxed);
-                        messages_frame_ref.set_label("");
-                        messages_frame_ref.set_label_color(enums::Color::Black);
-                        filelist_widget_ref.delete_all();
-                        filelist_scroll_ref.scroll_to(0, 0);
-                        filelist_scroll_ref.redraw();
-
-                        overall_progress_progressbar_ref.set_value(0.0);
-                        overall_progress_progressbar_ref.set_label(&format!("{:.0}%", 0.0));
-                    }
-
-                    if add_to_conversion_queue(file_paths, &mut filelist_widget_ref, &mut filelist_scroll_ref) {
-                        if !selectall_frame_rc_ref.active() {
-                            selectall_frame_rc_ref.activate();
-                            selectall_frame_rc_ref.set_label_color(enums::Color::Blue);
-                        }
-
-                        if !deselectall_frame_rc_ref.active() {
-                            deselectall_frame_rc_ref.activate();
-                            deselectall_frame_rc_ref.set_label_color(enums::Color::Blue);
-                        }
-
-                        if !convert_button_ref.active() {
-                            convert_button_ref.activate();
-                            selection_pack_ref.set_damage(true);
-                            selectall_frame_rc_ref.show();
-                            deselectall_frame_rc_ref.show();
-
-                            selection_pack_ref.resize(
-                                selection_pack_ref.x(),
-                                selection_pack_ref.y(),
-                                150,
-                                40,
-                            );
-
-                            selection_pack_ref.set_damage(true);
-                            selection_pack_ref.redraw();
-                            columns_frame_ref.redraw();
-                            row_convert_button_ref.redraw();
-                        }
-                    }
-                }
-                true
-            },
-            _ => false,
-        }
-    });
-
-    wind.set_callback({
-        move |wid| {
-            let mut close_window = true;
-
-            if conversion_is_active.load(Ordering::Relaxed) {
-                if let Some(choice) = dialog::choice2(wid.x(),
-                                                      wid.y() + wid.h()/2,
-                                                      &trans.gettext("Really close"),
-                                                      &trans.gettext("No"),
-                                                      &trans.gettext("Yes"),
-                                                      "") {
-                    if choice == 0 {
-                        close_window = false;
-                    }
-                }
-            }
-
-            if close_window {
-                wid.hide();
-            }
-        }
-    });
-    
-    let mut autoconvert = false;
-    let args: Vec<String> = env::args().skip(1).collect();
-
-    if !args.is_empty() {
-        for arg in args.iter() {
-            let input_path = PathBuf::from(&arg);
-
-            if input_path.exists() {
-                filelist_widget.add_file(input_path);
-                autoconvert = true;
-            }
-        }
-    }
-
-    wind.end();
-    wind.show();
-
-    let _ = tabconvert_button.take_focus();
-
-    if autoconvert {
-        app::add_timeout3(0.2, {
-            let mut convert_button = convert_button.clone();
-            move |_| {
-                convert_button.do_callback();
-            }});
-    }
-
-    wind.handle({
-        let mut top_group_ref = top_group.clone();
-
-        let mut filesuffix_pack_ref = filesuffix_pack.clone();
-        let mut filesuffix_checkbutton_ref = filesuffix_checkbutton.clone();
-
-        let mut result_visual_quality_pack_ref = result_visual_quality_pack.clone();
-        let mut result_visual_quality_checkbutton_ref = result_visual_quality_checkbutton.clone();
-
-        let mut ocrlang_pack_ref = ocrlang_pack.clone();
-        let mut ocrlang_checkbutton_ref = ocrlang_checkbutton.clone();
-
-        let mut openwith_pack_ref = openwith_pack.clone();
-        let mut openwith_checkbutton_ref = openwith_checkbutton.clone();
-
-        let ociimage_input_rc_ref = ociimage_input_rc.clone();
-        let mut ociimage_checkbutton_ref = ociimage_checkbutton.clone();
-        let mut ociimage_pack_ref = ociimage_pack.clone();
-
-        let mut selection_pack_ref = selection_pack.clone();
-        let mut select_all_frame_ref = selectall_frame.clone();
-        let mut deselect_all_frame_ref = deselectall_frame.clone();
-
-        let mut filelist_scroll_ref = filelist_scroll.clone();
-        let mut filelist_widget_ref = filelist_widget.clone();
-
-        let mut row_convert_button_ref = row_convert_button.clone();
-        let convert_frame_ref = convert_frame.clone();
-        let mut convert_button_ref = convert_button.clone();
-        let mut delete_button_ref = delete_button.clone();
-        let mut columns_frame_ref = columns_frame.clone();
-
-        let mut messages_frame_ref = messages_frame.clone();
-        let mut helpinfo_pack_ref = helpinfo_pack.clone();
-        let mut helpinfo_button_ref = helpinfo_button.clone();
-        let mut updatechecks_button_ref = updatechecks_button.clone();
-
-        let mut overall_progress_pack_ref = overall_progress_pack.clone();
-        let mut overall_progress_frame_ref  = overall_progress_frame.clone();
-        let mut overall_progress_progressbar_ref  = overall_progress_progressbar.clone();
-        let mut cancel_tasks_button_ref = cancel_tasks_button.clone();
-        let mut savesettings_button_ref = savesettings_button.clone();
-        let mut divider_ref = divider.clone();
-
-        let mut tabconvert_button_ref = tabconvert_button.clone();
-        let mut tabsettings_button_ref = tabsettings_button.clone();
-
-        move |wid, ev| match ev {
-            enums::Event::Move => {
-                wid.redraw();
-                true
-            },
-            enums::Event::Resize => {
-                top_group_ref.resize(
-                    WIDGET_GAP,
-                    WIDGET_GAP,
-                    wid.w() - (WIDGET_GAP * 2),
-                    30,
-                );
-
-                let tabs_width = tabconvert_button_ref.w();
-                tabsettings_button_ref.resize(WIDGET_GAP, top_group_ref.y(), tabs_width, 30);
-                tabconvert_button_ref.resize(tabsettings_button_ref.x() + WIDGET_GAP, top_group_ref.y(), tabs_width, 30);
-
-                helpinfo_pack_ref.resize(tabconvert_button_ref.x() + WIDGET_GAP, top_group_ref.y(), wid.w() - (WIDGET_GAP * 3) - (tabs_width * 2), 30);
-                spacer_frame.resize(helpinfo_pack_ref.x(), helpinfo_pack_ref.y(), helpinfo_pack_ref.w() - (WIDGET_GAP/4 * 2) - (30 * 2), 30);
-                helpinfo_button_ref.resize(spacer_frame.x() + spacer_frame.w() + WIDGET_GAP/4, spacer_frame.y(), 30, 30);
-                updatechecks_button_ref.resize(helpinfo_button_ref.x() + WIDGET_GAP/4, spacer_frame.y(), 30, 30);
-
-                let content_y = top_group_ref.y() + top_group_ref.h() + WIDGET_GAP;
-
-                let scroller_height = wid.h() - (WIDGET_GAP * 8) - top_group_ref.h() - convert_frame_ref.h() - row_convert_button_ref.h() - (messages_frame_ref.h() ) - overall_progress_pack_ref.h() - (WIDGET_GAP * 3);
-
-                convert_pack_rc.borrow_mut().resize(
-                    WIDGET_GAP,
-                    content_y,
-                    wid.w() - (WIDGET_GAP * 2),
-                    wid.h() - top_group_ref.h() + WIDGET_GAP,
-                );
-
-                settings_pack_rc.borrow_mut().resize(
-                    WIDGET_GAP,
-                    content_y,
-                    wid.w() - (WIDGET_GAP * 2),
-                    wid.h() - top_group_ref.h() + WIDGET_GAP,
-                );
-
-                row_convert_button_ref.resize(
-                    WIDGET_GAP, row_convert_button_ref.y(), wid.w() - (WIDGET_GAP * 2), row_convert_button_ref.h()
-                );
-
-                overall_progress_pack_ref.resize(
-                    WIDGET_GAP, overall_progress_pack_ref.y(), wid.w() - (WIDGET_GAP * 2), overall_progress_pack_ref.h()
-                );
-
-                let (ow, _) = draw::measure(&overall_progress_frame_ref.label(), true);
-                overall_progress_frame_ref.resize(
-                    WIDGET_GAP, overall_progress_frame_ref.y(), ow, overall_progress_frame_ref.h()
-                );
-
-                cancel_tasks_button_ref.resize(WIDGET_GAP + ow + WIDGET_GAP,
-                                               cancel_tasks_button_ref.y(),
-                                               40, 40);
-
-                overall_progress_progressbar_ref.resize(
-                    (WIDGET_GAP * 2) + ow,
-                    overall_progress_progressbar_ref.y(),
-                    wid.w() - (WIDGET_GAP * 3) - ow - 40,
-                    overall_progress_progressbar_ref.h()
-                );
-
-                convert_button_ref.resize(
-                    convert_frame_ref.w() - convert_button_ref.w(), convert_button_ref.y() + 5, convert_button_ref.w(), convert_button_ref.h() - 5
-                );
-
-                delete_button_ref.resize(
-                    wid.w() - (convert_button_ref.w() * 2), delete_button_ref.y(), delete_button_ref.w(), delete_button_ref.h()
-                );
-
-                divider_ref.resize(
-                    WIDGET_GAP, divider_ref.y(), wid.w() - (WIDGET_GAP * 2), divider_ref.h()
-                );
-
-                filelist_scroll_ref.resize(
-                    WIDGET_GAP,
-                    filelist_scroll_ref.y(),
-                    wid.w() - (WIDGET_GAP * 2),
-                    scroller_height,
-                );
-
-                let wval = wid.w() - (WIDGET_GAP * 3);
-                columns_frame_ref.widget_resize(WIDGET_GAP, columns_frame_ref.y(), wid.w() - (WIDGET_GAP * 2), columns_frame_ref.h());
-
-                filelist_widget_ref.resize(filelist_scroll_ref.x(), filelist_scroll_ref.y(), wval, 0);
-
-                filelist_scroll_ref.redraw();
-
-                result_visual_quality_pack_ref.resize(
-                    result_visual_quality_pack_ref.x(),
-                    result_visual_quality_pack_ref.y(),
-                    wid.w() - (WIDGET_GAP * 2),
-                    result_visual_quality_pack_ref.h()
-                );
-
-                result_visual_quality_checkbutton_ref.resize(
-                    result_visual_quality_checkbutton_ref.x(),
-                    result_visual_quality_checkbutton_ref.y(),
-                    ocrlang_checkbutton.w(),
-                    result_visual_quality_checkbutton_ref.h()
-                );
-
-                let xx = ocrlang_holdbrowser_rc.borrow_mut().x();
-
-                ociimage_pack_ref.resize(
-                    ociimage_pack.x(),
-                    ociimage_pack.y(),
-                    wid.w() - (WIDGET_GAP * 2),
-                    ociimage_pack.h(),
-                );
-                filesuffix_pack_ref.resize(
-                    filesuffix_pack_ref.x(),
-                    filesuffix_pack_ref.y(),
-                    wid.w() - (WIDGET_GAP * 2),
-                    filesuffix_pack_ref.h(),
-                );
-                openwith_pack_ref.resize(
-                    openwith_pack_ref.x() + WIDGET_GAP / 2,
-                    openwith_pack_ref.y(),
-                    wid.w() - (WIDGET_GAP * 2),
-                    openwith_pack_ref.h(),
-                );
-
-                filesuffix_checkbutton_ref.resize(
-                    xx,
-                    filesuffix_checkbutton_ref.y(),
-                    ocrlang_checkbutton_ref.w(),
-                    filesuffix_checkbutton_ref.h(),
-                );
-                ocrlang_checkbutton_ref.resize(
-                    xx,
-                    ocrlang_checkbutton_ref.y(),
-                    ocrlang_checkbutton_ref.w(),
-                    filesuffix_checkbutton_ref.h(),
-                );
-
-                let ocw = wid.w() - (WIDGET_GAP * 3) - ocrlang_checkbutton.w();
-                let och = wid.h() - (WIDGET_GAP * 8) - (30 * 7);
-                
-                ociimage_checkbutton_ref.resize(
-                    ocrlang_checkbutton_ref.x(),
-                    ociimage_checkbutton_ref.y(),
-                    ocrlang_checkbutton_ref.w(),
-                    ociimage_checkbutton_ref.h(),
-                );
-
-                openwith_checkbutton_ref.resize(
-                    ocrlang_checkbutton_ref.x(),
-                    openwith_checkbutton_ref.y(),
-                    ocrlang_checkbutton_ref.w(),
-                    openwith_checkbutton_ref.h(),
-                );
-
-                ocrlang_pack_ref.resize(
-                    xx,
-                    ocrlang_pack_ref.y(),
-                    wid.w() - (WIDGET_GAP * 4),
-                    och,
-                );
-
-                let yy = ocrlang_holdbrowser_rc.borrow_mut().y();
-                ocrlang_holdbrowser_rc.borrow_mut().resize(
-                    xx,
-                    yy,
-                    ocw,
-                    och
-                );
-
-                let ociimage_input_rc_y = ociimage_input_rc.borrow().y();
-                let ociimage_input_rc_h = ociimage_input_rc.borrow().h();
-                ociimage_input_rc_ref.borrow_mut().resize(xx, ociimage_input_rc_y, ocw, ociimage_input_rc_h);
-
-                let filesuffix_input_rc_ref_y = filesuffix_input_rc.borrow().y();
-                let filesuffix_input_rc_ref_h = filesuffix_input_rc.borrow().h();
-                filesuffix_input_rc.borrow_mut().resize(xx, filesuffix_input_rc_ref_y, ocw, filesuffix_input_rc_ref_h);
-
-
-                messages_frame_ref.resize(
-                    messages_frame_ref.x(),
-                    wid.h() - (WIDGET_GAP * 2) - messages_frame_ref.h(),
-                    wid.w() - (WIDGET_GAP * 2),
-                    messages_frame_ref.h(),
-                );
-
-                savesettings_button_ref.resize(
-                    savesettings_button_ref.x(),
-                    wid.y() + wid.h() - WIDGET_GAP - savesettings_button_ref.h(),
-                    wid.w() - (WIDGET_GAP * 2),
-                    savesettings_button_ref.h(),
-                );
-
-                columns_frame_ref.redraw();
-                filelist_scroll_ref.redraw();
-
-                true
-            }
-            _ => {
-                if ev.bits() == EVENT_ID_SELECTION_CHANGED {
-                    let selection = filelist_widget_ref.selected_indices();
-                    let empty_selection = selection.is_empty();
-
-                    if empty_selection && delete_button.active() {
-                        delete_button.deactivate();
-                    } else if !empty_selection && !delete_button.active() {
-                        delete_button.activate();
-                    }
-
-                    if !filelist_widget_ref.has_files() {
-                        selection_pack_ref.redraw();
-                        convert_button_ref.deactivate();
-                        select_all_frame_ref.hide();
-                        deselect_all_frame_ref.hide();
-
-                        overall_progress_frame_ref.hide();
-                        overall_progress_progressbar_ref.hide();
-                        cancel_tasks_button_ref.hide();
-                    }
-
-                    filelist_widget_ref.container.redraw();
-                    filelist_scroll_ref.redraw();
-                    true
-                } else if ev.bits() == EVENT_ID_ALL_SELECTED {
-                    filelist_widget_ref.select_all();
-                    true
-                } else if ev.bits() == EVENT_ID_ALL_DESELECTED {
-                    filelist_widget_ref.deselect_all();
-                    true
-                } else {
-                    app::event_state().is_empty() && app::event_key() == enums::Key::Escape
-                }
-            }
-        }
-    });
-    
-    wind.resize(wind.x(), wind.y(), wind.w(), wind.h());
-
-    while app.wait() {
-        #[cfg(target_os = "macos")] {
-            if let Some(msg) = app_rx_appleevents.recv() {
-                let mut filelist_widget_ref = filelist_widget.clone();
-                let mut scroll_ref = filelist_scroll.clone();
-                let file_path = PathBuf::from(msg);
-                let mut selection_pack_ref = selection_pack.clone();
-                let mut filelist_scroll_ref = filelist_scroll.clone();
-                let mut select_all_frame_ref = selectall_frame.clone();
-                let mut deselect_all_frame_ref = deselectall_frame.clone();
-                let is_converting_ref = is_converting.clone();
-
-                if file_path.exists() {
-                    if is_converting_ref.load(Ordering::Relaxed) {
-                        is_converting_ref.store(false, Ordering::Relaxed);
-                        messages_frame.set_label("");
-                        messages_frame.set_label_color(enums::Color::Black);
-                        filelist_widget_ref.delete_all();
-                        filelist_scroll_ref.scroll_to(0, 0);
-                        filelist_scroll_ref.redraw();
-                        overall_progress_progressbar.set_value(0.0);
-                        overall_progress_progressbar.set_label(&format!("{:.0}%", 0.0));
-                    }
-
-                    if add_to_conversion_queue(vec![file_path], &mut filelist_widget_ref, &mut scroll_ref) {
-                        if !selectall_frame.active() {
-                            selectall_frame.activate();
-                            selectall_frame.set_label_color(enums::Color::Blue);
-                        }
-
-                        if !deselectall_frame.active() {
-                            deselectall_frame.activate();
-                            deselectall_frame.set_label_color(enums::Color::Blue);
-                        }
-
-                        if !convert_button.active() {
-                            convert_button.activate();
-                            selection_pack_ref.set_damage(true);
-                            select_all_frame_ref.show();
-                            deselect_all_frame_ref.show();
-
-                            selection_pack_ref.resize(selection_pack_ref.x(),
-                                                      selection_pack_ref.y(),
-                                                      selection_pack_ref.w(),
-                                                      40);
-
-                            selection_pack_ref.set_damage(true);
-                            selection_pack_ref.redraw();
-                        }
-                    }
-                }
-            }
-
-        }
-
-        if let Ok(app_event) = rx.try_recv() {
-            match app_event {
-                common::AppEvent::ConversionProgressEvent(increment, msg) => {                    
-                    messages_frame.set_label(&clip_text(&msg, messages_frame.w()));
-                    let row_idx = current_row_idx.load(Ordering::Relaxed) as usize;
-                    filelist_widget.update_progress(row_idx, msg, increment);                    
-
-                    app::awake();
-                },
-                common::AppEvent::AllConversionEnded(completed_count, fail_count, total_count) => {
-                    let summary_message = if completed_count != total_count {
-                        trans_ref.gettext("The conversion was cancelled!")
-                    } else if fail_count != total_count {
-                        trans_ref.ngettext("One file failed to process", "Multiple files failed to process", fail_count as u64)
-                    } else {
-                        trans_ref.gettext("All files failed to process")
-                    };
-
-                    let messages_frame_color = if completed_count != total_count {
-                        FILELIST_ROW_COLOR_CANCELLED
-                    } else if fail_count == 0 {
-                        FILELIST_ROW_COLOR_SUCCEEDED
-                    } else {
-                        FILELIST_ROW_COLOR_FAILED
-                    };
-
-                    messages_frame.set_label(&summary_message);
-                    messages_frame.set_label_color(messages_frame_color);
-                    tabsettings_button.activate();
-                    helpinfo_button.activate();
-                    updatechecks_button.activate();
-                    convert_frame.activate();
-                    filelist_scroll.scroll_to(0, 0);
-                    filelist_scroll.redraw();
-                    filelist_widget.activate_logs_links();
-
-                    if cancel_tasks_button.active() {
-                        cancel_tasks_button.deactivate();
-                    }
-
-                    if completed_count != total_count {
-                        overall_progress_frame.set_label_color(FILELIST_ROW_COLOR_CANCELLED);
-                        filelist_widget.mark_as_cancelled_starting_from_index(completed_count);
-                        overall_progress_frame.redraw();
-                    }
-
-                    app::awake();
-                },
-                common::AppEvent::ConversionSuccessEvent(row_idx, total) => {
-                    filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_SUCCEEDED, enums::Color::DarkGreen);
-
-                    if overall_progress_progressbar.visible() {
-                        let percent_complete = ((row_idx + 1) as f64 * 100.0) / (total as f64);
-                        overall_progress_progressbar.set_value(percent_complete);
-                        overall_progress_progressbar.set_label(&format!("{:.0}%", percent_complete));
-                    }
-
-                    app::awake();
-                    app_tx.send(common::AppEvent::ConversionFinishedAckEvent);
-                },
-                common::AppEvent::ConversionFailureEvent(row_idx, total) => {
-                    filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_FAILED, FILELIST_ROW_COLOR_FAILED);
-
-                    if overall_progress_progressbar.visible() {
-                        overall_progress_frame.set_label_color(FILELIST_ROW_COLOR_FAILED);
-                        overall_progress_frame.redraw();
-                        let percent_complete = ( (row_idx + 1) as f64 * 100.0) / (total as f64);
-                        overall_progress_progressbar.set_value(percent_complete);
-                        overall_progress_progressbar.set_label(&format!("{:.0}%", percent_complete));
-                    }
-
-                    app::awake();
-                    app_tx.send(common::AppEvent::ConversionFinishedAckEvent);
-                },
-                common::AppEvent::ConversionStartEvent(row_idx) => {
-                    filelist_widget.update_status(row_idx, FILELIST_ROW_STATUS_INPROGRESS, FILELIST_ROW_COLOR_INPROGRESS);
-                    let mut row_ypos  = filelist_widget.ypos(row_idx);
-                    let scroll_height = filelist_scroll.h();
-
-                    if row_ypos > (filelist_scroll.yposition()) {
-                        let distance = row_ypos % scroll_height;
-
-                        if distance >= (scroll_height - 40) {
-                            row_ypos -= 40;
-                        }
-
-                        filelist_scroll.scroll_to(0, row_ypos - filelist_scroll.y());
-                        filelist_scroll.redraw();
-                    }
-
-                    app::awake();
-                },
-                _ => {}
-            }
-        }
-    }
-
-    Ok(())
-}
-
-#[cfg(target_os = "macos")]
-pub fn open_document(url: &str, _: &str, trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {
-    // if let Some(cmd_open) = common::executable_find("open") {
-    //     match std::process::Command::new(cmd_open).arg(url).spawn() {
-    //         Ok(_)   => Ok(()),
-    //         Err(ex) => Err(ex.into()),
-    //     }
-    // } else {
-    //     Err(trans.gettext("Could not find 'open' command in 'PATH' environment variable!").into())
-    // }
-    Ok(())
-}
-
-#[cfg(target_os = "windows")]
-fn err_code_msg(error_code: usize, trans: &l10n::Translations, default_message: String) -> String {
-    match error_code {
-	    0  => trans.gettext("The system is running out of memory"),
-        3  => trans.gettext("Program not found"),                                             // ERROR_PATH_NOT_FOUND
-	    11 => trans.gettext("Bad executable file format"),                                    // ERROR_BAD_FORMAT
-        5  => trans.gettext("File access denied"),                                            // SE_ERR_ACCESSDENIED
-	    2  => trans.gettext("File not found"),                                                // SE_ERR_FNF
-        31 => trans.gettext("No application associated to the given file or URL"),            // SE_ERR_NOASSOC
-	    8  => trans.gettext("Not enough memory to complete this operation"),                  // SE_ERR_OOM
-        26 => trans.gettext("Sharing violation, the file might be used by another program"),  // SE_ERR_SHARE
-	    _  => default_message
-    }
-}
-
-#[cfg(target_os = "windows")]
-extern "system" {
-    pub fn ShellExecuteW(hwnd: winapi::shared::windef::HWND,
-                         lpOperation: winapi::um::winnt::LPCWSTR,
-                         lpFile: winapi::um::winnt::LPCWSTR,
-                         lpParameters: winapi::um::winnt::LPCWSTR,
-                         lpDirectory: winapi::um::winnt::LPCWSTR,
-                         nShowCmd: winapi::ctypes::c_int)
-                         -> winapi::shared::minwindef::HINSTANCE;
-}
-
-#[cfg(target_os = "windows")]
-const SW_SHOW: winapi::ctypes::c_int = 5;
-
-#[cfg(target_os = "windows")]
-fn str_to_utf16(s: &str) -> Vec<u16> {
-    use std::os::windows::ffi::OsStrExt;
-    let v = std::ffi::OsStr::new(s);
-    v.encode_wide().chain(std::iter::once(0)).collect()
-}
-
-#[cfg(target_os = "windows")]
-pub fn open_document(url: &str, content_type: &str,  trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {    
-    let path = str_to_utf16(url);
-    let operation = str_to_utf16("open");
-    let result = unsafe {
-        ShellExecuteW(std::ptr::null_mut(),
-                      operation.as_ptr(),
-                      path.as_ptr(),
-                      std::ptr::null(),
-                      std::ptr::null(),
-                      SW_SHOW)
-    };
-
-    if result as usize > 32 {
-        Ok(())
-    } else {
-	    let default_msg = trans.gettext_fmt("Cannot open default application for content type: {0}", vec![content_type]);
-	    Err(err_code_msg(result as usize, trans, default_msg).into())        
-    }
-}
-
-#[cfg(not(any(target_os = "windows", target_os = "macos")))]
-pub fn open_document(url: &str,  content_type: &str, trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {
-    use xdg_utils::query_default_app;    
-    
-    if let Ok(cmd) = query_default_app(content_type) {
-        match std::process::Command::new(cmd).arg(&url).spawn() {
-            Ok(_)   => Ok(()),
-            Err(ex) => Err(ex.into()),
-        }
-    } else {
-        Err(trans.gettext_fmt("Cannot find default application for content type: {0}", vec![content_type]).into())
-    }
-}
-
-#[cfg(not(any(target_os = "windows", target_os = "macos")))]
-pub fn list_apps_for_pdfs() -> HashMap<String, String> {
-    use freedesktop_entry_parser::parse_entry;
-
-    let mut ret = HashMap::new();
-
-    // See https://wiki.archlinux.org/title/XDG_MIME_Applications for the logic
-    // TODO is TryExec the best way to get a program name vs 'Exec' and stripping arguments???
-    // TODO This is not robust enough...
-    // Exec=someapp -newtab %u => where '%u' could be the file input parameter on top of other defaults '-newtab'
-    fn parse_desktop_apps(
-        apps_dir: Vec<&str>,
-        mime_pdf_desktop_refs: &str,
-    ) -> HashMap<String, String> {
-        let desktop_entries: Vec<&str> = mime_pdf_desktop_refs.split(";").collect();
-        let mut result = HashMap::with_capacity(desktop_entries.len());
-
-        for desktop_entry in desktop_entries {
-            if desktop_entry.is_empty() {
-                continue;
-            }
-
-            for app_dir in apps_dir.iter() {
-                let mut desktop_entry_path = PathBuf::from(app_dir);
-                desktop_entry_path.push(desktop_entry);
-
-                if desktop_entry_path.exists() {
-                    if let Ok(desktop_entry_data) = parse_entry(desktop_entry_path) {
-                        let desktop_entry_section = desktop_entry_data.section("Desktop Entry");
-
-                        if let (Some(app_name), Some(cmd_name)) = (
-                            &desktop_entry_section.attr("Name"),
-                            &desktop_entry_section
-                                .attr("TryExec")
-                                .or(desktop_entry_section.attr("Exec")),
-                        ) {
-                            let cmd_name_sanitized = cmd_name
-                                .to_string()
-                                .replace("%u", "")
-                                .replace("%U", "")
-                                .replace("%f", "")
-                                .replace("%F", "");
-                            result.insert(app_name.to_string(), cmd_name_sanitized);
-                        }
-                    }
-                }
-            }
-        }
-
-        result
-    }
-
-    let applications_folders = &["/usr/share/applications", "/usr/local/share/applications"];
-    let applications_folders_vec = applications_folders.to_vec();
-
-    for applications_folder in applications_folders {
-        let path_usr_share_applications_orig = PathBuf::from(applications_folder);
-        let mut ret: HashMap<String, String> = HashMap::new();
-        let mut path_mimeinfo_cache = path_usr_share_applications_orig.clone();
-        path_mimeinfo_cache.push("mimeinfo.cache");
-
-        if path_mimeinfo_cache.exists() {
-            if let Ok(conf) = parse_entry(path_mimeinfo_cache) {
-                if let Some(mime_pdf_desktop_refs) = conf.section("MIME Cache").attr("application/pdf") {
-                    let tmp_result = parse_desktop_apps(
-                        applications_folders_vec.clone(),
-                        mime_pdf_desktop_refs,
-                    );
-
-                    for (k, v) in &tmp_result {
-                        ret.insert(k.to_string(), v.to_string());
-                    }
-                }
-            }
-        }
-    }
-
-    let mut additional_xdg_files = vec![
-        PathBuf::from("/etc/xdg/mimeapps.list"),
-        PathBuf::from("/usr/local/share/applications/mimeapps.list"),
-        PathBuf::from("/usr/share/applications/mimeapps.list"),
-    ];
-
-    if let Ok(homedir) = env::var("HOME") {
-        let home_config_mimeapps: PathBuf =
-            [homedir.as_str(), ".config/mimeapps.list"].iter().collect();
-        let home_local_mimeapps: PathBuf =
-            [homedir.as_str(), ".local/share/applications/mimeapps.list"]
-            .iter()
-            .collect();
-        additional_xdg_files.push(home_config_mimeapps);
-        additional_xdg_files.push(home_local_mimeapps);
-    }
-
-    for additional_xdg_file in additional_xdg_files {
-        if additional_xdg_file.exists() {
-            if let Ok(conf) = parse_entry(additional_xdg_file) {
-                if let Some(mime_pdf_desktop_refs) =
-                    conf.section("Added Associations").attr("application/pdf")
-                {
-                    let tmp_result = parse_desktop_apps(
-                        applications_folders_vec.clone(),
-                        mime_pdf_desktop_refs,
-                    );
-
-                    for (k, v) in &tmp_result {
-                        ret.insert(k.to_string(), v.to_string());
-                    }
-                }
-            }
-        }
-    }
-
-    ret
-}
-
-#[cfg(target_os = "windows")]
-pub fn list_apps_for_pdfs() -> HashMap<String, String> {
-    use winreg::enums::RegType;
-    use winreg::enums::HKEY_CLASSES_ROOT;
-    use winreg::RegKey;
-    let mut ret = HashMap::new();
-    let hkcr = RegKey::predef(HKEY_CLASSES_ROOT);
-    let open_with_list_hkcr_res = hkcr.open_subkey(".pdf\\OpenWithProgids");
-
-    fn friendly_app_name(regkey: &RegKey, name: String) -> String {
-        let app_id = format!("{}\\Application", name);
-
-        if let Ok(app_application_regkey) = regkey.open_subkey(app_id) {
-            let app_result: std::io::Result<String> =
-                app_application_regkey.get_value("ApplicationName");
-
-            if let Ok(ret) = app_result {
-                return ret;
-            }
-        }
-
-        name
-    }
-
-    if let Ok(open_with_list_hkcr) = open_with_list_hkcr_res {
-        let mut candidates = HashSet::new();
-
-        for (name, v) in open_with_list_hkcr.enum_values().map(|x| x.unwrap()) {
-            if !name.is_empty() && v.vtype != RegType::REG_NONE {
-                candidates.insert(name);
-            }
-        }
-
-        for name in candidates.iter() {
-            let app_id = format!("{}\\shell\\Open\\command", name);
-            let new_name = friendly_app_name(&hkcr, name.clone());
-
-            if let Ok(app_application_regkey) = hkcr.open_subkey(app_id) {
-                for (_, value) in app_application_regkey.enum_values().map(|x| x.unwrap()) {
-                    let human_value = format!("{}", value);
-                    let human_val: Vec<&str> = human_value.split("\"").collect();
-
-                    // Example: "C:\ Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe" "%1"
-                    if human_val.len() > 3 {
-                        let human_app_path_with_trailing_backslash = human_val[2];
-
-                        if human_app_path_with_trailing_backslash.ends_with("\\") {
-                            let path_len = human_app_path_with_trailing_backslash.len() - 1;
-                            let updated_path =
-                                human_app_path_with_trailing_backslash[..path_len].to_string();
-
-                            if PathBuf::from(&updated_path).exists() {
-                                let new_name_copy = new_name.clone();
-
-                                if new_name_copy.to_lowercase() == "entrusted" {
-                                    continue;
-                                }
-
-                                ret.insert(new_name_copy, updated_path);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    ret
-}
-
-#[cfg(target_os = "macos")]
-pub fn list_apps_for_pdfs() -> HashMap<String, String> {
-    use core_foundation::array::{CFArrayGetCount, CFArrayGetValueAtIndex};
-    use core_foundation::url::CFURL;
-    use core_foundation::base::CFRelease;
-    use core_foundation::bundle::CFBundle;
-    use core_services::CFString;
-    use core_foundation::string::{
-        kCFStringEncodingUTF8, CFStringCreateWithCString, CFStringGetCStringPtr, CFStringRef,
-    };
-    use core_foundation::url::{CFURLCopyFileSystemPath, kCFURLPOSIXPathStyle, CFURLRef};
-    use core_services::{
-        kLSRolesAll, LSCopyAllRoleHandlersForContentType, LSCopyApplicationURLsForBundleIdentifier,
-    };
-
-    use std::ffi::{CStr, CString};
-
-    let content_type = "com.adobe.pdf";
-    let mut ret = HashMap::new();
-
-    unsafe {
-        if let Ok(c_key) = CString::new(content_type) {
-            let cf_key = CFStringCreateWithCString(std::ptr::null(), c_key.as_ptr(), kCFStringEncodingUTF8);
-            let result = LSCopyAllRoleHandlersForContentType(cf_key, kLSRolesAll);
-            let count = CFArrayGetCount(result);
-
-            for i in 0..count {
-                let bundle_id = CFArrayGetValueAtIndex(result, i) as CFStringRef;
-                let err_ref = std::ptr::null_mut();
-                let apps = LSCopyApplicationURLsForBundleIdentifier(bundle_id, err_ref);
-
-                if err_ref.is_null() {
-                    let app_count = CFArrayGetCount(apps);
-
-                    for j in 0..app_count {
-                        let cf_ref = CFArrayGetValueAtIndex(apps, j) as CFURLRef;
-                        let cf_path = CFURLCopyFileSystemPath(cf_ref, kCFURLPOSIXPathStyle);
-                        let cf_ptr = CFStringGetCStringPtr(cf_path, kCFStringEncodingUTF8);
-                        let c_str = CStr::from_ptr(cf_ptr);
-                        let mut app_name = String::new();
-
-                        if let Ok(app_url) = c_str.to_str() {                            
-                            let app_path = app_url.to_string();
-
-                            if let Some(bundle_url) = CFURL::from_path(&app_url, true) {
-                                if let Some(bundle) = CFBundle::new(bundle_url) {
-                                    let bundle_dict = bundle.info_dictionary();
-                                    let bundle_key_display_name = CFString::new("CFBundleDisplayName");
-                                    let bundle_key_name = CFString::new("CFBundleName");
-
-                                    let current_key = if bundle_dict.contains_key(&bundle_key_display_name) {
-                                        Some(bundle_key_display_name)
-                                    } else if bundle_dict.contains_key(&bundle_key_display_name) {
-                                        Some(bundle_key_name)
-                                    } else {
-                                        None
-                                    };
-
-                                    if let Some(active_key) = current_key {                                            
-                                        if let Some(active_key_value) = bundle_dict.find(&active_key)
-                                            .and_then(|value_ref| value_ref.downcast::<CFString>())
-                                            .map(|value| value.to_string()) {
-                                                if &active_key_value == "Entrusted" {
-                                                    continue;
-                                                }
-                                                app_name.push_str(&active_key_value);
-                                            }
-                                    } else if let Some(basename_ostr) = std::path::Path::new(&app_url).file_stem() {
-                                        if let Some(basename) = &basename_ostr.to_str() {
-                                            app_name.push_str(basename);
+                            ui.scope_builder(ui_builder, |ui| {
+                                if ui.link(self.trans.gettext("Output")).clicked() {
+                                    if let Some(output) = &entry.output {
+                                        let trans = &self.trans;
+
+                                        if let Err(ex) = utils::open_with_default_application(output.display().to_string(), "application/pdf", trans) {
+                                            let tx_modal = self.tx_modal.clone();
+                                            let error_message = ex.to_string();
+                                            let builder = thread::Builder::new().name("entrusted_modal_thread".into());
+
+                                            let _ = builder.spawn(move || {
+                                                let _ = tx_modal.send(ModalEvent::ErrorOccured(error_message));
+                                            });
                                         }
                                     }
+                                }
 
-                                    if !app_name.is_empty() {
-                                        ret.insert(app_name, app_path);
+                                ui.add_space(VERTICAL_GAP / 6.0);
+                            });
+
+                            if ui.link(self.trans.gettext("Log")).clicked() {
+                                if let Some(data) = statuses.get(&doc_id) {
+                                    let mut log_messages = String::with_capacity((data.len() + 1) * 4);
+
+                                    for (_, message) in data.iter() {
+                                        log_messages.push_str(message);
+                                        log_messages.push('\n');
                                     }
+
+                                    let tx_modal = self.tx_modal.clone();
+                                    let builder = thread::Builder::new().name("entrusted_modal_thread".into());
+
+                                    let _ = builder.spawn(move || {
+                                        let _ = tx_modal.send(ModalEvent::Log(log_messages.clone()));
+                                    });
                                 }
                             }
+                        } else {
+                            ui.label(EMPTY_STRING);
                         }
+                    });
+                } else if column_number == 2 { // Progress bar
+                    ui.add(egui::ProgressBar::new(progress_value).desired_width(75.0).show_percentage().corner_radius(0.0));
+                } else if column_number == 3 { // Status
+                    let status_name   = entry.status.to_string();
+                    let status_string = self.trans.gettext(&status_name);
+                    let status_color  = match entry.status {
+                        FileUploadStatus::Succeeded   => egui::Color32::from_rgb(3, 218, 40),
+                        FileUploadStatus::Failed      => egui::Color32::LIGHT_RED,
+                        FileUploadStatus::Interrupted => LINE_COLOR,
+                        _                             => ui.ctx().style().visuals.widgets.noninteractive.fg_stroke.color,
+                    };
 
-                        CFRelease(cf_ref as *mut _);
-                    }
+                    ui.label(egui::RichText::new(status_string).color(status_color));
                 }
             }
         }
     }
 
-    ret
+    fn column_name(&mut self, column_number: usize) -> String {
+        self.column_names[column_number].to_owned()
+    }
+
+    fn ack_proc_event(&mut self, ctx: &egui::Context, event: common::AppEvent, app_state: &mut AppState) {
+        let trans = &app_state.trans;
+
+        match event {
+            common::AppEvent::ConversionFinished(index, output_path_opt) => {
+                if let Some(output_path) = output_path_opt {
+                    self.file_upload_entries[index].output = Some(output_path);
+                    self.file_upload_entries[index].status = FileUploadStatus::Succeeded;
+                } else {
+                    self.file_upload_entries[index].status = FileUploadStatus::Interrupted;
+                    self.interrupted = true;
+                }
+
+                self.processed_count.fetch_add(1, atomic::Ordering::SeqCst);
+            },
+            common::AppEvent::ConversionStarted(index) => {
+                self.file_upload_entries[index].status = FileUploadStatus::Processing;
+            },
+            common::AppEvent::ConversionFailed(index)  => {
+                self.file_upload_entries[index].status = FileUploadStatus::Failed;
+                self.processed_count.fetch_add(1, atomic::Ordering::SeqCst);
+            },
+            common::AppEvent::ConversionProgressed(doc_id, progress_value, progress_message) => {
+                self.file_upload_statuses.entry(doc_id)
+                    .or_insert_with(Vec::new)
+                    .push((progress_value, progress_message));
+            },
+            common::AppEvent::AllConversionEnded(counter_succeeded, counter_failed, counter_total) => {
+                if self.interrupted {
+                    self.document_processing_label = trans.gettext("The processing was interrupted!");
+                } else if counter_succeeded != counter_total {
+                    if counter_total == 1 {
+                        self.document_processing_label = trans.gettext("The document failed to process!");
+                    } else if counter_failed == counter_total {
+                        self.document_processing_label = trans.gettext("All documents failed to process!");
+                    } else {
+                        let counter_failed_string = counter_failed.to_string();
+                        let counter_total_string = counter_total.to_string();
+                        self.document_processing_label = trans.gettext_fmt("{0} documents out of {1} failed processing!", vec![&counter_failed_string, &counter_total_string]);
+                    }
+                } else {
+                    self.document_processing_label = trans.gettext("All documents were successfully processed!");
+                };
+
+                self.done = true;
+                *app_state.converting.borrow_mut() = false;
+                ctx.request_repaint();
+            },
+        }
+    }
+
+    fn ack_gui_event(&mut self, _: &egui::Context, event: GuiEvent, app_state: &mut AppState) {
+        let trans = &app_state.trans;
+
+        match event {
+            GuiEvent::ReadyToProcess(entries) => {
+                for entry in entries.iter() {
+                    let item = FileUploadEntryProcessFiles::new(entry.id, entry.path.clone(), entry.options.clone());
+                    self.file_upload_entries.push(item);
+                }
+
+                let row_count_string = entries.len().to_string();
+                self.document_processing_label = trans.gettext_fmt("Documents processing ({0}):", vec![&row_count_string]);
+            },
+            GuiEvent::ReadToUpload => {
+                self.done = false;
+                self.started = false;
+                self.file_upload_entries.clear();
+                self.interrupted = false;
+                self.document_processing_label = trans.gettext("Documents processing:");
+                self.processed_count.store(0, atomic::Ordering::SeqCst);
+                self.stop_requested.store(false, atomic::Ordering::SeqCst);
+            },
+            _ => {}
+        }
+    }
+
+    fn render(&mut self, ctx: &egui::Context, ui: &mut egui::Ui, app_state: &mut AppState) {
+        let tx_proc = app_state.tx_proc.clone();
+        let trans = &app_state.trans;
+        let max_width = ui.available_width();
+
+        ui.horizontal(|ui| {
+            if ui.add_enabled(self.done, egui::Link::new(trans.gettext("Add more files"))).clicked() {
+                *app_state.converting.borrow_mut() = false;
+                let tx = app_state.tx_gui.clone();
+                let _ = tx.send(GuiEvent::ReadToUpload);
+            }
+
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                let controls_size = ui.ctx().style().spacing.interact_size.y;
+                let processing_active = !self.done;
+                let entries = &self.file_upload_entries;
+                let entries_count = entries.len();
+
+                let progress_value = if processing_active {
+                    if entries_count == 0 {   // Prevent crashes while UI is out of sync
+                        0.0
+                    } else if entries_count == 1 { // Reflect the current document progress information
+                        let doc_id = entries[0].id;
+
+                        if let Some(statuses) = self.file_upload_statuses.get(&doc_id) {
+                            if let Some((p, _)) = statuses.last() {
+                                *p as f32 / PROGRESS_VALUE_MAX as f32
+                            } else { 0.0 }
+                        } else { 0.0 }
+                    } else {
+                        let mut total_progress = 0.0;
+
+                        for entry in entries.iter() {
+                            if let Some(statuses) = self.file_upload_statuses.get(&entry.id) {
+                                if let Some((p, _)) = statuses.last() {
+                                    total_progress += *p as f32;
+                                }
+                            }
+                        }
+
+                        if total_progress > 0.0 {
+                            total_progress / entries_count as f32 / PROGRESS_VALUE_MAX as f32
+                        } else {
+                            total_progress
+                        }
+                    }
+                } else { 1.0 };
+
+                ui.add_sized([controls_size, controls_size], egui::ProgressBar::new(progress_value).desired_width(75.0).show_percentage().corner_radius(0.0));
+
+                ui.add_enabled_ui(processing_active, |ui| {
+                    let button_enabled = !(self.stop_requested.load(atomic::Ordering::SeqCst) || self.done);
+
+                    ui.add_enabled_ui(button_enabled, |ui| {
+                        let button_color = if button_enabled {
+                            LINE_COLOR
+                        } else {
+                            egui::Color32::DARK_GRAY
+                        };
+
+                        let button = egui::Button::new(EMPTY_STRING).fill(button_color);
+
+                        if ui.add_sized([controls_size, controls_size], button).on_hover_text(trans.gettext("Stop processing")).clicked() {
+                            self.stop_requested.store(true, atomic::Ordering::SeqCst);
+                            ctx.request_repaint();
+                        }
+                    });
+                });
+
+                ui.label(trans.gettext("Overall progress"));
+            });
+
+        });
+
+        ui.add_space(VERTICAL_GAP);
+        paint_horizontal_line(ui, LINE_COLOR);
+        ui.add_space(VERTICAL_GAP);
+
+        ui.label(&self.document_processing_label);
+        ui.add_space(VERTICAL_GAP);
+
+        let files = self.file_upload_entries.clone();
+        let row_count = files.len() as u64;
+
+        let wn1 = text_width(ui, row_count.to_string());
+        let rem_w = max_width - wn1 - 75.0 - 100.0 - 110.0;
+        let (w1, w2, w3, w4, w5) = (wn1, rem_w, 75.0, 100.0, 110.0);
+
+        let table = egui_table::Table::new()
+            .id_salt("table_upload_process")
+            .num_rows(row_count)
+            .columns(vec![
+                egui_table::Column::new(w1).resizable(true).range(w1..=w1),
+                egui_table::Column::new(w2).resizable(true).range(w2..=w2),
+                egui_table::Column::new(w3).resizable(true).range(w3..=w3),
+                egui_table::Column::new(w4).resizable(true).range(w4..=w4),
+                egui_table::Column::new(w5).resizable(true).range(w5..=w5),
+            ])
+            .num_sticky_cols(1)
+            .headers([egui_table::HeaderRow::new(20.0)])
+            .auto_size_mode(egui_table::AutoSizeMode::default());
+
+        table.show(ui, self);        
+
+        if !self.started && !self.done {
+            self.started = true;
+
+            let ctx             = ctx.clone();
+            let files           = files.clone();
+            let trans           = trans.clone();
+            let tx              = tx_proc.clone();
+            let processed_count = self.processed_count.clone();
+
+            let stop_flag = Arc::clone(&self.stop_requested);
+            let stop_flag_proc = Arc::clone(&self.stop_requested);
+
+            let sanitizer = app_state.sanitizer.clone();
+            let default_convert_options = app_state.convert_options.borrow().clone();
+            let builder = thread::Builder::new().name("entrusted_processing_thread".into());
+
+            let _ = builder.spawn(move || {
+                let counter_total = row_count as usize;
+                let mut counter_succeeded: usize = 0;
+                let mut counter_failed: usize = 0;
+
+                let eventer = Box::new(GuiEventSender {
+                    tx: tx.clone(), ctx: ctx.clone()
+                });
+
+                for (i, file) in files.iter().enumerate() {
+                    if stop_flag.load(atomic::Ordering::SeqCst) {
+                        break;
+                    }
+
+                    // Allow the UI catch up with conversion progress messages
+                    // TODO: risk of infite loop if there are business logic bugs...
+                    while processed_count.load(atomic::Ordering::SeqCst) != i {
+                        thread::yield_now();
+                    }
+
+                    let (src_path, doc_id) = (&file.path, file.id);
+                    let convert_options = combine_options(&default_convert_options, &file.options);
+                    let stop_flag_current = Arc::clone(&stop_flag_proc);
+
+                    let _ = tx.send(AppEvent::ConversionStarted(i));
+                    thread::yield_now();
+
+                    match sanitizer.sanitize(doc_id, src_path.clone(), convert_options, eventer.clone(), trans.clone(), stop_flag_current) {
+                        Ok(output_path_opt) => {
+                            let _ = tx.send(AppEvent::ConversionFinished(i, output_path_opt));
+                            thread::yield_now();
+                            counter_succeeded += 1;
+                        },
+                        Err(ex) => {
+                            let _ = tx.send(AppEvent::ConversionProgressed(file.id, PROGRESS_VALUE_MAX, ex.to_string()));
+                            let _ = tx.send(AppEvent::ConversionFailed(i));
+                            thread::yield_now();
+                            counter_failed += 1;
+                        }
+                    }
+
+                    ctx.request_repaint();
+                }
+
+                let _ = tx.send(common::AppEvent::AllConversionEnded(counter_succeeded, counter_failed, counter_total));
+                thread::yield_now();
+                ctx.request_repaint();
+            });
+        }
+    }
 }
 
-#[cfg(target_os = "windows")]
-pub fn pdf_open_with(cmd: String, input: PathBuf, trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {
-    let path = str_to_utf16(&cmd);
-    let input_string = input.display().to_string();
-    let args = str_to_utf16(&input_string);
-    let result = unsafe {
-        ShellExecuteW(std::ptr::null_mut(),
-                      std::ptr::null_mut(),
-                      path.as_ptr(),
-                      args.as_ptr(),
-                      std::ptr::null(),
-                      SW_SHOW)
+struct UploadScreen {
+    delegate_add_files: UploadScreenAddFilesDelegate,
+    delegate_process_files: UploadScreenProcessFilesDelegate
+}
+
+impl UploadScreen {
+    fn new(tx_modal: mpsc::Sender<ModalEvent>, trans: l10n::Translations) -> Self {
+        Self {
+            delegate_add_files     : UploadScreenAddFilesDelegate::new(tx_modal.clone(), trans.clone()),
+            delegate_process_files : UploadScreenProcessFilesDelegate::new(tx_modal.clone(), trans.clone()),            
+        }
+    }
+}
+
+impl AppScreen for UploadScreen {
+    fn render(&mut self, ctx: &egui::Context, ui: &mut egui::Ui, app_state: &mut AppState) {
+        let trans = &app_state.trans;
+
+        ui.heading(trans.gettext("Upload"));
+        ui.add_space(VERTICAL_GAP);
+
+        let rx_gui = app_state.rx_gui.clone();
+        let rx_proc = app_state.rx_proc.clone();
+        let conversion_in_progress = *app_state.converting.borrow_mut();
+        let mut data_received = false;
+
+        while let Ok(app_event) = rx_gui.borrow_mut().try_recv() {
+            // Ignore drag and drop events when the user is on the processing screen
+            if let GuiEvent::FilesUploaded(_) = app_event {
+                if conversion_in_progress {
+                    continue;
+                }
+            }
+
+            self.delegate_add_files.ack_gui_event(ctx, app_event.clone(), app_state);
+            self.delegate_process_files.ack_gui_event(ctx, app_event.clone(), app_state);
+            data_received = true;
+        }
+
+        while let Ok(app_event) = rx_proc.borrow_mut().try_recv() {
+            self.delegate_add_files.ack_proc_event(ctx, app_event.clone(), app_state);
+            self.delegate_process_files.ack_proc_event(ctx, app_event.clone(), app_state);
+            data_received = true;
+        }
+
+        let processing_files = !self.delegate_process_files.file_upload_entries.is_empty();
+
+        if !conversion_in_progress && !processing_files {
+            self.delegate_add_files.render(ctx, ui, app_state);
+        } else {
+            self.delegate_process_files.render(ctx, ui, app_state);
+        }
+
+        if data_received {
+            ctx.request_repaint();
+        }
+    }
+
+    fn id(&self) -> ScreenId {
+        ScreenId::Upload
+    }
+}
+
+#[derive(Clone, PartialEq)]
+enum OutputPathOptions {
+    SameFolder, DedicatedFolder
+}
+
+struct SettingsScreen {
+    enable_custom_filename_suffix: bool,
+    custom_filename_suffix: String,
+    enable_custom_visual_quality: bool,
+    custom_visual_quality: VisualQuality,
+    enable_ocr: bool,
+    ocr_lang_initial_selection: usize,
+    ocr_lang_codes_selections: Vec<bool>,
+    ocr_langs: Vec<OcrLang>,
+    ui_theme: UiTheme,
+    enable_save_in_same_folder: OutputPathOptions,
+    dedicated_save_folder_path: String,
+}
+
+impl SettingsScreen {
+    // TODO from config for initial startup in AppState construction
+    fn new(ocr_lang_initial_selection: usize, ocr_lang_codes_selections: Vec<bool>, ocr_langs: Vec<OcrLang>) -> Self {
+        Self {
+            enable_custom_filename_suffix: false,
+            custom_filename_suffix: common::DEFAULT_FILE_SUFFIX.to_string(),
+            enable_custom_visual_quality: false,
+            custom_visual_quality: VisualQuality::default_value(),
+            enable_ocr: false,
+            ocr_lang_initial_selection,
+            ocr_lang_codes_selections,
+            ui_theme: UiTheme::System,
+            ocr_langs,
+            enable_save_in_same_folder: OutputPathOptions::SameFolder,
+            dedicated_save_folder_path: EMPTY_STRING,
+        }
+    }
+
+    // TODO: Use Config object once that part is fully refactored
+    fn maybe_update_default_convert_options(&self, ui: &mut egui::Ui, app_state: &mut AppState, old_enable_custom_filename_suffix: bool, old_custom_filename_suffix: String, old_enable_custom_visual_quality: bool, old_custom_visual_quality: VisualQuality, old_enable_ocr: bool, old_ocr_lang_codes_selections: Vec<bool>, old_enable_save_in_same_folder: OutputPathOptions, old_dedicated_save_folder_path: String, old_ui_theme: UiTheme) {
+        let mut default_convert_options = app_state.convert_options.borrow_mut();
+
+        if self.enable_custom_filename_suffix != old_enable_custom_filename_suffix || self.custom_filename_suffix != old_custom_filename_suffix {
+            default_convert_options.filename_suffix = self.custom_filename_suffix.clone();
+        }
+
+        if self.enable_custom_visual_quality != old_enable_custom_visual_quality || self.custom_visual_quality != old_custom_visual_quality {
+            default_convert_options.visual_quality = self.custom_visual_quality.clone();
+        }
+
+        if self.enable_ocr != old_enable_ocr || self.ocr_lang_codes_selections != old_ocr_lang_codes_selections {
+            default_convert_options.ocr_lang_code = if self.enable_ocr {
+                let mut ocr_lang_codes = Vec::with_capacity(2);
+
+                for (i, item) in self.ocr_langs.iter().enumerate() {
+                    if self.ocr_lang_codes_selections[i] {
+                        ocr_lang_codes.push(item.id.clone());
+                    }
+                }
+
+                let ocr_lang_str: String = ocr_lang_codes.join("+");
+
+                if !ocr_lang_str.is_empty() {
+                    Some(ocr_lang_str)
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
+        }
+
+        if self.enable_save_in_same_folder != old_enable_save_in_same_folder || self.dedicated_save_folder_path !=  old_dedicated_save_folder_path {
+            let new_output_folder = if self.enable_save_in_same_folder == OutputPathOptions::SameFolder || self.dedicated_save_folder_path.trim().is_empty() {
+                None
+            } else {
+                Some(path::PathBuf::from(&self.dedicated_save_folder_path))
+            };
+
+            default_convert_options.output_folder = new_output_folder;
+        }
+
+        if self.ui_theme != old_ui_theme {
+            ui.ctx().set_theme(self.ui_theme.clone());
+        }
+    }
+}
+
+impl AppScreen for SettingsScreen {
+    fn render(&mut self, _: &egui::Context, ui: &mut egui::Ui, app_state: &mut AppState) {
+        let trans = &app_state.trans;
+
+        ui.heading(trans.gettext("Settings"));
+        ui.add_space(VERTICAL_GAP);
+
+        ui.label(egui::RichText::new(trans.gettext("Appearance settings")).strong());
+        ui.add_space(VERTICAL_GAP);
+
+        let old_enable_custom_filename_suffix = self.enable_custom_filename_suffix;
+        let old_custom_filename_suffix = self.custom_filename_suffix.clone();
+        let old_enable_custom_visual_quality = self.enable_custom_visual_quality;
+        let old_custom_visual_quality = self.custom_visual_quality.clone();
+        let old_enable_ocr = self.enable_ocr;
+        let old_ocr_lang = self.ocr_lang_codes_selections.clone();
+        let old_enable_save_in_same_folder = self.enable_save_in_same_folder.clone();
+        let old_dedicated_save_folder_path = self.dedicated_save_folder_path.clone();
+        let old_ui_theme = self.ui_theme.clone();
+
+        ui.horizontal(|ui| {
+            ui.label(trans.gettext("Theme"));
+
+            egui::ComboBox::from_id_salt("combobox_ui_theme")
+                .selected_text(trans.gettext(&self.ui_theme.to_string()))
+                .icon(filled_triangle)
+                .show_ui(ui, |ui| {
+                    ui.selectable_value(&mut self.ui_theme, UiTheme::Light,  trans.gettext(&UiTheme::Light.to_string())).clicked();
+                    ui.selectable_value(&mut self.ui_theme, UiTheme::Dark,   trans.gettext(&UiTheme::Dark.to_string())).clicked();
+                    ui.selectable_value(&mut self.ui_theme, UiTheme::System, trans.gettext(&UiTheme::System.to_string())).clicked();
+                });
+        });
+
+        ui.add_space(VERTICAL_GAP);
+        paint_horizontal_line(ui, LINE_COLOR);
+        ui.add_space(VERTICAL_GAP);
+
+        ui.label(egui::RichText::new(trans.gettext("Processing settings")).strong());
+        ui.add_space(VERTICAL_GAP);
+
+        egui::Grid::new("grid_settings_conversion").show(ui, |ui| {
+            if ui.checkbox(&mut self.enable_custom_filename_suffix, trans.gettext("Custom output file name suffix")).changed() && !self.enable_custom_filename_suffix {
+                self.custom_filename_suffix = common::DEFAULT_FILE_SUFFIX.to_string();
+            }
+
+            ui.add_enabled(self.enable_custom_filename_suffix, egui::TextEdit::singleline(&mut self.custom_filename_suffix));
+            ui.end_row();
+
+            if ui.checkbox(&mut self.enable_custom_visual_quality, trans.gettext("Custom output visual quality")).changed() && !self.enable_custom_visual_quality {
+                self.custom_visual_quality = VisualQuality::default_value();
+            }
+
+            egui::ComboBox::from_id_salt("combobox_visual_quality")
+                .selected_text(trans.gettext(&self.custom_visual_quality.to_string()))
+                .icon(filled_triangle)
+                .show_ui(ui, |ui| {
+                    ui.add_enabled_ui(self.enable_custom_visual_quality, |ui| {
+                        ui.selectable_value(&mut self.custom_visual_quality, VisualQuality::Low,    trans.gettext(&VisualQuality::Low.to_string()));
+                        ui.selectable_value(&mut self.custom_visual_quality, VisualQuality::Medium, trans.gettext(&VisualQuality::Medium.to_string()));
+                        ui.selectable_value(&mut self.custom_visual_quality, VisualQuality::High,   trans.gettext(&VisualQuality::High.to_string()));
+                    });
+                });
+
+            ui.end_row();
+
+            ui.label(EMPTY_STRING);
+            ui.end_row();
+
+            if ui.checkbox(&mut self.enable_ocr, trans.gettext("Searchable PDFs via OCR")).changed() && !self.enable_ocr {
+                for i in 0..self.ocr_lang_codes_selections.len() {
+                    self.ocr_lang_codes_selections[i] = self.ocr_lang_initial_selection == i;
+                }
+            }
+
+            // TODO future flexibility, calculate dimensions ased on longuest label
+            egui::ScrollArea::both().max_width(500.0).max_height(50.0).show(ui, |ui| {
+                if !self.enable_ocr {
+                    ui.disable();
+                }
+
+                ui.vertical(|ui| {
+                    for (i, item) in &mut self.ocr_langs.iter().enumerate() {
+                        ui.checkbox(&mut self.ocr_lang_codes_selections[i], item.to_string());
+                    }
+                });
+            });
+
+            ui.end_row();
+        });
+
+        ui.add_space(VERTICAL_GAP);
+
+        ui.label(trans.gettext("By default, sanitized output will be saved in:"));
+
+        if ui.add(egui::RadioButton::new(self.enable_save_in_same_folder == OutputPathOptions::SameFolder, trans.gettext("The same folder as the uploaded file"))).clicked() {
+            self.enable_save_in_same_folder = OutputPathOptions::SameFolder;
+            self.dedicated_save_folder_path.clear();
+        }
+
+        ui.horizontal(|ui| {
+            let use_dedicated_folder = self.enable_save_in_same_folder == OutputPathOptions::DedicatedFolder;
+            ui.radio_value(&mut self.enable_save_in_same_folder, OutputPathOptions::DedicatedFolder, trans.gettext("A dedicated folder"));
+
+            if ui.add_enabled(use_dedicated_folder, egui::Button::new(trans.gettext("Browse..."))).clicked() {
+                let selected_folder_opt = rfd::FileDialog::new().set_title(trans.gettext("Select output folder")).pick_folder();
+
+                if let Some(ref selected_folder) = selected_folder_opt {
+                    self.dedicated_save_folder_path = selected_folder.display().to_string();
+                }
+            }
+
+            ui.add_enabled(use_dedicated_folder, egui::TextEdit::singleline(&mut self.dedicated_save_folder_path).hint_text(trans.gettext("Same folder if blank")));
+        });
+
+        // TODO update config another way, too many params...
+        self.maybe_update_default_convert_options(ui, app_state, old_enable_custom_filename_suffix, old_custom_filename_suffix, old_enable_custom_visual_quality, old_custom_visual_quality, old_enable_ocr, old_ocr_lang, old_enable_save_in_same_folder, old_dedicated_save_folder_path, old_ui_theme);
+    }
+
+
+    fn id(&self) -> ScreenId {
+        ScreenId::Settings
+    }
+}
+
+struct WelcomeScreen {
+    app_logo: egui::TextureHandle
+}
+
+impl WelcomeScreen {
+    fn new(app_logo: egui::TextureHandle) -> Self {
+        Self { app_logo }
+    }
+}
+
+impl AppScreen for WelcomeScreen {
+    fn render(&mut self, ctx: &egui::Context, ui: &mut egui::Ui, app_state: &mut AppState) {
+        let trans = &app_state.trans;
+
+        ui.heading(trans.gettext("Welcome"));
+        ui.add_space(VERTICAL_GAP);
+
+        ui.horizontal(|ui| {
+            ui.image((self.app_logo.id(), self.app_logo.size_vec2()));
+
+            ui.vertical(|ui| {
+                ui.horizontal(|ui| {
+                    ui.label(capitalize_first_letter(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown")));
+                    ui.label(egui::RichText::new(option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown")).strong());
+                });
+
+                ui.add_space(VERTICAL_GAP);
+
+                ui.label(trans.gettext("This program helps neuter potentially suspicious files, by removing active content: a PDF output is generated."));
+                ui.add_space(VERTICAL_GAP);
+
+                ui.label(trans.gettext("The project is hosted on GitHub."));
+
+                if let Some(project_homepage) = option_env!("CARGO_PKG_REPOSITORY") {
+                    if ui.link(project_homepage).clicked() {
+                        if let Err(ex) = utils::open_with_default_application(project_homepage.to_string(), "text/html", trans) {
+                            let tx_modal = app_state.tx_modal.clone();
+                            let error_message = ex.to_string();
+                            let builder = thread::Builder::new().name("entrusted_modal_thread".into());
+
+                            let _ = builder.spawn(move || {
+                                tx_modal.send(ModalEvent::ErrorOccured(error_message)).unwrap();
+                            });
+                        }
+                    }
+                }
+            });
+        });
+
+        ui.add_space(VERTICAL_GAP);
+
+        let current_state = app_state.clone();
+
+        ui.vertical(|ui| {
+            ui.label(trans.gettext("Here is what you can do:"));
+            ui.add_space(VERTICAL_GAP);
+
+            fn add_link(ui: &mut egui::Ui, current_state: &AppState, title: String, screen_id: ScreenId) {
+                ui.horizontal(|ui| {
+                    ui.label("- ");
+
+                    if ui.link(title).clicked() {
+                        move_to_screen(screen_id, current_state);
+                    }
+                });
+            }
+
+            add_link(ui, &current_state, trans.gettext("Upload files"),          ScreenId::Upload);
+            add_link(ui, &current_state, trans.gettext("Adjust settings"),       ScreenId::Settings);
+            add_link(ui, &current_state, trans.gettext("Consult documentation"), ScreenId::Documentation);
+
+            ui.horizontal(|ui| {
+                ui.label("- ");
+                if ui.link(trans.gettext("Report an issue")).clicked() {
+                    const ISSUES_URL: &str = "https://github.com/rimerosolutions/entrusted/issues";
+
+                    if let Err(ex) = utils::open_with_default_application(ISSUES_URL.to_string(), "text/html", trans) {
+                        let tx_modal = app_state.tx_modal.clone();
+                        let ctx = ctx.clone();
+                        let error_message = trans.gettext_fmt("Could not open project issues URL: {0}! {1}", vec![ISSUES_URL, &ex.to_string()]);
+                        let builder = thread::Builder::new().name("entrusted_modal_thread".into());
+
+                        let _ = builder.spawn(move || {
+                            let _ = tx_modal.send(ModalEvent::ErrorOccured(error_message));
+                            ctx.request_repaint();
+                        });
+                    }
+                }
+            });
+        });
+    }
+
+    fn id(&self) -> ScreenId {
+        ScreenId::Welcome
+    }
+}
+
+fn modal_show_filedialog(ctx: &egui::Context, frame: &mut eframe::Frame, app_state: &mut AppState) {
+    let trans = &app_state.trans;
+
+    let selected_files = rfd::FileDialog::new()
+        .set_parent(frame)
+        .set_title(trans.gettext("Select files"))
+        .add_filter(trans.gettext("Known files"),    &["pdf", "doc", "docx", "odt", "rtf", "odp", "ppt", "pptx", "ods", "xls", "xlsx", "odg", "epub", "mobi", "png", "jpeg", "gif", "tiff", "pnm", "bmp"])
+        .add_filter(trans.gettext("PDF documents"),  &["pdf"])
+        .add_filter(trans.gettext("Text documents"), &["doc", "docx", "odt", "rtf"])
+        .add_filter(trans.gettext("Presentations"),  &["odp", "ppt", "pptx"])
+        .add_filter(trans.gettext("Spreadsheets"),   &["ods", "xls", "xlsx"])
+        .add_filter(trans.gettext("Drawing"),        &["odg"])
+        .add_filter(trans.gettext("Ebooks"),         &["epub", "mobi", "cbz", "fb2"])
+        .add_filter(trans.gettext("Images"),         &["png", "jpeg", "gif", "tiff", "pnm", "bmp"])
+        .add_filter(trans.gettext("All files"),      &["*"])
+        .pick_files();
+
+    if let Some(picked_files) = selected_files {
+        let mut entries = Vec::with_capacity(picked_files.len());
+
+        for picked_file in picked_files.iter() {
+            entries.push(FileUploadEntryAddFiles::new(picked_file.clone(), FileUploadOptions::default()));
+        }
+
+        let tx = app_state.tx_gui.clone();
+        let ctx = ctx.clone();
+        let builder = thread::Builder::new().name("entrusted_filepicker_thread".into());
+
+        let _ = builder.spawn(move || {
+            let _ = tx.send(GuiEvent::FilesUploaded(entries));
+            ctx.request_repaint();
+        });
+    }
+
+    app_state.modal_shown = false;
+}
+
+fn modal_show_processing_options(ctx: &egui::Context, app_state: &mut AppState) {
+    let trans = &app_state.trans;
+
+    egui::Window::new(trans.gettext("Configure PDF output"))
+        .default_size([480.0, 380.0])
+        .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
+        .collapsible(false)
+        .resizable(false)
+        .open(&mut app_state.modal_shown)
+        .show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                ui.label(trans.gettext("Output location"));
+
+                if ui.button(trans.gettext("Browse...")).clicked() {
+                    let selected_folder_opt = rfd::FileDialog::new().set_title(trans.gettext("Select output folder")).pick_folder();
+
+                    if let Some(ref selected_folder) = selected_folder_opt {
+                        app_state.modal_processing_data.1.output_folder = selected_folder.display().to_string();
+                    }
+                }
+            });
+
+            ui.add(egui::TextEdit::singleline(&mut app_state.modal_processing_data.1.output_folder).desired_width(200.0).hint_text(trans.gettext("Default if blank")));
+
+            ui.label(trans.gettext("Password to decrypt input"));
+            ui.add(egui::TextEdit::singleline(&mut app_state.modal_processing_data.1.password_decrypt).desired_width(200.0).password(true).hint_text(trans.gettext("None if blank")));
+
+            ui.label(trans.gettext("Password to encrypt output"));
+            ui.add(egui::TextEdit::singleline(&mut app_state.modal_processing_data.1.password_encrypt).desired_width(200.0).password(true).hint_text(trans.gettext("None if blank")));
+        });
+
+    if !app_state.modal_shown {
+        let index = app_state.modal_processing_data.0;
+        let processing_options = app_state.modal_processing_data.1.clone();
+        let tx = app_state.tx_gui.clone();
+        let builder = thread::Builder::new().name("entrusted_upload_notification_thread".into());
+
+        let _ = builder.spawn(move || {
+            let _ = tx.send(GuiEvent::FileUploadOptionsUpdated((index, processing_options)));
+        });
+    }
+}
+
+fn modal_show_text(ctx: &egui::Context, app_state: &mut AppState, window_title: String) {
+    egui::Window::new(window_title)
+        .default_size([480.0, 380.0])
+        .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
+        .collapsible(false)
+        .resizable(false)
+        .open(&mut app_state.modal_shown)
+        .show(ctx, |ui| {
+            egui::ScrollArea::both().max_width(450.0).max_height(270.0).show(ui, |ui| {
+                let mut data = app_state.modal_text_data.clone();
+                ui.add(egui::TextEdit::multiline(&mut data));
+            });
+        });
+}
+
+fn modal_show_logs(ctx: &egui::Context, app_state: &mut AppState) {
+    let trans = &app_state.trans;
+    modal_show_text(ctx, app_state, trans.gettext("Log"));
+}
+
+fn modal_show_error(ctx: &egui::Context, app_state: &mut AppState) {
+    let trans = &app_state.trans;
+    modal_show_text(ctx, app_state, trans.gettext("Error!"));
+}
+
+fn handle_modal_events(ctx: &egui::Context, frame: &mut eframe::Frame, app_state: &mut AppState) {
+    let rx_modal = app_state.rx_modal.clone();
+
+    if let Ok(modal_event) = rx_modal.borrow_mut().try_recv() {
+        match modal_event {
+            ModalEvent::FileDialog => {
+                app_state.modal_shown = true;
+                app_state.modal_display_state = ModalDisplayState::FileDialog;
+            },
+            ModalEvent::Log(msg) => {
+                app_state.modal_shown = true;
+                app_state.modal_display_state = ModalDisplayState::Log;
+                app_state.modal_text_data = msg.clone();
+            },
+            ModalEvent::ProcessingOptions((index, upload_options)) => {
+                app_state.modal_shown = true;
+                app_state.modal_display_state = ModalDisplayState::ProcessingOptions;
+                app_state.modal_processing_data = (index, upload_options);
+            },
+            ModalEvent::ErrorOccured(msg) => {
+                app_state.modal_shown = true;
+                app_state.modal_display_state = ModalDisplayState::ErrorOccured;
+                app_state.modal_text_data = msg.clone();
+            },
+        }
+    }
+
+    if app_state.modal_shown {
+        match app_state.modal_display_state {
+            ModalDisplayState::FileDialog => {
+                modal_show_filedialog(ctx, frame, app_state);
+            },
+            ModalDisplayState::ProcessingOptions => {
+                modal_show_processing_options(ctx, app_state);
+            },
+            ModalDisplayState::Log => {
+                modal_show_logs(ctx, app_state);
+            },
+            ModalDisplayState::ErrorOccured => {
+                modal_show_error(ctx, app_state);
+            },
+            _ => {},
+        }
+    }
+}
+
+fn handle_dropped_files(ctx: &egui::Context, tx: mpsc::Sender<GuiEvent>, files: Vec<egui::DroppedFile>) {
+    let tx  = tx.clone();
+    let ctx = ctx.clone();
+    let builder = thread::Builder::new().name("entrusted_upload_notification_thread".into());
+
+    let _ = builder.spawn(move || {
+        let mut entries = Vec::with_capacity(files.len());
+
+        for file in files.iter() {
+            if let Some(ref path) = file.path {
+                if !path.is_dir() {
+                    entries.push(FileUploadEntryAddFiles::new(path.clone(), FileUploadOptions::default()));
+                }
+            }
+        }
+
+        if !entries.is_empty() {
+            let _ = tx.send(GuiEvent::FilesUploaded(entries));
+            ctx.request_repaint();
+        }
+    });
+}
+
+impl eframe::App for App {
+    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        let screens = &mut self.screens;
+        let screen_id  = self.app_state.current_screen_id.borrow_mut().clone();
+        let idx = &screens.iter().position(|x| x.id() == screen_id).unwrap_or(0);
+        let mut app_state = self.app_state.clone();
+        let tx = app_state.tx_gui.clone();
+        let app_state_clone = app_state.clone();
+        let mut theme_set = app_state_clone.theme_set.borrow_mut();
+
+        if !*theme_set {
+            let theme = Into::<egui::ThemePreference>::into(app_state.ui_theme.clone());
+            ctx.set_theme(theme);
+            *theme_set = true;
+        }
+
+        handle_modal_events(ctx, frame, &mut self.app_state);
+
+        let converting: bool = *app_state.converting.borrow();
+
+        egui::CentralPanel::default().show(ctx, |ui| {
+            if self.app_state.modal_shown {
+                ui.disable();
+            }
+
+            let screen_index = *idx;
+            let navbar = &self.navbar;
+            navbar.render(ctx, ui, &mut app_state, screen_index != 0 && !converting);
+
+            let current_screen = &mut screens[screen_index];
+            current_screen.render(ctx, ui, &mut app_state);
+        });
+
+        ctx.input(|i| {
+            if !i.raw.dropped_files.is_empty() && !converting && screen_id == ScreenId::Upload {
+                handle_dropped_files(ctx, tx, i.raw.dropped_files.clone());
+            }
+        });
+    }
+}
+
+fn main() -> Result<(), eframe::Error> {
+    let args: Vec<String> = env::args().collect();
+    let exe_path = path::PathBuf::from(&args[0]);
+
+    let app_config_ret = config::load_config();
+    let app_config: config::AppConfig = app_config_ret.unwrap_or_default();
+
+    l10n::load_translations(incl_gettext_files!("en", "fr"));
+    let locale = env::var(l10n::ENV_VAR_ENTRUSTED_LANGID).unwrap_or(l10n::sys_locale());
+    let trans = l10n::new_translations(locale);
+
+    let frame_icon = eframe::icon_data::from_png_bytes(ICON_LOGO).expect("Invalid frame icon data!");
+    let logo = egui::ColorImage::from(frame_icon.clone());
+    let icon: Arc<egui::IconData> = Arc::new(frame_icon);
+    let window_size: egui::Vec2 = egui::Vec2::new(500.0, 460.0);
+
+    let options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default()
+            .with_inner_size(window_size)
+            .with_icon(icon)
+            .with_min_inner_size(window_size),
+        ..Default::default()
     };
 
-    if result as usize > 32 {
-        Ok(())
-    } else {
-        let path_string = input.display().to_string();
-	    let default_msg = trans.gettext_fmt("Cannot open PDF document at {0}.", vec![&path_string]);
-	    Err(err_code_msg(result as usize, trans, default_msg).into())        
-    }
+    let ui_theme = UiTheme::from(app_config.ui_theme);
+    let window_title = capitalize_first_letter(option_env!("CARGO_PKG_NAME").unwrap_or("Unknown"));
+
+    eframe::run_native(&window_title, options, Box::new(|cc| {
+        cc.egui_ctx.set_pixels_per_point(1.2);
+        let texture = cc.egui_ctx.load_texture("logo_entrusted", logo, Default::default());
+        let sanitizer = sanitizer::Sanitizer::new(platform::resolve_sanitizer_settings(exe_path));
+
+        // TODO multiple language codes can be selected and enabled in user preferences
+        // Need multiple default selection indices
+        let default_ocr_lang_code = "eng";
+        let mut ocr_lang_initial_selection: usize = 0;
+        let ocr_lang_by_code = l10n::ocr_lang_key_by_name(&trans);
+        let mut ocr_langs = Vec::with_capacity(ocr_lang_by_code.len());
+
+        for (ocr_lang_code, ocr_lang_name) in ocr_lang_by_code.iter() {
+            ocr_langs.push(OcrLang::new(ocr_lang_code.to_string(), ocr_lang_name.to_string()));
+        }
+
+        ocr_langs.sort();
+
+        let mut ocr_lang_codes_selections = vec![false; ocr_langs.len()];
+
+        for (i, item) in ocr_langs.iter().enumerate() {
+            if item.id == default_ocr_lang_code {
+                ocr_lang_codes_selections[i] = true;
+                ocr_lang_initial_selection = i;
+                break;
+            }
+        }
+
+        let convert_options = common::ConvertOptions::new(None,
+                                                          common::DEFAULT_FILE_SUFFIX.to_string(),
+                                                          VisualQuality::default_value(),
+                                                          None,
+                                                          None,
+                                                          None);
+        Ok(Box::new(App::new(ui_theme, texture, convert_options, sanitizer, ocr_lang_initial_selection, ocr_lang_codes_selections, ocr_langs, trans)))
+    }))
 }
 
-#[cfg(not(any(target_os = "windows", target_os = "macos")))]
-pub fn pdf_open_with(cmd: String, input: PathBuf, _: &l10n::Translations) -> Result<(), Box<dyn Error>> {
-    match std::process::Command::new(cmd).arg(input).spawn() {
-        Ok(_)   => Ok(()),
-        Err(ex) => Err(ex.into()),
-    }
-}
+// TODO: Need to account for Flatpak packaging at some point (ashpd)
+// See https://github.com/bilelmoussaoui/ashpd
+mod utils {
+    use crate::l10n;
 
-#[cfg(target_os = "macos")]
-pub fn pdf_open_with(cmd: String, input: PathBuf, trans: &l10n::Translations) -> Result<(), Box<dyn Error>> {
-    // TODO reimplement this
-    Ok(())
+    pub fn open_with_default_application(path: String, content_type: &str, trans: &l10n::Translations) -> Result<(), Box<dyn std::error::Error>> {
+        #[cfg(not(any(target_os = "macos", target_os = "windows")))] {
+            linux::open_with_default_application(path, content_type, trans)
+        }
+
+        #[cfg(target_os = "macos")] {
+            macos::open_with_default_application(path, content_type, trans)
+        }
+
+        #[cfg(target_os = "windows")] {
+            windows::open_with_default_application(path, content_type, trans)
+        }
+    }
+
+    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
+    mod linux {
+        use crate::l10n;
+
+        pub fn open_with_default_application(path: String, content_type: &str, trans: &l10n::Translations) -> Result<(), Box<dyn std::error::Error>> {
+            use xdg_utils::query_default_app;
+
+            if let Ok(cmd) = query_default_app(content_type) {
+                match std::process::Command::new(cmd).arg(path).spawn() {
+                    Ok(_)   => Ok(()),
+                    Err(ex) => Err(ex.into())
+                }
+            } else {
+                Err(trans.gettext("Cannot find default application for this file type!").into())
+            }
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    mod windows {
+        use std::{
+            ffi::OsStr,
+            iter,
+            os::windows::ffi::OsStrExt,
+            ptr
+        };
+
+        use windows::{
+            core::{PWSTR, PCWSTR},
+            Win32::Foundation::GetLastError,
+            Win32::UI::Shell::ShellExecuteW,
+            Win32::UI::WindowsAndMessaging::SHOW_WINDOW_CMD,
+            Win32::System::Diagnostics::Debug::{
+                FormatMessageW, FORMAT_MESSAGE_FROM_SYSTEM, FORMAT_MESSAGE_IGNORE_INSERTS, FORMAT_MESSAGE_ALLOCATE_BUFFER
+            },
+            Win32::Globalization::GetUserDefaultLangID
+        };
+
+        use crate::l10n;
+
+        fn get_last_error_as_string() -> String {
+            unsafe {
+                let buffer = PWSTR(ptr::null_mut());
+                let error_code = GetLastError();
+                let flags = FORMAT_MESSAGE_ALLOCATE_BUFFER
+                    | FORMAT_MESSAGE_FROM_SYSTEM
+                    | FORMAT_MESSAGE_IGNORE_INSERTS;
+
+                let lang_id = GetUserDefaultLangID();
+
+                let size = FormatMessageW(
+                    flags,
+                    None,
+                    error_code.0,
+                    lang_id.into(),
+                    buffer,
+                    0,
+                    None,
+                );
+
+                if size == 0 || buffer.is_null() {
+                    return String::new();
+                }
+
+                let message = String::from_utf16_lossy(std::slice::from_raw_parts(buffer.0, size as usize));
+
+                message
+            }
+        }
+
+        fn str_to_u16(path: &str) -> Vec<u16> {
+            OsStr::new(path)
+                .encode_wide()
+                .chain(iter::once(0))
+                .collect()
+        }
+
+        pub fn open_with_default_application(path: String, _content_type: &str, _: &l10n::Translations) -> Result<(), Box<dyn std::error::Error>> {
+            let operation_u16 = str_to_u16("open");
+            let operation     = PCWSTR::from_raw(operation_u16.as_ptr());
+            let file_u16      = str_to_u16(&path);
+            let file_path     = PCWSTR::from_raw(file_u16.as_ptr());
+
+            unsafe {
+                let result = ShellExecuteW(None, operation, file_path, None, None, SHOW_WINDOW_CMD(1));
+
+                if result.0 as usize > 32 {
+                    return Ok(());
+                }
+
+	            Err(get_last_error_as_string().into())
+            }
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    mod macos {
+        use crate::l10n;
+
+        pub fn open_with_default_application(path: String, _content_type: &str, _: &l10n::Translations) -> Result<(), Box<dyn std::error::Error>> {
+            if let Err(ex) = std::process::Command::new("open").arg(path).spawn() {
+                return Err(ex.into())
+            }
+
+            Ok(())
+        }
+    }
 }

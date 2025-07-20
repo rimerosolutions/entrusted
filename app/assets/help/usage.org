@@ -1,0 +1,10 @@
+This tool is relatively simple to provide clear use-cases, avoid UX complexity and maintenance burden.
+
+* Basic usage
+You start by upload files from your computer to add documents to process.
+By default, output files will be saved in PDF format with the suffix "-entrusted", in the same folder as the uploaded file (configurable).
+
+* Advanced usage
+It's possible to customize output settings while uploading files (e.g., passwords for decrypting documents, output folder).
+- There's still a dilemma between providing full flexibility for each uploaded file vs. having global default settings.
+- The overall vision is to not provide 10,000 options that only 1% of users will either understand or find beneficial

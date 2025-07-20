@@ -1,0 +1,33 @@
+Below is a non-exhaustive list of the main features.
+
+* Supported document formats
+Entrusted supports the following document formats:
+- PDF documents (.pdf)
+- Text Documents (.docx, .doc, .odt, .rtf)
+- Presentations (.pptx, .ppt, .odp)
+- Ebooks (.epub, .mobi, .cbz, .fb2)
+- Spreadsheets (.xlsx, .xls)
+- Images (.png, .jpg, .gif, .bmp)
+
+* Sandboxing
+Entrusted tries leveraging existing sandbox solutions whenever possible, by just fitting into existing infrastructure.
+- On Linux, a Flatpak package is provided
+- On Windows, an MSIX package is available
+- On Mac OS, rules of the App Sandbox apply
+
+The best solution for security and maintenance would be a live CD (meant to run on a virtual machine). Sadly, that approach lowers adoption for non-technical users.
+
+Earlier versions of Entrusted achieved sandboxing using Podman or Docker container solutions (third-party extra software that users would install first). An ISO image (Live CD) was also available.
+
+* Password-protected documents
+
+** Decrypting files
+Password-protected documents are supported for PDF files and known Office formats. While uploading files, you can supply a password to decrypt the selected file.
+
+** Encrypting the PDF output
+While upload files, you can provide a password to encrypt the output for the selected file (AES-256 encryption).
+
+** Notes about encryption
+- On Windows, Microsoft Edge sometimes struggles with password-protected PDF files. Pick another browser or a decent PDF reader instead.
+- The encryption scope of this tool is limited to setting passwords on the PDF output.
+- There are many well-established solutions for advanced encryption (age encryption, GPG, OpenSSL, etc.)

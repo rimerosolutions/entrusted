@@ -1,7 +1,0 @@
-XDG_RUNTIME_DIR=/run/user/$(id -u)
-RUNLEVEL=3
-PATH="${PATH}:/sbin"
-
-export XDG_RUNTIME_DIR
-export RUNLEVEL
-export PATH

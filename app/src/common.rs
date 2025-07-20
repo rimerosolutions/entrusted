@@ -1,128 +1,93 @@
-use std::{error::Error, sync::mpsc::SendError};
 use std::path::PathBuf;
+use std::sync::mpsc::SendError;
+use std::str::FromStr;
+use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
-use crate::l10n;
+pub const DEFAULT_FILE_SUFFIX: &str = "entrusted";
+pub const NAMESPACE_APP: &str = "com.rimerosolutions.entrusted";
 
-pub const ENV_VAR_ENTRUSTED_DOC_PASSWD: &str = "ENTRUSTED_DOC_PASSWD";
-pub const LOG_FORMAT_JSON: &str = "json";
+#[derive(Debug, Clone, PartialEq)]
+pub enum VisualQuality {
+    Low, Medium, High
+}
 
-pub const IMAGE_QUALITY_CHOICES: [&str; 3] = ["low", "medium", "high"];
-pub const IMAGE_QUALITY_CHOICE_DEFAULT_INDEX: usize = 1;
-pub const DEFAULT_FILE_SUFFIX: &str  = "entrusted";
+impl VisualQuality {
+    pub const fn default_value() -> Self {
+        Self::Medium
+    }
 
-#[macro_export]
-macro_rules! incl_gettext_files {
-    ( $( $x:expr ),* ) => {
-        {
-            let mut ret = HashMap::with_capacity(2);
-            $(
-                let data = include_bytes!(concat!("../translations/", $x, "/LC_MESSAGES/messages.mo")).as_slice();
-                ret.insert($x, data);
-
-            )*
-
-                ret
+    pub const fn image_max_size(&self) -> (f32, f32) {
+        match self {
+            VisualQuality::Low    => (794.0  , 1123.0),
+            VisualQuality::Medium => (1240.0 , 1754.0),
+            VisualQuality::High   => (4961.0 , 7016.0),
         }
-    };
+    }
+}
+
+impl std::fmt::Display for VisualQuality {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            VisualQuality::Low    => f.write_str("Low"),
+            VisualQuality::Medium => f.write_str("Medium"),
+            VisualQuality::High   => f.write_str("High")
+        }
+    }
+}
+
+impl FromStr for VisualQuality {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "low"    => Ok(VisualQuality::Low),
+            "medium" => Ok(VisualQuality::Medium),
+            "high"   => Ok(VisualQuality::High),
+            _        => Err(format!("Invalid visual quality: {}", s)),
+        }
+    }
 }
 
 pub trait EventSender: Send {
     fn send(&self, evt: crate::common::AppEvent) -> Result<(), SendError<crate::common::AppEvent>>;
-
-    fn clone_box(&self) -> Box<dyn EventSender>;
 }
 
-// TODO use a uuid instead of a row index (first usize parameter)
-// This doesn't involve too many changes per previous tests that won't make it in 0.2.6
-// One annoyance overall is performance to quickly map documents IDs to widgets and cleaning up elegantly resources
-// One other detail to watch for is that in case of application crashes we should ensure that all the relevant temporary folders get deleted...
-#[derive(Deserialize, Serialize, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub enum AppEvent {
-    FileOpenEvent(String), // file_path
-    ConversionProgressEvent(usize, String), // progress value, message in JSON format
-    ConversionStartEvent(usize), // tasks_index
-    ConversionSuccessEvent(usize, usize), // tasks_index, tasks_count
-    ConversionFailureEvent(usize, usize), // tasks_index, tasks_count
-    ConversionFinishedAckEvent,
-    AllConversionEnded(usize, usize, usize) // tasks_completed, tasks_failed, tasks_count
+    // row_index
+    ConversionStarted(usize),
+    // doc_id, progress_value, progress_message
+    ConversionProgressed(Uuid, usize, String),
+    // row_index
+    ConversionFailed(usize),
+    // File row index and output path
+    ConversionFinished(usize, Option<PathBuf>),
+    // tasks_completed, tasks_failed, tasks_count
+    AllConversionEnded(usize, usize, usize)
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug)]
-pub struct ReleaseInfo {
-    pub html_url: String,
-    pub tag_name: String,
-}
-
-#[derive(Deserialize, Serialize, Clone, Debug)]
-pub struct LogMessage {
-    pub data: String,
-    pub percent_complete: usize,
-}
-
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct ConvertOptions {
-    pub visual_quality: String,
-    pub opt_ocr_lang: Option<String>,
-    pub opt_passwd: Option<String>,
+    pub output_folder: Option<PathBuf>,
+    pub filename_suffix: String,
+    pub visual_quality: VisualQuality,
+    pub ocr_lang_code: Option<String>,
+    pub password_decrypt: Option<String>,
+    pub password_encrypt: Option<String>,
 }
 
 impl ConvertOptions {
-    pub fn new(visual_quality: String,
-               opt_ocr_lang: Option<String>,
-               opt_passwd: Option<String>,
+    pub fn new(output_folder: Option<PathBuf>,
+               filename_suffix: String,
+               visual_quality: VisualQuality,
+               ocr_lang_code: Option<String>,
+               password_decrypt: Option<String>,
+               password_encrypt: Option<String>,
     ) -> Self {
         Self {
-            visual_quality,
-            opt_ocr_lang,
-            opt_passwd,
-        }
-    }
-}
-
-pub fn default_output_path(input: PathBuf, file_suffix: String) -> Result<PathBuf, Box<dyn Error>> {
-    let input_name_opt = input.file_stem().map(|i| i.to_str()).and_then(|v| v);
-    let output_filename_opt = input.parent().map(|i| i.to_path_buf());
-
-    if let (Some(input_name), Some(mut output_filename)) = (input_name_opt, output_filename_opt) {
-        let filename = format!("{}-{}.pdf", &input_name, &file_suffix);
-        output_filename.push(filename);
-        Ok(output_filename)
-    } else {
-        Err("Cannot determine resulting PDF output path based on selected input document location!".into())
-    }
-}
-
-pub fn update_check(trans: &l10n::Translations) -> Result<Option<ReleaseInfo>, Box<dyn Error>> {
-    const RELEASES_URL: &str = "https://api.github.com/repos/rimerosolutions/entrusted/releases/latest";
-
-    let response = minreq::get(RELEASES_URL)
-        .with_header("User-Agent", "Entrusted Updates Checks")
-        .with_header("Accept", "application/json")
-        .send()?;
-
-    let release_info: ReleaseInfo = response.json()?;
-    let current_version = option_env!("CARGO_PKG_VERSION").unwrap_or("Unknown");
-
-    if current_version == release_info.tag_name {
-        Ok(None)
-    } else {
-        let current_version_text = format!(">{}", current_version);
-        let latest_version_text = &release_info.tag_name;
-
-        if let Ok(version_req) = semver::VersionReq::parse(&current_version_text) {
-            if let Ok(ver_latest) = semver::Version::parse(latest_version_text) {
-                if version_req.matches(&ver_latest) {
-                    Ok(Some(release_info))
-                } else {
-                    Ok(None)
-                }
-            } else {
-                Err(trans.gettext("Could not read latest release version!").into())
-            }
-        } else {
-            Err(trans.gettext("Could not read current software version!").into())
+            output_folder, filename_suffix, visual_quality, ocr_lang_code, password_decrypt, password_encrypt
         }
     }
 }

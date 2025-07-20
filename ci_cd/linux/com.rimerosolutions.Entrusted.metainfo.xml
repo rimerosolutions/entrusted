@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<component type="desktop-application">
+  <id>com.rimerosolutions.Entrusted</id>
+  <name>entrusted</name>
+  <summary>Sanitize documents for active content removal</summary>
+  <developer id = "com.rimerosolutions.yveszoundi">
+    <name>Yves Zoundi</name>
+  </developer>
+  <metadata_license>FSFAP</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+  <url type="homepage">https://github.com/rimerosolutions/entrusted</url>
+  <url type="bugtracker">https://github.com/rimerosolutions/entrusted/issues</url>
+  <description>
+    <p>
+      Entrusted is a tool that sanitizes potentially suspicious documents by transforming them into PDF files.
+
+      Office documents (MS Office, OpenOffice), common image formats and PDF documents are supported. OCR support is optional for producing searchable PDF documents with selectable text.
+    </p>
+  </description>
+  <categories>
+    <category>Graphics</category>
+    <category>Office</category>
+  </categories>
+  <keywords>
+    <keyword>sanitizer</keyword>
+    <keyword>ocr</keyword>
+    <keyword>pdf</keyword>
+  </keywords>
+  <launchable type="desktop-id">com.rimerosolutions.Entrusted.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/rimerosolutions/entrusted/refs/heads/develop/images/screenshot.png</image>
+      <caption>Entrusted document conversion window</caption>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version = "0.3.2" date="2024-01-14">
+      <url type="details">https://github.com/rimerosolutions/entrusted/releases/tag/0.3.2</url>
+      <description>
+        <p>Many changes</p>
+      </description>
+    </release>
+  </releases>
+  <content_rating type="oars-1.1" />
+</component>

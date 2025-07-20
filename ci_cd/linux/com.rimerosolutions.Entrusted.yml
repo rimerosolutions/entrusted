@@ -1,0 +1,173 @@
+id: com.rimerosolutions.Entrusted
+
+runtime: org.gnome.Platform
+runtime-version: "48"
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.llvm20
+command: entrusted
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --share=ipc
+  - --env=FLATPAK=1
+build-options:
+  append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/llvm20/bin
+  prepend-ld-library-path: "/usr/lib/sdk/llvm20/lib"
+modules:
+  - name: gmp
+    buildsystem: autotools
+    sources:
+      - type: archive
+        url: https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.xz
+        sha256: fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2
+    config-opts:
+      - --enable-static
+      - --disable-shared
+      - CFLAGS=-fPIE
+  - name: mpfr
+    buildsystem: autotools
+    sources:
+      - type: archive
+        url: https://ftp.gnu.org/gnu/mpfr/mpfr-4.2.0.tar.xz
+        sha256: 06a378df13501248c1b2db5aa977a2c8126ae849a9d9b7be2546fb4a9c26d993
+    config-opts:
+      - --enable-static
+      - --disable-shared
+      - CFLAGS=-fPIE
+  - name: mpc
+    buildsystem: autotools
+    sources:
+      - type: archive
+        url: https://ftp.gnu.org/gnu/mpc/mpc-1.3.1.tar.gz
+        sha256: ab642492f5cf882b74aa0cb730cd410a81edcdbec895183ce930e706c1c759b8
+    config-opts:
+      - --enable-static
+      - --disable-shared
+      - CFLAGS=-fPIE
+  - name: libpango-1.0
+    buildsystem: meson
+    sources:
+      - type: archive
+        url: https://download.gnome.org/sources/pango/1.56/pango-1.56.3.tar.xz
+        sha256: 2606252bc25cd8d24e1b7f7e92c3a272b37acd6734347b73b47a482834ba2491
+    config-opts:
+      - -Dxft=enabled
+      - -Dfreetype=enabled
+      - -Dcairo=enabled
+  - name: libsupc++
+    buildsystem: autotools
+    sources:
+      - type: archive
+        url: https://ftp.gnu.org/gnu/gcc/gcc-14.2.0/gcc-14.2.0.tar.xz
+        sha256: a7b39bc69cbf9e25826c5a60ab26477001f7c08d85cec04bc0e29cabed6f3cc9
+    config-opts:      
+      - --enable-static
+      - --disable-shared
+      - --disable-multilib
+      - --enable-languages=c,c++
+      - --disable-bootstrap
+      - --with-mpc=/app 
+      - --with-mpfr=/app 
+      - --with-gmp=/app 
+      - CFLAGS=-fPIE
+      - CXXFLAGS=-fPIE
+  - name: pcre
+    buildsystem: autotools
+    sources:
+      - type: archive
+        url: https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.45/pcre2-10.45.tar.gz
+        sha256: 0e138387df7835d7403b8351e2226c1377da804e0737db0e071b48f07c9d12ee
+  - name: glib-object
+    buildsystem: meson
+    sources:
+      - type: archive
+        url: https://download.gnome.org/sources/glib/2.84/glib-2.84.0.tar.xz
+        sha256: f8823600cb85425e2815cfad82ea20fdaa538482ab74e7293d58b3f64a5aff6a
+    config-opts:
+      - -Ddefault_library=shared
+  - name: harfbuzz
+    buildsystem: meson
+    sources:
+      - type: archive
+        url: https://github.com/harfbuzz/harfbuzz/releases/download/11.2.0/harfbuzz-11.2.0.tar.xz
+        sha256: 50f7d0a208367e606dbf6eecc5cfbecc01a47be6ee837ae7aff2787e24b09b45
+    config-opts:
+      - -Ddefault_library=static
+  - name: cairo
+    buildsystem: meson
+    sources:
+      - type: archive
+        url: https://www.cairographics.org/releases/cairo-1.18.4.tar.xz
+        sha256: 445ed8208a6e4823de1226a74ca319d3600e83f6369f99b14265006599c32ccb
+    config-opts:
+      - -Dtests=disabled
+  - name: libpanel
+    buildsystem: meson
+    sources:
+      - type: git
+        url: https://gitlab.gnome.org/GNOME/libpanel.git
+        branch: libpanel-1.8
+    config-opts:
+      - -Ddocs=disabled
+      - -Dintrospection=disabled
+      - -Dvapi=false
+    build-options:
+      env:
+        - CFLAGS=-lstdc++
+        - CXXFLAGS=-ldstdc++
+  - name: libdex
+    buildsystem: meson
+    sources:
+      - type: git
+        url: https://gitlab.gnome.org/GNOME/libdex.git
+        branch: libdex-0.10
+    config-opts:
+      - -Ddocs=false
+      - -Dexamples=false
+      - -Dtests=false      
+      - -Dsysprof=false      
+  - name: sysprof
+    buildsystem: meson
+    sources:
+      - type: git
+        url: https://gitlab.gnome.org/GNOME/sysprof.git
+        branch: sysprof-48
+    build-options:
+      env:
+        PKG_CONFIG_PATH: "/app/lib/pkgconfig:/app/lib64/pkgconfig"
+        CFLAGS: -I/app/include/libdex-1 -I/app/include/libpanel-1
+        CXXFLAGS: -I/app/include/libdex-1 -I/app/include/libpanel-1
+        LD_LIBRARY_PATH: "/usr/lib/sdk/llvm20/lib:/app/lib64:/app/lib"
+    config-opts:
+      - -Dsysprofd=none
+  - name: entrusted
+    buildsystem: simple
+    sources:
+      - type: git
+        url: https://github.com/rimerosolutions/entrusted
+        branch: main
+      - cargo-sources.json
+    build-options:
+      env:
+        CARGO_HOME: /run/build/entrusted/cargo
+        XDG_CACHE_HOME: /run/build/entrusted/cache
+        LC_ALL: C.utf8
+        CFLAGS: -I/app/include/pango-1.0/ -I/app/include/glib-2.0/ -I/app/lib64/glib-2.0/include/ -I/app/include/harfbuzz/ -I/app/include/cairo/ -lffi -lgobject-2.0 -lglib-2.0 -lcairo -lpcre2-8
+        CXXFLAGS:  -I/app/include/pango-1.0/ -I/app/include/glib-2.0/ -I/app/lib64/glib-2.0/include/ -I/app/include/harfbuzz/ -I/app/include/cairo/ -lffi -lgobject-2.0 -lglib-2.0 -lcairo -lpcre2-8
+        RUSTFLAGS: -L /app/lib -L /app/lib64 -C link-arg=-I/app/include/pango-1.0/ -C link-arg=-I/app/include/glib-2.0/ -C link-arg=-I/app/lib64/glib-2.0/include/ -C link-arg=-I/app/include/harfbuzz/ -C link-arg=-I/app/include/cairo/ -C link-arg=-lffi -C link-arg=-lgobject-2.0 -C link-arg=-lglib-2.0 -C link-arg=-lcairo -C link-arg=-lpcre2-8 
+    build-commands:
+      - cargo --offline fetch --manifest-path /run/build/entrusted/app/Cargo.toml --verbose
+      - source /usr/lib/sdk/llvm20/enable.sh
+      - cargo --offline build --manifest-path /run/build/entrusted/app/Cargo.toml --features fltk/use-wayland --release
+      - install -Dm644 -t /app/share/metainfo/ flatpak/com.rimerosolutions.Entrusted.metainfo.xml
+      - install -Dm644 -t /app/share/applications/ flatpak/com.rimerosolutions.Entrusted.desktop 
+      - install -Dm755 -t /app/bin/ /run/build/entrusted/app/target/release/entrusted
+      - install -Dm644 flatpak/icon-32x32.png /app/share/icons/hicolor/32x32/apps/com.rimerosolutions.Entrusted.png
+      - install -Dm644 flatpak/icon-128x128.png /app/share/icons/hicolor/128x128/apps/com.rimerosolutions.Entrusted.png
+      - install -Dm644 flatpak/icon-256x256.png /app/share/icons/hicolor/256x256/apps/com.rimerosolutions.Entrusted.png
+      - install -Dm644 flatpak/icon-512x512.png /app/share/icons/hicolor/256x256@2/apps/com.rimerosolutions.Entrusted.png
+    post-install:
+      - install -Dm644 LICENSE /app/share/licenses/com.rimerosolutions.Entrusted/LICENSE

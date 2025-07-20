@@ -1,0 +1,28 @@
+Explanations below are over-simplified to reach easily a non-technical audience.
+For more complete and technically accurate details, please consult other sources.
+
+* Document sanitization
+In the context of this tool, it's about removing active content that could have malicious intent (e.g., macros, scripts, malware embedded in files).
+- Once a document is processed, you can open it safely on your machine
+- Metadata is also removed automatically during sanitization
+- This tool "DOES NOT" provide absolute safety guarantees!
+
+* Active content removal
+Active content is removed during processing, due to the way that the program is designed:
+The program converts uploaded files to PDF, each page is extracted as an image and then a final PDF is produced from images (optional OCR).
+
+* Metadata removal   
+ Document properties are discarded from the PDF output (author and other properties).
+
+* Sandbox
+A sandbox consists in a isolated and constrained environment where a program runs (e.g., limited file permissions, disabled internet access, layered filesystem, etc.).
+
+The tool leverages existing sandbox options for a given operating system (e.g., Flatpak on Linux, Mac OS App Sandbox, AppContainer on "Windows").
+
+* What is OCR?
+OCR stands for "Optical Character Recognition".
+
+It's a mechanism that allows the application to produce PDF output with text that is selectable and searchable (instead of pages with images).
+- The application ships with OCR supported for multiple languages (default is English)
+- The OCR language of a given document must be pre-selected, as it's not auto-detected
+- Please note that OCR is a time-consuming process (document size and other factors)

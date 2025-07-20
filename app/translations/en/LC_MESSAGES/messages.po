@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: entrusted_client\n"
 "Report-Msgid-Bugs-To: andrea@nonymous.net\n"
 "POT-Creation-Date: 2016-01-25 18:51+0100\n"
-"PO-Revision-Date: 2022-06-11 11:51-0400\n"
+"PO-Revision-Date: 2025-07-03 15:01-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en\n"
@@ -18,250 +18,90 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n < 1 ? 0 : n==1 ? 1 : 2;\n"
 
-msgid "The system is running out of memory"
-msgstr ""
-
-msgid "Program not found"
-msgstr ""
-
-msgid "Bad executable file format"
-msgstr ""
-
-msgid "File access denied"
-msgstr ""
-
-msgid "File not found"
-msgstr ""
-
-msgid "No application associated to the given file or URL"
-msgstr ""
-
-msgid "Not enough memory to complete this operation"
-msgstr ""
-
-msgid "Sharing violation, the file might be used by another program"
-msgstr ""
-
-msgid "Cannot open PDF document at {0}."
-msgstr ""
-
-msgid "Cannot open default application for content type: {0}"
-msgstr ""
-
-msgid "Couldn't open PDF file in default application! {0}."
-msgstr ""
-
-msgid "Open"
-msgstr ""
-
-msgid "Potentially sacrifice visual quality for processing time (quick preview first, etc.)"
-msgstr ""
-
-msgid "Custom hardening for sandbox container image"
-msgstr ""
-
-msgid "The conversion was cancelled!"
-msgstr ""
-
-msgid "Try cancelling remaining conversions as soon as possible"
-msgstr ""
-
-msgid "Custom PDF result visual quality"
-msgstr ""
-
-msgid "low"
-msgstr ""
-
-msgid "medium"
-msgstr ""
-
-msgid "high"
-msgstr ""
-
-msgid ""
-"{bin} {version}\n"
-"{author}\n"
-"{about}\n\n"
-"Usage: {usage}\n\n"
-"Options:\n"
-"{options}"
-msgstr ""
-
-msgid "Potential sanitization process crash detected, the sanitized PDF result was not created."
-msgstr ""
-
-msgid "Cannot remove output file: {0}. {1}."
-msgstr ""
-
-msgid "Could not open PDF file!"
-msgstr ""
-
-msgid "Yes"
-msgstr ""
-
-msgid "No"
-msgstr ""
-
-msgid "Really close"
-msgstr ""
-
-msgid "Overall progress"
-msgstr ""
-
-msgid "Could not find 'open' command in 'PATH' environment variable!"
-msgstr ""
-
-msgid "Version {0} is out!"
-msgstr ""
-
-msgid "Please get the new version!"
-msgstr ""
-
-msgid "All files failed to process"
-msgstr ""
-
-msgid "One file failed to process"
-msgid_plural "Multiple files failed to process"
-msgstr[0] "All files processed successfully"
-msgstr[1] "{0} file failed to process"
-msgstr[2] "{0} files failed to process"
-
-msgid "Could not open URL: {0}, {1}"
-msgstr ""
 
-msgid "Check for updates"
+# main_gui.rs
+msgid "A document sanitizer tool"
 msgstr ""
 
-msgid "No updates available at this time!"
+msgid "Cannot find default application for this file type!"
 msgstr ""
 
-msgid "Could not read latest software version!"
+msgid "Default if blank"
 msgstr ""
 
-msgid "Could not read current software version!"
+msgid "None if blank"
 msgstr ""
 
-msgid "Help"
+msgid "Light"
 msgstr ""
 
-msgid ""
-"The program requires a container solution: \n"
-"- Docker (Windows, Linux, Mac OS)\n"
-"- or Podman (Linux)"
+msgid "Dark"
 msgstr ""
 
-msgid ""
-"Supported document types: \n"
-"- Images (.jpg, .jpeg, .gif, .png, .tif, .tiff)\n"
-"- Document Graphics (.odg)\n"
-"- Text Documents (.rtf, .doc, .docx, .odt)\n"
-"- Spreadsheets (.xls, .xlsx, .ods)\n"
-"- Presentations (.ppt, .pptx, .odp)\n"
-"- PDF files (.pdf)"
+msgid "System"
 msgstr ""
 
-msgid "For more information, please visit:"
+msgid "Low"
 msgstr ""
 
-msgid "Select"
+msgid "Medium"
 msgstr ""
 
-msgid "Reset"
+msgid "High"
 msgstr ""
 
-msgid "Custom output file"
+msgid {0} documents out of {1} failed processing!
 msgstr ""
 
-msgid "Failed to read password!"
+msgid "File name"
 msgstr ""
 
-msgid "Please enter the password for the document"
+msgid "Documents uploaded ({0}):"
 msgstr ""
 
-msgid "Prompt for document password"
+msgid "Progress"
 msgstr ""
 
-msgid "Accept"
+msgid "Result"
 msgstr ""
 
-msgid "Cancel"
+msgid "Output"
 msgstr ""
 
-msgid "Set document password"
+msgid "Pending"
 msgstr ""
 
-msgid "Set document password (empty for none)"
+msgid "Processing"
 msgstr ""
 
-msgid "Running command: {0}"
+msgid "Interrupted"
 msgstr ""
-
-msgid "No container runtime executable found!"
-msgstr ""
-
-msgid "About"
-msgstr "About"
-
-msgid "Copyright {0} {1}"
-msgstr ""
-msgstr "© {0}\n"
-msgstr "{1} All rights reserved"
-
-msgid "Version"
-msgstr "Version"
-
-msgid "Logs"
-msgstr ""
-
-msgid "Close"
-msgstr ""
-
-msgid "Settings"
-msgstr ""
-
-msgid "Convert"
-msgstr ""
-
-msgid "Custom file suffix"
-msgstr ""
-
-msgid "The safe PDF will be named <input>-<suffix>.pdf by default."
-msgstr ""
-
-msgid "Enable full-text search? In:"
-msgstr ""
-
-msgid "OCR (Optical character recognition) will be applied."
-msgstr ""
-
-msgid "Open resulting PDF with"
-msgstr "Open resulting PDF with"
 
-msgid "Automatically open resulting PDFs with a given program."
+msgid "Succeeded"
 msgstr ""
 
-msgid "You can also paste the path to a PDF viewer"
+msgid "Failed"
 msgstr ""
 
-msgid "Browse for PDF viewer program"
+msgid "Home"
 msgstr ""
 
-msgid "Custom sandbox container image"
+msgid "Features"
 msgstr ""
 
-msgid "Expert option for sandbox solution"
+msgid "Usage"
 msgstr ""
 
-msgid "Save current settings as defaults"
+msgid "Topics"
 msgstr ""
 
-msgid "Drop 'potentially suspicious' file(s) here"
+msgid "Issues"
 msgstr ""
 
-msgid "or"
+msgid "Documentation"
 msgstr ""
 
-msgid "Click here to select file(s)"
+msgid "Click to browse files or Drag and drop files into this window."
 msgstr ""
 
 msgid "Select all"
@@ -270,117 +110,294 @@ msgstr ""
 msgid "Deselect all"
 msgstr ""
 
-msgid "Delete selection"
+msgid "Remove selected"
 msgstr ""
 
-msgid "Convert document(s)"
+msgid "Configure selected"
 msgstr ""
 
-msgid "File name"
+msgid "Sanitize"
 msgstr ""
 
-msgid "Progress(%)"
+msgid "The processing was interrupted!"
 msgstr ""
 
-msgid "Status"
+msgid "The document failed to process!"
 msgstr ""
 
-msgid "Messages"
+msgid "All documents failed to process!"
 msgstr ""
 
-msgid "Select PDF viewer program"
+msgid "{0} documents out of {1} failed processing!"
 msgstr ""
 
-msgid "Select 'potentially suspicious' file(s)"
+msgid "All documents were successfully processed!"
 msgstr ""
 
-msgid "Could not open PDF result!"
+msgid "Go back to add more files"
 msgstr ""
 
-msgid "Could not run PDF viewer!"
+msgid "Documents processing:"
 msgstr ""
 
-msgid "English"
+msgid "Documents processing ({0}):"
 msgstr ""
 
-msgid "Optional output filename defaulting to <filename>-entrusted.pdf."
+msgid "Stop processing"
 msgstr ""
 
-msgid "Optional language for OCR (i.e. 'eng' for English)"
+msgid "Overall progress"
 msgstr ""
 
-msgid "Input filename"
+msgid "Upload"
 msgstr ""
 
-msgid "Optional custom container image name"
+msgid "Settings"
 msgstr ""
 
-msgid "Log format (json or plain)"
+msgid "Appearance settings"
 msgstr ""
 
-msgid "Default file suffix (entrusted)"
+msgid "Theme"
 msgstr ""
 
-msgid "The selected file does not exists! {0}"
+msgid "Processing settings"
 msgstr ""
 
-msgid "Converting"
+msgid "Custom output file name suffix"
 msgstr ""
 
-msgid "Cannot create directory"
+msgid "Custom output visual quality"
 msgstr ""
 
-msgid "Checking if container image exists"
+msgid "Searchable PDFs via OCR"
 msgstr ""
 
-msgid "The container image was not found. {0}."
+msgid "By default, sanitized output will be saved in:"
 msgstr ""
 
-msgid "Starting document processing"
+msgid "The same folder as the uploaded file"
 msgstr ""
 
-msgid "Please wait, downloading sandbox image (roughly 600 MB)"
+msgid "A dedicated folder"
 msgstr ""
 
-msgid "Couldn't download container image!"
+msgid "Browse..."
 msgstr ""
 
-msgid "Container image download completed..."
+msgid "Select output folder"
 msgstr ""
 
-msgid "Failed to cleanup temporary folder: {0}. {1}."
+msgid "Same folder if blank"
 msgstr ""
 
-msgid "Command output capture failed!"
+msgid "Welcome"
 msgstr ""
 
-msgid "Command failed!"
+msgid "This program helps neuter potentially suspicious files, by removing active content: a PDF output is generated."
 msgstr ""
 
-msgid "Conversion failed!"
+msgid "The project is hosted on GitHub."
 msgstr ""
 
-msgid "Container process terminated abruptly potentially due to memory usage. Are PDF pages too big? Try increasing the container engine memory allocation?"
+msgid "Here is what you can do:"
 msgstr ""
 
-msgid "Container process terminated abruptly potentially due to a memory access fault. Please report the issue at https://github.com/rimerosolutions/entrusted/issues"
+msgid "Upload files"
 msgstr ""
 
-msgid "Could not save container security profile to {0}. {1}."
+msgid "Adjust settings"
 msgstr ""
 
-msgid "Please install Docker and make sure that it's running."
+msgid "Consult documentation"
 msgstr ""
 
-msgid "Please install Docker Desktop and make sure that it's running."
+msgid "Report an issue"
 msgstr ""
 
-msgid "Please install Docker or Podman, and make sure that it's running."
+msgid "Could not open project issues URL: {0}! {1}"
+msgstr ""
+
+msgid "Select files"
+msgstr ""
+
+msgid "Known files"
+msgstr ""
+
+msgid "PDF documents"
+msgstr ""
+
+msgid "Text documents"
+msgstr ""
+
+msgid "Presentations"
+msgstr ""
+
+msgid "Spreadsheets"
+msgstr ""
+
+msgid "Drawing"
+msgstr ""
+
+msgid "Ebooks"
+msgstr ""
+
+msgid "Images"
+msgstr ""
+
+msgid "All files"
+msgstr ""
+
+msgid "Configure PDF output"
+msgstr ""
+
+msgid "Output location"
+msgstr ""
+
+msgid "Password to decrypt input"
+msgstr ""
+
+msgid "Password to encrypt output"
+msgstr ""
+
+msgid "Log"
+msgstr ""
+
+msgid "Error!"
+msgstr ""
+
+# sanitizer.rs
+msgid "The selected file does not exists: {0}!"
+msgstr ""
+
+msgid "Cannot create directory: {0}! Error: {1}"
+msgstr ""
+
+msgid "Cannot determine resulting PDF output path based on selected input document location!"
+msgstr ""
+
+# processing.rs
+msgid "Extract PDF file into one image"
+msgid_plural "Extract PDF file into few images"
+msgstr[0] "Extract PDF file into no PNG image"
+msgstr[1] "Extract PDF file into {0} PNG image"
+msgstr[2] "Extract PDF file into {0} PNG images"
+
+msgid "OCR support is not available. No trained data folder was found!"
 msgstr ""
 
 msgid "Unknown language code for the ocr-lang parameter: {0}. Hint: Try 'eng' for English."
 msgstr ""
 
+msgid "Performing OCR on page {0}"
+msgstr ""
+
+msgid "Saving PNG image {0} to PDF"
+msgstr ""
+
+msgid "Extracting page {0} into a PNG image"
+msgstr ""
+
+msgid "Elapsed time"
+msgstr ""
+
+msgid "OCR support is not available! No trained data folder was provided."
+msgstr ""
+
+msgid "Failed to copy file from {0} to {1}"
+msgstr ""
+
+msgid "Failed to remove file from {0}."
+msgstr ""
+
+msgid "Moving output files to their final destination"
+msgstr ""
+
+msgid "Cannot find file at {0}"
+msgstr ""
+
+msgid "Could not determine basename for file {0}"
+msgstr ""
+
+msgid "Copying PDF input to {0}"
+msgstr ""
+
+msgid "Wrong document password"
+msgstr ""
+
+msgid "Converting input to PDF for images and ebooks processor."
+msgstr ""
+
+msgid "Converting input to PDF using office processor"
+msgstr ""
+
+msgid "Mime type error! Does the input have a 'known' file extension?"
+msgstr ""
+
+msgid "hour"
+msgid_plural "hours"
+msgstr[0] "0 hours"
+msgstr[1] "{0} hour"
+msgstr[2] "{0} hours"
+
+msgid "minute"
+msgid_plural "minutes"
+msgstr[0] "0 minutes"
+msgstr[1] "{0} minute"
+msgstr[2] "{0} minutes"
+
+msgid "second"
+msgid_plural "seconds"
+msgstr[0] "0 seconds"
+msgstr[1] "{0} second"
+msgstr[2] "{0} seconds"
+
+msgid "Combining one PDF document"
+msgid_plural "Combining few PDF documents"
+msgstr[0] "Combining PDF documents"
+msgstr[1] "Combinding 1 PDF document"
+msgstr[2] "Combining PDF documents"
+
+msgid "Collecting PDF pages"
+msgstr ""
+
+msgid "Combining page {0} into final PDF"
+msgstr ""
+
+msgid "Saving PDF"
+msgstr ""
+
+msgid "Could not save PDF file to {0}. {1}."
+msgstr ""
+
+msgid "Office document support is not available!"
+msgstr ""
+
+msgid "The Office processor environment is unknown!"
+msgstr ""
+
+msgid "Failed to enable password-protected document features! {0}"
+msgstr ""
+
+msgid "Could not save document as PDF: {0}"
+msgstr ""
+
+msgid "The file appears to be corrupted or unsupported!"
+msgstr ""
+
+msgid "The file appears to be password-protected or it might not have been successfully decrypted!\n Please provide a password for the file with the 'Configure selected' link in the 'Upload' screen."
+msgstr ""
+
+msgid "Could not export input document as PDF! {0}"
+msgstr ""
+
+msgid "Sadly, password-protected documents are not supported on macOS!"
+msgstr ""
+
+msgid "Could not export input document to PDF"
+msgstr ""
+
+# OCR
 msgid "Afrikaans"
 msgstr ""
 
@@ -861,23 +878,165 @@ msgstr ""
 msgid "Yoruba"
 msgstr ""
 
-msgid "hour"
-msgid_plural "hours"
-msgstr[0] "0 hours"
-msgstr[1] "{0} hour"
-msgstr[2] "{0} hours"
+# help
+msgid "Below is a non-exhaustive list of the main features."
+msgstr ""
 
-msgid "minute"
-msgid_plural "minutes"
-msgstr[0] "0 minutes"
-msgstr[1] "{0} minute"
-msgstr[2] "{0} minutes"
+msgid "* Supported document formats"
+msgstr ""
 
-msgid "second"
-msgid_plural "seconds"
-msgstr[0] "0 seconds"
-msgstr[1] "{0} second"
-msgstr[2] "{0} seconds"
+msgid "Entrusted supports the following document formats:"
+msgstr ""
 
-msgid "Elapsed time"
+msgid "- PDF documents (.pdf)"
+msgstr ""
+
+msgid "- Text Documents (.docx, .doc, .odt, .rtf)"
+msgstr ""
+
+msgid "- Presentations (.pptx, .ppt, .odp)"
+msgstr ""
+
+msgid "- Ebooks (.epub, .mobi, .cbz, .fb2)"
+msgstr ""
+
+msgid "- Spreadsheets (.xlsx, .xls)"
+msgstr ""
+
+msgid "- Images (.png, .jpg, .gif, .bmp)"
+msgstr ""
+
+msgid "* Sandboxing"
+msgstr ""
+
+msgid "Entrusted tries leveraging existing sandbox solutions whenever possible, by just fitting into existing infrastructure."
+msgstr ""
+
+msgid "- On Linux, a Flatpak package is provided"
+msgstr ""
+
+msgid "- On Windows, an MSIX package is available"
+msgstr ""
+
+msgid "- On Mac OS, rules of the App Sandbox apply"
+msgstr ""
+
+msgid "The best solution for security and maintenance would be a live CD (meant to run on a virtual machine). Sadly, that approach lowers adoption for non-technical users."
+msgstr ""
+
+msgid "Earlier versions of Entrusted achieved sandboxing using Podman or Docker container solutions (third-party extra software that users would install first). An ISO image (Live CD) was also available."
+msgstr ""
+
+msgid "* Password-protected documents"
+msgstr ""
+
+msgid "** Decrypting files"
+msgstr ""
+
+msgid "Password-protected documents are supported for PDF files and known Office formats. While uploading files, you can supply a password to decrypt the selected file."
+msgstr ""
+
+msgid "** Encrypting the PDF output"
+msgstr ""
+
+msgid "While upload files, you can provide a password to encrypt the output for the selected file (AES-256 encryption)."
+msgstr ""
+
+msgid "** Notes about encryption"
+msgstr ""
+
+msgid "- On Windows, Microsoft Edge sometimes struggles with password-protected PDF files. Pick another browser or a decent PDF reader instead."
+msgstr ""
+
+msgid "- The encryption scope of this tool is limited to setting passwords on the PDF output."
+msgstr ""
+
+msgid "- There are many well-established solutions for advanced encryption (age encryption, GPG, OpenSSL, etc.)"
+msgstr ""
+
+msgid "Explanations below are over-simplified to reach easily a non-technical audience."
+msgstr ""
+
+msgid "For more complete and technically accurate details, please consult other sources."
+msgstr ""
+
+msgid "* Document sanitization"
+msgstr ""
+
+msgid "In the context of this tool, it's about removing active content that could have malicious intent (e.g., macros, scripts, malware embedded in files)."
+msgstr ""
+
+msgid "- Once a document is processed, you can open it safely on your machine"
+msgstr ""
+
+msgid "- Metadata is also removed automatically during sanitization"
+msgstr ""
+
+msgid "- This tool "DOES NOT" provide absolute safety guarantees!"
+msgstr ""
+
+msgid "* Active content removal"
+msgstr ""
+
+msgid "Active content is removed during processing, due to the way that the program is designed:"
+msgstr ""
+
+msgid "The program converts uploaded files to PDF, each page is extracted as an image and then a final PDF is produced from images (optional OCR)."
+msgstr ""
+
+msgid "* Metadata removal   "
+msgstr ""
+
+msgid " Document properties are discarded from the PDF output (author and other properties)."
+msgstr ""
+
+msgid "* Sandbox"
+msgstr ""
+
+msgid "A sandbox consists in a isolated and constrained environment where a program runs (e.g., limited file permissions, disabled internet access, layered filesystem, etc.)."
+msgstr ""
+
+msgid "The tool leverages existing sandbox options for a given operating system (e.g., Flatpak on Linux, Mac OS App Sandbox, AppContainer on "Windows")."
+msgstr ""
+
+msgid "* What is OCR?"
+msgstr ""
+
+msgid "OCR stands for "Optical Character Recognition"."
+msgstr ""
+
+msgid "It's a mechanism that allows the application to produce PDF output with text that is selectable and searchable (instead of pages with images)."
+msgstr ""
+
+msgid "- The application ships with OCR supported for multiple languages (default is English)"
+msgstr ""
+
+msgid "- The OCR language of a given document must be pre-selected, as it's not auto-detected"
+msgstr ""
+
+msgid "- Please note that OCR is a time-consuming process (document size and other factors)"
+msgstr ""
+
+msgid "This tool is relatively simple to provide clear use-cases, avoid UX complexity and maintenance burden."
+msgstr ""
+
+msgid "* Basic usage"
+msgstr ""
+
+msgid "You start by upload files from your computer to add documents to process."
+msgstr ""
+
+msgid "By default, output files will be saved in PDF format with the suffix "-entrusted", in the same folder as the uploaded file (configurable)."
+msgstr ""
+
+msgid "* Advanced usage"
+msgstr ""
+
+msgid "It's possible to customize output settings while uploading files (e.g., passwords for decrypting documents, output folder)."
+msgstr ""
+
+msgid "- There's still a dilemma between providing full flexibility for each uploaded file vs. having global default settings."
+msgstr ""
+
+msgid "- The overall vision is to not provide 10,000 options that only 1% of users will either understand or find beneficial"
 msgstr ""

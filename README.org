@@ -1,6 +1,6 @@
 #+TITLE: README
 
-*This program is under rewrite for usability, coding practices and maintainability.*
+*This program is [[https://github.com/rimerosolutions/entrusted/tree/develop][under rewrite]] for usability, coding practices and maintainability.*
 
 * What is this?
 

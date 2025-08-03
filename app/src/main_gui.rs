@@ -391,27 +391,27 @@ impl AppScreen for DocumentationScreen {
 
 #[derive(Debug, Clone)]
 struct FileUploadOptions {
-    password_decrypt: String,
-    password_encrypt: String,
-    output_folder: String,
+    password_decrypt : String,
+    password_encrypt : String,
+    output_folder    : String,
 }
 
 impl Default for FileUploadOptions {
     fn default() -> Self {
         Self {
-            password_decrypt: EMPTY_STRING,
-            password_encrypt: EMPTY_STRING,
-            output_folder:    EMPTY_STRING,
+            password_decrypt : EMPTY_STRING,
+            password_encrypt : EMPTY_STRING,
+            output_folder    : EMPTY_STRING,
         }
     }
 }
 
 #[derive(Clone)]
 struct FileUploadEntryAddFiles {
-    id: Uuid,
-    path: path::PathBuf,
-    options: FileUploadOptions,
-    selected: bool,
+    id       : Uuid,
+    path     : path::PathBuf,
+    options  : FileUploadOptions,
+    selected : bool,
 }
 
 impl FileUploadEntryAddFiles {
@@ -439,11 +439,11 @@ impl std::fmt::Display for FileUploadStatus {
 
 #[derive(Clone)]
 struct FileUploadEntryProcessFiles {
-    id: Uuid,
-    path: path::PathBuf,
-    output: Option<path::PathBuf>,
-    options: FileUploadOptions,
-    status: FileUploadStatus
+    id      : Uuid,
+    path    : path::PathBuf,
+    output  : Option<path::PathBuf>,
+    options : FileUploadOptions,
+    status  : FileUploadStatus
 }
 
 impl FileUploadEntryProcessFiles {
@@ -1720,6 +1720,7 @@ fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size(window_size)
+            .with_app_id("entrusted")
             .with_icon(icon)
             .with_min_inner_size(window_size),
         ..Default::default()

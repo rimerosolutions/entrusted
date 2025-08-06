@@ -14,7 +14,8 @@
     "--socket=fallback-x11",
     "--device=dri",
     "--share=ipc",
-    "--env=FLATPAK=1"
+    "--env=FLATPAK=1",
+    "--env=ENTRUSTED_LIBREOFFICE_PROGRAM_DIR=/app/libreoffice/program"
   ],
   "build-options": {
     "append-path": "/usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/llvm20/bin",
@@ -898,11 +899,12 @@
         "cargo --offline build --manifest-path /run/build/entrusted/app/Cargo.toml --release --features gui",
         "install -Dm644 -t /app/share/metainfo/ ci_cd/linux/com.rimerosolutions.Entrusted.metainfo.xml",
         "install -Dm644 -t /app/share/applications/ ci_cd/linux/com.rimerosolutions.Entrusted.desktop",
-        "install -Dm755 -t /app/bin/entrusted /run/build/entrusted/app/target/release/entrusted-gui",
+        "install -Dm755 /run/build/entrusted/app/target/release/entrusted-gui /app/bin/entrusted",
         "install -Dm644 ci_cd/linux/icon-32x32.png /app/share/icons/hicolor/32x32/apps/com.rimerosolutions.Entrusted.png",
         "install -Dm644 ci_cd/linux/icon-128x128.png /app/share/icons/hicolor/128x128/apps/com.rimerosolutions.Entrusted.png",
         "install -Dm644 ci_cd/linux/icon-256x256.png /app/share/icons/hicolor/256x256/apps/com.rimerosolutions.Entrusted.png",
         "install -Dm644 ci_cd/linux/icon-512x512.png /app/share/icons/hicolor/256x256@2/apps/com.rimerosolutions.Entrusted.png",
+        "install -Dm644 ci_cd/linux/icon-512x512.png /app/share/icons/hicolor/512x512/apps/com.rimerosolutions.Entrusted.png",
         "cargo --offline clean --manifest-path /run/build/entrusted/app/Cargo.toml"
       ],
       "post-install": [

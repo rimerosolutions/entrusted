@@ -27,7 +27,7 @@ This is how it now looks like, pending a subsequent C rewrite and shipping only 
 [[./screenshots/screenshot.png]]
 
 * Downloads
-There are no releases yet, as there are my local POC is ongoing (I took a long break).
+There are no releases yet, as my local POC is ongoing (I took a long break).
 
 * References
 - Processing  

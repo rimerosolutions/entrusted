@@ -1,38 +1,41 @@
 #+TITLE: Entrusted document sanitizer tool
 
 This application is being rewritten (usability, coding practices, maintainability).
+  - The current code in this branch is a partial rewrite (still with Rust). Early versions of the app were written while learning Rust during the pandemic.
+  - The upcoming version, likely in early/mid 2027 will be rewritten in C (local POC in progress while learning "just enough C").
 
 * Changes
+- General
+  - The next version will be written mostly in C instead of Rust
 - UI
-  - The UI toolkit was changed from [[https://github.com/fltk-rs/fltk-rs][fltk-rs]] to [[https://github.com/emilk/egui][egui]]
-  - Logic was simplified
+  - There will only be a Web UI accessible via the Live CD (new theme and logo)
+  - There will be support for encrypting sanitized PDF files
+  - The Live CD itself will be smaller (hopefully around 300 MB or less) and faster to boot
 - Processing
-  - PDF manipulation now leverages [[https://mupdf.com/][MuPDF]] instead of [[https://poppler.freedesktop.org/][Poppler]] (and related libraries)
-  - Most of the transformations are done in-memory instead of creating several intermediate files
-- General refactoring and libraries updates
+  - The docker/podman sandboxing approach has been removed in favor of a more direct/lower-level solution
+  - The sanitization process is improving in term of logic, speed and memory efficiency
+  - The optional OCR step will use modern approaches instead of Tesseract (older, slower, huge installation size and memory usage)
 
 * Problems to solve
 
-- User friendly sandbox approach ([[https://learn.microsoft.com/en-us/windows/msix/overview][MSIX]] with =appcontainer= on Windows, [[https://flatpak.org/][Flatpak]] on Linux, [[https://developer.apple.com/documentation/bundleresources/entitlements][Entitlements]] on macOS)
-- Unflexible Office document conversion on macOS ([[https://bugs.documentfoundation.org/show_bug.cgi?id=145127][Lack of LibreOffice headless support]])
-  - One option is to attempt to use [[https://api.onlyoffice.com/docs/docs-api/additional-api/document-builder-api/][OnlyOffice]] instead of [[https://docs.libreoffice.org/libreofficekit.html][LibreOffice]] on all platforms (much more lightweight)
-  - Another approach is to either embed [[https://podman.io/][Podman]] on macOS or bundle a Linux image ([[https://developer.apple.com/documentation/virtualization][Virtualization framework]])
-  - A radical solution is to just drop macOS support
+- Learn/understand enough C, to write code almost as quickly than in Java or Rust!
+- Test additional security and sandboxing rules in the Live CD with other Linux distributions than Debian (current Live CD distro)
 
 * Screenshots
+This is how it now looks like, pending a subsequent C rewrite and shipping only a Live CD in the future.
+
 [[./screenshots/screenshot.png]]
 
 * Downloads
-There are no releases yet, as there are current unresolved issues and pending decisions.
+There are no releases yet, as there are my local POC is ongoing (I took a long break).
 
 * References
-- UI
-  - https://github.com/emilk/egui
-  - https://github.com/microsoft/mimalloc
 - Processing  
-  - https://github.com/jacobtread/libreofficekit
-  - https://github.com/messense/mupdf-rs
+  - https://docs.libreoffice.org/libreofficekit.html
+  - https://mupdf.com/
+  - TODO few more technical solutions to add    
 - App isolation
+  - https://github.com/microsoft/mimalloc
   - Linux
     - https://docs.flatpak.org/en/latest/
     - https://man7.org/linux/man-pages/man2/seccomp.2.html
